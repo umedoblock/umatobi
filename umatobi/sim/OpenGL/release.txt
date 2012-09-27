@@ -1,0 +1,22 @@
+# URL: svn+ssh://svn.umeboshi/p2p/umatobi/trunk/tp/opengl
+# リポジトリのルート: svn+ssh://svn.umeboshi/p2p
+# 最終変更日時: 2012-09-19 06:13:45 +0900 (Wed, 19 Sep 2012)
+
+# release.txt
+# Copyright (C) 2008 梅どぶろく umedoblock
+
+H19/02/11
+tes0 ぽつんぽつんと3点ある。さみしい感じ。
+tes1 白い巨大な三角形が表示される。
+tes2 三角形が点線で表示される。
+tes3 RGBで三角形が表示される。徐々に直線の色が変化している。配列を使用。
+tes4 RGBで三角形が表示される。直線ごとに色が違う。
+tes5 RGBで三角形が表示される。直線ごとに色が違う。各頂点には正方形が表示される。
+tes6 青色の正方形が円を形作っている。
+tes7 本格的なシミュレートが可能かどうか、描画能力を試験。
+     glPointSize()->glVertex2f()
+tes8 シミュレートの際に、正方形を描画するがGL_QUADS使うのと、
+     ↑ の方法使うのとどっちが早いのか調査。
+tes9 点線をやめ、直線を引くことにした。
+tes10 頂点配列なるものを使い、高速化を図る。
+tes11 さらなる高速化のために、glDrawElements()を使用する。
