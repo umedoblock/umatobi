@@ -5,15 +5,6 @@ import sys
 import struct
 import math
 
-class Umatobi(object):
-    def __init__(self, ip, port):
-        self._red = []
-        self._green = []
-        self._blue = []
-
-class RGB(object):
-    pass
-
 class Node(threading.Thread):
     '''Node class'''
 
