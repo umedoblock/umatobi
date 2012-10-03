@@ -4,11 +4,7 @@ import math
 import argparse
 import os
 
-here = os.path.dirname(__file__)
-module_root = os.path.join(here, '../..')
-sys.path.insert(0, module_root)
-
-from umatobi.lib import formula
+import formula
 
 def args_():
     parser = argparse.ArgumentParser(description='screen.')
