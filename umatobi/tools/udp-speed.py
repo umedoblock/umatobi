@@ -9,14 +9,14 @@ import argparse
 def arg():
     parser = argparse.ArgumentParser(description='UDP sender/recver.')
 
-    parser.add_argument('--recver-host', metavar='f', dest='recver_host',
+    parser.add_argument('--recver', metavar='f', dest='recver',
                          nargs='?',
-                         default='localhost',
-                         help='my.server.net')
-    parser.add_argument('--recver-port', metavar='f', dest='recver_port',
-                         type=int, nargs='?',
-                         default=10000,
-                         help='recver port')
+                         default='0.0.0.0:0',
+                         help='example localhost:30000')
+    parser.add_argument('--sender', metavar='f', dest='sender',
+                         nargs='?',
+                         default='0.0.0.0:0',
+                         help='example localhost:20000')
     parser.add_argument('--one-packet-size',
                          metavar='N', dest='one_packet_size',
                          type=int, nargs='?', default=(1024 * 4),
@@ -30,24 +30,21 @@ def arg():
     return args
 
 class UDPNode(threading.Thread):
-    def __init__(self, host, port, type_, one_packet_size):
+    def __init__(self, sender, recver, type_, one_packet_size):
         threading.Thread.__init__(self)
-        self.host = host
-        self.port = port
+        self.sender = sender
+        self.recver = recver
         self.type_ = type_
         self.one_packet_size = one_packet_size
         self.s = None # datetime.datetime.today()
         self.timeout_sec = 4
 
         socket.setdefaulttimeout(self.timeout_sec)
-        node = (host, port)
-        print('node =', node)
-        self.node = node
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         if type_ == 'sender':
-            self.send_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.sock.bind(sender)
         elif type_ == 'recver':
-            self.recv_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.recv_sock.bind(node)
+            self.sock.bind(recver)
         else:
             raise RuntimeError('unknown type: {}'.format(type_))
 
@@ -56,67 +53,90 @@ class UDPNode(threading.Thread):
         return (e - self.s).total_seconds()
 
     def run(self):
-        print("Start host={}, port={}, type_={}.".
-            format(self.host, self.port, self.type_))
-        print("      one_packet_size={}.".format(self.one_packet_size))
+        print("Start type_={}.".format(self.type_))
 
         hatena = (self.one_packet_size - 4) * b'?'
         count = 0
         total_send_size, total_recv_size = 0, 0
 
         passed_time = 0
-        try:
+
+        if self.type_ == 'sender':
             while True:
                 print('\rcount={}'.format(count), end='')
-                if self.type_ == 'sender':
-                    counter = struct.pack('>I', count)
-                    msg = counter + hatena
-                    if not self.s:
-                        self.s = datetime.datetime.today()
-                    self.send_sock.sendto(msg, self.node)
-                    count += 1
-                    total_send_size += len(msg)
-                    if self.passed_time() > 10:
-                        break
-                elif type_ == 'recver':
+                counter = struct.pack('>I', count)
+                msg = counter + hatena
+                if not self.s:
+                    self.s = datetime.datetime.today()
+                self.sock.sendto(msg, self.recver)
+                count += 1
+                total_send_size += len(msg)
+                if self.passed_time() > 10:
+                    break
+        elif self.type_ == 'recver':
+            sender = None
+            recv_msg = b''
+            try:
+                while True:
+                    print('\rcount={}'.format(count), end='')
                     recv_msg, sender = \
-                        self.recv_sock.recvfrom(self.one_packet_size)
+                        self.sock.recvfrom(self.one_packet_size)
                     if not self.s:
                         self.s = datetime.datetime.today()
                     count += 1
                     total_recv_size += len(recv_msg)
-        except socket.timeout:
-            print('got a error as socket.timeout.')
-            passed_time -= self.timeout_sec
-        else:
-            print('finished UDP sendto() successfully.')
+            except socket.timeout as raiz:
+                if not count:
+                    raise raiz
+                elif sender:
+                    self.sender = sender
+                passed_time -= self.timeout_sec
+        print()
+        print('finished UDP sendto() successfully.')
+        print()
         passed_time += self.passed_time()
 
         print('{}: count={:d}'.format(type_, count))
         print('passed_time={}'.format(passed_time))
-        total_send_MB = total_send_size / 1024 ** 2
-        total_recv_MB = total_recv_size / 1024 ** 2
-        print('total_send_size={}MB'.format(total_send_MB))
-        print('       speed is {}MB/s'.format(total_send_MB / passed_time))
-        print('total_recv_size={}MB'.format(total_recv_MB))
-        print('       speed is {}MB/s'.format(total_recv_MB / passed_time))
+        print()
+
+        if self.type_ == 'sender':
+            total_send_MB = total_send_size / 1024 ** 2
+            print('total_send_size={}MB'.format(total_send_MB))
+            print('speed is {:.3f}MB/s'.format(total_send_MB / passed_time))
+            print('speed is {:.3f}Mbps/s'.format(total_send_MB / passed_time * 8))
+        else:
+            total_recv_MB = total_recv_size / 1024 ** 2
+            print('total_recv_size={}MB'.format(total_recv_MB))
+            print('speed is {:.3f}MB/s'.format(total_recv_MB / passed_time))
+            print('speed is {:.3f}Mbps/s'.format(total_recv_MB / passed_time * 8))
+        print()
+        print('sender =', self.sender)
+        print('recver =', self.recver)
+        print("one_packet_size={}.".format(self.one_packet_size))
+
+def get_host_port(host_port):
+    sp = host_port.split(':')
+    host = sp[0]
+    port = int(sp[1])
+    return host, port
 
 if __name__ == '__main__':
     # how to use.
-    # udp-speed.py --recver-host=localhost --recver-port=30000 --type=recver
-    # udp-speed.py --recver-host=localhost --recver-port=30000 --type=sender
+    # udp-speed.py --recver=localhost:30000 --type=recver
+    # udp-speed.py --recver=localhost:30000 --type=sender
 
     args = arg()
-    recver_host = args.recver_host
-    recver_port = int(args.recver_port)
+    recver = get_host_port(args.recver)
+    sender = get_host_port(args.sender)
     one_packet_size = args.one_packet_size
     type_ = args.type_
 
-    if not type_:
-        raise RuntimeError('--type must be sender or recver.')
+    if type_ not in ('sender', 'recver'):
+        raise RuntimeError('--type is "{}", --type must be sender or recver.'.format(type_))
 
     node = \
-        UDPNode(recver_host, recver_port, type_, one_packet_size)
+        UDPNode(sender, recver, type_, one_packet_size)
 
     node.start()
 
