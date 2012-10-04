@@ -60,7 +60,8 @@ def get_host_port(host_port):
 if __name__ == '__main__':
     # how to use.
     # udp-client.py --recver=localhost:30000 \
-    #               --type=recver
+    #               --client=localhost:20000 \
+    #               --message='I am Relay.'
 
     args = arg()
     client_ = get_host_port(args.client)
