@@ -17,15 +17,20 @@ def arg():
                          nargs='?',
                          default='0.0.0.0:0',
                          help='example localhost:30000')
+    parser.add_argument('--message', metavar='f', dest='message',
+                         nargs='?',
+                         default='',
+                         help='message')
     args = parser.parse_args()
 
     return args
 
 class UDPClient(threading.Thread):
-    def __init__(self, client, recver):
+    def __init__(self, client, recver, message):
         threading.Thread.__init__(self)
         self.client = client
         self.recver = recver
+        self.message = message
         self.timeout_sec = 1
 
         socket.setdefaulttimeout(self.timeout_sec)
@@ -34,7 +39,7 @@ class UDPClient(threading.Thread):
         self.sock_client.bind(self.client)
 
     def do(self):
-        send_msg = b'hello hello'
+        send_msg = self.message
         self.sock_client.sendto(send_msg, self.recver)
         client = self.sock_client.getsockname()
         print('cleint is {}.'.format(client))
@@ -60,6 +65,7 @@ if __name__ == '__main__':
     args = arg()
     client_ = get_host_port(args.client)
     recver = get_host_port(args.recver)
+    message = args.message.encode()
 
-    client = UDPClient(client_, recver)
+    client = UDPClient(client_, recver, message)
     client.do()
