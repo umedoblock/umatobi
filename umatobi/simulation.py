@@ -109,7 +109,7 @@ def args_():
   #                      help='first bind port.')
     parser.add_argument('--node-num',
                          metavar='N', dest='node_num',
-                         type=int, nargs='?', default=10,
+                         type=int, nargs='?', default=5,
                          help='simulation node num.')
   # parser.add_argument('--sql-path', metavar='f', dest='sql_path',
   #                      nargs='?',
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     print('init_node_={}'.format(init_node))
     print('simulation_seconds={}'.format(args.simulation_seconds))
 
-    relay = Relay(init_node_, 5)
+    relay = Relay(init_node_, args.node_num)
 
     # 実行開始
     init_node.start()
