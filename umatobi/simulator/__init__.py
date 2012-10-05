@@ -42,3 +42,6 @@ class Node(umatobi.p2p.core.Node):
     def _key_hex(self):
         return formula._key_hex(self.key)
 
+class Relay(object):
+    def __init__(self, watson, num_nodes):
+        self.watson = watson
