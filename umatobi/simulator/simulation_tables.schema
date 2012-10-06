@@ -1,0 +1,81 @@
+# Python 3.2.2
+# 11.6.5. SQLite and Python types
+# 11.6.5.1. Introduction
+#
+# SQLite natively supports the following types: NULL, INTEGER, REAL, TEXT, BLOB.
+#
+# The following Python types can thus be sent to SQLite without any problem:
+# Python type | SQLite type
+# ------------+------------
+# None        | NULL
+# int         | INTEGER
+# float       | REAL
+# str         | TEXT
+# bytes       | BLOB
+#
+# This is how SQLite types are converted to Python types by default:
+# SQLite type | Python type
+# ------------+------------
+# NULL        | None
+# INTEGER     | int
+# REAL        | float
+# TEXT        | depends on text_factory, str by default
+# BLOB        | bytes
+#
+# The type system of the sqlite3 module is extensible in two ways: you can
+# store additional Python types in a SQLite database via object adaptation, and
+# you can let the sqlite3 module convert SQLite types to different Python types
+# via converters.
+
+[simulator]
+watson: text
+simulation_seconds: integer
+title: text
+memo: text
+version: text
+
+[nodes]
+id: integer primary key
+host: text
+port: integer
+keyID: integer # ?
+key: blob
+rad: float
+x: float
+y: float
+status: text
+
+[relays]
+id: integer primary key
+host: text
+port: integer
+joined: text # iso8601
+
+[sqls]
+now: text
+sql: text
+
+# [shots]
+# id: integer primary key
+# simulation_second: float
+# node_ids: integer
+#
+# [stage]
+# [snapshot]
+# [sequence]
+#
+# [screens]
+# line_id: integer
+# point_id: integer
+#
+# [point]
+# id: integer primary key
+# x: integer
+# y: integer
+# # size: integer
+# # color: integer
+#
+# [line]
+# sp: integer # start point
+# ep: integer # end point
+
