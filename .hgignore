@@ -7,3 +7,5 @@ syntax: glob
 *.tags
 core
 *.pickle
+*/relay.*.db
+*/simulation.db
