@@ -1,3 +1,4 @@
+import threading
 import sys, os
 import socket
 import sqlite3
@@ -45,19 +46,24 @@ class Node(p2p.core.Node):
     def _key_hex(self):
         return formula._key_hex(self.key)
 
-class Relay(object):
+class Relay(threading.Thread):
     SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
 
     def __init__(self, watson, num_nodes, simulation_dir):
+        threading.Thread.__init__(self)
         self.watson = watson
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.timeout_sec = 1
         socket.setdefaulttimeout(self.timeout_sec)
         self.simulation_dir = simulation_dir
 
-    def build_up_attrs(self):
         self._init_attrs()
-        print('relay.build_up_attrs() done.')
+
+        # thread start!
+        self.start()
+
+    def run(self):
+        print('Relay started!')
 
     def _init_attrs(self):
         d = self._hello_watson()

@@ -32,6 +32,9 @@ class InitNode(threading.Thread):
 
         self.watson.bind(self.init_node)
 
+        # thread start!
+        self.start()
+
     def run(self):
         self._s = datetime.datetime.today()
 
@@ -185,13 +188,9 @@ if __name__ == '__main__':
     relay = Relay(init_node_, args.node_num, args.simulation_dir)
 
     # 実行開始
-    init_node.start()
 
-    relay.build_up_attrs()
-    print('type(init_node) 3 =', type(init_node))
-
-    print('init_node.join() waiting ...')
     # 終了処理
+    relay.join()
     init_node.join()
 
   # print('node_num =', args.node_num)
