@@ -2,12 +2,13 @@ import sys, os
 import socket
 import sqlite3
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-import umatobi.p2p.core
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import p2p.core
+from lib import jbytes_becomes_dict
 
 __all__ = ['Node']
 
-class Node(umatobi.p2p.core.Node):
+class Node(p2p.core.Node):
     def __init__(self, host, port):
         '''\
         simulator 用 node を初期化する。
@@ -43,12 +44,6 @@ class Node(umatobi.p2p.core.Node):
 
     def _key_hex(self):
         return formula._key_hex(self.key)
-
-import json
-def jbytes_becomes_dict(jb):
-    js = jb.decode()
-    d = json.loads(js)
-    return d
 
 class Relay(object):
     SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')

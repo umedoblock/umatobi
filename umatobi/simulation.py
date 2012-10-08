@@ -7,16 +7,8 @@ import argparse
 import socket
 import datetime
 
-# sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-# from umatobi.lib import formula
-
+from lib import dict_becomes_jbytes
 from simulator import Relay
-
-import json
-def dict_becomes_jbytes(d):
-    js = json.dumps(d)
-    jb = js.encode()
-    return jb
 
 class InitNode(threading.Thread):
     MAX_NODE_NUM=8
