@@ -76,6 +76,12 @@ class Relay(threading.Thread):
                 print('Relay(no={}) got break down from {}.'.format(self.no, recved_addr))
                 break
 
+        self._release()
+
+    def _release(self):
+        # TODO: #100 relay.db をwatsonに送りつける。
+        print('released. relay')
+
     def _init_attrs(self):
         d = self._hello_watson()
         if not d:
