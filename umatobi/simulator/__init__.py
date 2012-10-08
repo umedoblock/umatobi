@@ -52,10 +52,11 @@ class Relay(threading.Thread):
     def __init__(self, watson, num_nodes, simulation_dir):
         threading.Thread.__init__(self)
         self.watson = watson
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.simulation_dir = simulation_dir
+
         self.timeout_sec = 1
         socket.setdefaulttimeout(self.timeout_sec)
-        self.simulation_dir = simulation_dir
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         self._init_attrs()
 
@@ -64,6 +65,16 @@ class Relay(threading.Thread):
 
     def run(self):
         print('Relay(no={}) started!'.format(self.no))
+        while True:
+            try:
+                recved, recved_addr = self.sock.recvfrom(1024)
+            except socket.timeout:
+                recved = b''
+                continue
+
+            if recved == b'break down.':
+                print('Relay(no={}) got break down from {}.'.format(self.no, recved_addr))
+                break
 
     def _init_attrs(self):
         d = self._hello_watson()

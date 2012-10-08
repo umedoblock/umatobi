@@ -96,7 +96,7 @@ class InitNode(threading.Thread):
         print('simulation._release_clients()')
         for relay in self.relays:
             result = b'break down.'
-          # self.watson.sendto(result, relay)
+            self.watson.sendto(result, relay)
 
     def collect_nodes_as_csv(self):
         csv = ','.join(['{}:{}'.format(*node) for node in self.nodes])
