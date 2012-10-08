@@ -33,9 +33,11 @@ class InitNode(threading.Thread):
         self.timeout_sec = 1
         self.nodes = []
         self.relays = []
+
+        # socket() must set under setdefaulttimeout()
+        socket.setdefaulttimeout(self.timeout_sec)
         self.watson = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        socket.setdefaulttimeout(self.timeout_sec)
         self.watson.bind(self.init_node)
 
     def run(self):
@@ -54,10 +56,9 @@ class InitNode(threading.Thread):
             try:
                 print('================= count_clients =', count_clients)
                 print('self.watson.recvfrom() ==============================')
-                if count_clients > 0:
-                    break
                 client_say, client = self.watson.recvfrom(1024)
             except socket.timeout:
+                print('relay timeouted.')
                 client = None
 
             if not client:
