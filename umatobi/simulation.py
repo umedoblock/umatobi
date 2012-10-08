@@ -12,19 +12,30 @@ import datetime
 
 from simulator import Relay
 
+import json
+def dict_becomes_jbytes(d):
+    js = json.dumps(d)
+    jb = js.encode()
+    return jb
+
 class InitNode(threading.Thread):
     MAX_NODE_NUM=8
 
-    def __init__(self, init_node, simulation_seconds):
+    def __init__(self, init_node, simulation_seconds, simulation_dir, start_up):
         threading.Thread.__init__(self)
         self.init_node = init_node
         self.simulation_seconds = simulation_seconds
+
+      # self.simulation_dir = simulation_dir
+        self.start_up = start_up
+        self.db_dir = os.path.join(simulation_dir, self.start_up)
+        self.simulation_db = os.path.join(self.db_dir, 'simulation.db')
         self.timeout_sec = 1
         self.nodes = []
         self.relays = []
+        self.watson = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         socket.setdefaulttimeout(self.timeout_sec)
-        self.watson = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.watson.bind(self.init_node)
 
     def run(self):
@@ -35,11 +46,16 @@ class InitNode(threading.Thread):
 
     def _wait_clients(self):
         count_clients = 0
+        count_relays = 0
 
         while self.passed_time() < self.simulation_seconds:
             print('\rpassed time {:.3f}'.format(self.passed_time()), end='')
 
             try:
+                print('================= count_clients =', count_clients)
+                print('self.watson.recvfrom() ==============================')
+                if count_clients > 0:
+                    break
                 client_say, client = self.watson.recvfrom(1024)
             except socket.timeout:
                 client = None
@@ -60,9 +76,17 @@ class InitNode(threading.Thread):
 
                 reply = realizing_nodes
             elif client_say == b'I am Relay.':
+                joined = datetime.datetime.today().strftime('%Y%m%dT%H%M%S')
                 self.relays.append(client)
                 print('Relay[={}] came here.'.format(client))
-                reply = b'...'
+                sql = 'insert into relays (id, host, port, joined) values ({}, {}, {}, {})'.format(count_relays, client[0], client[1], joined)
+                print('sql =', sql)
+                d = {}
+                d['no'] = count_relays
+                d['start_up'] = self.start_up
+                reply = dict_becomes_jbytes(d)
+                count_relays += 1
+                print('ok ok ok I am Relay....')
             else:
                 print('crazy man.')
                 reply = b'Go back home.'
@@ -73,9 +97,10 @@ class InitNode(threading.Thread):
         print()
 
     def _release_clients(self):
+        print('simulation._release_clients()')
         for relay in self.relays:
             result = b'break down.'
-            self.watson.sendto(result, relay)
+          # self.watson.sendto(result, relay)
 
     def collect_nodes_as_csv(self):
         csv = ','.join(['{}:{}'.format(*node) for node in self.nodes])
@@ -107,6 +132,10 @@ def args_():
   #                      metavar='N', dest='port',
   #                      type=int, nargs='?', default=10000,
   #                      help='first bind port.')
+    parser.add_argument('--simulation-dir',
+                         metavar='N', dest='simulation_dir',
+                         nargs='?', default='./umatobi-simulation',
+                         help='simulation directory.')
     parser.add_argument('--node-num',
                          metavar='N', dest='node_num',
                          type=int, nargs='?', default=5,
@@ -130,16 +159,45 @@ if __name__ == '__main__':
     args = args_()
     init_node_ = get_host_port(args.init_node)
 
+  # t = datetime.datetime.today()
+  # >>> t
+  # datetime.datetime(2012, 10, 8, 18, 4, 59, 659608)
+  # >>> t.strftime('%Y%m%dT%H%M%S')
+  # '20121008T180459'
+
+  # simulation_dir
+  # |-- 20121008T180459 # db_dir
+  # |   |-- simulation.db # so no man ma
+  # |   |-- relay.0.db # relay_db
+  # |   `-- relay.1.db # relay_db
+  # `-- 20121008T200822 # db_dir
+  #     |-- relay.0.db # relay_db
+  #     `-- relay.1.db # relay_db
+
+    if not os.path.isdir(args.simulation_dir):
+        os.makedirs(args.simulation_dir, exist_ok=True)
+
+    start_up = datetime.datetime.today().strftime('%Y%m%dT%H%M%S')
+    db_dir = os.path.join(args.simulation_dir, start_up)
+    os.mkdir(db_dir)
+
     # 各 object を作成するなど。
-    init_node = InitNode(init_node_, args.simulation_seconds)
+    init_node = InitNode(init_node_, args.simulation_seconds, args.simulation_dir, start_up)
+    print('init_node 0 =', init_node)
     print('init_node_={}'.format(init_node))
     print('simulation_seconds={}'.format(args.simulation_seconds))
 
-    relay = Relay(init_node_, args.node_num)
+    # Relay will get start_up attribute in build_up_attrs()
+    # after _hello_watson().
+    relay = Relay(init_node_, args.node_num, args.simulation_dir)
 
     # 実行開始
     init_node.start()
 
+    relay.build_up_attrs()
+    print('type(init_node) 3 =', type(init_node))
+
+    print('init_node.join() waiting ...')
     # 終了処理
     init_node.join()
 

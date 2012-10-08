@@ -1,4 +1,6 @@
 import sys, os
+import socket
+import sqlite3
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import umatobi.p2p.core
@@ -42,6 +44,57 @@ class Node(umatobi.p2p.core.Node):
     def _key_hex(self):
         return formula._key_hex(self.key)
 
+import json
+def jbytes_becomes_dict(jb):
+    js = jb.decode()
+    d = json.loads(js)
+    return d
+
 class Relay(object):
-    def __init__(self, watson, num_nodes):
+    SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
+
+    def __init__(self, watson, num_nodes, simulation_dir):
         self.watson = watson
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.timeout_sec = 1
+        socket.setdefaulttimeout(self.timeout_sec)
+        self.simulation_dir = simulation_dir
+
+    def build_up_attrs(self):
+        self._init_attrs()
+        print('relay.build_up_attrs() done.')
+
+    def _init_attrs(self):
+        d = self._hello_watson()
+        if not d:
+            raise RuntimeError('relay._hello_watson() return None object. watson is {}'.format(self.watson))
+
+        no = d['no']
+        start_up = d['start_up']
+        db_dir = os.path.join(self.simulation_dir, start_up)
+        print('relay.simulation_dir =', self.simulation_dir)
+        print('db_dir =', db_dir)
+        self.relay_db = os.path.join(db_dir, 'relay.{}.db'.format(no))
+        print('relay.relay_db =', self.relay_db)
+        self.conn = sqlite3.connect(self.relay_db)
+
+    def _hello_watson(self):
+        tries = 0
+        d = {}
+        while tries < 3:
+            try:
+                self.sock.sendto(b'I am Relay.', self.watson)
+                recved_msg, who = self.sock.recvfrom(1024)
+            except socket.timeout as raiz:
+                tries += 1
+                continue
+          # if self.watson == who:
+            d = jbytes_becomes_dict(recved_msg)
+            break
+        print('self.watson =')
+        print(self.watson)
+        print('who =')
+        print(who)
+        print('d =')
+        print(d)
+        return d
