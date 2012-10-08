@@ -63,19 +63,19 @@ class Relay(threading.Thread):
         self.start()
 
     def run(self):
-        print('Relay started!')
+        print('Relay(no={}) started!'.format(self.no))
 
     def _init_attrs(self):
         d = self._hello_watson()
         if not d:
             raise RuntimeError('relay._hello_watson() return None object. watson is {}'.format(self.watson))
 
-        no = d['no']
+        self.no = d['no']
         start_up = d['start_up']
         db_dir = os.path.join(self.simulation_dir, start_up)
         print('relay.simulation_dir =', self.simulation_dir)
         print('db_dir =', db_dir)
-        self.relay_db = os.path.join(db_dir, 'relay.{}.db'.format(no))
+        self.relay_db = os.path.join(db_dir, 'relay.{}.db'.format(self.no))
         print('relay.relay_db =', self.relay_db)
         self.conn = sqlite3.connect(self.relay_db)
 
