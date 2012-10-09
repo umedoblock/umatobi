@@ -40,15 +40,24 @@ class SqliteLogger(threading.Thread):
 
     def run(self):
         self.conn = sqlite3.connect(self.filename)
-#       self.conn.isolation_level = None
+####### self.conn.isolation_level = 'BEGIN'
+#       self.conn.isolation_level = 'IMMEDIATE' # 8.060
+        self.conn.isolation_level = 'DEFERRED'  # 8.001, 7.995
+#       self.conn.isolation_level = 'EXCLUSIVE' # 8.084
+#       self.conn.isolation_level = None # unknown
+#                                   default #     8.149
+        print('conn.in_transaction 0 =', self.conn.in_transaction)
         self.cur = self.conn.cursor()
         sql = 'insert into logs values(?,?,?,?)'
+        print('conn.in_transaction 1 =', self.conn.in_transaction)
         for i in range(self.records_num):
             now = log_now()
             tup = (None, now, 'info', 'message {:08x}'.format(i))
 #           print('tup =', tup)
             self.cur.execute(sql, tup)
+        print('conn.in_transaction 2 =', self.conn.in_transaction)
         self.conn.commit()
+        print('conn.in_transaction 3 =', self.conn.in_transaction)
         self.cur.close()
 
 def sqlite3_performance(filename):
@@ -84,5 +93,6 @@ def sqlite3_file_performance():
     sqlite3_performance(path)
   # os.remove(path)
 
-stop_watch(sqlite3_memory_performance, 'sqlite3_memory_performance()')
-# stop_watch(sqlite3_file_performance, 'sqlite3_file_performance()')
+# multi thread では :memory: を試せない。
+# stop_watch(sqlite3_memory_performance, 'sqlite3_memory_performance()')
+stop_watch(sqlite3_file_performance, 'sqlite3_file_performance()')
