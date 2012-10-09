@@ -7,7 +7,10 @@ import sqlite3
 import os
 import datetime
 import threading
+import logging
 
+threads_num = 1
+records_num = 1
 threads_num = 5
 records_num = 10 * 10000
 
@@ -27,6 +30,31 @@ def stop_watch(func, message):
 def log_now():
     now = datetime.datetime.today()
     return now.strftime('%Y%m%dT%H%M%S')
+
+FORMAT = '%(asctime)-15s %(now)s %(level)-5s %(log_message)s'
+logging.basicConfig(format=FORMAT, filename='/tmp/loggerlogger.log', level=logging.INFO)
+d = { 'clientip' : '192.168.0.1', 'user' : 'fbloggs' }
+logger = logging.getLogger('loggerlogger')
+# logger.warning('Protocol problem: %s', 'connection reset', extra=d)
+
+class LoggerLogger(threading.Thread):
+    def __init__(self, no, records_num):
+        threading.Thread.__init__(self)
+      # print('LoggerLogger() filename =', dir(logging))
+        self.no = no
+        self.records_num = records_num
+
+    def run(self):
+        sql = 'insert into logs values(?,?,?,?)'
+      # くっそ遅い
+      # もしも計測方法に誤りがなければ、sqlite3で決まり。
+      # logger_performance() の処理にかかった時間:
+      # 72.178
+        for i in range(self.records_num):
+            now = log_now()
+            d = {'id': None, 'now': now, 'level': 'info', 'log_message': 'message {:08x}'.format(i)}
+          # print('d =', d)
+            logger.info('abc', extra=d)
 
 class SqliteLogger(threading.Thread):
     def __init__(self, no, cur, records_num, conn, filename):
@@ -76,6 +104,16 @@ class SqliteLogger(threading.Thread):
         print('conn.in_transaction 3 =', self.conn.in_transaction)
         self.cur.close()
 
+def logger_performance():
+    threads = []
+    for i in range(threads_num):
+        thread = LoggerLogger(i, records_num)
+        thread.start()
+        threads.append(thread)
+
+    for thread in threads:
+        thread.join()
+
 def sqlite3_performance(filename):
     conn = sqlite3.connect(filename)
     cur = conn.cursor()
@@ -111,4 +149,5 @@ def sqlite3_file_performance():
 
 # multi thread では :memory: を試せない。
 # stop_watch(sqlite3_memory_performance, 'sqlite3_memory_performance()')
-stop_watch(sqlite3_file_performance, 'sqlite3_file_performance()')
+# stop_watch(sqlite3_file_performance, 'sqlite3_file_performance()')
+stop_watch(logger_performance, 'logger_performance()')
