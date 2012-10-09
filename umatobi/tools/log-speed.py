@@ -31,7 +31,7 @@ def log_now():
     now = datetime.datetime.today()
     return now.strftime('%Y%m%dT%H%M%S')
 
-FORMAT = '%(asctime)-15s %(now)s %(level)-5s %(log_message)s'
+FORMAT = '%(asctime)-15s %(now)s %(level)-5s %(log_message)s %(message)s'
 logging.basicConfig(format=FORMAT, filename='/tmp/loggerlogger.log', level=logging.INFO)
 d = { 'clientip' : '192.168.0.1', 'user' : 'fbloggs' }
 logger = logging.getLogger('loggerlogger')
@@ -50,9 +50,15 @@ class LoggerLogger(threading.Thread):
       # もしも計測方法に誤りがなければ、sqlite3で決まり。
       # logger_performance() の処理にかかった時間:
       # 72.178
+      # logger_performance() の処理にかかった時間:
+      # d={} を for の外に出したけど、それでも遅い。
+      # 多分、FORMAT の解析とか作成とかそんなものに時間を取られているんだろう。
+      # 55.828
+      # こりゃあ、文句なしで sqlite3 を採用だ。
+        i = 100
+        now = log_now()
+        d = {'id': None, 'now': now, 'level': 'info', 'log_message': 'message {:08x}'.format(i)}
         for i in range(self.records_num):
-            now = log_now()
-            d = {'id': None, 'now': now, 'level': 'info', 'log_message': 'message {:08x}'.format(i)}
           # print('d =', d)
             logger.info('abc', extra=d)
 
