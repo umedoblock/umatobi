@@ -10,12 +10,12 @@ import datetime
 from lib import dict_becomes_jbytes
 from simulator import Relay
 
-class InitNode(threading.Thread):
+class Watson(threading.Thread):
     MAX_NODE_NUM=8
 
-    def __init__(self, init_node, simulation_seconds, simulation_dir, start_up):
+    def __init__(self, office, simulation_seconds, simulation_dir, start_up):
         threading.Thread.__init__(self)
-        self.init_node = init_node
+        self.office = office
         self.simulation_seconds = simulation_seconds
 
       # self.simulation_dir = simulation_dir
@@ -30,7 +30,7 @@ class InitNode(threading.Thread):
         socket.setdefaulttimeout(self.timeout_sec)
         self.watson = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        self.watson.bind(self.init_node)
+        self.watson.bind(self.office)
 
         # thread start!
         self.start()
@@ -107,12 +107,12 @@ class InitNode(threading.Thread):
         return (now - self._s).total_seconds()
 
     def __str__(self):
-        return '{}:{}'.format(*self.init_node)
+        return '{}:{}'.format(*self.office)
 
 def args_():
     parser = argparse.ArgumentParser(description='simulation.')
 
-    parser.add_argument('--init-node', metavar='f', dest='init_node',
+    parser.add_argument('--init-node', metavar='f', dest='office',
                          nargs='?',
                          default='localhost:55555',
                          help='defalut is localhost:55555')
@@ -153,7 +153,7 @@ def get_host_port(host_port):
 if __name__ == '__main__':
     # 引数の解析
     args = args_()
-    init_node_ = get_host_port(args.init_node)
+    office_ = get_host_port(args.office)
 
   # t = datetime.datetime.today()
   # >>> t
@@ -178,20 +178,18 @@ if __name__ == '__main__':
     os.mkdir(db_dir)
 
     # 各 object を作成するなど。
-    init_node = InitNode(init_node_, args.simulation_seconds, args.simulation_dir, start_up)
-    print('init_node 0 =', init_node)
-    print('init_node_={}'.format(init_node))
+    watson = Watson(office_, args.simulation_seconds, args.simulation_dir, start_up)
     print('simulation_seconds={}'.format(args.simulation_seconds))
 
     # Relay will get start_up attribute in build_up_attrs()
     # after _hello_watson().
-    relay = Relay(init_node_, args.node_num, args.simulation_dir)
+    relay = Relay(office_, args.node_num, args.simulation_dir)
 
     # 実行開始
 
     # 終了処理
     relay.join()
-    init_node.join()
+    watson.join()
 
   # print('node_num =', args.node_num)
   # for i in range(args.node_num):
