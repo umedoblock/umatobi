@@ -45,6 +45,8 @@ class SqliteLogger(threading.Thread):
                                                 # 20.508
                                                 # 20.483
                                                 # 20.279
+                                                # 20.042
+                                                # 20.198
 #       self.conn.isolation_level = 'DEFERRED'  # 8.001, 7.995, 200 * 1000
                                                 # 20.520,       500 * 1000
 #       self.conn.isolation_level = 'EXCLUSIVE' # 8.084
