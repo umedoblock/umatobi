@@ -12,31 +12,16 @@
 
 import sqlite3
 import os
-import datetime
 import threading
 import logging
+
+from lib import stop_watch
+from lib import log_now
 
 threads_num = 1
 records_num = 1
 threads_num = 5
 records_num = 10 * 10000
-
-def stop_watch(func, message):
-    s = datetime.datetime.today()
-    func()
-    e = datetime.datetime.today()
-    t = (e - s).total_seconds()
-
-    if True:
-        print('{:>28s} の処理にかかった時間:'.format(message))
-        print('{:.3f}'.format(t))
-        print()
-    else:
-        print('{:>28s} の処理にかかった時間: {:.3f}'.format(message, t))
-
-def log_now():
-    now = datetime.datetime.today()
-    return now.strftime('%Y%m%dT%H%M%S')
 
 FORMAT = '%(asctime)-15s %(now)s %(level)-5s %(log_message)s %(message)s'
 logging.basicConfig(format=FORMAT, filename='/tmp/loggerlogger.log', level=logging.INFO)
