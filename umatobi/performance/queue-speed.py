@@ -40,4 +40,46 @@ def queue_rotation_performance():
 
     print('{} threads {} times rotate.'.format(len(threads), times))
 
+class QueueConcentrateWorker(threading.Thread):
+    def __init__(self, queue_concentrate, times, threads):
+        threading.Thread.__init__(self)
+        self.queue_concentrate = queue_concentrate
+        self.times = times
+        self.threads = threads
+        self.len_threads = len(threads)
+
+    def run(self):
+        for i in range(self.times * self.len_threads):
+            self.queue_concentrate.get()
+
+class QueueConcentrate(threading.Thread):
+    def __init__(self, queue_concentrate, times):
+        threading.Thread.__init__(self)
+        self.queue_concentrate = queue_concentrate
+        self.times = times
+
+    def run(self):
+        for i in range(self.times):
+            self.queue_concentrate.put(i)
+
+def queue_concentrate_performance():
+    threads = [None] * threads_num
+    queue_concentrate = queue.Queue()
+
+    for i in range(threads_num):
+        thread = QueueConcentrate(queue_concentrate, times)
+        thread.start()
+        threads[i] = thread
+
+    worker = QueueConcentrateWorker(queue_concentrate, times, threads)
+    worker.start()
+
+    for thread in threads:
+        thread.join()
+
+    worker.join()
+
+    print('{} threads {} times concentrate.'.format(len(threads), times))
+
 stop_watch(queue_rotation_performance, 'queue_rotation_performance()')
+stop_watch(queue_concentrate_performance, 'queue_concentrate_performance()')
