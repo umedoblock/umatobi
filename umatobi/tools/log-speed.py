@@ -111,6 +111,9 @@ class SqliteLogger(threading.Thread):
         self.cur.close()
 
 def logger_performance():
+    path = '/tmp/loggerlogger.log'
+    if os.path.exists(path):
+        os.remove(path)
     threads = []
     for i in range(threads_num):
         thread = LoggerLogger(i, records_num)
@@ -153,7 +156,10 @@ def sqlite3_file_performance():
     sqlite3_performance(path)
   # os.remove(path)
 
+import cProfile
 # multi thread では :memory: を試せない。
 # stop_watch(sqlite3_memory_performance, 'sqlite3_memory_performance()')
 # stop_watch(sqlite3_file_performance, 'sqlite3_file_performance()')
-stop_watch(logger_performance, 'logger_performance()')
+# stop_watch(logger_performance, 'logger_performance()')
+# cProfile.run('logger_performance()')
+cProfile.run('sqlite3_file_performance()')
