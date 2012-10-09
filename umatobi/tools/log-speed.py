@@ -2,6 +2,13 @@
 # 10 thread で 10000 件ずつ、計100000の書き込みをする。
 # 書き込み先は それぞれ sqlite, logger。
 # sqlite では :memory: と file に書き込みを行う。
+# #102 にまとめておいた。
+
+# 5 thread 100,000 件で試してみた。
+# 結果としては、
+# sqlite3 20秒前後
+#  logger 70秒弱
+# 圧倒的な早さでsqlite3が勝った。
 
 import sqlite3
 import os
