@@ -45,13 +45,18 @@ logger = logging.getLogger('loggerlogger')
 # logger.warning('Protocol problem: %s', 'connection reset', extra=d)
 
 class LoggerLogger(threading.Thread):
-    def __init__(self, no, records_num):
+    def __init__(self, no, records_num, lock=None):
         threading.Thread.__init__(self)
       # print('LoggerLogger() filename =', dir(logging))
         self.no = no
         self.records_num = records_num
+        self.lock = lock
 
     def run(self):
+        # 排他処理開始
+        if self.lock:
+            self.lock.acquire()
+
         sql = 'insert into logs values(?,?,?,?)'
       # くっそ遅い
       # もしも計測方法に誤りがなければ、sqlite3で決まり。
@@ -62,12 +67,16 @@ class LoggerLogger(threading.Thread):
       # 多分、FORMAT の解析とか作成とかそんなものに時間を取られているんだろう。
       # 55.828
       # こりゃあ、文句なしで sqlite3 を採用だ。
-        i = 100
-        now = log_now()
-        d = {'id': None, 'now': now, 'level': 'info', 'log_message': 'message {:08x}'.format(i)}
+
         for i in range(self.records_num):
+            now = log_now()
+            d = {'id': None, 'now': now, 'level': 'info', 'log_message': 'message {:08x}'.format(i)}
           # print('d =', d)
             logger.info('abc', extra=d)
+
+        # 排他処理終了
+        if self.lock:
+            self.lock.release()
 
 class SqliteLogger(threading.Thread):
     def __init__(self, no, cur, records_num, conn, filename):
@@ -130,6 +139,20 @@ def logger_performance():
     for thread in threads:
         thread.join()
 
+def logger_performance_sequential():
+    path = '/tmp/loggerlogger.log'
+    if os.path.exists(path):
+        os.remove(path)
+    threads = []
+    lock = threading.Lock()
+    for i in range(threads_num):
+        thread = LoggerLogger(i, records_num, lock=lock)
+        thread.start()
+        threads.append(thread)
+
+    for thread in threads:
+        thread.join()
+
 def sqlite3_performance(filename):
     conn = sqlite3.connect(filename)
     cur = conn.cursor()
@@ -168,5 +191,6 @@ import cProfile
 # stop_watch(sqlite3_memory_performance, 'sqlite3_memory_performance()')
 # stop_watch(sqlite3_file_performance, 'sqlite3_file_performance()')
 # stop_watch(logger_performance, 'logger_performance()')
+stop_watch(logger_performance_sequential, 'logger_performance_sequential()')
 # cProfile.run('logger_performance()')
-cProfile.run('sqlite3_file_performance()')
+# cProfile.run('sqlite3_file_performance()')
