@@ -41,11 +41,17 @@ class SqliteLogger(threading.Thread):
     def run(self):
         self.conn = sqlite3.connect(self.filename)
 ####### self.conn.isolation_level = 'BEGIN'
-#       self.conn.isolation_level = 'IMMEDIATE' # 8.060
-        self.conn.isolation_level = 'DEFERRED'  # 8.001, 7.995
+        self.conn.isolation_level = 'IMMEDIATE' # 8.060
+                                                # 20.508
+                                                # 20.483
+                                                # 20.279
+#       self.conn.isolation_level = 'DEFERRED'  # 8.001, 7.995, 200 * 1000
+                                                # 20.520,       500 * 1000
 #       self.conn.isolation_level = 'EXCLUSIVE' # 8.084
+                                                # 23.284
 #       self.conn.isolation_level = None # unknown
 #                                   default #     8.149
+                                                # 20.399
         print('conn.in_transaction 0 =', self.conn.in_transaction)
         self.cur = self.conn.cursor()
         sql = 'insert into logs values(?,?,?,?)'
@@ -54,7 +60,15 @@ class SqliteLogger(threading.Thread):
             now = log_now()
             tup = (None, now, 'info', 'message {:08x}'.format(i))
 #           print('tup =', tup)
-            self.cur.execute(sql, tup)
+            while True:
+                try:
+                    self.cur.execute(sql, tup)
+                except sqlite3.OperationalError as raiz:
+                    if raiz.args[0] == 'database is locked':
+                        continue
+                    else:
+                        raise raiz
+                break
         print('conn.in_transaction 2 =', self.conn.in_transaction)
         self.conn.commit()
         print('conn.in_transaction 3 =', self.conn.in_transaction)
