@@ -62,7 +62,7 @@ if __name__ == '__main__':
     leave_there = multiprocessing.Event()
     total_threads = 0
 
-    for i in range(34):
+    for i in range(200):
         state = State(i, leave_there)
         print('no={}, id(state)=0x{:08x} in __main__'.format(state.no, id(state)))
         p = multiprocessing.Process(target=make_many_threads_in_process, args=(i, state))
@@ -84,6 +84,6 @@ if __name__ == '__main__':
 
     for i, p in enumerate(ps):
         p.join()
-        print('no={} prcess done.'.format(i))
+      # print('no={} prcess done.'.format(i))
 
     print()
