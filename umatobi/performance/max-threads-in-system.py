@@ -69,13 +69,16 @@ if __name__ == '__main__':
         p.start()
 
         ps.append(p)
+        state.create_threads.wait()
+        total_threads += state.len_thread.value
         states.append(state)
+        if state.len_thread.value != 333:
+            break
 
     for i, p in enumerate(ps):
-        states[i].create_threads.wait()
-        print('no={}, len_thread.value={}'.format(states[i].no, states[i].len_thread.value))
-        print('no={} state.init = {}.'.format(states[i].no, states[i].init))
-        total_threads += states[i].len_thread.value
+        state = states[i]
+        print('no={}, len_thread.value={}'.format(state.no, state.len_thread.value))
+        print('no={} state.init = {}.'.format(state.no, state.init))
 
     print('total_threads =', total_threads)
   # time.sleep(30)
