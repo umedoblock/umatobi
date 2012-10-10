@@ -41,7 +41,7 @@ def make_many_threads_in_process(no, state):
 
     print('no={} waiting... set leave_there to SIGNAL.'.format(state.no))
     state.leave_there.wait()
-    state.init = 'in make_many_threads_in_process()'
+    state.init = 'cannot change in make_many_threads_in_process()'
 
     for thread in threads:
         thread.die_out.set()
