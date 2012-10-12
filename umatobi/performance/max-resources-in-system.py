@@ -41,15 +41,15 @@ def info(title):
 def make_many_threads_in_process(no, state):
     info('make_many_threads_in_process(no={})'.format(no))
 
-    threads = []
-    for i in range(333):
-        thread = LimitedThread()
-        try:
-            thread.start()
-        except _thread.error as raiz:
-            if raiz.args[0] == "can't start new thread":
-                break
-        threads.append(thread)
+    threads = [None] * 333
+  # for i in range(333):
+  #     thread = LimitedThread()
+  #     try:
+  #         thread.start()
+  #     except _thread.error as raiz:
+  #         if raiz.args[0] == "can't start new thread":
+  #             break
+  #     threads.append(thread)
 
     udp_sockets = make_many_udp_sockets()
     print('no={}, len(udp_sockets) = {}'.format(no, len(udp_sockets)))
@@ -65,9 +65,9 @@ def make_many_threads_in_process(no, state):
     state.leave_there.wait()
     state.init = 'cannot change in make_many_threads_in_process()'
 
-    for thread in threads:
-        thread.die_out.set()
-        thread.join()
+  # for thread in threads:
+  #     thread.die_out.set()
+  #     thread.join()
 
 class State(object):
     def __init__(self, no, leave_there):
