@@ -1,6 +1,7 @@
 import multiprocessing
 import socket
 import os
+import sys
 import threading
 import time
 import _thread # for except _thread.error
@@ -10,17 +11,19 @@ def make_many_udp_sockets():
   # for port in range(port_start, 65536):
   #     print('port =', port)
     while True:
-#       socket.error: [Errno 24] Too many open files
         try:
             udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         except socket.error as raiz:
           # print('raiz.args = "{}"'.format(raiz.args))
           # print('raiz = "{}"'.format(raiz))
-            if raiz.args == (24, 'Too many open files'):
+            if raiz.args == (24, 'Too many open files') or \
+               raiz.args == (23, 'Too many open files in system'):
+#               print(raiz)
                 break
             else:
                 raise raiz
         udp_sockets.append(udp_sock)
+
     return udp_sockets
 
 class LimitedThread(threading.Thread):
@@ -35,11 +38,11 @@ def info(title):
     print(title)
     print('module name:', __name__)
     print('parent process:', os.getppid())
-    print('process id:', os.getpid())
+    print('process id:', os.getpid(), file=sys.stderr)
     print()
 
 def make_many_threads_in_process(no, state):
-    info('make_many_threads_in_process(no={})'.format(no))
+  # info('make_many_threads_in_process(no={})'.format(no))
 
     threads = [None] * 333
   # for i in range(333):
@@ -52,16 +55,16 @@ def make_many_threads_in_process(no, state):
   #     threads.append(thread)
 
     udp_sockets = make_many_udp_sockets()
-    print('no={}, len(udp_sockets) = {}'.format(no, len(udp_sockets)))
-    print('no={}, len(threads) = {}'.format(no, len(threads)))
-    print('no={}, created {} threads in a process(pid={}).'.format(no, len(threads), os.getpid()))
-    print('no={}, id(state)=0x{:08x} in make_many_threads_in_process()'.format(no, id(state)))
+  # print('no={}, len(udp_sockets) = {}'.format(no, len(udp_sockets)), file=sys.stderr)
+  # print('no={}, len(threads) = {}'.format(no, len(threads)))
+  # print('no={}, created {} threads in a process(pid={}).'.format(no, len(threads), os.getpid()))
+  # print('no={}, id(state)=0x{:08x} in make_many_threads_in_process()'.format(no, id(state)))
 
     state.len_udp_sockets.value = len(udp_sockets)
     state.len_thread.value = len(threads)
     state.create_threads.set()
 
-    print('no={} waiting... set leave_there to SIGNAL.'.format(state.no))
+  # print('no={} waiting... set leave_there to SIGNAL.'.format(state.no))
     state.leave_there.wait()
     state.init = 'cannot change in make_many_threads_in_process()'
 
@@ -86,9 +89,12 @@ if __name__ == '__main__':
     total_threads = 0
     total_udp_sockets = 0
 
+    first_len_thread = 0
+    first_len_udp_sockets = 0
     for i in range(200):
         state = State(i, leave_there)
-        print('no={}, id(state)=0x{:08x} in __main__'.format(state.no, id(state)))
+      # print('i =', i, file=sys.stderr)
+      # print('no={}, id(state)=0x{:08x} in __main__'.format(state.no, id(state)))
         p = multiprocessing.Process(target=make_many_threads_in_process, args=(i, state))
         p.start()
 
@@ -96,17 +102,30 @@ if __name__ == '__main__':
         state.create_threads.wait()
         total_threads += state.len_thread.value
         total_udp_sockets += state.len_udp_sockets.value
+
+      # print('no={}, len_udp_sockets.value={}'.format(state.no, state.len_udp_sockets.value), file=sys.stderr)
+
         states.append(state)
-        if state.len_thread.value != 333:
+        if first_len_udp_sockets == 0:
+            first_len_udp_sockets = state.len_udp_sockets.value
+        elif first_len_udp_sockets == state.len_udp_sockets.value:
+            pass
+        else:
             break
+        if first_len_thread == 0:
+            first_len_thread = state.len_thread.value
+        elif first_len_thread == state.len_thread.value:
+            pass
+        else:
+            break
+    print('no={}, len_udp_sockets.value={}'.format(state.no, state.len_udp_sockets.value), file=sys.stderr)
 
-    for i, p in enumerate(ps):
-        state = states[i]
-        print('no={}, len_thread.value={}'.format(state.no, state.len_thread.value))
-        print('no={}, len_udp_sockets.value={}'.format(state.no, state.len_udp_sockets.value))
-        print('no={} state.init = {}.'.format(state.no, state.init))
+  # for i, p in enumerate(ps):
+  #     state = states[i]
+  #     print('no={}, len_thread.value={}'.format(state.no, state.len_thread.value))
+  #     print('no={} state.init = {}.'.format(state.no, state.init))
 
-    print('total_threads =', total_threads)
+  # print('total_threads =', total_threads)
     print('total_udp_sockets =', total_udp_sockets)
   # time.sleep(30)
 
