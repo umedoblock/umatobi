@@ -45,14 +45,7 @@ def get_host_port(host_port):
     port = int(sp[1])
     return host, port
 
-if __name__ == '__main__':
-    args = parse_args()
-
-    if args.wellknown_port:
-        port_start = 0
-    else:
-        port_start = 1024
-
+def make_many_udp_sockets():
     udp_sockets = []
   # for port in range(port_start, 65536):
   #     print('port =', port)
@@ -68,5 +61,9 @@ if __name__ == '__main__':
             else:
                 raise raiz
         udp_sockets.append(udp_sock)
+    return udp_sockets
+
+if __name__ == '__main__':
+    udp_sockets = make_many_udp_sockets()
     count_udp_sockets = len(udp_sockets)
     print('udp_sockets =', count_udp_sockets)
