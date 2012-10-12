@@ -18,6 +18,8 @@ def make_many_udp_sockets():
           # print('raiz = "{}"'.format(raiz))
             if raiz.args == (24, 'Too many open files') or \
                raiz.args == (23, 'Too many open files in system'):
+               # 24: 1 process で作成できる udp socket の限界。
+               # 23: system 全体で作成できる udp socket の限界。
 #               print(raiz)
                 break
             else:
