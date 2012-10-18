@@ -4,7 +4,8 @@ import math
 import argparse
 import os
 
-import formula
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from lib import formula
 
 def args_():
     parser = argparse.ArgumentParser(description='screen.')
