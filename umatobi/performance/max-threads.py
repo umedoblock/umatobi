@@ -17,7 +17,8 @@ for i in range(100000000):
     try:
         thread.start()
     except _thread.error as raiz:
-        if raiz.args[0] == "can't start new thread":
+      # print('raiz.args =', raiz.args)
+        if raiz.args == ("can't start new thread",):
             break
     threads.append(thread)
 

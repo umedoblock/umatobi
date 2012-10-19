@@ -10,7 +10,7 @@ for i in range(100000000):
     except sqlite3.OperationalError as raiz:
 #       print('raiz =', raiz)
 #       print('raiz.args =', raiz.args)
-        if raiz.args[0] == 'unable to open database file':
+        if raiz.args == ('unable to open database file',):
             break
         else:
             raise raiz
