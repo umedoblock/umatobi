@@ -5,9 +5,10 @@ import sys
 import threading
 import time
 import _thread # for except _thread.error
+import queue
 
 class LimitedThread(threading.Thread):
-    def __init__(self):
+    def __init__(self, queue_for_sql):
         threading.Thread.__init__(self)
         try:
             self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -17,6 +18,7 @@ class LimitedThread(threading.Thread):
                print('LimitedThread reached limit.')
 
         self.die_out = threading.Event()
+        self.queue_for_sql = queue_for_sql
 
     def run(self):
         self.die_out.wait()
@@ -31,9 +33,10 @@ def info(title):
 def make_many_threads_in_process(no, state):
   # info('make_many_threads_in_process(no={})'.format(no))
 
+    queue_for_sql = queue.Queue()
     threads = []
     for i in range(256):
-        thread = LimitedThread()
+        thread = LimitedThread(queue_for_sql)
         try:
             thread.start()
         except _thread.error as raiz:
