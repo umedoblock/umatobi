@@ -16,6 +16,7 @@ class LimitedThread(threading.Thread):
             if raiz.args == (24, 'Too many open files') or \
                raiz.args == (23, 'Too many open files in system'):
                print('LimitedThread reached limit.')
+               raise raiz
 
         self.die_out = threading.Event()
         self.queue_for_sql = queue_for_sql
