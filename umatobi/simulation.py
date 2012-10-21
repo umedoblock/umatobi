@@ -8,7 +8,7 @@ import socket
 import datetime
 
 from lib import dict_becomes_jbytes
-from simulator import Relay
+from simulator import Client
 
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
@@ -24,7 +24,7 @@ class Watson(threading.Thread):
         self.simulation_db = os.path.join(self.db_dir, 'simulation.db')
         self.timeout_sec = 1
         self.nodes = []
-        self.relays = []
+        self.clients = []
 
         # socket() must set under setdefaulttimeout()
         socket.setdefaulttimeout(self.timeout_sec)
@@ -42,61 +42,62 @@ class Watson(threading.Thread):
         self._release_clients()
 
     def _wait_clients(self):
+        count_inquiries = 0
         count_clients = 0
-        count_relays = 0
 
         while self.passed_time() < self.simulation_seconds:
             print('\rpassed time {:.3f}'.format(self.passed_time()), end='')
 
             try:
-                print('================= count_clients =', count_clients)
+                print('================= count_inquiries =', count_inquiries)
                 print('self.watson.recvfrom() ==============================')
-                client_say, client = self.watson.recvfrom(1024)
+                text_message, phone_number = self.watson.recvfrom(1024)
             except socket.timeout:
-                print('relay timeouted.')
-                client = None
+                print('phone_number timeouted.')
+                phone_number = None
 
-            if not client:
+            if not phone_number:
                 continue
 
             print()
-            if client_say == b'I am Node.':
+            if text_message == b'I am Node.':
                 csv = self.collect_nodes_as_csv()
                 print('realizing_nodes = "{}"'.format(csv))
                 realizing_nodes = csv.encode()
 
-                self.nodes.append(client)
+                self.nodes.append(phone_number)
                 if len(self.nodes) > self.MAX_NODE_NUM:
                     survived_node_index = len(self.nodes) - self.MAX_NODE_NUM
                     self.nodes = self.nodes[survived_node_index:]
 
                 reply = realizing_nodes
-            elif client_say == b'I am Relay.':
+            elif text_message == b'I am Client.':
                 joined = datetime.datetime.today().strftime('%Y%m%dT%H%M%S')
-                self.relays.append(client)
-                print('Relay[={}] came here.'.format(client))
-                sql = 'insert into relays (id, host, port, joined) values ({}, {}, {}, {})'.format(count_relays, client[0], client[1], joined)
+                self.clients.append(phone_number)
+                print('Client[={}] came here.'.format(phone_number))
+                sql = 'insert into clients (id, host, port, joined) values ({}, {}, {}, {})'.format(count_clients, phone_number[0],
+                phone_number[1], joined)
                 print('sql =', sql)
                 d = {}
-                d['no'] = count_relays
+                d['no'] = count_clients
                 d['start_up'] = self.start_up
                 reply = dict_becomes_jbytes(d)
-                count_relays += 1
-                print('ok ok ok I am Relay....')
+                count_clients += 1
+                print('ok ok ok I am Client....')
             else:
                 print('crazy man.')
                 reply = b'Go back home.'
 
-            self.watson.sendto(reply, client)
-            count_clients += 1
+            self.watson.sendto(reply, phone_number)
+            count_inquiries += 1
 
         print()
 
     def _release_clients(self):
         print('simulation._release_clients()')
-        for relay in self.relays:
+        for client in self.clients:
             result = b'break down.'
-            self.watson.sendto(result, relay)
+            self.watson.sendto(result, client)
 
     def collect_nodes_as_csv(self):
         csv = ','.join(['{}:{}'.format(*node) for node in self.nodes])
@@ -118,8 +119,8 @@ def args_():
                          help='defalut is localhost:55555')
     parser.add_argument('--simulation-seconds', metavar='N',
                          dest='simulation_seconds',
-                         type=int, nargs='?', default=180,
-                         help='simulation seconds. defalut is 180')
+                         type=int, nargs='?', default=15,
+                         help='simulation seconds. defalut is 15')
   # parser.add_argument('--host', metavar='f', dest='host',
   #                      nargs='?',
   #                      default='localhost',
@@ -164,11 +165,11 @@ if __name__ == '__main__':
   # simulation_dir
   # |-- 20121008T180459 # db_dir
   # |   |-- simulation.db # so no man ma
-  # |   |-- relay.0.db # relay_db
-  # |   `-- relay.1.db # relay_db
+  # |   |-- client.0.db # client_db
+  # |   `-- client.1.db # client_db
   # `-- 20121008T200822 # db_dir
-  #     |-- relay.0.db # relay_db
-  #     `-- relay.1.db # relay_db
+  #     |-- client.0.db # client_db
+  #     `-- client.1.db # client_db
 
     if not os.path.isdir(args.simulation_dir):
         os.makedirs(args.simulation_dir, exist_ok=True)
@@ -181,14 +182,14 @@ if __name__ == '__main__':
     watson = Watson(office_, args.simulation_seconds, args.simulation_dir, start_up)
     print('simulation_seconds={}'.format(args.simulation_seconds))
 
-    # Relay will get start_up attribute in build_up_attrs()
+    # Client will get start_up attribute in build_up_attrs()
     # after _hello_watson().
-    relay = Relay(office_, args.node_num, args.simulation_dir)
+    client = Client(office_, args.node_num, args.simulation_dir)
 
     # 実行開始
 
     # 終了処理
-    relay.join()
+    client.join()
     watson.join()
 
   # print('node_num =', args.node_num)

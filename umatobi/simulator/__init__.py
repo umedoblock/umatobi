@@ -46,7 +46,7 @@ class Node(p2p.core.Node):
     def _key_hex(self):
         return formula._key_hex(self.key)
 
-class Relay(threading.Thread):
+class Client(threading.Thread):
     SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
 
     def __init__(self, watson, num_nodes, simulation_dir):
@@ -64,7 +64,7 @@ class Relay(threading.Thread):
         self.start()
 
     def run(self):
-        print('Relay(no={}) started!'.format(self.no))
+        print('Client(no={}) started!'.format(self.no))
         while True:
             try:
                 recved, recved_addr = self.sock.recvfrom(1024)
@@ -73,35 +73,35 @@ class Relay(threading.Thread):
                 continue
 
             if recved == b'break down.':
-                print('Relay(no={}) got break down from {}.'.format(self.no, recved_addr))
+                print('Client(no={}) got break down from {}.'.format(self.no, recved_addr))
                 break
 
         self._release()
 
     def _release(self):
-        # TODO: #100 relay.db をwatsonに送りつける。
-        print('released. relay')
+        # TODO: #100 client.db をwatsonに送りつける。
+        print('released. client')
 
     def _init_attrs(self):
         d = self._hello_watson()
         if not d:
-            raise RuntimeError('relay._hello_watson() return None object. watson is {}'.format(self.watson))
+            raise RuntimeError('client._hello_watson() return None object. watson is {}'.format(self.watson))
 
         self.no = d['no']
         start_up = d['start_up']
         db_dir = os.path.join(self.simulation_dir, start_up)
-        print('relay.simulation_dir =', self.simulation_dir)
+        print('client.simulation_dir =', self.simulation_dir)
         print('db_dir =', db_dir)
-        self.relay_db = os.path.join(db_dir, 'relay.{}.db'.format(self.no))
-        print('relay.relay_db =', self.relay_db)
-        self.conn = sqlite3.connect(self.relay_db)
+        self.client_db = os.path.join(db_dir, 'client.{}.db'.format(self.no))
+        print('client.client_db =', self.client_db)
+        self.conn = sqlite3.connect(self.client_db)
 
     def _hello_watson(self):
         tries = 0
         d = {}
         while tries < 3:
             try:
-                self.sock.sendto(b'I am Relay.', self.watson)
+                self.sock.sendto(b'I am Client.', self.watson)
                 recved_msg, who = self.sock.recvfrom(1024)
             except socket.timeout as raiz:
                 tries += 1
