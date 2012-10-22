@@ -49,11 +49,11 @@ class Watson(threading.Thread):
             print('\rpassed time {:.3f}'.format(self.passed_time()), end='')
 
             try:
-                print('================= count_inquiries =', count_inquiries)
-                print('self.watson.recvfrom() ==============================')
+              # print('================= count_inquiries =', count_inquiries)
+              # print('self.watson.recvfrom() ==============================')
                 text_message, phone_number = self.watson.recvfrom(1024)
             except socket.timeout:
-                print('phone_number timeouted.')
+              # print('phone_number timeouted.')
                 phone_number = None
 
             if not phone_number:
