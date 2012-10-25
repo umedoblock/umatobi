@@ -19,10 +19,12 @@ def make_logger(log_dir='', name='', index=0, level=logging.INFO):
         msg += 'name(={}) must be watson, client or darkness.'.format(name)
         raise RuntimeError(msg)
 
-    base_name = '.'.join([name, str(index), 'log'])
+    ext = 'log'
+    name_and_index = '.'.join([name, str(index)])
+    base_name = '.'.join([name_and_index, ext])
     log_path = os.path.join(log_dir, base_name)
 
-    logger = logging.getLogger('simulation')
+    logger = logging.getLogger(name_and_index)
     logger.setLevel(level)
 
     # create formatter and add it to the handlers
