@@ -5,7 +5,7 @@ import sqlite3
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import p2p.core
-from lib import jbytes_becomes_dict
+from lib import make_logger, jbytes_becomes_dict
 
 __all__ = ['Node']
 
@@ -60,11 +60,17 @@ class Client(threading.Thread):
 
         self._init_attrs()
 
+        self.logger = make_logger(self.db_dir, 'client', self.no)
+        self.logger.info('----- client.{} log start -----'.format(self.no))
+        self.logger.info('----- client.{} initilized end -----'.
+                          format(self.no))
+        self.logger.info('')
+
         # thread start!
         self.start()
 
     def run(self):
-        print('Client(no={}) started!'.format(self.no))
+        self.logger.info('Client(no={}) started!'.format(self.no))
         while True:
             try:
                 recved, recved_addr = self.sock.recvfrom(1024)
@@ -78,6 +84,10 @@ class Client(threading.Thread):
 
         self._release()
 
+    def join(self):
+        threading.Thread.join(self)
+        self.logger.info('client thread joined.')
+
     def _release(self):
         # TODO: #100 client.db をwatsonに送りつける。
         print('released. client')
@@ -89,10 +99,11 @@ class Client(threading.Thread):
 
         self.no = d['no']
         start_up = d['start_up']
-        db_dir = os.path.join(self.simulation_dir, start_up)
+        self.db_dir = os.path.join(self.simulation_dir, start_up)
         print('client.simulation_dir =', self.simulation_dir)
-        print('db_dir =', db_dir)
-        self.client_db = os.path.join(db_dir, 'client.{}.db'.format(self.no))
+        print('self.db_dir =', self.db_dir)
+        self.client_db = os.path.join(self.db_dir,
+                                     'client.{}.db'.format(self.no))
         print('client.client_db =', self.client_db)
         self.conn = sqlite3.connect(self.client_db)
 
