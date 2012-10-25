@@ -7,6 +7,7 @@ import argparse
 import socket
 import datetime
 
+from lib import logger
 from lib import dict_becomes_jbytes
 from simulator import Client
 
@@ -22,6 +23,7 @@ class Watson(threading.Thread):
         self.start_up = start_up
         self.db_dir = os.path.join(simulation_dir, self.start_up)
         self.simulation_db = os.path.join(self.db_dir, 'simulation.db')
+        self.watson_log = os.path.join(self.db_dir, 'watson.log')
         self.timeout_sec = 1
         self.nodes = []
         self.clients = []
@@ -152,6 +154,35 @@ def get_host_port(host_port):
     return host, port
 
 if __name__ == '__main__':
+    '''\
+        watson, client, darkness が主要な process。
+        watson: client からの依頼を待つ。
+              : simulation 毎に一つ必要となる process。
+        client: 多くの darkness を抱える。
+              : simulation に参加するPC毎に一つ作成する。
+        darkness: 漆黒の闇の中で蠢く謎の node の姿が！
+                : client が起動する process。
+
+        process 関係図
+
+        watson-+-client.0
+               |  |
+               |  +-darkness.0
+               |  | +-node.0
+               |  | +-node.?
+               |  | +-node.255
+               |  |
+               |  +-darkness.X
+               |  | +-node.X
+               |  |
+               |  +-darkness.31
+               |    +-node.7936
+               |    +-node.?
+               |    +-node.8191
+               |
+               +-client.?
+        '''
+
     # 引数の解析
     args = args_()
     office_ = get_host_port(args.office)
@@ -162,10 +193,14 @@ if __name__ == '__main__':
   # >>> t.strftime('%Y%m%dT%H%M%S')
   # '20121008T180459'
 
+  #
+  #
   # simulation_dir
   # |-- 20121008T180459 # db_dir
-  # |   |-- simulation.db # so no man ma
-  # |   |-- client.0.db # client_db
+  # |   |-- simulation.db # client.{0,1,2,...}.dbをmergeし、
+  # |   |                 # watson が最後に作成する。
+  # |   |-- watson.log  # watson の起動・停止・接続受付について
+  # |   |-- client.0.db # client_db node が吐き出す SQL 文を書き込む。
   # |   `-- client.1.db # client_db
   # `-- 20121008T200822 # db_dir
   #     |-- client.0.db # client_db
@@ -179,7 +214,8 @@ if __name__ == '__main__':
     os.mkdir(db_dir)
 
     # 各 object を作成するなど。
-    watson = Watson(office_, args.simulation_seconds, args.simulation_dir, start_up)
+    watson = Watson(office_, args.simulation_seconds,
+                    args.simulation_dir, start_up)
     print('simulation_seconds={}'.format(args.simulation_seconds))
 
     # Client will get start_up attribute in build_up_attrs()
