@@ -62,6 +62,9 @@ class Client(threading.Thread):
 
         self.logger = make_logger(self.db_dir, 'client', self.no)
         self.logger.info('----- client.{} log start -----'.format(self.no))
+        self.logger.info('   watson = {}'.format(self.watson))
+        self.logger.info('   db_dir = {}'.format(self.db_dir))
+        self.logger.info('client_db = {}'.format(self.client_db))
         self.logger.info('----- client.{} initilized end -----'.
                           format(self.no))
         self.logger.info('')
@@ -79,18 +82,18 @@ class Client(threading.Thread):
                 continue
 
             if recved == b'break down.':
-                print('Client(no={}) got break down from {}.'.format(self.no, recved_addr))
+                self.logger.info('Client(no={}) got break down from {}.'.format(self.no, recved_addr))
                 break
 
         self._release()
 
     def join(self):
         threading.Thread.join(self)
-        self.logger.info('client thread joined.')
+        self.logger.info('client(no={}) thread joined.'.format(self.no))
 
     def _release(self):
         # TODO: #100 client.db をwatsonに送りつける。
-        print('released. client')
+        self.logger.info('client(no={}) thread released.'.format(self.no))
 
     def _init_attrs(self):
         d = self._hello_watson()
@@ -100,11 +103,8 @@ class Client(threading.Thread):
         self.no = d['no']
         start_up = d['start_up']
         self.db_dir = os.path.join(self.simulation_dir, start_up)
-        print('client.simulation_dir =', self.simulation_dir)
-        print('self.db_dir =', self.db_dir)
         self.client_db = os.path.join(self.db_dir,
                                      'client.{}.db'.format(self.no))
-        print('client.client_db =', self.client_db)
         self.conn = sqlite3.connect(self.client_db)
 
     def _hello_watson(self):
@@ -120,10 +120,10 @@ class Client(threading.Thread):
           # if self.watson == who:
             d = jbytes_becomes_dict(recved_msg)
             break
-        print('self.watson =')
-        print(self.watson)
-        print('who =')
-        print(who)
-        print('d =')
-        print(d)
+
+      # print('who =', file=sys.stderr)
+      # print(who, file=sys.stderr)
+      # print('d =', file=sys.stderr)
+      # print(d, file=sys.stderr)
+
         return d

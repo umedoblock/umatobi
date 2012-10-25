@@ -56,7 +56,7 @@ class Watson(threading.Thread):
         count_clients = 0
 
         while self.passed_time() < self.simulation_seconds:
-            self.logger.info('passed time {:.3f}'.format(self.passed_time()))
+          # self.logger.info('passed time {:.3f}'.format(self.passed_time()))
 
             try:
               # print('================= count_inquiries =', count_inquiries)
@@ -102,7 +102,7 @@ class Watson(threading.Thread):
 
 
     def _release_clients(self):
-        self.logger.info('simulation._release_clients()')
+        self.logger.info('watson._release_clients()')
         for client in self.clients:
             result = b'break down.'
             self.watson.sendto(result, client)
