@@ -7,8 +7,7 @@ import argparse
 import socket
 import datetime
 
-from lib import logger
-from lib import dict_becomes_jbytes
+from lib import make_logger, dict_becomes_jbytes
 from simulator import Client
 
 class Watson(threading.Thread):
@@ -23,7 +22,8 @@ class Watson(threading.Thread):
         self.start_up = start_up
         self.db_dir = os.path.join(simulation_dir, self.start_up)
         self.simulation_db = os.path.join(self.db_dir, 'simulation.db')
-        self.watson_log = os.path.join(self.db_dir, 'watson.log')
+
+      # self.watson_log = os.path.join(self.db_dir, 'watson.log')
         self.timeout_sec = 1
         self.nodes = []
         self.clients = []
@@ -34,6 +34,10 @@ class Watson(threading.Thread):
 
         self.watson.bind(self.office)
 
+        self.logger = make_logger(db_dir, 'watson')
+        self.logger.info('----- watson log -----')
+        self.logger.info('simulation_seconds={}'.format(simulation_seconds))
+
         # thread start!
         self.start()
 
@@ -43,12 +47,16 @@ class Watson(threading.Thread):
         self._wait_clients()
         self._release_clients()
 
+    def join(self):
+        threading.Thread.join(self)
+        self.logger.info('watson thread joined.')
+
     def _wait_clients(self):
         count_inquiries = 0
         count_clients = 0
 
         while self.passed_time() < self.simulation_seconds:
-            print('\rpassed time {:.3f}'.format(self.passed_time()), end='')
+            self.logger.info('passed time {:.3f}'.format(self.passed_time()))
 
             try:
               # print('================= count_inquiries =', count_inquiries)
@@ -61,10 +69,9 @@ class Watson(threading.Thread):
             if not phone_number:
                 continue
 
-            print()
             if text_message == b'I am Node.':
                 csv = self.collect_nodes_as_csv()
-                print('realizing_nodes = "{}"'.format(csv))
+                self.logger.info('realizing_nodes = "{}"'.format(csv))
                 realizing_nodes = csv.encode()
 
                 self.nodes.append(phone_number)
@@ -76,27 +83,26 @@ class Watson(threading.Thread):
             elif text_message == b'I am Client.':
                 joined = datetime.datetime.today().strftime('%Y%m%dT%H%M%S')
                 self.clients.append(phone_number)
-                print('Client[={}] came here.'.format(phone_number))
+                self.logger.info('Client[={}] came here.'.format(phone_number))
                 sql = 'insert into clients (id, host, port, joined) values ({}, {}, {}, {})'.format(count_clients, phone_number[0],
                 phone_number[1], joined)
-                print('sql =', sql)
+                self.logger.debug('sql =', sql)
                 d = {}
                 d['no'] = count_clients
                 d['start_up'] = self.start_up
                 reply = dict_becomes_jbytes(d)
                 count_clients += 1
-                print('ok ok ok I am Client....')
+                self.logger.debug('ok ok ok I am Client....')
             else:
-                print('crazy man.')
+                self.logger.debug('crazy man.')
                 reply = b'Go back home.'
 
             self.watson.sendto(reply, phone_number)
             count_inquiries += 1
 
-        print()
 
     def _release_clients(self):
-        print('simulation._release_clients()')
+        self.logger.info('simulation._release_clients()')
         for client in self.clients:
             result = b'break down.'
             self.watson.sendto(result, client)
@@ -216,7 +222,6 @@ if __name__ == '__main__':
     # 各 object を作成するなど。
     watson = Watson(office_, args.simulation_seconds,
                     args.simulation_dir, start_up)
-    print('simulation_seconds={}'.format(args.simulation_seconds))
 
     # Client will get start_up attribute in build_up_attrs()
     # after _hello_watson().
@@ -233,5 +238,3 @@ if __name__ == '__main__':
   #     node = Node(args.host, args.port + i)
   #     print('node._keyID = {:08x}.'.format(node._keyID))
   #     node.info()
-
-    print('init node initilized.')
