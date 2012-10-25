@@ -127,8 +127,8 @@ def args_():
                          help='defalut is localhost:55555')
     parser.add_argument('--simulation-seconds', metavar='N',
                          dest='simulation_seconds',
-                         type=int, nargs='?', default=15,
-                         help='simulation seconds. defalut is 15')
+                         type=int, nargs='?', default=10,
+                         help='simulation seconds. defalut is 10')
   # parser.add_argument('--host', metavar='f', dest='host',
   #                      nargs='?',
   #                      default='localhost',
