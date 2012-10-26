@@ -89,11 +89,11 @@ class Client(threading.Thread):
 
     def join(self):
         threading.Thread.join(self)
-        self.logger.info('client(no={}) thread joined.'.format(self.no))
+        self.logger.info('Client(no={}) thread joined.'.format(self.no))
 
     def _release(self):
         # TODO: #100 client.db をwatsonに送りつける。
-        self.logger.info('client(no={}) thread released.'.format(self.no))
+        self.logger.info('Client(no={}) thread released.'.format(self.no))
 
     def _init_attrs(self):
         d = self._hello_watson()
