@@ -9,3 +9,4 @@ core
 *.pickle
 */relay.*.db
 */simulation.db
+umatobi-simulation/
