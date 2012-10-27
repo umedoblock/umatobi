@@ -6,9 +6,15 @@ import math
 import argparse
 import socket
 import datetime
+import multiprocessing
 
 from lib import make_logger, dict_becomes_jbytes
 from simulator import Client
+
+def make_client(office, node_num, simulation_dir):
+    client = Client(office_, node_num, simulation_dir)
+    client.start()
+    client.join()
 
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
@@ -225,12 +231,19 @@ if __name__ == '__main__':
 
     # Client will get start_up attribute in build_up_attrs()
     # after _hello_watson().
-    client = Client(office_, args.node_num, args.simulation_dir)
+    client_process = multiprocessing.Process(target=make_client,
+                                             args=(office_,
+                                                   args.node_num,
+                                                   args.simulation_dir))
 
-    # 実行開始
+    # 本当は client_process を、ここで作らなくてもいい。
+    # module の独立から考えると、むしろ作らない方が望ましいのだけど、
+    # terminal 上で、別 process を起動させる手間を考えると楽なので、
+    # ここで作ってしまう。 Makefile とか作りたくない。。。
+    client_process.start()
+    client_process.join()
 
     # 終了処理
-    client.join()
     watson.join()
 
   # print('node_num =', args.node_num)

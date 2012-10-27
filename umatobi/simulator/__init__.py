@@ -69,9 +69,6 @@ class Client(threading.Thread):
                           format(self.no))
         self.logger.info('')
 
-        # thread start!
-        self.start()
-
     def run(self):
         self.logger.info('Client(no={}) started!'.format(self.no))
         while True:
