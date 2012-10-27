@@ -9,7 +9,7 @@ from simulator.client import Client
 from simulator.watson import Watson
 
 def make_client(office, node_num, simulation_dir):
-    client = Client(office_, node_num, simulation_dir)
+    client = Client(office, node_num, simulation_dir)
     client.start()
     client.join()
 
@@ -57,7 +57,7 @@ def get_host_port(host_port):
 if __name__ == '__main__':
     # 引数の解析
     args = args_()
-    office_ = get_host_port(args.office)
+    office = get_host_port(args.office)
 
   # t = datetime.datetime.today()
   # >>> t
@@ -86,13 +86,13 @@ if __name__ == '__main__':
     os.mkdir(db_dir)
 
     # 各 object を作成するなど。
-    watson = Watson(office_, args.simulation_seconds,
+    watson = Watson(office, args.simulation_seconds,
                     args.simulation_dir, start_up)
 
     # Client will get start_up attribute in build_up_attrs()
     # after _hello_watson().
     client_process = multiprocessing.Process(target=make_client,
-                                             args=(office_,
+                                             args=(office,
                                                    args.node_num,
                                                    args.simulation_dir))
 
