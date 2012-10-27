@@ -245,9 +245,3 @@ if __name__ == '__main__':
 
     # 終了処理
     watson.join()
-
-  # print('node_num =', args.node_num)
-  # for i in range(args.node_num):
-  #     node = Node(args.host, args.port + i)
-  #     print('node._keyID = {:08x}.'.format(node._keyID))
-  #     node.info()
