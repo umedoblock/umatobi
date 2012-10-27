@@ -14,7 +14,7 @@ def jbytes_becomes_dict(jb):
     return d
 
 def make_logger(log_dir='', name='', index=0, level=logging.INFO):
-    if not log_dir or not name:
+    if not log_dir or not name in ('watson', 'client', 'darkness'):
         msg = 'log_dir(={}) must be available dir.'.format(log_dir)
         msg += 'name(={}) must be watson, client or darkness.'.format(name)
         raise RuntimeError(msg)
