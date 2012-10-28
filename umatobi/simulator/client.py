@@ -2,9 +2,16 @@ import sys, os
 import threading
 import sqlite3
 import socket
+import multiprocessing
 
+from . import darkness
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib import make_logger, jbytes_becomes_dict
+
+def make_darkness(simulation_dir, no, num_nodes):
+    darkness_ = darkness.Darkness(simulation_dir, no, num_nodes)
+  # darkness_.start()
+  # darkness_.stop()
 
 class Client(threading.Thread):
     SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
@@ -13,6 +20,8 @@ class Client(threading.Thread):
         threading.Thread.__init__(self)
         self.watson = watson
         self.simulation_dir = simulation_dir
+        self.num_darkness = 1
+        self.num_nodes = 1
 
         self.timeout_sec = 1
         socket.setdefaulttimeout(self.timeout_sec)
@@ -31,6 +40,16 @@ class Client(threading.Thread):
 
     def run(self):
         self.logger.info('Client(no={}) started!'.format(self.no))
+
+        self.darkness_processes = []
+        for no in range(self.num_darkness):
+            darkness_process = \
+                multiprocessing.Process(
+                    target=make_darkness,
+                    args=(self.db_dir, no, self.num_nodes))
+            darkness_process.start()
+            self.darkness_processes.append(darkness_process)
+
         while True:
             try:
                 recved, recved_addr = self.sock.recvfrom(1024)
@@ -51,6 +70,8 @@ class Client(threading.Thread):
     def _release(self):
         # TODO: #100 client.db をwatsonに送りつける。
         self.logger.info('Client(no={}) thread released.'.format(self.no))
+        for no, darkness_process in enumerate(self.darkness_processes):
+            darkness_process.join()
 
     def _init_attrs(self):
         d = self._hello_watson()
