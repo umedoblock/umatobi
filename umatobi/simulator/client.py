@@ -8,11 +8,25 @@ from . import darkness
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib import make_logger, jbytes_becomes_dict
 
-def make_darkness(simulation_dir, no, num_nodes, made_nodes, leave_there):
-    darkness_ = darkness.Darkness(simulation_dir, no,
+def make_darkness(config):
+    db_dir, no, \
+    num_nodes, made_nodes, leave_there = \
+            config.db_dir, config.no, \
+            config.num_nodes, config.made_nodes, config.leave_there
+    darkness_ = darkness.Darkness(db_dir, no,
                                   num_nodes, made_nodes, leave_there)
     darkness_.start()
   # darkness_.stop()
+
+class DarknessConfig(object):
+    def __init__(self, db_dir, no, num_nodes, made_nodes, leave_there):
+        self.db_dir = db_dir
+        self.no = no
+        self.num_nodes = num_nodes
+        # share with client and darknesses
+        self.made_nodes = made_nodes
+        # share with client and another darknesses
+        self.leave_there = leave_there
 
 class Client(threading.Thread):
     SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
@@ -24,6 +38,7 @@ class Client(threading.Thread):
         self.num_darkness = 2
         self.num_nodes = 4
         self.total_nodes = 0
+        self.darkness_processes = []
 
         # darkness に終了を告げる。
         self.leave_there = multiprocessing.Event()
@@ -46,14 +61,17 @@ class Client(threading.Thread):
     def run(self):
         self.logger.info('Client(no={}) started!'.format(self.no))
 
-        self.darkness_processes = []
         for no in range(self.num_darkness):
             made_nodes = multiprocessing.Value('i', 0)
+            darkness_config = \
+                DarknessConfig(self.db_dir, no, self.num_nodes, \
+                               made_nodes, self.leave_there)
             darkness_process = \
                 multiprocessing.Process(
                     target=make_darkness,
-                    args=(self.db_dir, no, self.num_nodes, made_nodes, self.leave_there))
-            darkness_process.no = no
+                    args=(darkness_config,)
+                )
+            darkness_process.config = darkness_config
             darkness_process.start()
             self.darkness_processes.append(darkness_process)
 
@@ -84,7 +102,7 @@ class Client(threading.Thread):
         for darkness_p in self.darkness_processes:
             darkness_p.join()
             msg = 'Client(no={}), Darkness(no={}) process joined.'. \
-                   format(self.no, darkness_p.no)
+                   format(self.no, darkness_p.config.no)
             self.logger.info(msg)
         self.logger.info('Client(no={}) thread released.'.format(self.no))
 
