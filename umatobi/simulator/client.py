@@ -19,12 +19,12 @@ def make_darkness(config):
   # darkness_.stop()
 
 class DarknessConfig(object):
-    def __init__(self, db_dir, no, num_nodes, made_nodes, leave_there):
+    def __init__(self, db_dir, no, num_nodes, leave_there):
         self.db_dir = db_dir
         self.no = no
         self.num_nodes = num_nodes
         # share with client and darknesses
-        self.made_nodes = made_nodes
+        self.made_nodes = multiprocessing.Value('i', 0)
         # share with client and another darknesses
         self.leave_there = leave_there
 
@@ -60,11 +60,12 @@ class Client(object):
     def start(self):
         self.logger.info('Client(no={}) started!'.format(self.no))
 
+        # for 内で darkness_process を作成し、
+        # 順に darkness_processes に追加していく。
         for no in range(self.num_darkness):
-            made_nodes = multiprocessing.Value('i', 0)
             darkness_config = \
                 DarknessConfig(self.db_dir, no, self.num_nodes, \
-                               made_nodes, self.leave_there)
+                               self.leave_there)
             darkness_process = \
                 multiprocessing.Process(
                     target=make_darkness,
@@ -74,6 +75,8 @@ class Client(object):
             darkness_process.start()
             self.darkness_processes.append(darkness_process)
 
+        # watson から終了通知("break down")が届くまで待機し続ける。
+        # TODO: watson からの接続であると確認する。
         while True:
             try:
                 recved, recved_addr = self.sock.recvfrom(1024)
