@@ -10,6 +10,7 @@ class Darkness(object):
         self.db_dir = db_dir
         self.no = no
         self.num_nodes = num_nodes
+        self.node_index = self.no * self.num_nodes
         self.made_nodes = made_nodes
         self.leave_there = leave_there # multiprocessing.Event()
 
@@ -22,7 +23,8 @@ class Darkness(object):
 
     def start(self):
         for i in range(self.num_nodes):
-            self.logger.info('create node i={}'.format(i))
+            no = self.node_index + i
+            self.logger.info('create node no={}'.format(no))
 
         self.leave_there.wait()
         self.logger.info(('Darkness(no={}) got leave_there signal.').format(self.no))
