@@ -16,13 +16,16 @@ class Darkness(object):
         self.nodes = []
         self.len_nodes = 0
 
-        self.logger = make_logger(self.db_dir, 'darkness', no)
+        self.logger = make_logger(self.db_dir, 'darkness', self.no)
         self.logger.info(('initilized Darkness(no={}, '
-                                      'num_nodes={})').format(no, num_nodes))
+                                      'num_nodes={})').format(self.no, self.num_nodes))
 
     def start(self):
         for i in range(self.num_nodes):
             self.logger.info('create node i={}'.format(i))
+
+        self.leave_there.wait()
+        self.logger.info(('Darkness(no={}) got leave_there signal.').format(self.no))
 
     def stop(self):
         for i in range(self.num_nodes):

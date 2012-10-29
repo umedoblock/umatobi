@@ -12,7 +12,7 @@ def make_darkness(simulation_dir, no, num_nodes, made_nodes, leave_there):
     darkness_ = darkness.Darkness(simulation_dir, no,
                                   num_nodes, made_nodes, leave_there)
     darkness_.start()
-    darkness_.stop()
+  # darkness_.stop()
 
 class Client(threading.Thread):
     SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
@@ -75,9 +75,15 @@ class Client(threading.Thread):
 
     def _release(self):
         # TODO: #100 client.db をwatsonに送りつける。
-        self.logger.info('Client(no={}) thread released.'.format(self.no))
+
+        self.logger.info('Client(no={}) command leave there to Darknesses.'.
+                          format(self.no))
+        self.leave_there.set()
+
         for no, darkness_process in enumerate(self.darkness_processes):
+            self.logger.info('Client(no={}) thread releasing.'.format(self.no))
             darkness_process.join()
+        self.logger.info('Client(no={}) thread released.'.format(self.no))
 
     def _init_attrs(self):
         d = self._hello_watson()
