@@ -25,6 +25,11 @@ class Darkness(object):
         for i in range(self.num_nodes):
             no = self.node_index + i
             self.logger.info('create node no={}'.format(no))
+            self.nodes.append(no)
+
+        self.made_nodes.value = len(self.nodes)
+        msg = 'Darkness(no={}) made {} nodes.'.format(self.no, self.made_nodes.value)
+        self.logger.info(msg)
 
         self.leave_there.wait()
         self.logger.info(('Darkness(no={}) got leave_there signal.').format(self.no))

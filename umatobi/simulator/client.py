@@ -106,6 +106,11 @@ class Client(threading.Thread):
             self.logger.info(msg)
         self.logger.info('Client(no={}) thread released.'.format(self.no))
 
+        for darkness_process in self.darkness_processes:
+            self.total_nodes += darkness_process.config.made_nodes.value
+
+        self.logger.info('Client(no={}) created num of nodes = {}'.format(self.no, self.total_nodes))
+
     def _init_attrs(self):
         d = self._hello_watson()
         if not d:
