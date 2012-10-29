@@ -8,10 +8,11 @@ from . import darkness
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib import make_logger, jbytes_becomes_dict
 
-def make_darkness(simulation_dir, no, num_nodes):
-    darkness_ = darkness.Darkness(simulation_dir, no, num_nodes)
-  # darkness_.start()
-  # darkness_.stop()
+def make_darkness(simulation_dir, no, num_nodes, made_nodes, leave_there):
+    darkness_ = darkness.Darkness(simulation_dir, no,
+                                  num_nodes, made_nodes, leave_there)
+    darkness_.start()
+    darkness_.stop()
 
 class Client(threading.Thread):
     SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
@@ -21,7 +22,11 @@ class Client(threading.Thread):
         self.watson = watson
         self.simulation_dir = simulation_dir
         self.num_darkness = 1
-        self.num_nodes = 1
+        self.num_nodes = 4
+        self.total_nodes = 0
+
+        # darkness に終了を告げる。
+        self.leave_there = multiprocessing.Event()
 
         self.timeout_sec = 1
         socket.setdefaulttimeout(self.timeout_sec)
@@ -43,10 +48,11 @@ class Client(threading.Thread):
 
         self.darkness_processes = []
         for no in range(self.num_darkness):
+            made_nodes = multiprocessing.Value('i', 0)
             darkness_process = \
                 multiprocessing.Process(
                     target=make_darkness,
-                    args=(self.db_dir, no, self.num_nodes))
+                    args=(self.db_dir, no, self.num_nodes, made_nodes, self.leave_there))
             darkness_process.start()
             self.darkness_processes.append(darkness_process)
 
