@@ -28,11 +28,10 @@ class DarknessConfig(object):
         # share with client and another darknesses
         self.leave_there = leave_there
 
-class Client(threading.Thread):
+class Client(object):
     SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
 
     def __init__(self, watson, num_nodes, simulation_dir):
-        threading.Thread.__init__(self)
         self.watson = watson
         self.simulation_dir = simulation_dir
         self.num_darkness = 2
@@ -58,7 +57,7 @@ class Client(threading.Thread):
                           format(self.no))
         self.logger.info('')
 
-    def run(self):
+    def start(self):
         self.logger.info('Client(no={}) started!'.format(self.no))
 
         for no in range(self.num_darkness):
@@ -89,7 +88,6 @@ class Client(threading.Thread):
         self._release()
 
     def join(self):
-        threading.Thread.join(self)
         self.logger.info('Client(no={}) thread joined.'.format(self.no))
 
     def _release(self):
@@ -109,7 +107,7 @@ class Client(threading.Thread):
         for darkness_process in self.darkness_processes:
             self.total_nodes += darkness_process.config.made_nodes.value
 
-        self.logger.info('Client(no={}) created num of nodes = {}'.format(self.no, self.total_nodes))
+        self.logger.info('Client(no={}) created num of nodes {}'.format(self.no, self.total_nodes))
 
     def _init_attrs(self):
         d = self._hello_watson()
