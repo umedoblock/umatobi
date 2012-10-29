@@ -21,7 +21,7 @@ class Client(threading.Thread):
         threading.Thread.__init__(self)
         self.watson = watson
         self.simulation_dir = simulation_dir
-        self.num_darkness = 1
+        self.num_darkness = 2
         self.num_nodes = 4
         self.total_nodes = 0
 
@@ -53,6 +53,7 @@ class Client(threading.Thread):
                 multiprocessing.Process(
                     target=make_darkness,
                     args=(self.db_dir, no, self.num_nodes, made_nodes, self.leave_there))
+            darkness_process.no = no
             darkness_process.start()
             self.darkness_processes.append(darkness_process)
 
@@ -76,13 +77,15 @@ class Client(threading.Thread):
     def _release(self):
         # TODO: #100 client.db をwatsonに送りつける。
 
-        self.logger.info('Client(no={}) command leave there to Darknesses.'.
-                          format(self.no))
+        self.logger.info(('Client(no={}) set signal to leave_there '
+                          'for Darknesses.').format(self.no))
         self.leave_there.set()
 
-        for no, darkness_process in enumerate(self.darkness_processes):
-            self.logger.info('Client(no={}) thread releasing.'.format(self.no))
-            darkness_process.join()
+        for darkness_p in self.darkness_processes:
+            darkness_p.join()
+            msg = 'Client(no={}), Darkness(no={}) process joined.'. \
+                   format(self.no, darkness_p.no)
+            self.logger.info(msg)
         self.logger.info('Client(no={}) thread released.'.format(self.no))
 
     def _init_attrs(self):
