@@ -6,7 +6,7 @@ from lib import make_logger
 class Darkness(object):
     '''漆黒の闇'''
 
-    def __init__(self, db_dir, no, num_nodes, made_nodes, leave_there):
+    def __init__(self, db_dir, no, num_nodes, first_node_no, made_nodes, leave_there):
         '''\
         Darkness process 内で 多数の node thread を作成する。
         Client が leave_there を signal 状態にしたら終了処理を行う。
@@ -17,7 +17,7 @@ class Darkness(object):
         self.made_nodes = made_nodes # multiprocessing.Value()
         self.leave_there = leave_there # multiprocessing.Event()
 
-        self.node_index = self.no * self.num_nodes
+        self.first_node_no = first_node_no
 
         self.nodes = []
         self.len_nodes = 0
@@ -34,7 +34,7 @@ class Darkness(object):
         signal 状態にするまで待機し続ける。
         '''
         for i in range(self.num_nodes):
-            no = self.node_index + i
+            no = self.first_node_no + i
             self.logger.info('create node no={}'.format(no))
             self.nodes.append(no)
 

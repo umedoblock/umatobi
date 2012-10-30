@@ -8,8 +8,8 @@ from lib import make_logger, dict_becomes_jbytes
 from simulator.client import Client
 from simulator.watson import Watson
 
-def make_client(office, node_num, simulation_dir):
-    client = Client(office, node_num, simulation_dir)
+def make_client(office, num_nodes, simulation_dir):
+    client = Client(office, num_nodes, simulation_dir)
     client.start()
     client.join()
 
@@ -36,10 +36,10 @@ def args_():
                          metavar='N', dest='simulation_dir',
                          nargs='?', default='./umatobi-simulation',
                          help='simulation directory.')
-    parser.add_argument('--node-num',
-                         metavar='N', dest='node_num',
+    parser.add_argument('--num-nodes',
+                         metavar='N', dest='num_nodes',
                          type=int, nargs='?', default=5,
-                         help='simulation node num.')
+                         help='simulation num of nodes.')
   # parser.add_argument('--sql-path', metavar='f', dest='sql_path',
   #                      nargs='?',
   #                      default='',
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     # after _hello_watson().
     client_process = multiprocessing.Process(target=make_client,
                                              args=(office,
-                                                   args.node_num,
+                                                   args.num_nodes,
                                                    args.simulation_dir))
 
     # 本当は client_process を、ここで作らなくてもいい。

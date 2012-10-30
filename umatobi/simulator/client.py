@@ -10,20 +10,21 @@ from lib import make_logger, jbytes_becomes_dict
 
 def make_darkness(config):
     '''darkness process を作成'''
-    db_dir, no, \
-    num_nodes, made_nodes, leave_there = \
-            config.db_dir, config.no, \
-            config.num_nodes, config.made_nodes, config.leave_there
-    darkness_ = darkness.Darkness(db_dir, no,
-                                  num_nodes, made_nodes, leave_there)
+    db_dir, darkness_no, \
+    num_nodes, first_node_no, made_nodes, leave_there = \
+            config.db_dir, config.darkness_no, \
+            config.num_nodes, config.first_node_no, config.made_nodes, config.leave_there
+    darkness_ = darkness.Darkness(db_dir, darkness_no,
+                                  num_nodes, first_node_no, made_nodes, leave_there)
     darkness_.start()
   # darkness_.stop()
 
 class DarknessConfig(object):
     '''darkness process と client が DarknessConfig を介して通信する。'''
-    def __init__(self, db_dir, no, num_nodes, leave_there):
+    def __init__(self, db_dir, darkness_no, num_nodes, first_node_no, leave_there):
         self.db_dir = db_dir
-        self.no = no
+        self.darkness_no = darkness_no
+        self.first_node_no = first_node_no
         self.num_nodes = num_nodes
         # share with client and darknesses
         self.made_nodes = multiprocessing.Value('i', 0)
@@ -32,6 +33,7 @@ class DarknessConfig(object):
 
 class Client(object):
     SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
+    NODES_PER_DARKNESS = 4
 
     def __init__(self, watson, num_nodes, simulation_dir):
         '''\
@@ -42,11 +44,26 @@ class Client(object):
         watsonが起動した時間(start_up)を使用し、 simulation_dir以下に
         db_dir(=simulation_dir + '/' + start_up)を作成する。
         '''
+
+        if num_nodes > 0 and isinstance(num_nodes, int):
+            pass
+        else:
+            raise RuntimeError('num_nodes must be positive integer.')
+
         self.watson = watson
         self.simulation_dir = simulation_dir
-        self.num_darkness = 2
-        self.num_nodes = 4
-        self.total_nodes = 0
+        self.num_nodes = num_nodes
+        # TODO: #116 config, arg 等で NODES_PER_DARKNESS を
+        #            変更できるようにする。
+        self.nodes_per_darkness = self.NODES_PER_DARKNESS
+        div, mod = divmod(self.num_nodes, self.nodes_per_darkness)
+        if mod == 0:
+            mod = self.nodes_per_darkness
+        else:
+            div += 1
+        self.num_darkness = div
+        self.last_darkness_make_nodes = mod
+        self.total_created_nodes = 0
         self.darkness_processes = []
 
         # darkness に終了を告げる。
@@ -74,12 +91,20 @@ class Client(object):
         '''
         self.logger.info('Client(no={}) started!'.format(self.no))
 
+        # Darkness が作成する node の数を設定する。
+        nodes_per_darkness = self.nodes_per_darkness
+
         # for 内で darkness_process を作成し、
         # 順に darkness_processes に追加していく。
-        for no in range(self.num_darkness):
+        for darkness_no in range(self.num_darkness):
+            first_node_no = darkness_no * self.nodes_per_darkness
+            if darkness_no == self.num_darkness - 1:
+                # 最後に端数を作成？
+                nodes_per_darkness = self.last_darkness_make_nodes
+            self.logger.info('darkness no={}, nodes_per_darkness={}'.format(darkness_no, nodes_per_darkness))
             darkness_config = \
-                DarknessConfig(self.db_dir, no, self.num_nodes, \
-                               self.leave_there)
+                DarknessConfig(self.db_dir, darkness_no, nodes_per_darkness, \
+                               first_node_no, self.leave_there)
             darkness_process = \
                 multiprocessing.Process(
                     target=make_darkness,
@@ -123,14 +148,14 @@ class Client(object):
         for darkness_p in self.darkness_processes:
             darkness_p.join()
             msg = 'Client(no={}), Darkness(no={}) process joined.'. \
-                   format(self.no, darkness_p.config.no)
+                   format(self.no, darkness_p.config.darkness_no)
             self.logger.info(msg)
         self.logger.info('Client(no={}) thread released.'.format(self.no))
 
         for darkness_process in self.darkness_processes:
-            self.total_nodes += darkness_process.config.made_nodes.value
+            self.total_created_nodes += darkness_process.config.made_nodes.value
 
-        self.logger.info('Client(no={}) created num of nodes {}'.format(self.no, self.total_nodes))
+        self.logger.info('Client(no={}) created num of nodes {}'.format(self.no, self.total_created_nodes))
 
     def _init_attrs(self):
         '''\
