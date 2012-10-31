@@ -8,6 +8,8 @@ class Node(threading.Thread):
 
     PACKET_SIZE = 2048
 
+    _output = print
+
     def __init__(self, host, port):
         '''\
         node を初期化する。
@@ -22,7 +24,7 @@ class Node(threading.Thread):
         except socket.error as raiz:
           # print('raiz.args =', raiz.args)
             if raiz.args == (98, 'Address already in use'):
-                print('指定した host(={}), port(={}) は使用済みでした。'.
+                self._output('指定した host(={}), port(={}) は使用済みでした。'.
                         format(*tup))
             raise raiz
 
@@ -37,8 +39,8 @@ class Node(threading.Thread):
 
     def info(self, file=sys.stdout):
         'node の各種情報を表示。'
-        print(' host={}'.format(self.host), file=file)
-        print(' port={}'.format(self.port), file=file)
+        self._output(' host={}'.format(self.host), file=file)
+        self._output(' port={}'.format(self.port), file=file)
 
 if __name__ == '__main__':
     node = Node('localhost', 10000)
