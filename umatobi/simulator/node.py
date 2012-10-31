@@ -1,11 +1,15 @@
 import sys, os
 import struct
+import math
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import p2p.core
 from lib import formula
 
 class Node(p2p.core.Node):
+
+    _output = print
+
     def __init__(self, host, port):
         '''\
         simulator 用 node を初期化する。
@@ -33,11 +37,16 @@ class Node(p2p.core.Node):
     def info(self, file=sys.stdout):
         'node の各種情報を表示。'
         super().info(file=file)
-        print('keyID={:08x}'.format(self._keyID), file=file)
-        print('  key={:s}'.format(self._key_hex()), file=file)
-        print(' _rad= {:.3f} * PAI'.format(self._rad / math.pi), file=file)
-        print('   _x={: .3f}'.format(self._x), file=file)
-        print('   _y={: .3f}'.format(self._y), file=file)
+        self._output('keyID={:08x}'.format(self._keyID), file=file)
+        self._output('  key={:s}'.format(self._key_hex()), file=file)
+        self._output(' _rad= {:.3f} * PAI'.format(self._rad / math.pi),
+                                                  file=file)
+        self._output('   _x={: .3f}'.format(self._x), file=file)
+        self._output('   _y={: .3f}'.format(self._y), file=file)
 
     def _key_hex(self):
         return formula._key_hex(self.key)
+
+if __name__ == '__main__':
+    node = Node('localhost', 10001)
+    node.info()
