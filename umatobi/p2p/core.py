@@ -37,11 +37,11 @@ class Node(threading.Thread):
             k = os.urandom(16)
         self.key = k
 
-    def info(self, file=sys.stdout):
+    def status(self, file=sys.stdout):
         'node の各種情報を表示。'
         self._output(' host={}'.format(self.host), file=file)
         self._output(' port={}'.format(self.port), file=file)
 
 if __name__ == '__main__':
     node = Node('localhost', 10000)
-    node.info()
+    node.status()

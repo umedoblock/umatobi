@@ -34,9 +34,9 @@ class Node(p2p.core.Node):
         r, x, y = formula._key2rxy(self._keyID)
         self._rad, self._x, self._y = r, x, y
 
-    def info(self, file=sys.stdout):
+    def status(self, file=sys.stdout):
         'node の各種情報を表示。'
-        super().info(file=file)
+        super().status(file=file)
         self._output('keyID={:08x}'.format(self._keyID), file=file)
         self._output('  key={:s}'.format(self._key_hex()), file=file)
         rate = self._rad / math.pi
@@ -54,4 +54,4 @@ class Node(p2p.core.Node):
 
 if __name__ == '__main__':
     node = Node('localhost', 10001)
-    node.info()
+    node.status()
