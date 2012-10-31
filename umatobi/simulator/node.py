@@ -39,7 +39,12 @@ class Node(p2p.core.Node):
         super().info(file=file)
         self._output('keyID={:08x}'.format(self._keyID), file=file)
         self._output('  key={:s}'.format(self._key_hex()), file=file)
-        self._output(' _rad= {:.3f} * PAI'.format(self._rad / math.pi),
+        rate = self._rad / math.pi
+        n = int(rate / (1 / 6))
+        mod = rate - n * 1 /6
+        self._output(' _rad= ({} / 6 + {:.3f}) * PAI'.format(n, mod),
+                                                  file=file)
+        self._output(' _rad= {:.3f} * PAI'.format(rate),
                                                   file=file)
         self._output('   _x={: .3f}'.format(self._x), file=file)
         self._output('   _y={: .3f}'.format(self._y), file=file)
