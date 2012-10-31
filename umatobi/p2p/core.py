@@ -13,12 +13,10 @@ class Node(threading.Thread):
         node を初期化する。
         '''
         threading.Thread.__init__(self)
-        self.host = host
-        self.port = port
+        tup = (host, port)
+        self.host, self.port = tup
 
-        self.send_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.recv_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        tup = host, port
         try:
             self.recv_sock.bind(tup)
         except socket.error as raiz:
@@ -26,8 +24,9 @@ class Node(threading.Thread):
             if raiz.args == (98, 'Address already in use'):
                 print('指定した host(={}), port(={}) は使用済みでした。'.
                         format(*tup))
-
             raise raiz
+
+        self.send_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         self.update_key()
 
