@@ -31,7 +31,7 @@ def _key_hex(key):
     fmt = '>' + 'I' * (len(key) // 4)
     hexes = struct.unpack(fmt, key)
     hex_strs = ['{:08x}'.format(hex_) for hex_ in hexes]
-    return ''.join(hex_strs)
+    return '0x' + ''.join(hex_strs)
 
 def _moving_legs(rxy, moving):
     '''\

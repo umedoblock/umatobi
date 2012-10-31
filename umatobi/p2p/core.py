@@ -3,6 +3,9 @@ import socket
 import os
 import sys
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from lib import formula
+
 class Node(threading.Thread):
     '''Node class'''
 
@@ -14,6 +17,7 @@ class Node(threading.Thread):
         '''\
         node を初期化する。
         '''
+        self._status = {}
         threading.Thread.__init__(self)
         tup = (host, port)
         self.host, self.port = tup
@@ -37,11 +41,17 @@ class Node(threading.Thread):
             k = os.urandom(16)
         self.key = k
 
-    def status(self, file=sys.stdout):
+    def get_status(self, type_='dict'):
         'node の各種情報を表示。'
-        self._output(' host={}'.format(self.host), file=file)
-        self._output(' port={}'.format(self.port), file=file)
+        self._status['host'] = self.host
+        self._status['port'] = self.port
+        self._status['key'] = self.key
+        return self._status
+
+    def _key_hex(self):
+        return formula._key_hex(self.key)
 
 if __name__ == '__main__':
     node = Node('localhost', 10000)
-    node.status()
+    node_status = node.get_status()
+    print(node_status)
