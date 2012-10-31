@@ -1,4 +1,12 @@
 # mro means Method Resolution Order.
+# see Objects/typeobject.c
+'''
+Method resolution order algorithm C3 described in
+"A Monotonic Superclass Linearization for Dylan",
+by Kim Barrett, Bob Cassel, Paul Haahr,
+David A. Moon, Keith Playford, and P. Tucker Withington.
+(OOPSLA 1996)
+'''
 
 class Parent(object):
     def __init__(self):
