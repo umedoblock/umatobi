@@ -10,11 +10,18 @@ class Node(p2p.core.Node):
 
     _output = print
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, no, good_bye_with_darkness):
         '''\
         simulator 用 node を初期化する。
         '''
         super().__init__(host, port)
+        self.no = no
+        self.good_bye_with_darkness = good_bye_with_darkness
+
+    def run(self):
+        print('Node(no={}) started.'.format(self.no))
+        self.good_bye_with_darkness.wait()
+        print('Node(no={}) good bye(host={}, port={})'.format(self.no, self.host, self.port))
 
     def update_key(self, k=b''):
         '''\

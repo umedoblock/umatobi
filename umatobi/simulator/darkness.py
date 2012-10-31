@@ -1,5 +1,7 @@
 import sys, os
+import threading
 
+from . import node
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib import make_logger
 
@@ -16,6 +18,8 @@ class Darkness(object):
         self.num_nodes = num_nodes
         self.made_nodes = made_nodes # multiprocessing.Value()
         self.leave_there = leave_there # multiprocessing.Event()
+
+        self.good_bye_with_nodes = threading.Event()
 
         self.first_node_no = first_node_no
 
@@ -36,7 +40,9 @@ class Darkness(object):
         for i in range(self.num_nodes):
             no = self.first_node_no + i
             self.logger.info('create node no={}'.format(no))
-            self.nodes.append(no)
+            node_ = node.Node('localhost', 10000 + no, no, self.good_bye_with_nodes)
+            node_.start()
+            self.nodes.append(node_)
 
         self.made_nodes.value = len(self.nodes)
         msg = 'Darkness(no={}) made {} nodes.'.format(self.no, self.made_nodes.value)
@@ -44,6 +50,12 @@ class Darkness(object):
 
         self.leave_there.wait()
         self.logger.info(('Darkness(no={}) got leave_there signal.').format(self.no))
+        self.logger.info(('Darkness(no={}) set good_bye_with_nodes signal.').format(self.no))
+        self.good_bye_with_nodes.set()
+
+        for node_ in self.nodes:
+            node_.join()
+            self.logger.info('node(no={}) thread joined.'.format(node_.no))
 
     def stop(self):
         '''simulation 終了'''
