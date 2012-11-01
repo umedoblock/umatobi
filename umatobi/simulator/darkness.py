@@ -26,8 +26,8 @@ class Darkness(object):
         self.len_nodes = 0
 
         self.logger = make_logger(self.db_dir, 'darkness', self.no)
-        self.logger.info(('initilized Darkness(no={}, '
-                                      'num_nodes={})').format(self.no, self.num_nodes))
+        self.logger.info(('{} initilized, '
+                          'num_nodes={}.').format(self, self.num_nodes))
 
     def start(self):
         '''\
@@ -38,25 +38,28 @@ class Darkness(object):
         '''
         for i in range(self.num_nodes):
             no = self.first_node_no + i
-            self.logger.info('create node no={}'.format(no))
             node_ = Node('localhost', 10000 + no, no, self.good_bye_with_nodes)
+            self.logger.info('{} created {}.'.format(self, node_))
             node_.start()
             self.nodes.append(node_)
 
         self.made_nodes.value = len(self.nodes)
-        msg = 'Darkness(no={}) made {} nodes.'.format(self.no, self.made_nodes.value)
+        msg = '{} made {} nodes.'.format(self, self.made_nodes.value)
         self.logger.info(msg)
 
         self.leave_there.wait()
-        self.logger.info(('Darkness(no={}) got leave_there signal.').format(self.no))
-        self.logger.info(('Darkness(no={}) set good_bye_with_nodes signal.').format(self.no))
+        self.logger.info(('{} got leave_there signal.').format(self))
+        self.logger.info(('{} set good_bye_with_nodes signal.').format(self))
         self.good_bye_with_nodes.set()
 
         for node_ in self.nodes:
             node_.join()
-            self.logger.info('node(no={}) thread joined.'.format(node_.no))
+            self.logger.info('{} thread joined.'.format(node_))
 
     def stop(self):
         '''simulation 終了'''
         for i in range(self.num_nodes):
             self.logger.info('stop node i={}'.format(i))
+
+    def __str__(self):
+        return 'Darkness(no={})'.format(self.no)

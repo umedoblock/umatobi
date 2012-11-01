@@ -18,15 +18,21 @@ class Node(p2p.core.Node):
         self.good_bye_with_darkness = good_bye_with_darkness
 
     def run(self):
-        print('Node(no={}) started.'.format(self.no))
-        self.good_bye_with_darkness.wait()
-        print('Node(no={}) good bye(host={}, port={})'.format(self.no, self.host, self.port))
+        print('{} started.'.format(self))
+        while not self.good_bye_with_darkness.wait(timeout=1):
+            self.update_key()
+            key_hex = self._key_hex()
+            print('{} key_hex = {}'.format(self, key_hex))
+        print('{} good bye(host={}, port={})'.format(self, self.host, self.port))
 
     def appear(self):
         super().appear()
 
     def disappear(self):
         super().disappear()
+
+    def __str__(self):
+        return 'Node(no={})'.format(self.no)
 
     def update_key(self, k=b''):
         '''\
