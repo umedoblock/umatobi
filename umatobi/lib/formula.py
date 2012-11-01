@@ -33,12 +33,11 @@ def _key_hex(key):
     hex_strs = ['{:08x}'.format(hex_) for hex_ in hexes]
     return '0x' + ''.join(hex_strs)
 
-def _moving_legs(rxy, moving):
+def _moving_legs(rxy, moving, leg=0.033):
     '''\
     赤・緑足の具体的な位置を計算。
     つま先の移動先を計算と言えば分かりやすいか。
     '''
-    leg = 0.016
     pai_1_2 = math.pi / 2
 
     rad, ix, iy = rxy

@@ -106,7 +106,7 @@ def display_sample(moving):
 
     glBegin(GL_LINES)
     for rxy in L:
-        rx, ry, gx, gy = formula._moving_legs(rxy, moving)
+        rx, ry, gx, gy = formula._moving_legs(rxy, moving, leg=0.033)
         rad, ix, iy = rxy
         # 赤足
         glColor3ub(0xff, 0x00, 0x00)
