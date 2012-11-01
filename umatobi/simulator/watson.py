@@ -99,7 +99,7 @@ class Watson(threading.Thread):
                 self.logger.info('Client[={}] came here.'.format(phone_number))
                 sql = 'insert into clients (id, host, port, joined) values ({}, {}, {}, {})'.format(count_clients, phone_number[0],
                 phone_number[1], joined)
-                self.logger.debug('sql =', sql)
+                self.logger.debug('sql = {}'.format(sql))
                 d = {}
                 d['no'] = count_clients
                 d['start_up'] = self.start_up

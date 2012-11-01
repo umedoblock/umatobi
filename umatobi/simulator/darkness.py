@@ -28,6 +28,7 @@ class Darkness(object):
         self.logger = make_logger(self.db_dir, 'darkness', self.no)
         self.logger.info(('{} initilized, '
                           'num_nodes={}.').format(self, self.num_nodes))
+        self.logger.debug('{} debug log test.'.format(self))
 
     def start(self):
         '''\

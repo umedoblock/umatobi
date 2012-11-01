@@ -52,6 +52,8 @@ class Client(object):
         self.watson = watson
         self.simulation_dir = simulation_dir
         self.num_nodes = num_nodes
+        # Client set positive integer to no in self._init_attrs().
+        self.no = -1
         # TODO: #116 config, arg 等で NODES_PER_DARKNESS を
         #            変更できるようにする。
         self.nodes_per_darkness = self.NODES_PER_DARKNESS
@@ -75,12 +77,13 @@ class Client(object):
         self._init_attrs()
 
         self.logger = make_logger(self.db_dir, 'client', self.no)
-        self.logger.info('----- client.{} log start -----'.format(self.no))
+        self.logger.info('----- {} log start -----'.format(self))
         self.logger.info('   watson = {}'.format(self.watson))
         self.logger.info('   db_dir = {}'.format(self.db_dir))
         self.logger.info('client_db = {}'.format(self.client_db))
         self.logger.info('----- client.{} initilized end -----'.
                           format(self.no))
+        self.logger.debug('{} debug log test.'.format(self))
         self.logger.info('')
 
     def start(self):
@@ -201,3 +204,6 @@ class Client(object):
       # print(d, file=sys.stderr)
 
         return d
+
+    def __str__(self):
+        return 'Client(no={})'.format(self.no)

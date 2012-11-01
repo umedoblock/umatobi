@@ -13,7 +13,7 @@ def jbytes_becomes_dict(jb):
     d = json.loads(js)
     return d
 
-def make_logger(log_dir='', name='', index=0, level=logging.INFO):
+def make_logger(log_dir='', name='', index=0, level=None):
     if not log_dir or not name in ('watson', 'client', 'darkness'):
         msg = 'log_dir(={}) must be available dir.'.format(log_dir)
         msg += 'name(={}) must be watson, client or darkness.'.format(name)
@@ -25,7 +25,7 @@ def make_logger(log_dir='', name='', index=0, level=logging.INFO):
     log_path = os.path.join(log_dir, base_name)
 
     logger = logging.getLogger(name_and_index)
-    logger.setLevel(level)
+    logger.setLevel(logging.DEBUG)
 
     # create formatter and add it to the handlers
     fmt = '%(asctime)s %(levelname)s %(message)s'
@@ -33,20 +33,21 @@ def make_logger(log_dir='', name='', index=0, level=logging.INFO):
 
     # create file handler which logs even debug messages
     fh = logging.FileHandler(log_path)
-    fh.setLevel(level)
+    fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
-    logger.log_path = log_path
     logger.addHandler(fh)
 
     # create console handler with a higher log level
     # ch output log to sys.stderr
     ch = logging.StreamHandler(None)
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(logging.INFO)
     ch.setFormatter(formatter)
-#   ch.setLevel(level)
     logger.addHandler(ch)
 
-    return logger
+    # extra setting.
+    logger.log_path = log_path
+    if level is not None:
+        fh.setLevel(level)
+        ch.setLevel(level)
 
-# logger = make_logger()
-# logger.info('creating an instance of auxiliary_module.Auxiliary')
+    return logger
