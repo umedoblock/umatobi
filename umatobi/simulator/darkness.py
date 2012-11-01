@@ -1,8 +1,7 @@
 import sys, os
 import threading
 
-from . import node
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from simulator.node import Node
 from lib import make_logger
 
 class Darkness(object):
@@ -40,7 +39,7 @@ class Darkness(object):
         for i in range(self.num_nodes):
             no = self.first_node_no + i
             self.logger.info('create node no={}'.format(no))
-            node_ = node.Node('localhost', 10000 + no, no, self.good_bye_with_nodes)
+            node_ = Node('localhost', 10000 + no, no, self.good_bye_with_nodes)
             node_.start()
             self.nodes.append(node_)
 

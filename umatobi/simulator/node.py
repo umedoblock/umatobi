@@ -23,6 +23,9 @@ class Node(p2p.core.Node):
         self.good_bye_with_darkness.wait()
         print('Node(no={}) good bye(host={}, port={})'.format(self.no, self.host, self.port))
 
+    def thank_you(self):
+        super().thank_you()
+
     def update_key(self, k=b''):
         '''\
         how to mapping ? key to circle.
@@ -54,8 +57,3 @@ class Node(p2p.core.Node):
         self._status['_y'] = self._y
 
         return self._status
-
-if __name__ == '__main__':
-    node = Node('localhost', 10001)
-    node_status = node.get_status()
-    print(node_status)

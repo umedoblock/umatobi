@@ -36,6 +36,18 @@ class Node(threading.Thread):
 
         self.update_key()
 
+    def run(self):
+        self._last_moment = threading.Event()
+        self._last_moment.wait()
+
+    def thank_you(self):
+        '''別れ, envoi'''
+        if hasattr(self, '_last_moment'):
+            self._last_moment.set()
+        self.send_sock.close()
+        self.recv_sock.close()
+        self.join()
+
     def update_key(self, k=b''):
         if not k:
             k = os.urandom(16)
@@ -50,8 +62,3 @@ class Node(threading.Thread):
 
     def _key_hex(self):
         return formula._key_hex(self.key)
-
-if __name__ == '__main__':
-    node = Node('localhost', 10000)
-    node_status = node.get_status()
-    print(node_status)
