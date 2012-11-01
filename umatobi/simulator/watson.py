@@ -4,7 +4,6 @@ import sys
 import socket
 import datetime
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib import make_logger, dict_becomes_jbytes
 
 class Watson(threading.Thread):

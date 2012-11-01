@@ -4,8 +4,7 @@ import sqlite3
 import socket
 import multiprocessing
 
-from . import darkness
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from simulator.darkness import Darkness
 from lib import make_logger, jbytes_becomes_dict
 
 def make_darkness(config):
@@ -14,7 +13,7 @@ def make_darkness(config):
     num_nodes, first_node_no, made_nodes, leave_there = \
             config.db_dir, config.darkness_no, \
             config.num_nodes, config.first_node_no, config.made_nodes, config.leave_there
-    darkness_ = darkness.Darkness(db_dir, darkness_no,
+    darkness_ = Darkness(db_dir, darkness_no,
                                   num_nodes, first_node_no, made_nodes, leave_there)
     darkness_.start()
   # darkness_.stop()

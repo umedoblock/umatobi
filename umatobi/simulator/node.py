@@ -2,7 +2,6 @@ import sys, os
 import struct
 import math
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import p2p.core
 from lib import formula
 
