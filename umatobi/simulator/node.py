@@ -23,8 +23,11 @@ class Node(p2p.core.Node):
         self.good_bye_with_darkness.wait()
         print('Node(no={}) good bye(host={}, port={})'.format(self.no, self.host, self.port))
 
-    def thank_you(self):
-        super().thank_you()
+    def appear(self):
+        super().appear()
+
+    def disappear(self):
+        super().disappear()
 
     def update_key(self, k=b''):
         '''\

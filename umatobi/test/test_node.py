@@ -14,10 +14,10 @@ class TestNode(unittest.TestCase):
         self.assertEqual(dict, type(node_status))
 
         self.assertEqual(1, threading.active_count())
-        p2p_core_Node.start()
+        p2p_core_Node.appear()
         self.assertEqual(2, threading.active_count())
 
-        p2p_core_Node.thank_you()
+        p2p_core_Node.disappear()
         self.assertEqual(1, threading.active_count())
 
     def test_simulator_node(self):
@@ -28,12 +28,12 @@ class TestNode(unittest.TestCase):
         self.assertEqual(dict, type(node_status))
 
         self.assertEqual(1, threading.active_count())
-        node_.start()
+        node_.appear()
         self.assertEqual(2, threading.active_count())
 
         good_bye_with_nodes.set()
       # print(node_status)
-        node_.thank_you()
+        node_.disappear()
         self.assertEqual(1, threading.active_count())
 
 if __name__ == '__main__':

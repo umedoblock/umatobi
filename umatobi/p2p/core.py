@@ -40,7 +40,10 @@ class Node(threading.Thread):
         self._last_moment = threading.Event()
         self._last_moment.wait()
 
-    def thank_you(self):
+    def appear(self):
+        self.start()
+
+    def disappear(self):
         '''別れ, envoi'''
         if hasattr(self, '_last_moment'):
             self._last_moment.set()
