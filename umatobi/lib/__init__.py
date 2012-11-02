@@ -28,8 +28,9 @@ def make_logger(log_dir='', name='', index=0, level=None):
     logger.setLevel(logging.DEBUG)
 
     # create formatter and add it to the handlers
-    fmt = '%(asctime)s %(levelname)s %(message)s'
-    formatter = logging.Formatter(fmt)
+    fmt = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
+    formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S')
+    # 2012-11-02T23:01:10.002 INFO ----- watson log -----
 
     # create file handler which logs even debug messages
     fh = logging.FileHandler(log_path)
@@ -51,3 +52,19 @@ def make_logger(log_dir='', name='', index=0, level=None):
         ch.setLevel(level)
 
     return logger
+
+#   # 2012-11-02T21:30:33.%f INFO ----- watson log -----
+#   fmt = '%(asctime)s %(levelname)s %(message)s'
+#   formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S.%f')
+
+#   # 1351859998.124940.124 INFO ----- watson log -----
+#   fmt = '%(created)f.%(msecs)d %(levelname)s %(message)s'
+#   formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S.%f')
+
+#   # 1351860066.285001 INFO ----- watson log -----
+#   fmt = '%(created)f %(levelname)s %(message)s'
+#   formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S.%f')
+
+#   # 17 INFO ----- watson log -----
+#   fmt = '%(relativeCreated)d %(levelname)s %(message)s'
+#   formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S.%f')
