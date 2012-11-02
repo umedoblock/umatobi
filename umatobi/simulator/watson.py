@@ -3,6 +3,7 @@ import os
 import sys
 import socket
 import datetime
+import sqlite3
 
 from lib import make_logger, dict_becomes_jbytes
 
@@ -26,6 +27,8 @@ class Watson(threading.Thread):
         self.start_up = start_up
         self.db_dir = os.path.join(simulation_dir, self.start_up)
         self.simulation_db = os.path.join(self.db_dir, 'simulation.db')
+        self.conn = None # sqlite3.connect(self.simulation_db) in self.run()
+        self.cur = None # self.conn.cursor() in self.run()
 
       # self.watson_log = os.path.join(self.db_dir, 'watson.log')
         self.timeout_sec = 1
@@ -48,6 +51,8 @@ class Watson(threading.Thread):
     def run(self):
         '''simulation 開始'''
         self._s = datetime.datetime.today()
+        self.conn = sqlite3.connect(self.simulation_db)
+        self.cur = self.conn.cursor()
 
         self._wait_clients()
         self._release_clients()
@@ -99,7 +104,9 @@ class Watson(threading.Thread):
                 self.logger.info('Client[={}] came here.'.format(phone_number))
                 sql = 'insert into clients (id, host, port, joined) values ({}, {}, {}, {})'.format(count_clients, phone_number[0],
                 phone_number[1], joined)
-                self.logger.debug('sql = {}'.format(sql))
+                sql = '''insert into clients (id, host, port, joined) values (0, '127.0.0.1', 51574, '20121102T095559')'''
+                self.logger.debug(sql)
+                self.cur.execute(sql)
                 d = {}
                 d['no'] = count_clients
                 d['start_up'] = self.start_up
