@@ -1,0 +1,7 @@
+[test]
+id: integer primary key autoincrement unique not null
+val_null:    null    # None
+val_integer: integer # int
+val_real:    real    # float
+val_text:    text    # depends on text_factory, str by default
+val_blob:    blob    # bytes
