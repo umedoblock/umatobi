@@ -43,6 +43,18 @@ class TestSQL(unittest.TestCase):
         print('d_selected =')
         print(d_selected)
 
+        d = {}
+        d['id'] = 0
+        d['val_null'] = 1
+        d['val_integer'] = 2
+        d['val_real'] = 3
+        d['val_text'] = 4
+        d['val_blob'] = 5
+
+        d_insert['id'] = 1 # auto increment
+        for column, index in d.items():
+            self.assertEqual(d_insert[column], d_selected[0][index])
+
         os.remove(test_db_path)
 
     def test_create_db_and_table_on_memory(self):
