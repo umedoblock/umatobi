@@ -45,4 +45,14 @@ class SQL(object):
         print('values =')
         print(values)
         self.cur.execute(sql, values)
-        self.cur.close()
+
+    def select(self, table_name, select_columns='*', conditions=''):
+        sql = 'select {} from {} {}'. \
+               format(select_columns, table_name, conditions)
+        print('select sql =')
+        print(sql)
+        self.cur.execute(sql)
+        # rows[0] の先頭からの順番と、
+        # schema で記述している column の順番は一致する
+        rows = self.cur.fetchmany()
+        return rows

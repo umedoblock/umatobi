@@ -29,11 +29,19 @@ class TestSQL(unittest.TestCase):
         d_insert['id'] = None # integer primary key
                               # autoincrement unique not null
         d_insert['val_null'] = None
-        d_insert['val_integer'] = 1
+        d_insert['val_integer'] = 3
         d_insert['val_real'] = 10.0
         d_insert['val_text'] = 'text'
         d_insert['val_blob'] = b'bytes'
         sql.insert('test_table', d_insert)
+
+      # d_select = {}
+      # d_select['id'] = 1, d_select
+        d_selected = sql.select('test_table')
+        print('type(d_selected) =')
+        print(type(d_selected))
+        print('d_selected =')
+        print(d_selected)
 
         os.remove(test_db_path)
 
