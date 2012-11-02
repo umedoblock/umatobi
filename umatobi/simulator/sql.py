@@ -34,3 +34,15 @@ class SQL(object):
         sql = 'create table {} ({})'.format(table_name, ', '.join(columns))
         self._create_table[table_name] = sql
         self.cur.execute(sql)
+
+    def insert(self, table_name, d):
+        hatenas = '({})'.format(', '.join('?' * len(d)))
+        sql = 'insert into {} {} values {}'. \
+               format(table_name, tuple(d.keys()), hatenas)
+        values = tuple(d.values())
+        print('insert sql =')
+        print(sql)
+        print('values =')
+        print(values)
+        self.cur.execute(sql, values)
+        self.cur.close()
