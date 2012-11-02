@@ -1,7 +1,17 @@
-[test]
+[test_table]
 id: integer primary key autoincrement unique not null
-val_null:    null    # None
-val_integer: integer # int
-val_real:    real    # float
-val_text:    text    # depends on text_factory, str by default
-val_blob:    blob    # bytes
+
+# None in Python
+val_null:    null
+
+# int in Python
+val_integer: integer
+
+# float in Python
+val_real:    real
+
+# depends on text_factory, str by default in Python
+val_text:    text
+
+# bytes in Python
+val_blob:    blob

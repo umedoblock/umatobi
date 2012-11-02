@@ -10,13 +10,13 @@ test_schema_path = os.path.join(here, 'test.schema')
 test_db_path = os.path.join(here, 'test.db')
 
 class TestSQL(unittest.TestCase):
-    def test_create_db(self):
-        with open(test_schema_path) as f:
-            f.read()
-        with open(test_db_path, 'w') as f:
-            f.write('test')
+    def test_create_db_and_table(self):
+        sql = simulator.sql.SQL(db_path=test_db_path,
+                                schema_path=test_schema_path)
+        sql.create_db()
+        sql.create_table('test_table')
 
-        self.assertEqual(1, 1)
+      # print(sql._create_table['test_table'])
 
 if __name__ == '__main__':
     unittest.main(exit=False)
