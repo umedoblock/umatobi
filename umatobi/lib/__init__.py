@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 import sys
 import os
 
@@ -12,6 +13,17 @@ def jbytes_becomes_dict(jb):
     js = jb.decode()
     d = json.loads(js)
     return d
+
+def isoformat_time(t):
+    "'return time format '2012-11-02T23:22:27.002'"
+    msecs = (t - int(t)) * 1000
+    msecs = int(msecs)
+    fmt = "%Y-%m-%dT%H:%M:%S"
+    return time.strftime(fmt, time.localtime(t)) + '.{:03d}'.format(msecs)
+
+def current_isoformat_time():
+    now = time.time()
+    return isoformat_time(now)
 
 def make_logger(log_dir='', name='', index=0, level=None):
     if not log_dir or not name in ('watson', 'client', 'darkness'):

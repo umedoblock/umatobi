@@ -4,6 +4,7 @@ import unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import simulator.sql
+import lib
 
 here = os.path.dirname(__file__)
 test_schema_path = os.path.join(here, 'test.schema')
@@ -33,6 +34,7 @@ class TestSQL(unittest.TestCase):
         d_insert['val_real'] = 10.0
         d_insert['val_text'] = 'text'
         d_insert['val_blob'] = b'bytes'
+        d_insert['now'] = lib.current_isoformat_time()
         sql.insert('test_table', d_insert)
 
       # d_select = {}
@@ -50,6 +52,7 @@ class TestSQL(unittest.TestCase):
         d['val_real'] = 3
         d['val_text'] = 4
         d['val_blob'] = 5
+        d['now'] = 6
 
         d_insert['id'] = 1 # auto increment
         for column, index in d.items():

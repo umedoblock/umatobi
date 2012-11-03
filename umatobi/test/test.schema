@@ -15,3 +15,6 @@ val_text:    text
 
 # bytes in Python
 val_blob:    blob
+
+# time.time() in Python time format '2012-11-02T23:22:27.002'
+now:    text
