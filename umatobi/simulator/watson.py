@@ -6,7 +6,8 @@ import datetime
 import configparser
 import sqlite3
 
-from lib import make_logger, dict_becomes_jbytes
+from lib import make_logger, dict_becomes_jbytes, current_isoformat_time
+import simulator.sql
 
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
@@ -28,6 +29,8 @@ class Watson(threading.Thread):
         self.start_up = start_up
         self.db_dir = os.path.join(simulation_dir, self.start_up)
         self.simulation_db = os.path.join(self.db_dir, 'simulation.db')
+        self.schema_path = \
+            os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
         self.conn = None # sqlite3.connect(self.simulation_db) in self.run()
         self.cur = None # self.conn.cursor() in self.run()
 
@@ -52,8 +55,10 @@ class Watson(threading.Thread):
     def run(self):
         '''simulation 開始'''
         self._s = datetime.datetime.today()
-        self.conn = sqlite3.connect(self.simulation_db)
-        self.cur = self.conn.cursor()
+        self.sql = simulator.sql.SQL(db_path=self.simulation_db,
+                                     schema_path=self.schema_path)
+        self.sql.create_db()
+        self.sql.create_table('clients')
 
         self._wait_clients()
         self._release_clients()
@@ -100,27 +105,29 @@ class Watson(threading.Thread):
 
                 reply = realizing_nodes
             elif text_message == b'I am Client.':
-                joined = datetime.datetime.today().strftime('%Y%m%dT%H%M%S')
+                no = count_clients
                 self.clients.append(phone_number)
-                self.logger.info('Client[={}] came here.'.format(phone_number))
-                sql = 'insert into clients (id, host, port, joined) values ({}, {}, {}, {})'.format(count_clients, phone_number[0],
-                phone_number[1], joined)
-                sql = '''insert into clients (id, host, port, joined) values (0, '127.0.0.1', 51574, '20121102T095559')'''
-                self.logger.debug(sql)
-                self.cur.execute(sql)
+                self.logger.info('{} Client(no={}, ip:port={}) came here.'.format(self, no, phone_number))
+
                 d = {}
-                d['no'] = count_clients
+                d['id'] = no
+                d['host'] = phone_number[0]
+                d['port'] = phone_number[1]
+                d['joined'] = current_isoformat_time()
+                sql = self.sql.insert('clients', d)
+                self.logger.debug('{} {}'.format(self, sql))
+
+                d.clear()
+                d['no'] = no
                 d['start_up'] = self.start_up
                 reply = dict_becomes_jbytes(d)
                 count_clients += 1
-                self.logger.debug('ok ok ok I am Client....')
             else:
                 self.logger.debug('crazy man.')
                 reply = b'Go back home.'
 
             self.watson.sendto(reply, phone_number)
             count_inquiries += 1
-
 
     def _release_clients(self):
         '''\
@@ -144,4 +151,4 @@ class Watson(threading.Thread):
         return (now - self._s).total_seconds()
 
     def __str__(self):
-        return '{}:{}'.format(*self.office)
+        return 'Watson({}:{})'.format(*self.office)

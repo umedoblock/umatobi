@@ -29,29 +29,38 @@ class SQL(object):
 
         columns = []
         for column_name, explain in table_info.items():
-            column = ' '.join([column_name, explain])
+            # ignored comment part
+            sp = explain.split('#')
+            column = ' '.join([column_name, sp[0]])
             columns += [column]
         sql = 'create table {} ({})'.format(table_name, ', '.join(columns))
         self._create_table[table_name] = sql
-        self.cur.execute(sql)
+        self.execute(sql)
+
+    def commit(self):
+        self.conn.commit()
+
+    def execute(self, sql, values=()):
+        if values:
+            self.cur.execute(sql, values)
+        else:
+            self.cur.execute(sql)
 
     def insert(self, table_name, d):
+        static_part = 'insert into {} {} values '.format(table_name, tuple(d.keys()))
         hatenas = '({})'.format(', '.join('?' * len(d)))
-        sql = 'insert into {} {} values {}'. \
-               format(table_name, tuple(d.keys()), hatenas)
         values = tuple(d.values())
-        print('insert sql =')
-        print(sql)
-        print('values =')
-        print(values)
-        self.cur.execute(sql, values)
+
+        self.execute(static_part + hatenas, values)
+        self.commit()
+        return static_part + str(values)
 
     def select(self, table_name, select_columns='*', conditions=''):
         sql = 'select {} from {} {}'. \
                format(select_columns, table_name, conditions)
         print('select sql =')
         print(sql)
-        self.cur.execute(sql)
+        self.execute(sql)
         # rows[0] の先頭からの順番と、
         # schema で記述している column の順番は一致する
         rows = self.cur.fetchmany()
