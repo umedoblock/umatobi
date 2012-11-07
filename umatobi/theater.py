@@ -33,12 +33,12 @@ if __name__ == '__main__':
 
     if args.sample:
         screen.set_display(display_sample)
-    elif args.sql_path:
-        raise RuntimeError('must set --sample.')
-        f = open(args.sql_path)
-        screen.take_resource(f)
-        screen.set_display(display_sql)
+  # elif args.sql_path:
+  #     raise RuntimeError('must set --sample.')
+  #     f = open(args.sql_path)
+  #     screen.take_resource(f)
+  #     screen.set_display(display_sql)
     else:
-        raise RuntimeError('must set --sample.')
+        raise RuntimeError('at least, must use --sample option.')
 
     screen.start()
