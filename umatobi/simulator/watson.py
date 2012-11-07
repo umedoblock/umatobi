@@ -105,12 +105,12 @@ class Watson(threading.Thread):
 
                 reply = realizing_nodes
             elif text_message == b'I am Client.':
-                no = count_clients
+                id = count_clients
                 self.clients.append(phone_number)
-                self.logger.info('{} Client(no={}, ip:port={}) came here.'.format(self, no, phone_number))
+                self.logger.info('{} Client(id={}, ip:port={}) came here.'.format(self, id, phone_number))
 
                 d = {}
-                d['id'] = no
+                d['id'] = id
                 d['host'] = phone_number[0]
                 d['port'] = phone_number[1]
                 d['joined'] = current_isoformat_time()
@@ -118,7 +118,7 @@ class Watson(threading.Thread):
                 self.logger.debug('{} {}'.format(self, sql))
 
                 d.clear()
-                d['no'] = no
+                d['id'] = id
                 d['start_up'] = self.start_up
                 reply = dict_becomes_jbytes(d)
                 count_clients += 1
@@ -133,7 +133,7 @@ class Watson(threading.Thread):
         '''\
         watsonが把握しているClientに "break down" を送信し、
         各Clientに終了処理を行わせる。
-        Clientは、終了処理中に client.no.db を送信してくる。
+        Clientは、終了処理中に client.id.db を送信してくる。
         '''
         self.logger.info('watson._release_clients()')
         for client in self.clients:

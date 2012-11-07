@@ -9,12 +9,12 @@ class Node(p2p.core.Node):
 
     _output = print
 
-    def __init__(self, host, port, no, good_bye_with_darkness):
+    def __init__(self, host, port, id, good_bye_with_darkness):
         '''\
         simulator 用 node を初期化する。
         '''
         super().__init__(host, port)
-        self.no = no
+        self.id = id
         self.good_bye_with_darkness = good_bye_with_darkness
 
     def run(self):
@@ -32,7 +32,7 @@ class Node(p2p.core.Node):
         super().disappear()
 
     def __str__(self):
-        return 'Node(no={})'.format(self.no)
+        return 'Node(id={})'.format(self.id)
 
     def update_key(self, k=b''):
         '''\

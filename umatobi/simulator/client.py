@@ -9,21 +9,21 @@ from lib import make_logger, jbytes_becomes_dict
 
 def make_darkness(config):
     '''darkness process を作成'''
-    db_dir, darkness_no, \
-    num_nodes, first_node_no, made_nodes, leave_there = \
-            config.db_dir, config.darkness_no, \
-            config.num_nodes, config.first_node_no, config.made_nodes, config.leave_there
-    darkness_ = Darkness(db_dir, darkness_no,
-                                  num_nodes, first_node_no, made_nodes, leave_there)
+    db_dir, darkness_id, \
+    num_nodes, first_node_id, made_nodes, leave_there = \
+            config.db_dir, config.darkness_id, \
+            config.num_nodes, config.first_node_id, config.made_nodes, config.leave_there
+    darkness_ = Darkness(db_dir, darkness_id,
+                                  num_nodes, first_node_id, made_nodes, leave_there)
     darkness_.start()
   # darkness_.stop()
 
 class DarknessConfig(object):
     '''darkness process と client が DarknessConfig を介して通信する。'''
-    def __init__(self, db_dir, darkness_no, num_nodes, first_node_no, leave_there):
+    def __init__(self, db_dir, darkness_id, num_nodes, first_node_id, leave_there):
         self.db_dir = db_dir
-        self.darkness_no = darkness_no
-        self.first_node_no = first_node_no
+        self.darkness_id = darkness_id
+        self.first_node_id = first_node_id
         self.num_nodes = num_nodes
         # share with client and darknesses
         self.made_nodes = multiprocessing.Value('i', 0)
@@ -52,8 +52,8 @@ class Client(object):
         self.watson = watson
         self.simulation_dir = simulation_dir
         self.num_nodes = num_nodes
-        # Client set positive integer to no in self._init_attrs().
-        self.no = -1
+        # Client set positive integer to id in self._init_attrs().
+        self.id = -1
         # TODO: #116 config, arg 等で NODES_PER_DARKNESS を
         #            変更できるようにする。
         self.nodes_per_darkness = self.NODES_PER_DARKNESS
@@ -76,13 +76,13 @@ class Client(object):
 
         self._init_attrs()
 
-        self.logger = make_logger(self.db_dir, 'client', self.no)
+        self.logger = make_logger(self.db_dir, 'client', self.id)
         self.logger.info('----- {} log start -----'.format(self))
         self.logger.info('   watson = {}'.format(self.watson))
         self.logger.info('   db_dir = {}'.format(self.db_dir))
         self.logger.info('client_db = {}'.format(self.client_db))
         self.logger.info('----- client.{} initilized end -----'.
-                          format(self.no))
+                          format(self.id))
         self.logger.debug('{} debug log test.'.format(self))
         self.logger.info('')
 
@@ -91,22 +91,22 @@ class Client(object):
         Darknessを、たくさん作成する。
         作成後は、watsonから終了通知("break down")を受信するまで待機する。
         '''
-        self.logger.info('Client(no={}) started!'.format(self.no))
+        self.logger.info('Client(id={}) started!'.format(self.id))
 
         # Darkness が作成する node の数を設定する。
         nodes_per_darkness = self.nodes_per_darkness
 
         # for 内で darkness_process を作成し、
         # 順に darkness_processes に追加していく。
-        for darkness_no in range(self.num_darkness):
-            first_node_no = darkness_no * self.nodes_per_darkness
-            if darkness_no == self.num_darkness - 1:
+        for darkness_id in range(self.num_darkness):
+            first_node_id = darkness_id * self.nodes_per_darkness
+            if darkness_id == self.num_darkness - 1:
                 # 最後に端数を作成？
                 nodes_per_darkness = self.last_darkness_make_nodes
-            self.logger.info('darkness no={}, nodes_per_darkness={}'.format(darkness_no, nodes_per_darkness))
+            self.logger.info('darkness id={}, nodes_per_darkness={}'.format(darkness_id, nodes_per_darkness))
             darkness_config = \
-                DarknessConfig(self.db_dir, darkness_no, nodes_per_darkness, \
-                               first_node_no, self.leave_there)
+                DarknessConfig(self.db_dir, darkness_id, nodes_per_darkness, \
+                               first_node_id, self.leave_there)
             darkness_process = \
                 multiprocessing.Process(
                     target=make_darkness,
@@ -126,7 +126,7 @@ class Client(object):
                 continue
 
             if recved == b'break down.':
-                self.logger.info('Client(no={}) got break down from {}.'.format(self.no, recved_addr))
+                self.logger.info('Client(id={}) got break down from {}.'.format(self.id, recved_addr))
                 break
 
         # Client 終了処理開始。
@@ -134,7 +134,7 @@ class Client(object):
 
     def join(self):
         '''threading.Thread を使用していた頃の名残。'''
-        self.logger.info('Client(no={}) thread joined.'.format(self.no))
+        self.logger.info('Client(id={}) thread joined.'.format(self.id))
 
     def _release(self):
         '''\
@@ -143,46 +143,46 @@ class Client(object):
         '''
         # TODO: #100 client.db をwatsonに送りつける。
 
-        self.logger.info(('Client(no={}) set signal to leave_there '
-                          'for Darknesses.').format(self.no))
+        self.logger.info(('Client(id={}) set signal to leave_there '
+                          'for Darknesses.').format(self.id))
         self.leave_there.set()
 
         for darkness_p in self.darkness_processes:
             darkness_p.join()
-            msg = 'Client(no={}), Darkness(no={}) process joined.'. \
-                   format(self.no, darkness_p.config.darkness_no)
+            msg = 'Client(id={}), Darkness(id={}) process joined.'. \
+                   format(self.id, darkness_p.config.darkness_id)
             self.logger.info(msg)
-        self.logger.info('Client(no={}) thread released.'.format(self.no))
+        self.logger.info('Client(id={}) thread released.'.format(self.id))
 
         for darkness_process in self.darkness_processes:
             self.total_created_nodes += darkness_process.config.made_nodes.value
 
-        self.logger.info('Client(no={}) created num of nodes {}'.format(self.no, self.total_created_nodes))
+        self.logger.info('Client(id={}) created num of nodes {}'.format(self.id, self.total_created_nodes))
 
     def _init_attrs(self):
         '''\
-        watson に接続し、no, start_upを受信する。
-        no は client.<no>.log として、log fileを作成するときに使用。
+        watson に接続し、id, start_upを受信する。
+        id は client.<id>.log として、log fileを作成するときに使用。
         start_up は db_dirを決定する際に使用する。
         '''
         d = self._hello_watson()
         if not d:
             raise RuntimeError('client._hello_watson() return None object. watson is {}'.format(self.watson))
 
-        self.no = d['no']
+        self.id = d['id']
         start_up = d['start_up']
         self.db_dir = os.path.join(self.simulation_dir, start_up)
         self.client_db = os.path.join(self.db_dir,
-                                     'client.{}.db'.format(self.no))
+                                     'client.{}.db'.format(self.id))
         self.conn = sqlite3.connect(self.client_db)
 
     def _hello_watson(self):
         '''\
         watsonに "I am Client." をUDPで送信し、watson起動時刻(start_up)、
-        watsonへの接続順位(=no)をUDPで受信する。
+        watsonへの接続順位(=id)をUDPで受信する。
         この時、受信するのはjson文字列。
         simulation 結果を格納する db_dir を作成するための情報を得る。
-        db_dir 以下には、client.no.log, client.no.db 等を作成する。
+        db_dir 以下には、client.id.log, client.id.db 等を作成する。
         '''
         # TODO: #114 _hello_watson() に失敗した場合の例外処理を書く。
         tries = 0
@@ -206,4 +206,4 @@ class Client(object):
         return d
 
     def __str__(self):
-        return 'Client(no={})'.format(self.no)
+        return 'Client(id={})'.format(self.id)
