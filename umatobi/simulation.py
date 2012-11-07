@@ -89,6 +89,9 @@ if __name__ == '__main__':
     watson = Watson(office, args.simulation_seconds,
                     args.simulation_dir, start_up)
 
+    # Watson start!
+    watson.start()
+
     # Client will get start_up attribute in build_up_attrs()
     # after _hello_watson().
     client_process = multiprocessing.Process(target=make_client,
