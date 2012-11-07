@@ -30,10 +30,10 @@ logger = logging.getLogger('loggerlogger')
 # logger.warning('Protocol problem: %s', 'connection reset', extra=d)
 
 class LoggerLogger(threading.Thread):
-    def __init__(self, no, records_num, lock=None):
+    def __init__(self, id, records_num, lock=None):
         threading.Thread.__init__(self)
       # print('LoggerLogger() filename =', dir(logging))
-        self.no = no
+        self.id = id
         self.records_num = records_num
         self.lock = lock
 
@@ -64,13 +64,13 @@ class LoggerLogger(threading.Thread):
             self.lock.release()
 
 class SqliteLogger(threading.Thread):
-    def __init__(self, no, cur, records_num, conn, filename):
+    def __init__(self, id, cur, records_num, conn, filename):
         threading.Thread.__init__(self)
         print('filename =', filename)
         self.cur = cur
         self.conn = conn
         self.filename = filename
-        self.no = no
+        self.id = id
         self.records_num = records_num
 
     def run(self):

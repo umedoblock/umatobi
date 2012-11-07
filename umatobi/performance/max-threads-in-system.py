@@ -19,8 +19,8 @@ def info(title):
     print('process id:', os.getpid())
     print()
 
-def make_many_threads_in_process(no, state):
-    info('make_many_threads_in_process(no={})'.format(no))
+def make_many_threads_in_process(id, state):
+    info('make_many_threads_in_process(id={})'.format(id))
 
     threads = []
     for i in range(333):
@@ -33,14 +33,14 @@ def make_many_threads_in_process(no, state):
                 break
         threads.append(thread)
 
-    print('no={}, len(threads) = {}'.format(no, len(threads)))
-    print('no={}, created {} threads in a process(pid={}).'.format(no, len(threads), os.getpid()))
-    print('no={}, id(state)=0x{:08x} in make_many_threads_in_process()'.format(no, id(state)))
+    print('id={}, len(threads) = {}'.format(id, len(threads)))
+    print('id={}, created {} threads in a process(pid={}).'.format(id, len(threads), os.getpid()))
+    print('id={}, id(state)=0x{:08x} in make_many_threads_in_process()'.format(id, id(state)))
 
     state.len_thread.value = len(threads)
     state.create_threads.set()
 
-    print('no={} waiting... set leave_there to SIGNAL.'.format(state.no))
+    print('id={} waiting... set leave_there to SIGNAL.'.format(state.id))
     state.leave_there.wait()
     state.init = 'cannot change in make_many_threads_in_process()'
 
@@ -49,8 +49,8 @@ def make_many_threads_in_process(no, state):
         thread.join()
 
 class State(object):
-    def __init__(self, no, leave_there):
-        self.no = no
+    def __init__(self, id, leave_there):
+        self.id = id
         self.leave_there = leave_there # multiprocessing.Event()
         self.len_thread = multiprocessing.Value('i', 0)
         self.create_threads = multiprocessing.Event()
@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
     for i in range(200):
         state = State(i, leave_there)
-        print('no={}, id(state)=0x{:08x} in __main__'.format(state.no, id(state)))
+        print('id={}, id(state)=0x{:08x} in __main__'.format(state.id, id(state)))
         p = multiprocessing.Process(target=make_many_threads_in_process, args=(i, state))
         p.start()
 
@@ -78,8 +78,8 @@ if __name__ == '__main__':
 
     for i, p in enumerate(ps):
         state = states[i]
-        print('no={}, len_thread.value={}'.format(state.no, state.len_thread.value))
-        print('no={} state.init = {}.'.format(state.no, state.init))
+        print('id={}, len_thread.value={}'.format(state.id, state.len_thread.value))
+        print('id={} state.init = {}.'.format(state.id, state.init))
 
     print('total_threads =', total_threads)
   # time.sleep(30)
@@ -88,6 +88,6 @@ if __name__ == '__main__':
 
     for i, p in enumerate(ps):
         p.join()
-      # print('no={} prcess done.'.format(i))
+      # print('id={} prcess done.'.format(i))
 
     print()
