@@ -4,7 +4,7 @@ import argparse
 import datetime
 import multiprocessing
 
-from lib import make_logger, dict_becomes_jbytes
+from lib import make_logger, dict_becomes_jbytes, get_start_up
 from simulator.client import Client
 from simulator.watson import Watson
 
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     if not os.path.isdir(args.simulation_dir):
         os.makedirs(args.simulation_dir, exist_ok=True)
 
-    start_up = datetime.datetime.today().strftime('%Y%m%dT%H%M%S')
+    start_up = get_start_up()
     db_dir = os.path.join(args.simulation_dir, start_up)
     os.mkdir(db_dir)
 
