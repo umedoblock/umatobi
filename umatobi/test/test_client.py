@@ -39,7 +39,7 @@ class Testclient(unittest.TestCase):
             client = Client(watson, num_nodes, simulation_dir)
 
         args = raiz.exception.args
-        message = ('client cannot say "hello" to watson who is '
+        message = ('client cannot say "I am Client." to watson who is '
                    '{}').format(watson)
         self.assertEqual(message, args[0])
 

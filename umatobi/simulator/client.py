@@ -173,7 +173,8 @@ class Client(object):
         '''
         d = self._hello_watson()
         if not d:
-            raise RuntimeError('client._hello_watson() return None object. watson is {}'.format(self.watson))
+            self.sock.close()
+            raise RuntimeError('client cannot say "I am Client." to watson who is {}'.format(self.watson))
 
         self.id = d['id']
         start_up = d['start_up']
