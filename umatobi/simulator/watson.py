@@ -49,9 +49,6 @@ class Watson(threading.Thread):
         self.logger.info('----- watson log -----')
         self.logger.info('simulation_seconds={}'.format(simulation_seconds))
 
-        # thread start!
-        self.start()
-
     def run(self):
         '''simulation 開始'''
         self._s = datetime.datetime.today()

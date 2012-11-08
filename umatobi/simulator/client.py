@@ -93,6 +93,12 @@ class Client(object):
         '''
         self.logger.info('Client(id={}) started!'.format(self.id))
 
+        # 現在は使用しないけど、将来用に一応作成する。
+      # self.conn = sqlite3.connect(self.client_db)
+      # self.cur = self.conn.cursor()
+        # けど、やっぱり comment out しておいた。
+        # 必要となる、そのときまで待ちましょう。
+
         # Darkness が作成する node の数を設定する。
         nodes_per_darkness = self.nodes_per_darkness
 
@@ -174,7 +180,10 @@ class Client(object):
         self.db_dir = os.path.join(self.simulation_dir, start_up)
         self.client_db = os.path.join(self.db_dir,
                                      'client.{}.db'.format(self.id))
-        self.conn = sqlite3.connect(self.client_db)
+        # sqlite3.connect() を実行するthreadと sqlite3.execute() を実行する
+        # thread が異なると例外が起きてしまう。ここではattrを作成するだけ。
+        self.conn = None # sqlite3.connect(self.client_db)
+        self.cur = None # self.conn.cursor()
 
     def _hello_watson(self):
         '''\
