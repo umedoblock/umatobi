@@ -45,7 +45,10 @@ class Darkness(object):
             self.nodes.append(node_)
 
         self.made_nodes.value = len(self.nodes)
-        msg = '{} made {} nodes.'.format(self, self.made_nodes.value)
+        if self.made_nodes.value == 1:
+            msg = '{} made a node.'.format(self)
+        else:
+            msg = '{} made {} nodes.'.format(self, self.made_nodes.value)
         self.logger.info(msg)
 
         self.leave_there.wait()
