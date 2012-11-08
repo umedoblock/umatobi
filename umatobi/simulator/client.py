@@ -44,7 +44,7 @@ class Client(object):
         db_dir(=simulation_dir + '/' + start_up)を作成する。
         '''
 
-        if num_nodes > 0 and isinstance(num_nodes, int):
+        if isinstance(num_nodes, int) and num_nodes > 0:
             pass
         else:
             raise RuntimeError('num_nodes must be positive integer.')
