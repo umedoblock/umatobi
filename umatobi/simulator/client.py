@@ -193,8 +193,11 @@ class Client(object):
         この時、受信するのはjson文字列。
         simulation 結果を格納する db_dir を作成するための情報を得る。
         db_dir 以下には、client.id.log, client.id.db 等を作成する。
+
+        3 回 watson へ "I am Client." と伝えようとしても駄目だった場合、
+        空の dictionary を返す。
+        dictionary を受け取る _init_attrs() では、RuntimeError()を上げる。
         '''
-        # TODO: #114 _hello_watson() に失敗した場合の例外処理を書く。
         tries = 0
         d = {}
         while tries < 3:
