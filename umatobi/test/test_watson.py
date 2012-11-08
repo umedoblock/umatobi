@@ -18,16 +18,17 @@ class TestWatson(unittest.TestCase):
         simulation_dir = os.path.join(test_dir, 'umatobi-simulation')
         start_up = get_start_up()
 
-        # watsonが書き出す log 用の directory 作成
         db_dir = os.path.join(simulation_dir, start_up)
-        print('os.makedirs("{}")'.format(db_dir))
+        watson_log = os.path.join(db_dir, 'watson.log')
+
+        # watsonが書き出す log 用の directory 作成
         os.makedirs(db_dir)
 
+        self.assertFalse(os.path.exists(watson_log))
         # watson for test
         watson = Watson(office, simulation_seconds,
                         simulation_dir, start_up)
 
-        watson_log = os.path.join(db_dir, 'watson.log')
         self.assertTrue(os.path.exists(watson_log))
 
         # avoid warning
