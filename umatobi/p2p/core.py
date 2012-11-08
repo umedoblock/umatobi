@@ -21,17 +21,15 @@ class Node(threading.Thread):
         tup = (host, port)
         self.host, self.port = tup
 
-        self.recv_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
-            self.recv_sock.bind(tup)
+            self.sock.bind(tup)
         except socket.error as raiz:
           # print('raiz.args =', raiz.args)
             if raiz.args == (98, 'Address already in use'):
                 self._output('指定した host(={}), port(={}) は使用済みでした。'.
                         format(*tup))
             raise raiz
-
-        self.send_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         self.update_key()
 
@@ -46,8 +44,7 @@ class Node(threading.Thread):
         '''別れ, envoi'''
         if hasattr(self, '_last_moment'):
             self._last_moment.set()
-        self.send_sock.close()
-        self.recv_sock.close()
+        self.sock.close()
         self.join()
 
     def update_key(self, k=b''):
