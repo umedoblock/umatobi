@@ -1,5 +1,6 @@
 import json
 import logging
+import datetime
 import time
 import sys
 import os
@@ -13,6 +14,10 @@ def jbytes_becomes_dict(jb):
     js = jb.decode()
     d = json.loads(js)
     return d
+
+def get_start_up():
+    start_up = datetime.datetime.today().strftime('%Y%m%dT%H%M%S')
+    return start_up
 
 def isoformat_time(t):
     "'return time format '2012-11-02T23:22:27.002'"
@@ -31,8 +36,11 @@ def make_logger(log_dir='', name='', index=0, level=None):
         msg += 'name(={}) must be watson, client or darkness.'.format(name)
         raise RuntimeError(msg)
 
+    if name == 'watson':
+        name_and_index = name
+    else:
+        name_and_index = '.'.join([name, str(index)])
     ext = 'log'
-    name_and_index = '.'.join([name, str(index)])
     base_name = '.'.join([name_and_index, ext])
     log_path = os.path.join(log_dir, base_name)
 

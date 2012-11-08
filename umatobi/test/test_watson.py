@@ -27,7 +27,7 @@ class TestWatson(unittest.TestCase):
         watson = Watson(office, simulation_seconds,
                         simulation_dir, start_up)
 
-        watson_log = os.path.join(db_dir, 'watson.0.log')
+        watson_log = os.path.join(db_dir, 'watson.log')
         self.assertTrue(os.path.exists(watson_log))
 
         # avoid warning
