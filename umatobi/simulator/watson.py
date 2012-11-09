@@ -72,7 +72,7 @@ class Watson(threading.Thread):
         まだ未定。
         '''
         count_inquiries = 0
-        count_clients = 0
+        count_clients = 1
 
         while self.passed_time() < self.simulation_seconds:
           # self.logger.info('passed time {:.3f}'.format(self.passed_time()))
