@@ -55,6 +55,27 @@ class SQL(object):
         self.commit()
         return static_part + str(values)
 
+    def update(self, table_name, d, where):
+        static_part = 'update {} set '.format(table_name)
+        print('tuple(d.keys()) =', tuple(d.keys()))
+        set_part = ', '.join(['{} = ?'.format(column) for column in d.keys()])
+        set_part += ' '
+        s = ' and '.join(['{} = {}'.format(k, v) for k, v in where.items()])
+        where_clause = 'where {}'.format(s)
+        values = tuple(d.values())
+
+        print('static_part =', static_part)
+        print('set_part =', set_part)
+        print('s =', s)
+        print('where_clause =', where_clause)
+        print()
+        sql = static_part + set_part + where_clause
+        print('for update sql =')
+        print(sql)
+        self.execute(sql, values)
+        self.commit()
+        return static_part + str(values)
+
     def select(self, table_name, select_columns='*', conditions=''):
         sql = 'select {} from {} {}'. \
                format(select_columns, table_name, conditions)
