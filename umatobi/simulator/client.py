@@ -5,6 +5,7 @@ import socket
 import multiprocessing
 
 from simulator.darkness import Darkness
+import simulator.sql
 from lib import make_logger, jbytes_becomes_dict
 
 def make_darkness(config):
@@ -93,12 +94,6 @@ class Client(object):
         '''
         self.logger.info('Client(id={}) started!'.format(self.id))
 
-        # 現在は使用しないけど、将来用に一応作成する。
-      # self.conn = sqlite3.connect(self.client_db)
-      # self.cur = self.conn.cursor()
-        # けど、やっぱり comment out しておいた。
-        # 必要となる、そのときまで待ちましょう。
-
         # Darkness が作成する node の数を設定する。
         nodes_per_darkness = self.nodes_per_darkness
 
@@ -181,10 +176,10 @@ class Client(object):
         self.db_dir = os.path.join(self.simulation_dir, start_up)
         self.client_db = os.path.join(self.db_dir,
                                      'client.{}.db'.format(self.id))
-        # sqlite3.connect() を実行するthreadと sqlite3.execute() を実行する
-        # thread が異なると例外が起きてしまう。ここではattrを作成するだけ。
-        self.conn = None # sqlite3.connect(self.client_db)
-        self.cur = None # self.conn.cursor()
+        self.schema_path = \
+            os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
+        self.sql = simulator.sql.SQL(db_path=self.client_db,
+                                     schema_path=self.schema_path)
 
     def _hello_watson(self):
         '''\

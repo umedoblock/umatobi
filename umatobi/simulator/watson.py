@@ -31,8 +31,6 @@ class Watson(threading.Thread):
         self.simulation_db = os.path.join(self.db_dir, 'simulation.db')
         self.schema_path = \
             os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
-        self.conn = None # sqlite3.connect(self.simulation_db) in self.run()
-        self.cur = None # self.conn.cursor() in self.run()
 
       # self.watson_log = os.path.join(self.db_dir, 'watson.log')
         self.timeout_sec = 1
