@@ -1,0 +1,11 @@
+[watson]
+max_node_num: 8
+office: localhost:60000
+simulation_seconds: 30
+simulation_dir: ~/umatobi-simulation
+
+[client]
+nodes_per_darkness: 10
+watson: localhost:60000
+num_nodes: 20
+simulation_dir: ~/umatobi-simulation
