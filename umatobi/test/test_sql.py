@@ -117,8 +117,8 @@ class TestSQL(unittest.TestCase):
             if column == 'id':
                 self.assertEqual(d_insert[column], d_selected[0][index])
                 continue
-            self.assertNotEqual(d_insert[column], d_selected[0][index])
             self.assertEqual(d_update[column], d_selected[0][index])
+            self.assertNotEqual(d_insert[column], d_selected[0][index])
 
     def test_create_db_and_table_on_memory(self):
         sql = simulator.sql.SQL(db_path=':memory:',
