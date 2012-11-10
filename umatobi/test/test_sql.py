@@ -11,15 +11,22 @@ here = os.path.dirname(__file__)
 test_schema_path = os.path.join(here, 'test.schema')
 test_db_path = os.path.join(here, 'test.db')
 
+def remove_test_db():
+    try:
+        os.remove(test_db_path)
+    except OSError as raiz:
+        if raiz.args != (2, 'No such file or directory'):
+            raise raiz
+
 class TestSQL(unittest.TestCase):
+    def tearDown(self):
+        remove_test_db()
+
     def test_create_db_and_table(self):
         sql = simulator.sql.SQL(db_path=test_db_path,
                                 schema_path=test_schema_path)
         sql.create_db()
         sql.create_table('test_table')
-
-      # print(sql._create_table['test_table'])
-        os.remove(test_db_path)
 
     def test_insert_and_select(self):
         sql = simulator.sql.SQL(db_path=test_db_path,
@@ -58,8 +65,6 @@ class TestSQL(unittest.TestCase):
         d_insert['id'] = 1 # auto increment
         for column, index in d.items():
             self.assertEqual(d_insert[column], d_selected[0][index])
-
-        os.remove(test_db_path)
 
     def test_update_and_select(self):
         d = {}
@@ -115,8 +120,6 @@ class TestSQL(unittest.TestCase):
             self.assertNotEqual(d_insert[column], d_selected[0][index])
             self.assertEqual(d_update[column], d_selected[0][index])
 
-        os.remove(test_db_path)
-
     def test_create_db_and_table_on_memory(self):
         sql = simulator.sql.SQL(db_path=':memory:',
                                 schema_path=test_schema_path)
@@ -126,10 +129,5 @@ class TestSQL(unittest.TestCase):
       # print(sql._create_table['test_table'])
 
 if __name__ == '__main__':
-    try:
-        os.remove(test_db_path)
-    except OSError as raiz:
-        if raiz.args != (2, 'No such file or directory'):
-            raise raiz
-
+    remove_test_db()
     unittest.main(exit=False)
