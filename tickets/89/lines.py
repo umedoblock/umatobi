@@ -42,20 +42,29 @@ if __name__ == '__main__':
     y3 = 1 / (rate - 1) * x3 - 1 / (rate - 1)
     plt.plot(x3, y3, linewidth=1.0, color='r')
 
-    d4 = ((total_slots - redundancy) / redundancy) / (4 * (rate - 1))
-    x4 = np.arange(1, rate + d4, d4)
-    y4 = x4 * 0.0 + 0.20
-    plt.plot(x4, y4, 'go')
+  # d4 = ((total_slots - redundancy) / redundancy) / (4 * (rate - 1))
+  # x4 = np.arange(1, rate + d4, d4)
+  # y4 = x4 * 0.0 + 0.20
+  # plt.plot(x4, y4, 'go')
 
-    d5 = ((total_slots - redundancy) / redundancy) / (8 * (rate - 1))
-    x5 = np.arange(1, rate + d5, d5)
-    y5 = x5 * 0.0 + 0.40
-    plt.plot(x5, y5, 'gs')
+  # d5 = ((total_slots - redundancy) / redundancy) / (8 * (rate - 1))
+  # x5 = np.arange(1, rate + d5, d5)
+  # y5 = x5 * 0.0 + 0.40
+  # plt.plot(x5, y5, 'gs')
 
-    d6 = ((total_slots - redundancy) / redundancy) / (16 * (rate - 1))
-    x6 = np.arange(1, rate + d6, d6)
-    y6 = x6 * 0.0 + 0.60
-    plt.plot(x6, y6, 'gs')
+  # d6 = ((total_slots - redundancy) / redundancy) / (16 * (rate - 1))
+  # x6 = np.arange(1, rate + d6, d6)
+  # y6 = x6 * 0.0 + 0.60
+  # plt.plot(x6, y6, 'gs')
+
+    n_parities = (4, 8, 16)
+    count = 0.2
+    for n_parity in n_parities:
+        d7 = ((total_slots - redundancy) / redundancy) / (n_parity * (rate - 1))
+        x7 = np.arange(1, rate + d7, d7)
+        y7 = x7 * 0.0 + count
+        plt.plot(x7, y7, 'go')
+        count += 0.2
 
     # 縦横の縮尺を同じにする。
     plt.axis('scaled')
