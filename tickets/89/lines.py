@@ -66,6 +66,18 @@ if __name__ == '__main__':
         plt.plot(x7, y7, 'go')
         count += 0.2
 
+    count = 0.3
+    for n_parity in n_parities:
+        step = ((total_slots - redundancy)) / (n_parity * (rate - 1))
+        x8 = np.arange(redundancy, total_slots + 1, step)
+        y8 = x8 * 0.0 + count
+      # print('x8 =', list(x8))
+        x8 /= redundancy
+        plt.plot(x8, y8, 'rs')
+      # print('x8 =', list(x8))
+      # print()
+        count += 0.2
+
     # 縦横の縮尺を同じにする。
     plt.axis('scaled')
     plt.xlim(xmin=1-0.05, xmax=rate+0.05)
