@@ -22,6 +22,16 @@ if __name__ == '__main__':
     data_blocks = 128
     pb = 0.99
 
+    total_blocks = data_blocks * rate
+    xt = np.arange(data_blocks, rate * data_blocks + 1.0)
+    yt = []
+    for x in xt:
+        p = pb ** x
+        p = formula.p_multiplex(int(x), int(data_blocks), pb)
+        yt.append(p)
+    xt /= data_blocks
+    plt.plot(xt, yt, color='k', lw=1)
+
     n_slots_tup = (8, 16, 32)
     for n_slots in n_slots_tup:
     #   total_slots = n_slots * rate
