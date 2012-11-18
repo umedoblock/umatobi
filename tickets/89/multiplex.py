@@ -50,29 +50,9 @@ if __name__ == '__main__':
             ys.append(pd)
         xs /= n_slots
         plt.plot(xs, ys, 'g.')
-        print('xs =', list(xs))
-        print('ys =', list(ys))
+      # print('xs =', list(xs))
+      # print('ys =', list(ys))
         print()
-
-#   # (1, 0)から(rate, 1)まで赤色の直線を引く。
-#   d3 = ((total_slots - redundancy) / redundancy) / redundancy
-#   x3 = np.arange(1, rate + d3, d3)
-#   y3 = 1 / (rate - 1) * x3 - 1 / (rate - 1)
-#   plt.plot(x3, y3, linewidth=1.0, color='r')
-
-#   n_parities = (4, 8, 16)
-
-#   count = 0.3
-#   for n_parity in n_parities:
-#       step = ((total_slots - redundancy)) / (n_parity * (rate - 1))
-#       x8 = np.arange(redundancy, total_slots + 1, step)
-#       y8 = x8 * 0.0 + count
-#     # print('x8 =', list(x8))
-#       x8 /= redundancy
-#       plt.plot(x8, y8, 'rs')
-#     # print('x8 =', list(x8))
-#     # print()
-#       count += 0.2
 
     # 縦横の縮尺を同じにする。
     plt.axis('scaled')
