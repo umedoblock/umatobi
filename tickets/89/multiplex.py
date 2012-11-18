@@ -60,7 +60,7 @@ if __name__ == '__main__':
             pd = formula.p_multiplex(int(x), int(n_slots), ps)
             ys.append(pd)
         xs /= n_slots
-        plt.plot(xs, ys, 'gd')
+        plt.plot(xs, ys, 'g.')
         print('xs =', list(xs))
         print('ys =', list(ys))
         print()
