@@ -26,7 +26,6 @@ if __name__ == '__main__':
     xt = np.arange(data_blocks, rate * data_blocks + 1.0)
     yt = []
     for x in xt:
-        p = pb ** x
         p = formula.p_multiplex(int(x), int(data_blocks), pb)
         yt.append(p)
     xt /= data_blocks
