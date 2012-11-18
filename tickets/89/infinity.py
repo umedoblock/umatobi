@@ -23,15 +23,11 @@ if __name__ == '__main__':
     pb = 0.99
 
     total_blocks = data_blocks * rate
-    xt = np.arange(data_blocks, rate * data_blocks + 1.0)
-    yt = []
-    for x in xt:
-        p = formula.p_multiplex(int(x), int(data_blocks), pb)
-        yt.append(p)
-    xt /= data_blocks
-    plt.plot(xt, yt, color='k', lw=1)
 
+    n_slots_tup = range(2, 4 + 1, 2)
     n_slots_tup = range(2, 16 + 1, 2)
+    point_styles = ['o', 'D', 's', '+'] * 2
+    index = 0
     for n_slots in n_slots_tup:
         n_blocks = data_blocks / n_slots
         ps = pb ** n_blocks
@@ -46,8 +42,10 @@ if __name__ == '__main__':
             n_parity_slots = x - n_slots
             pd = formula.p_reed_solomon(int(x), int(n_parity_slots), ps)
             ys.append(pd)
+        xs = xs[:len(ys)]
         xs /= n_slots
-        plt.plot(xs, ys, 'b.')
+        plt.plot(xs, ys, 'b{}'.format(point_styles[index]))
+        index += 1
       # print('xs =', list(xs))
       # print('ys =', list(ys))
         print()
