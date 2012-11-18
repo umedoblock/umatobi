@@ -34,8 +34,6 @@ if __name__ == '__main__':
 
     n_slots_tup = (8, 16, 32)
     for n_slots in n_slots_tup:
-    #   total_slots = n_slots * rate
-        redundancy = n_slots
         n_blocks = data_blocks // n_slots
         ps = pb ** n_blocks
         print('n_blocks={}'.format(n_blocks))
