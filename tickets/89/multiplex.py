@@ -46,17 +46,6 @@ if __name__ == '__main__':
         xs = np.arange(n_slots, n_slots * rate + 1.0)
         ys = []
         for x in xs:
-            ys.append(n_slots / 32 - 0.1)
-      # print('xs =', list(xs))
-        pd = ps ** n_slots
-        print('pd={:.15f}'.format(pd))
-        xs /= n_slots
-        plt.plot(xs, ys, 'ro')
-      # print('xs =', list(xs))
-
-        xs = np.arange(n_slots, n_slots * rate + 1.0)
-        ys = []
-        for x in xs:
             pd = formula.p_multiplex(int(x), int(n_slots), ps)
             ys.append(pd)
         xs /= n_slots
