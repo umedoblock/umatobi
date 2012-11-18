@@ -4,6 +4,8 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
+import formula
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         rate = 2
@@ -18,13 +20,13 @@ if __name__ == '__main__':
     # n_slots = redundancy
     # data_blocks = n_slots * n_blocks
     data_blocks = 128
+    pb = 0.99
 
     n_slots_tup = (8, 16, 32)
     for n_slots in n_slots_tup:
     #   total_slots = n_slots * rate
         redundancy = n_slots
         n_blocks = data_blocks // n_slots
-        pb = 0.99
         ps = pb ** n_blocks
         print('n_blocks={}'.format(n_blocks))
         print('n_slots={}'.format(n_slots))
@@ -41,6 +43,16 @@ if __name__ == '__main__':
         xs /= n_slots
         plt.plot(xs, ys, 'ro')
       # print('xs =', list(xs))
+
+        xs = np.arange(n_slots, n_slots * rate + 1.0)
+        ys = []
+        for x in xs:
+            pd = formula.p_multiplex(int(x), int(n_slots), ps)
+            ys.append(pd)
+        xs /= n_slots
+        plt.plot(xs, ys, 'gd')
+        print('xs =', list(xs))
+        print('ys =', list(ys))
         print()
 
 #   # (1, 0)から(rate, 1)まで赤色の直線を引く。
