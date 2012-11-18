@@ -31,9 +31,11 @@ if __name__ == '__main__':
     xt /= data_blocks
     plt.plot(xt, yt, color='k', lw=1)
 
-    n_slots_tup = (8, 16, 32)
+    n_slots_tup = range(2, 16 + 1, 2)
     for n_slots in n_slots_tup:
-        n_blocks = data_blocks // n_slots
+        n_blocks, m = divmod(data_blocks, n_slots)
+        if m != 0:
+            n_blocks = data_blocks / n_slots
         ps = pb ** n_blocks
         print('n_blocks={}'.format(n_blocks))
         print('n_slots={}'.format(n_slots))
