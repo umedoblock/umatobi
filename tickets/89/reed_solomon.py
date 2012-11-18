@@ -43,7 +43,8 @@ if __name__ == '__main__':
         xs = np.arange(n_slots, n_slots * rate + 1.0)
         ys = []
         for x in xs:
-            pd = formula.p_reed_solomon(int(x), int(x - n_slots), ps)
+            n_parity_slots = x - n_slots
+            pd = formula.p_reed_solomon(int(x), int(n_parity_slots), ps)
             ys.append(pd)
         xs /= n_slots
         plt.plot(xs, ys, 'b.')
