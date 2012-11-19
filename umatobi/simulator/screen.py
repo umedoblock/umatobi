@@ -104,9 +104,10 @@ def display_sample(moving):
         glVertex2f(ix, iy)
     glEnd()
 
+    len_leg = 0.033
     glBegin(GL_LINES)
     for rxy in L:
-        rx, ry, gx, gy = formula._moving_legs(rxy, moving, leg=0.033)
+        rx, ry, gx, gy = formula._moving_legs(rxy, moving, leg=len_leg)
         rad, ix, iy = rxy
         # 赤足
         glColor3ub(0xff, 0x00, 0x00)
