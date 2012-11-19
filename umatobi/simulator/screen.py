@@ -88,6 +88,9 @@ def display_sample(moving):
     L = [] # 点の配置場所を tuple(rad, ix, iy) として格納
 
     # 点の配置場所を計算
+    # ここでは rad は数学の定義と一致することに注意。
+    # rad = 0,      x, y = cos(0), sin(0) = 1, 0
+    # rad = pi / 2, x, y = cos(pi/2), sin(pi/2) = 0, 1
     for i in range(n):
         rate = i / n
         rad = 2 * math.pi * rate
