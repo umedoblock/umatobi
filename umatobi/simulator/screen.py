@@ -55,7 +55,8 @@ class Screen(object):
 
         glFlush()
         d = datetime.datetime.today()
-        print('\r{}, {:.6f}'.format(d, moving), end='')
+      # print('\r{}, {:.6f}'.format(d, moving), end='')
+        print('\r{}'.format(d), end='')
 
         self.frames += 1
 
@@ -68,8 +69,8 @@ class Screen(object):
         print('key={}, x={}, y={}, code={}'.format(key, x, y, code))
         if key.decode() == chr(27):
             print('ESC')
-        if ord(key) == 27:
-            # 'ESC'
+        if ord(key) == 27 or ord(key) == 0x17 or ord(key) == 0x03:
+          # ESC              ctr-w               ctr-c
 
             passed_seconds = self._passed_time()
             print('passed_seconds =', passed_seconds)
