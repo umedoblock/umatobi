@@ -87,7 +87,6 @@ def display_sample(moving):
     n = 100 # 100 個の点
     L = [] # 点の配置場所を tuple(rad, ix, iy) として格納
 
-    # 点を円形に配置
     # 点の配置場所を計算
     for i in range(n):
         rate = i / n
@@ -96,27 +95,24 @@ def display_sample(moving):
         ix = math.cos(rad) * 0.99
         rxy = (rad, ix, iy)
         L.append(rxy)
-    # 大きさ3の白い点を描画
-    glPointSize(3)
-    glBegin(GL_POINTS)
-    glColor3ub(0xff, 0xff, 0xff)
-    for rxy in L:
-        rad, ix, iy = rxy
-        glVertex2f(ix, iy)
-    glEnd()
 
     len_leg = 0.033
-    glBegin(GL_LINES)
 
-    # white line
+    # 白い正方形を配置
+    # white Quads
+    glBegin(GL_QUADS)
+    glColor3ub(0xff, 0xff, 0xff)
+    half_pi = math.pi / 2.0
     for rxy in L:
         rad, ix, iy = rxy
-        wx = math.cos(rad + math.pi) * len_leg * 2 + ix
-        wy = math.sin(rad + math.pi) * len_leg * 2 + iy
-        glColor3ub(0xff, 0xff, 0xff)
-        glVertex2f(ix, iy)
-        glVertex2f(wx, wy)
+        for i in range(4):
+            n_half_pi = i * half_pi
+            wx = math.cos(rad + n_half_pi) * len_leg / 3 + ix
+            wy = math.sin(rad + n_half_pi) * len_leg / 3 + iy
+            glVertex2f(wx, wy)
+    glEnd()
 
+    glBegin(GL_LINES)
     for rxy in L:
         rx, ry, gx, gy = formula._moving_legs(rxy, moving, leg=len_leg)
         rad, ix, iy = rxy
