@@ -106,6 +106,16 @@ def display_sample(moving):
 
     len_leg = 0.033
     glBegin(GL_LINES)
+
+    # white line
+    for rxy in L:
+        rad, ix, iy = rxy
+        wx = math.cos(rad + math.pi) * len_leg * 2 + ix
+        wy = math.sin(rad + math.pi) * len_leg * 2 + iy
+        glColor3ub(0xff, 0xff, 0xff)
+        glVertex2f(ix, iy)
+        glVertex2f(wx, wy)
+
     for rxy in L:
         rx, ry, gx, gy = formula._moving_legs(rxy, moving, leg=len_leg)
         rad, ix, iy = rxy
