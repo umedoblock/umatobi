@@ -31,8 +31,8 @@ class TestWatson(unittest.TestCase):
 
         self.assertTrue(os.path.exists(watson_log))
 
-        # avoid warning
-        watson.watson.close()
+        watson.start()
+        watson.join()
 
 if __name__ == '__main__':
     unittest.main()

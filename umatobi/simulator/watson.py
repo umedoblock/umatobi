@@ -61,6 +61,7 @@ class Watson(threading.Thread):
     def join(self):
         '''watson threadがjoin'''
         threading.Thread.join(self)
+        self.watson.close()
         self.logger.info('watson thread joined.')
 
     def _wait_clients(self):
