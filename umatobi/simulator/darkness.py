@@ -4,18 +4,24 @@ import queue
 import pickle
 
 from simulator.node import Node
+import simulator.sql
 from lib import make_logger
 
 class Darkness(object):
     '''漆黒の闇'''
 
-    def __init__(self, db_dir, id, num_nodes, first_node_id, made_nodes, leave_there):
+    def __init__(self, db_dir, id, client_id, num_nodes, first_node_id, made_nodes, leave_there):
         '''\
         Darkness process 内で 多数の node thread を作成する。
         Client が leave_there を signal 状態にしたら終了処理を行う。
         '''
         self.db_dir = db_dir
         self.id = id
+        self.client_id = client_id
+        self.client_db_path = os.path.join(self.db_dir,
+                                     'client.{}.db'.format(self.client_id))
+        self.schema_path = \
+            os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
         self.num_nodes = num_nodes
         self.made_nodes = made_nodes # multiprocessing.Value()
         self.leave_there = leave_there # multiprocessing.Event()
@@ -40,6 +46,11 @@ class Darkness(object):
         node thread 作成後、Client が leave_there を
         signal 状態にするまで待機し続ける。
         '''
+        self.client_db = simulator.sql.SQL(db_path=self.client_db_path,
+                                           schema_path=self.schema_path)
+        self.client_db.create_db()
+        self.logger.info('{} client_db.create_db().'.format(self))
+
         for i in range(self.num_nodes):
             id = self.first_node_id + i
             host, port = 'localhost', 10000 + id
@@ -69,6 +80,9 @@ class Darkness(object):
 
         # _queue_darkness に残っている queue を全て吸い出し。
         self.inhole_queues_from_nodes()
+
+        self.client_db.close()
+        self.logger.info('{} client_db.close().'.format(self))
 
     def inhole_queues_from_nodes(self):
         queue_size = self._queue_darkness.qsize()

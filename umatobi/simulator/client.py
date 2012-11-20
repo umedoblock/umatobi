@@ -10,20 +10,21 @@ from lib import make_logger, jbytes_becomes_dict
 
 def make_darkness(config):
     '''darkness process を作成'''
-    db_dir, darkness_id, \
+    db_dir, darkness_id, client_id, \
     num_nodes, first_node_id, made_nodes, leave_there = \
-            config.db_dir, config.darkness_id, \
+            config.db_dir, config.darkness_id, config.client_id, \
             config.num_nodes, config.first_node_id, config.made_nodes, config.leave_there
-    darkness_ = Darkness(db_dir, darkness_id,
+    darkness_ = Darkness(db_dir, darkness_id, client_id,
                                   num_nodes, first_node_id, made_nodes, leave_there)
     darkness_.start()
   # darkness_.stop()
 
 class DarknessConfig(object):
     '''darkness process と client が DarknessConfig を介して通信する。'''
-    def __init__(self, db_dir, darkness_id, num_nodes, first_node_id, leave_there):
+    def __init__(self, db_dir, darkness_id, client_id, num_nodes, first_node_id, leave_there):
         self.db_dir = db_dir
         self.darkness_id = darkness_id
+        self.client_id = client_id
         self.first_node_id = first_node_id
         self.num_nodes = num_nodes
         # share with client and darknesses
@@ -91,6 +92,12 @@ class Client(object):
         作成後は、watsonから終了通知("break down")を受信するまで待機する。
         '''
         self.logger.info('Client(id={}) started!'.format(self.id))
+        self.client_db = simulator.sql.SQL(db_path=self.client_db_path,
+                                           schema_path=self.schema_path)
+        self.client_db.create_db()
+        self.logger.info('{} client_db.create_db().'.format(self))
+        self.client_db.create_table('pickles')
+        self.logger.info('{} client_db.create_table(\'pickles\').'.format(self))
 
         # Darkness が作成する node の数を設定する。
         nodes_per_darkness = self.nodes_per_darkness
@@ -103,8 +110,10 @@ class Client(object):
                 # 最後に端数を作成？
                 nodes_per_darkness = self.last_darkness_make_nodes
             self.logger.info('darkness id={}, nodes_per_darkness={}'.format(darkness_id, nodes_per_darkness))
+            client_id = self.id
             darkness_config = \
-                DarknessConfig(self.db_dir, darkness_id, nodes_per_darkness, \
+                DarknessConfig(self.db_dir, darkness_id, client_id, \
+                               nodes_per_darkness, \
                                first_node_id, self.leave_there)
             darkness_process = \
                 multiprocessing.Process(
@@ -153,6 +162,9 @@ class Client(object):
             self.logger.info(msg)
         self.logger.info('Client(id={}) thread released.'.format(self.id))
 
+        self.client_db.close()
+        self.logger.info('{} client_db.close().'.format(self))
+
         for darkness_process in self.darkness_processes:
             self.total_created_nodes += darkness_process.config.made_nodes.value
 
@@ -176,8 +188,6 @@ class Client(object):
                                      'client.{}.db'.format(self.id))
         self.schema_path = \
             os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
-        self.client_db = simulator.sql.SQL(db_path=self.client_db_path,
-                                     schema_path=self.schema_path)
 
     def _hello_watson(self):
         '''\

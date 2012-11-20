@@ -46,6 +46,10 @@ class SQL(object):
         else:
             self.cur.execute(sql)
 
+    def close(self):
+        self.cur.close()
+        self.conn.close()
+
     def insert(self, table_name, d):
         static_part = 'insert into {} {} values '.format(table_name, tuple(d.keys()))
         hatenas = '({})'.format(', '.join('?' * len(d)))
