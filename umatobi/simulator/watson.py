@@ -28,7 +28,8 @@ class Watson(threading.Thread):
       # self.simulation_dir = simulation_dir
         self.start_up = start_up
         self.db_dir = os.path.join(simulation_dir, self.start_up)
-        self.simulation_db = os.path.join(self.db_dir, 'simulation.db')
+        self.simulation_db_path = os.path.join(self.db_dir, 'simulation.db')
+        self.watson_db_path = os.path.join(self.db_dir, 'watson.db')
         self.schema_path = \
             os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
 
@@ -50,10 +51,10 @@ class Watson(threading.Thread):
     def run(self):
         '''simulation 開始'''
         self._s = datetime.datetime.today()
-        self.sql = simulator.sql.SQL(db_path=self.simulation_db,
+        self.watson_db = simulator.sql.SQL(db_path=self.watson_db_path,
                                      schema_path=self.schema_path)
-        self.sql.create_db()
-        self.sql.create_table('clients')
+        self.watson_db.create_db()
+        self.watson_db.create_table('clients')
 
         self._wait_clients()
         self._release_clients()
@@ -110,7 +111,7 @@ class Watson(threading.Thread):
                 d['host'] = phone_number[0]
                 d['port'] = phone_number[1]
                 d['joined'] = current_isoformat_time()
-                sql = self.sql.insert('clients', d)
+                sql = self.watson_db.insert('clients', d)
                 self.logger.debug('{} {}'.format(self, sql))
 
                 d.clear()

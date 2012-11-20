@@ -79,7 +79,7 @@ class Client(object):
         self.logger.info('----- {} log start -----'.format(self))
         self.logger.info('   watson = {}'.format(self.watson))
         self.logger.info('   db_dir = {}'.format(self.db_dir))
-        self.logger.info('client_db = {}'.format(self.client_db))
+        self.logger.info('client_db_path = {}'.format(self.client_db_path))
         self.logger.info('----- client.{} initilized end -----'.
                           format(self.id))
         self.logger.debug('{} debug log test.'.format(self))
@@ -172,11 +172,11 @@ class Client(object):
         self.id = d['id']
         start_up = d['start_up']
         self.db_dir = os.path.join(self.simulation_dir, start_up)
-        self.client_db = os.path.join(self.db_dir,
+        self.client_db_path = os.path.join(self.db_dir,
                                      'client.{}.db'.format(self.id))
         self.schema_path = \
             os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
-        self.sql = simulator.sql.SQL(db_path=self.client_db,
+        self.client_db = simulator.sql.SQL(db_path=self.client_db_path,
                                      schema_path=self.schema_path)
 
     def _hello_watson(self):
