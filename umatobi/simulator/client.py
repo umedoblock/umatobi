@@ -55,8 +55,6 @@ class Client(object):
         self.num_nodes = num_nodes
         # Client set positive integer to id in self._init_attrs().
         self.id = -1
-        # TODO: #116 config, arg 等で NODES_PER_DARKNESS を
-        #            変更できるようにする。
         self.nodes_per_darkness = self.NODES_PER_DARKNESS
         div, mod = divmod(self.num_nodes, self.nodes_per_darkness)
         if mod == 0:
