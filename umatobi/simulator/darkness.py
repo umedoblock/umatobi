@@ -1,5 +1,7 @@
 import sys, os
 import threading
+import queue
+import pickle
 
 from simulator.node import Node
 from lib import make_logger
@@ -17,6 +19,7 @@ class Darkness(object):
         self.num_nodes = num_nodes
         self.made_nodes = made_nodes # multiprocessing.Value()
         self.leave_there = leave_there # multiprocessing.Event()
+        self._queue_darkness = queue.Queue()
 
         self.good_bye_with_nodes = threading.Event()
 
@@ -39,7 +42,11 @@ class Darkness(object):
         '''
         for i in range(self.num_nodes):
             id = self.first_node_id + i
-            node_ = Node('localhost', 10000 + id, id, self.good_bye_with_nodes)
+            host, port = 'localhost', 10000 + id
+            node_ = Node(host, port, id,
+                         self.good_bye_with_nodes,
+                         self._queue_darkness
+                         )
             self.logger.info('{} created {}.'.format(self, node_))
             node_.start()
             self.nodes.append(node_)
@@ -59,6 +66,20 @@ class Darkness(object):
         for node_ in self.nodes:
             node_.join()
             self.logger.info('{} thread joined.'.format(node_))
+
+        # _queue_darkness に残っている queue を全て吸い出し。
+        self.inhole_queues_from_nodes()
+
+    def inhole_queues_from_nodes(self):
+        queue_size = self._queue_darkness.qsize()
+        self.logger.info('{} queue_size={}.'.format(self, queue_size))
+        for i in range(queue_size):
+            pickled = self._queue_darkness.get()
+          # self.sql.insert('pickles', pickled)
+            d = pickle.loads(pickled)
+            self.logger.info('{}.get() i={} d="{}"'.format(self, i, d))
+      # client の db.pickles へ pickle 情報を commit
+      # self.sql.commit()
 
     def stop(self):
         '''simulation 終了'''

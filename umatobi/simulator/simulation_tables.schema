@@ -35,15 +35,17 @@ memo: text
 version: text
 
 [nodes]
-id: integer primary key autoincrement unique not null
-host: text
-port: integer unique not null
+# idはwatson, clientが管理する値であるから、autoincrement 付けない。
+id: integer primary key unique not null
+host: text not null
+# 複数clientの時、host or ip が異なり、port番号は同じという場合があるから、
+port: integer not null # unique は付けない。
 keyID: integer # ?
 key: blob
 rad: float
 x: float
 y: float
-status: text
+status: text not null
 
 [clients]
 id: integer primary key autoincrement unique not null
@@ -51,9 +53,10 @@ host: text
 port: integer
 joined: text # iso8601
 
-[sqls]
-now: text not null
-sql: text not null
+# darkness commit to client.1.db database.
+[pickles]
+id: integer primary key autoincrement unique not null
+pickle: blob not null
 
 # "name TEXT UNIQUE NOT NULL)")
 # "year INTEGER NOT NULL, "
