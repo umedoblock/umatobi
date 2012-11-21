@@ -76,7 +76,8 @@ class Client(object):
 
         self._init_attrs()
 
-        self.logger = make_logger(self.db_dir, 'client', self.id)
+        self.logger = make_logger(self.db_dir, 'client', self.id,
+                                  level=self.log_level)
         self.logger.info('----- {} log start -----'.format(self))
         self.logger.info('   watson = {}'.format(self.watson))
         self.logger.info('   db_dir = {}'.format(self.db_dir))
@@ -184,6 +185,7 @@ class Client(object):
 
         self.id = d['id']
         start_up = d['start_up']
+        self.log_level = d['log_level']
         self.db_dir = os.path.join(self.simulation_dir, start_up)
         self.client_db_path = os.path.join(self.db_dir,
                                      'client.{}.db'.format(self.id))

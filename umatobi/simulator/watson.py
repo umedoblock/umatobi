@@ -12,7 +12,8 @@ import simulator.sql
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
 
-    def __init__(self, office, simulation_seconds, simulation_dir, start_up):
+    def __init__(self, office, simulation_seconds, simulation_dir, start_up,
+                 log_level):
         '''\
         watson: Cient, Node からの UDP 接続を待つ。
         起動時刻を start_up と名付けて記録する。
@@ -24,6 +25,7 @@ class Watson(threading.Thread):
         threading.Thread.__init__(self)
         self.office = office
         self.simulation_seconds = simulation_seconds
+        self.log_level = log_level
 
       # self.simulation_dir = simulation_dir
         self.start_up = start_up
@@ -44,7 +46,7 @@ class Watson(threading.Thread):
 
         self._sock.bind(self.office)
 
-        self.logger = make_logger(self.db_dir, 'watson')
+        self.logger = make_logger(self.db_dir, 'watson', level=self.log_level)
         self.logger.info('----- watson log -----')
         self.logger.info('simulation_seconds={}'.format(simulation_seconds))
 
@@ -112,6 +114,7 @@ class Watson(threading.Thread):
                 d['host'] = phone_number[0]
                 d['port'] = phone_number[1]
                 d['joined'] = current_isoformat_time()
+                d['log_level'] = self.log_level
                 sql = self.watson_db.insert('clients', d)
                 self.logger.debug('{} {}'.format(self, sql))
 

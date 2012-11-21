@@ -99,7 +99,8 @@ if __name__ == '__main__':
 
     # 各 object を作成するなど。
     watson = Watson(office, args.simulation_seconds,
-                    args.simulation_dir, start_up)
+                    args.simulation_dir, start_up,
+                    args.log_level)
 
     # Watson start!
     watson.start()
