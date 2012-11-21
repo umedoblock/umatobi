@@ -46,7 +46,8 @@ class Darkness(object):
         node thread 作成後、Client が leave_there を
         signal 状態にするまで待機し続ける。
         '''
-        self.client_db = simulator.sql.SQL(db_path=self.client_db_path,
+        self.client_db = simulator.sql.SQL(owner=self,
+                                           db_path=self.client_db_path,
                                            schema_path=self.schema_path)
         self.client_db.create_db()
         self.logger.info('{} client_db.create_db().'.format(self))

@@ -51,7 +51,8 @@ class Watson(threading.Thread):
     def run(self):
         '''simulation 開始'''
         self._s = datetime.datetime.today()
-        self.watson_db = simulator.sql.SQL(db_path=self.watson_db_path,
+        self.watson_db = simulator.sql.SQL(owner=self,
+                                     db_path=self.watson_db_path,
                                      schema_path=self.schema_path)
         self.watson_db.create_db()
         self.watson_db.create_table('clients')

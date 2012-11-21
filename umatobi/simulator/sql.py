@@ -1,19 +1,47 @@
 import sqlite3
 import configparser
+import sys
+import logging
 
 class SQL(object):
-    def __init__(self, db_path=':memory:', schema_path=None):
+    def __init__(self, owner=None, db_path=':memory:', schema_path=None):
+        if owner is None:
+            raise RuntimeError('owner must be available obj.')
         if schema_path is None:
-            RuntimeError('schema_path must be available path.')
+            raise RuntimeError('schema_path must be available path.')
         self.db_path = db_path
         self.schema_path = schema_path
         self.conn = None
         self.cur = None
         self._create_table = {}
+        self.set_owner(owner) # set logger to self if owner has logger.
+        if not hasattr(self, 'logger'):
+            self.set_logger(None)
 
         self.schema = configparser.ConfigParser()
         with open(self.schema_path) as f:
             self.schema.read_file(f)
+
+    def set_owner(self, owner):
+        if owner and hasattr(owner, 'logger'):
+            self.set_logger(owner.logger)
+        self.owner = owner
+
+    def set_logger(self, logger):
+        if logger is None:
+            # #139 いつかどこかで暇な時にでも、lib.make_logger() と統合しよう。
+            logger = logging.getLogger('stdout')
+            logger.setLevel(logging.DEBUG)
+            fmt = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
+            formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S')
+            # print() の代わりとして使用することを想定しているので、
+            # log message を sys.stdout に出力。
+            ch = logging.StreamHandler(stream=sys.stdout)
+            ch.setLevel(logging.DEBUG)
+            ch.setFormatter(formatter)
+            logger.addHandler(ch)
+
+        self.logger = logger
 
     def create_db(self):
         self.conn = sqlite3.connect(self.db_path)
@@ -24,8 +52,8 @@ class SQL(object):
             raise RuntimeError('you must call read_table_schema() before call create_table().')
 
         table_info = self.schema[table_name]
-      # print('name =', table_info.name)
-      # print('table_info =', table_info)
+      # self.logger.debug('name =', table_info.name)
+      # self.logger.debug('table_info =', table_info)
 
         columns = []
         for column_name, explain in table_info.items():
@@ -68,28 +96,28 @@ class SQL(object):
         values = tuple(d.values())
 
         sql = static_part + str(values)
-        print('{}'.format(sql))
+        self.logger.debug('{}'.format(sql))
         self.execute(static_part + hatenas, values)
         self.commit()
         return sql
 
     def update(self, table_name, d, where):
         static_part = 'update {} set '.format(table_name)
-        print('tuple(d.keys()) =', tuple(d.keys()))
+        self.logger.debug('tuple(d.keys()) =', tuple(d.keys()))
         set_part = ', '.join(['{} = ?'.format(column) for column in d.keys()])
         set_part += ' '
         s = ' and '.join(['{} = {}'.format(k, v) for k, v in where.items()])
         where_clause = 'where {}'.format(s)
         values = tuple(d.values())
 
-        print('static_part =', static_part)
-        print('set_part =', set_part)
-        print('s =', s)
-        print('where_clause =', where_clause)
-        print()
+        self.logger.debug('static_part =', static_part)
+        self.logger.debug('set_part =', set_part)
+        self.logger.debug('s =', s)
+        self.logger.debug('where_clause =', where_clause)
+        self.logger.debug()
         sql = static_part + set_part + where_clause
-        print('for update sql =')
-        print(sql)
+        self.logger.debug('for update sql =')
+        self.logger.debug(sql)
         self.execute(sql, values)
         self.commit()
         return static_part + str(values)
@@ -97,8 +125,7 @@ class SQL(object):
     def select(self, table_name, select_columns='*', conditions=''):
         sql = 'select {} from {} {}'. \
                format(select_columns, table_name, conditions)
-        print('select sql =')
-        print(sql)
+        self.logger.debug('{} select sql =\n{}'.format(self.owner, sql))
         self.execute(sql)
         # rows[0] の先頭からの順番と、
         # schema で記述している column の順番は一致する
