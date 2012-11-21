@@ -17,7 +17,6 @@ def make_darkness(config):
     darkness_ = Darkness(db_dir, darkness_id, client_id,
                                   num_nodes, first_node_id, made_nodes, leave_there)
     darkness_.start()
-  # darkness_.stop()
 
 class DarknessConfig(object):
     '''darkness process と client が DarknessConfig を介して通信する。'''
