@@ -41,6 +41,18 @@ class SQL(object):
         self.conn.commit()
 
     def execute(self, sql, values=()):
+        # valuesが一つの場合、以下のようなsqlが発行されてしまう。
+        # ('table_name',) (b'abc',)
+        # 結果、例外が発生する。
+        # sqlite3.OperationalError: near ")": syntax error
+        sql = sql.replace("',)", "')")
+        # replace() を実行してやると、綺麗になる。
+        # ('table_name') (b'abc')
+        # でも、雰囲気として、 replace() は必要ない。
+        # だって、どのtableにも'id'があるんだもん。。。
+        # valuesの要素が一つだなんて事はなさそうだよ。
+        # でも、せっかく書いた replace()。
+        # 消すのはもったいないので残す。
         if values:
             self.cur.execute(sql, values)
         else:
@@ -55,9 +67,11 @@ class SQL(object):
         hatenas = '({})'.format(', '.join('?' * len(d)))
         values = tuple(d.values())
 
+        sql = static_part + str(values)
+        print('{}'.format(sql))
         self.execute(static_part + hatenas, values)
         self.commit()
-        return static_part + str(values)
+        return sql
 
     def update(self, table_name, d, where):
         static_part = 'update {} set '.format(table_name)

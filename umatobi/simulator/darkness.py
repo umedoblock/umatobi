@@ -87,13 +87,19 @@ class Darkness(object):
     def inhole_queues_from_nodes(self):
         queue_size = self._queue_darkness.qsize()
         self.logger.info('{} queue_size={}.'.format(self, queue_size))
+        pickle_record = {}
+        pickle_record['id'] = None
         for i in range(queue_size):
             pickled = self._queue_darkness.get()
-          # self.sql.insert('pickles', pickled)
-            d = pickle.loads(pickled)
-            self.logger.info('{}.get() i={} d="{}"'.format(self, i, d))
+            pickle_record['pickle'] = pickled
+            self.client_db.insert('pickles', pickle_record)
+          # d = pickle.loads(pickled)
+          # self.logger.info('{}.get() i={} d="{}" pickled="{}"'.format(self, i, d, pickled))
       # client の db.pickles へ pickle 情報を commit
-      # self.sql.commit()
+        self.client_db.commit()
+        records = self.client_db.select('pickles', 'id,pickle',
+                                        conditions='where id = 1')
+        self.logger.info('records = "{}"'.format(records))
 
     def stop(self):
         '''simulation 終了'''
