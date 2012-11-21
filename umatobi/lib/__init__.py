@@ -45,7 +45,7 @@ def make_logger(log_dir='', name='', index=0, level=None):
     log_path = os.path.join(log_dir, base_name)
 
     logger = logging.getLogger(name_and_index)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(level)
 
     # create formatter and add it to the handlers
     fmt = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
@@ -54,14 +54,13 @@ def make_logger(log_dir='', name='', index=0, level=None):
 
     # create file handler which logs even debug messages
     fh = logging.FileHandler(log_path)
-    fh.setLevel(logging.DEBUG)
+    fh.setLevel(level)
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 
     # create console handler with a higher log level
-    # ch output log to sys.stderr
-    ch = logging.StreamHandler(None)
-    ch.setLevel(logging.INFO)
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(level)
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 

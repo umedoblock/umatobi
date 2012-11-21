@@ -121,6 +121,7 @@ class Watson(threading.Thread):
                 d.clear()
                 d['id'] = id
                 d['start_up'] = self.start_up
+                d['log_level'] = self.log_level
                 reply = dict_becomes_jbytes(d)
                 count_clients += 1
             else:

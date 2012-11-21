@@ -8,28 +8,27 @@ from simulator.darkness import Darkness
 import simulator.sql
 from lib import make_logger, jbytes_becomes_dict
 
-def make_darkness(config):
+def make_darkness(d_config):
     '''darkness process を作成'''
-    db_dir, darkness_id, client_id, \
-    num_nodes, first_node_id, made_nodes, leave_there = \
-            config.db_dir, config.darkness_id, config.client_id, \
-            config.num_nodes, config.first_node_id, config.made_nodes, config.leave_there
-    darkness_ = Darkness(db_dir, darkness_id, client_id,
-                                  num_nodes, first_node_id, made_nodes, leave_there)
+    darkness_ = Darkness(**d_config)
     darkness_.start()
 
-class DarknessConfig(object):
+def make_darkness_d_config(db_dir, darkness_id, client_id, log_level,
+                           num_nodes, first_node_id, leave_there):
     '''darkness process と client が DarknessConfig を介して通信する。'''
-    def __init__(self, db_dir, darkness_id, client_id, num_nodes, first_node_id, leave_there):
-        self.db_dir = db_dir
-        self.darkness_id = darkness_id
-        self.client_id = client_id
-        self.first_node_id = first_node_id
-        self.num_nodes = num_nodes
-        # share with client and darknesses
-        self.made_nodes = multiprocessing.Value('i', 0)
-        # share with client and another darknesses
-        self.leave_there = leave_there
+    d = {}
+    d['db_dir'] = db_dir
+    d['id'] = darkness_id
+    d['client_id'] = client_id
+    d['log_level'] = log_level
+    d['first_node_id'] = first_node_id
+    d['num_nodes'] = num_nodes
+    # share with client and darknesses
+    d['made_nodes'] = multiprocessing.Value('i', 0)
+    # share with client and another darknesses
+    d['leave_there'] = leave_there
+
+    return d
 
 class Client(object):
     SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
@@ -112,16 +111,16 @@ class Client(object):
                 nodes_per_darkness = self.last_darkness_make_nodes
             self.logger.info('darkness id={}, nodes_per_darkness={}'.format(darkness_id, nodes_per_darkness))
             client_id = self.id
-            darkness_config = \
-                DarknessConfig(self.db_dir, darkness_id, client_id, \
-                               nodes_per_darkness, \
+            darkness_d_config = \
+                make_darkness_d_config(self.db_dir, darkness_id, client_id,
+                               self.log_level, nodes_per_darkness,
                                first_node_id, self.leave_there)
             darkness_process = \
                 multiprocessing.Process(
                     target=make_darkness,
-                    args=(darkness_config,)
+                    args=(darkness_d_config,),
                 )
-            darkness_process.config = darkness_config
+            darkness_process.d_config = darkness_d_config
             darkness_process.start()
             self.darkness_processes.append(darkness_process)
 
@@ -159,7 +158,7 @@ class Client(object):
         for darkness_p in self.darkness_processes:
             darkness_p.join()
             msg = 'Client(id={}), Darkness(id={}) process joined.'. \
-                   format(self.id, darkness_p.config.darkness_id)
+                   format(self.id, darkness_p.d_config['id'])
             self.logger.info(msg)
         self.logger.info('Client(id={}) thread released.'.format(self.id))
 
@@ -167,9 +166,12 @@ class Client(object):
         self.logger.info('{} client_db.close().'.format(self))
 
         for darkness_process in self.darkness_processes:
-            self.total_created_nodes += darkness_process.config.made_nodes.value
+            self.total_created_nodes += \
+                darkness_process.d_config['made_nodes'].value
 
-        self.logger.info('Client(id={}) created num of nodes {}'.format(self.id, self.total_created_nodes))
+        message = 'Client(id={}) created num of nodes {}'. \
+                    format(self.id, self.total_created_nodes)
+        self.logger.info(message)
 
     def _init_attrs(self):
         '''\

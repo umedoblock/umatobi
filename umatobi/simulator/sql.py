@@ -30,7 +30,7 @@ class SQL(object):
     def set_logger(self, logger):
         if logger is None:
             # #139 いつかどこかで暇な時にでも、lib.make_logger() と統合しよう。
-            logger = logging.getLogger('stdout')
+            logger = logging.getLogger('default')
             logger.setLevel(logging.DEBUG)
             fmt = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
             formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S')
