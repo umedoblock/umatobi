@@ -44,8 +44,20 @@ def args_():
   #                      nargs='?',
   #                      default='',
   #                      help='simulate sql file path')
+    _log_levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+    log_levels = list(_log_levels)
+    log_levels.insert(-1, 'or')
+    help_log_level = ' '.join(log_levels) + ' (dedfault: INFO) ' + \
+                     'case insensitive'
+    parser.add_argument('--log-level',
+                         metavar='LEVEL', dest='log_level',
+                         nargs='?', default='INFO',
+                         help=help_log_level)
     args = parser.parse_args()
-
+    args.log_level = args.log_level.upper()
+    if not (args.log_level in _log_levels):
+        message = '--log-level=LEVEL must be {}.'.format(' '.join(log_levels))
+        raise argparse.ArgumentTypeError(message)
     return args
 
 def get_host_port(host_port):
