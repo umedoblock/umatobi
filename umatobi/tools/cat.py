@@ -1,7 +1,3 @@
-import argparse
-import sys
-import os
-
 from xxx import args_xxx, get_xxx_path
 
 def args_log():
