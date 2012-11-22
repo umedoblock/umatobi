@@ -43,6 +43,12 @@ def gather_log_file(files):
     return log_files
 
 if __name__ == '__main__':
+    # examples:
+    # umatobi/cat.py --help
+    # umatobi/cat.py --show-timestamps
+    # umatobi/cat.py watson.log
+    # umatobi/cat.py --index=1 client.1.log
+
     args = args_()
 
     simulation_dir = args.simulation_dir
@@ -69,7 +75,7 @@ if __name__ == '__main__':
         if not base_name in log_files:
             print('dir_name is "{}".'.format(dir_name))
             print('however, cannot use "{}" file'.format(base_name))
-            print('please select file in below files.')
+            print('please select log file in below log files.')
             print('    ' + '\n    '.join(log_files))
         else:
             path = os.path.join(dir_name, base_name)
