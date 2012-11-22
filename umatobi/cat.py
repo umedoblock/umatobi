@@ -39,12 +39,15 @@ def show_timestamps(timestamps):
         else:
             print('{:>6d} {}'.format(i, d))
 
-def gather_log_file(files):
-    log_files = []
+def gather_xxx_file(files, xxx):
+    xxx_files = []
     for file_name in files:
-        if file_name.endswith('.log'):
-            log_files.append(file_name)
-    return log_files
+        if file_name.endswith('.{}'.format(xxx)):
+            xxx_files.append(file_name)
+    return xxx_files
+
+def gather_log_file(files):
+    return gather_xxx_file(files, 'log')
 
 if __name__ == '__main__':
     # examples:
