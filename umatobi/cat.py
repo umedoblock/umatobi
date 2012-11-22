@@ -19,8 +19,8 @@ def args_():
                         metavar='timestamp', dest='timestamp',
                         nargs='?', default='00000000T000000',
                         help='example: 20121122T175422')
-    parser.add_argument(# last argment, base name
-                        metavar='base_name', dest='base_name',
+    parser.add_argument(# last argment, log file
+                        metavar='f', dest='log_file',
                         nargs='?', default='',
                         help='watson.log, client.1.log or darkness.1.log, ...')
     args = parser.parse_args()
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     args = args_()
 
     simulation_dir = args.simulation_dir
-    base_name = args.base_name
+    log_file = args.log_file
     if args.show_timestamps or args.timestamp == '00000000T000000':
         timestamps = os.listdir(simulation_dir)
 
@@ -60,8 +60,8 @@ if __name__ == '__main__':
         print('simulation_dir = "{}"'.format(simulation_dir))
         show_timestamps(timestamps)
     else:
-        if not args.base_name:
-            message = 'base_name muse be watson.log, client.1.log, ...'
+        if not log_file:
+            message = 'log_file muse be watson.log, client.1.log, ...'
             raise RuntimeError(message)
 
         if args.timestamp == '00000000T000000':
@@ -72,13 +72,13 @@ if __name__ == '__main__':
 
         files = os.listdir(dir_name)
         log_files = gather_log_file(files)
-        if not base_name in log_files:
+        if not log_file in log_files:
             print('dir_name is "{}".'.format(dir_name))
-            print('however, cannot use "{}" file'.format(base_name))
+            print('however, cannot use "{}" file'.format(log_file))
             print('please select log file in below log files.')
             print('    ' + '\n    '.join(log_files))
         else:
-            path = os.path.join(dir_name, base_name)
+            path = os.path.join(dir_name, log_file)
             print('path =', path)
             with open(path) as f:
                 for line in f:
