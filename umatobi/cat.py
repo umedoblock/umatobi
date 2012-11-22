@@ -2,8 +2,8 @@ import argparse
 import sys
 import os
 
-def args_():
-    parser = argparse.ArgumentParser(description='cat.py')
+def args_xxx(description):
+    parser = argparse.ArgumentParser(description)
     parser.add_argument('--show-timestamps', dest='show_timestamps',
                          action='store_true', default=False,
                          help='show index and directory timestamps')
@@ -19,6 +19,10 @@ def args_():
                         metavar='timestamp', dest='timestamp',
                         nargs='?', default='00000000T000000',
                         help='example: 20121122T175422')
+    return parser
+
+def args_log():
+    parser = args_xxx(description='cat.py')
     parser.add_argument(# last argment, log file
                         metavar='f', dest='log_file',
                         nargs='?', default='',
@@ -49,7 +53,7 @@ if __name__ == '__main__':
     # umatobi/cat.py watson.log
     # umatobi/cat.py --index=1 client.1.log
 
-    args = args_()
+    args = args_log()
 
     simulation_dir = args.simulation_dir
     log_file = args.log_file
