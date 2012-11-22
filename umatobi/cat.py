@@ -24,7 +24,7 @@ def args_xxx(description):
 def args_log():
     parser = args_xxx(description='cat.py')
     parser.add_argument(# last argment, log file
-                        metavar='f', dest='log_file',
+                        metavar='f', dest='xxx_file',
                         nargs='?', default='',
                         help='watson.log, client.1.log or darkness.1.log, ...')
     args = parser.parse_args()
@@ -46,29 +46,20 @@ def gather_xxx_file(files, xxx):
             xxx_files.append(file_name)
     return xxx_files
 
-def gather_log_file(files):
-    return gather_xxx_file(files, 'log')
-
-if __name__ == '__main__':
-    # examples:
-    # umatobi/cat.py --help
-    # umatobi/cat.py --show-timestamps
-    # umatobi/cat.py watson.log
-    # umatobi/cat.py --index=1 client.1.log
-
-    args = args_log()
-
+def get_xxx_path(args, xxx):
     simulation_dir = args.simulation_dir
-    log_file = args.log_file
+    xxx_file = args.xxx_file
     if args.show_timestamps or args.timestamp == '00000000T000000':
         timestamps = os.listdir(simulation_dir)
 
+    xxx_path = ''
     if args.show_timestamps:
         print('simulation_dir = "{}"'.format(simulation_dir))
         show_timestamps(timestamps)
     else:
-        if not log_file:
-            message = 'log_file muse be watson.log, client.1.log, ...'
+        if not xxx_file:
+            if xxx == 'log':
+                message = 'log_file muse be watson.log, client.1.log, ...'
             raise RuntimeError(message)
 
         if args.timestamp == '00000000T000000':
@@ -78,15 +69,28 @@ if __name__ == '__main__':
         dir_name = os.path.join(simulation_dir, timestamp)
 
         files = os.listdir(dir_name)
-        log_files = gather_log_file(files)
-        if not log_file in log_files:
+        xxx_files = gather_xxx_file(files, xxx)
+        if not xxx_file in xxx_files:
             print('dir_name is "{}".'.format(dir_name))
-            print('however, cannot use "{}" file'.format(log_file))
-            print('please select log file in below log files.')
-            print('    ' + '\n    '.join(log_files))
+            print('however, cannot use "{}" file'.format(xxx_file))
+            print('please select {} file in below {} files.'.format(xxx, xxx))
+            print('    ' + '\n    '.join(xxx_files))
         else:
-            path = os.path.join(dir_name, log_file)
-            print('path =', path)
-            with open(path) as f:
-                for line in f:
-                    print(line, end='')
+            xxx_path = os.path.join(dir_name, xxx_file)
+    return xxx_path
+
+if __name__ == '__main__':
+    # examples:
+    # umatobi/cat.py --help
+    # umatobi/cat.py --show-timestamps
+    # umatobi/cat.py watson.log
+    # umatobi/cat.py --index=1 client.1.log
+
+    args = args_log()
+    log_path = get_xxx_path(args, 'log')
+
+    if log_path:
+        print('log_path =', log_path)
+        with open(log_path) as f:
+            for line in f:
+                print(line, end='')
