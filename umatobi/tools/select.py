@@ -37,8 +37,14 @@ if __name__ == '__main__':
         print('db =', db)
         db.access_db()
         print()
+        table_names = db.get_table_names()
+        table_name = args.table_name
+        if not table_name in table_names:
+            message = 'table name "{}" is not in table_names={}.'. \
+                       format(table_name, table_names)
+            raise RuntimeError(message)
         sql = 'select *'
-        rows = db.select(args.table_name)
+        rows = db.select(table_name)
         print(db.column_names())
         for row in db.cur:
             print(row)

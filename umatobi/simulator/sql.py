@@ -78,9 +78,10 @@ class SQL(object):
         # でも、せっかく書いた replace()。
         # 消すのはもったいないので残す。
         if values:
-            self.cur.execute(sql, values)
+            rows = self.cur.execute(sql, values)
         else:
-            self.cur.execute(sql)
+            rows = self.cur.execute(sql)
+        return rows
 
     def close(self):
         self.cur.close()
@@ -127,6 +128,17 @@ class SQL(object):
         # schema で記述している column の順番は一致する
         rows = self.cur.fetchmany()
         return rows
+
+    def get_table_names(self):
+        sql = 'select * from sqlite_master;'
+        rows = self.execute(sql)
+      # print(self.column_names())
+      # ('type', 'name', 'tbl_name', 'rootpage', 'sql')
+        tables = []
+        for row in rows:
+            if row[0] == 'table' and row[2] != 'sqlite_sequence':
+                tables.append(row[2])
+        return tuple(tables)
 
     def column_names(self):
         '''return column names'''
