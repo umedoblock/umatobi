@@ -33,9 +33,15 @@ if __name__ == '__main__':
     if db_path:
         print('db_path =', db_path)
         db = simulator.sql.SQL(db_path=db_path)
+        db.set_logger(None, level='INFO')
         print('db =', db)
         db.access_db()
         print()
+        sql = 'select *'
+        rows = db.select(args.table_name)
+        print(db.column_names())
+        for row in db.cur:
+            print(row)
 
     _debug = False
     if _debug:
