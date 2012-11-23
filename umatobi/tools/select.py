@@ -44,6 +44,7 @@ if __name__ == '__main__':
                        format(table_name, table_names)
             raise RuntimeError(message)
 
+        print('{} table'.format(table_name))
         rows = db.select(table_name)
         print(db.column_names())
         for row in rows:
