@@ -54,7 +54,11 @@ def get_xxx_path(args, xxx):
             raise RuntimeError(message)
 
         if args.timestamp == '00000000T000000':
-            timestamp = timestamps[args.index]
+            try:
+                timestamp = timestamps[args.index]
+            except IndexError as raiz:
+                show_timestamps(timestamps)
+                raise raiz
         else:
             timestamp = args.timestamp
         dir_name = os.path.join(simulation_dir, timestamp)
