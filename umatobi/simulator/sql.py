@@ -4,11 +4,9 @@ import sys
 import logging
 
 class SQL(object):
-    def __init__(self, owner=None, db_path=':memory:', schema_path=None):
+    def __init__(self, owner=None, db_path=':memory:', schema_path=''):
         if owner is None:
             raise RuntimeError('owner must be available obj.')
-        if schema_path is None:
-            raise RuntimeError('schema_path must be available path.')
         self.db_path = db_path
         self.schema_path = schema_path
         self.conn = None
@@ -17,10 +15,12 @@ class SQL(object):
         self.set_owner(owner) # set logger to self if owner has logger.
         if not hasattr(self, 'logger'):
             self.set_logger(None)
+        self.schema = None
 
-        self.schema = configparser.ConfigParser()
-        with open(self.schema_path) as f:
-            self.schema.read_file(f)
+        if self.schema_path:
+            self.schema = configparser.ConfigParser()
+            with open(self.schema_path) as f:
+                self.schema.read_file(f)
 
     def set_owner(self, owner):
         if owner and hasattr(owner, 'logger'):
