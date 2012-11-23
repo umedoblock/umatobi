@@ -24,7 +24,7 @@ if __name__ == '__main__':
     # umatobi/select.py --help
     # umatobi/select.py --show-timestamps
     # umatobi/select.py watson.db clients
-    # umatobi/select.py --index=1 client.1.db pickles id=1
+    # umatobi/select.py --index=1 client.1.db pickles
 
     args = args_db()
   # print('args =', args)
