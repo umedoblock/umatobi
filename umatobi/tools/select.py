@@ -26,7 +26,6 @@ if __name__ == '__main__':
     # umatobi/select.py watson.db clients
     # umatobi/select.py --index=1 client.1.db pickles id=1
 
-    _debug = False
     args = args_db()
   # print('args =', args)
     db_path = get_xxx_path(args, 'db')
@@ -38,6 +37,7 @@ if __name__ == '__main__':
         db.access_db()
         print()
 
+    _debug = False
     if _debug:
         sqls = ('select * from sqlite_master;', 'select * from pickles;')
         for sql in sqls:
