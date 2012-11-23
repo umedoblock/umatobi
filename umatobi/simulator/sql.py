@@ -124,3 +124,8 @@ class SQL(object):
         # schema で記述している column の順番は一致する
         rows = self.cur.fetchmany()
         return rows
+
+    def __str__(self):
+        message = 'SQL(owner={}, db_path="{}", schema_path="{}")'. \
+                   format(self.owner, self.db_path, self.schema_path)
+        return message

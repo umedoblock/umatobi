@@ -1,15 +1,20 @@
+import sys
+import os
+
 from xxx import args_xxx, get_xxx_path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import simulator.sql
 
 def args_db():
     parser = args_xxx(description='select.py')
+    parser.add_argument(# db file
+                        metavar='db file', dest='xxx_file',
+                        nargs='?', default='',
+                        help='simulation.db, watson.db, or client.1.db, ...')
     parser.add_argument(# table name
                         metavar='table name', dest='table_name',
                         nargs='?', default='',
                         help='table name')
-    parser.add_argument(# last argment, db file
-                        metavar='db file', dest='xxx_file',
-                        nargs='?', default='',
-                        help='simulation.db, watson.db, or client.1.db, ...')
     args = parser.parse_args()
     return args
 
@@ -26,3 +31,5 @@ if __name__ == '__main__':
 
     if db_path:
         print('db_path =', db_path)
+        db = simulator.sql.SQL(db_path=db_path)
+        print('db =', db)
