@@ -119,7 +119,7 @@ class SQL(object):
         return static_part + str(values)
 
     def select(self, table_name, select_columns='*', conditions=''):
-        sql = 'select {} from {} {}'. \
+        sql = 'select {} from {} {};'. \
                format(select_columns, table_name, conditions)
         self.logger.debug('{} select sql =\n{}'.format(self.owner, sql))
         self.execute(sql)
