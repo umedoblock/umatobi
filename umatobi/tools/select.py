@@ -1,5 +1,6 @@
 import sys
 import os
+import sqlite3
 
 from xxx import args_xxx, get_xxx_path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -25,6 +26,7 @@ if __name__ == '__main__':
     # umatobi/select.py watson.db clients
     # umatobi/select.py --index=1 client.1.db pickles id=1
 
+    _debug = False
     args = args_db()
   # print('args =', args)
     db_path = get_xxx_path(args, 'db')
@@ -33,3 +35,20 @@ if __name__ == '__main__':
         print('db_path =', db_path)
         db = simulator.sql.SQL(db_path=db_path)
         print('db =', db)
+        db.access_db()
+        print()
+
+    if _debug:
+        sqls = ('select * from sqlite_master;', 'select * from pickles;')
+        for sql in sqls:
+            valid = sqlite3.complete_statement(sql)
+            print('sql "{}" is {}'.format(sql, valid))
+            if valid:
+                rows = db.execute(sql)
+                print('column_names =')
+                print(db.column_names())
+                print('rows =')
+                for row in db.cur:
+                    print(row)
+                print('--')
+            print()

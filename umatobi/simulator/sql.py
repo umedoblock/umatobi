@@ -36,6 +36,9 @@ class SQL(object):
 
         self.logger = logger
 
+    def access_db(self):
+        self.create_db()
+
     def create_db(self):
         self.conn = sqlite3.connect(self.db_path)
         self.cur = self.conn.cursor()
@@ -124,6 +127,39 @@ class SQL(object):
         # schema で記述している column の順番は一致する
         rows = self.cur.fetchmany()
         return rows
+
+    def column_names(self):
+        '''return column names'''
+        # http://www.python.org/dev/peps/pep-0249/
+        # Cursor attributes
+        #
+        # .description
+        #
+        #     This read-only attribute is a sequence of 7-item sequences.
+        #
+        #     Each of these sequences contains information describing one
+        #     result column:
+        #
+        #         name
+        #         type_code
+        #         display_size
+        #         internal_size
+        #         precision
+        #         scale
+        #         null_ok
+        #
+        #     The first two items (name and type_code) are mandatory, the other
+        #     five are optional and are set to None if no meaningful values can
+        #     be provided.
+        #
+        #     This attribute will be None for operations that do not return
+        #     rows or if the cursor has not had an operation invoked via the
+        #     .execute*() method yet.
+        #
+        #     The type_code can be interpreted by comparing it to the Type
+        #     Objects specified in the section below.
+        column_names = tuple(map(lambda x: x[0], self.cur.description))
+        return column_names
 
     def __str__(self):
         message = 'SQL(owner={}, db_path="{}", schema_path="{}")'. \
