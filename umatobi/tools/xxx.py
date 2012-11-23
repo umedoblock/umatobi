@@ -52,7 +52,6 @@ def get_xxx_path(args, xxx):
             ss = '{}_file muse be watson.{}, client.1.{}, ...'
             message = ss.format(xxx, xxx, xxx)
             raise RuntimeError(message)
-
         if args.timestamp == '00000000T000000':
             try:
                 timestamp = timestamps[args.index]
