@@ -43,7 +43,6 @@ if __name__ == '__main__':
             message = 'table name "{}" is not in table_names={}.'. \
                        format(table_name, table_names)
             raise RuntimeError(message)
-        sql = 'select *'
         rows = db.select(table_name)
         print(db.column_names())
         for row in db.cur:
