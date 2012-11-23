@@ -20,7 +20,7 @@ class SQL(object):
             with open(self.schema_path) as f:
                 self.schema.read_file(f)
 
-    def set_logger(self, logger):
+    def set_logger(self, logger, level='INFO'):
         if logger is None:
             # #139 いつかどこかで暇な時にでも、lib.make_logger() と統合しよう。
             logger = logging.getLogger('default')
@@ -30,7 +30,7 @@ class SQL(object):
             # print() の代わりとして使用することを想定しているので、
             # log message を sys.stdout に出力。
             ch = logging.StreamHandler(stream=sys.stdout)
-            ch.setLevel(logging.DEBUG)
+            ch.setLevel(level)
             ch.setFormatter(formatter)
             logger.addHandler(ch)
 
