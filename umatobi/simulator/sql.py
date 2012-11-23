@@ -5,27 +5,20 @@ import logging
 
 class SQL(object):
     def __init__(self, owner=None, db_path=':memory:', schema_path=''):
-        if owner is None:
-            raise RuntimeError('owner must be available obj.')
         self.db_path = db_path
         self.schema_path = schema_path
         self.conn = None
         self.cur = None
         self._create_table = {}
-        self.set_owner(owner) # set logger to self if owner has logger.
-        if not hasattr(self, 'logger'):
-            self.set_logger(None)
+        self.owner = owner
+        logger = getattr(owner, 'logger', None)
+        self.set_logger(logger)
         self.schema = None
 
         if self.schema_path:
             self.schema = configparser.ConfigParser()
             with open(self.schema_path) as f:
                 self.schema.read_file(f)
-
-    def set_owner(self, owner):
-        if owner and hasattr(owner, 'logger'):
-            self.set_logger(owner.logger)
-        self.owner = owner
 
     def set_logger(self, logger):
         if logger is None:
