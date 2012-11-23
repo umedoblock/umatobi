@@ -49,8 +49,8 @@ def get_xxx_path(args, xxx):
         show_timestamps(timestamps)
     else:
         if not xxx_file:
-            if xxx == 'log':
-                message = 'log_file muse be watson.log, client.1.log, ...'
+            ss = '{}_file muse be watson.{}, client.1.{}, ...'
+            message = ss.format(xxx, xxx, xxx)
             raise RuntimeError(message)
 
         if args.timestamp == '00000000T000000':
