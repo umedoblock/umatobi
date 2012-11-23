@@ -126,7 +126,7 @@ class SQL(object):
         self.execute(sql)
         # rows[0] の先頭からの順番と、
         # schema で記述している column の順番は一致する
-        rows = self.cur.fetchmany()
+        rows = self.cur.fetchall()
         return rows
 
     def get_table_names(self):
