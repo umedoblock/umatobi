@@ -6,7 +6,7 @@ import multiprocessing
 
 from simulator.darkness import Darkness
 import simulator.sql
-from lib import make_logger, jbytes_becomes_dict
+from lib import make_logger, jbytes_becomes_dict, dict_becomes_jbytes
 
 def make_darkness(d_config):
     '''darkness process を作成'''
@@ -206,10 +206,13 @@ class Client(object):
         dictionary を受け取る _init_attrs() では、RuntimeError()を上げる。
         '''
         tries = 0
+        sheep = {}
+        sheep['profess'] = 'I am Client.'
+        js = dict_becomes_jbytes(sheep)
         d = {}
         while tries < 3:
             try:
-                self.sock.sendto(b'I am Client.', self.watson)
+                self.sock.sendto(js, self.watson)
                 recved_msg, who = self.sock.recvfrom(1024)
             except socket.timeout as raiz:
                 tries += 1

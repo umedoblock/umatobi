@@ -6,7 +6,8 @@ import datetime
 import configparser
 import sqlite3
 
-from lib import make_logger, dict_becomes_jbytes, current_isoformat_time
+from lib import make_logger, dict_becomes_jbytes, jbytes_becomes_dict
+from lib import current_isoformat_time
 import simulator.sql
 
 class Watson(threading.Thread):
@@ -92,8 +93,10 @@ class Watson(threading.Thread):
 
             if not phone_number:
                 continue
+            sheep = jbytes_becomes_dict(text_message)
+            professed = sheep['profess']
 
-            if text_message == b'I am Node.':
+            if professed == 'I am Node.':
                 csv = self.collect_nodes_as_csv()
                 self.logger.info('realizing_nodes = "{}"'.format(csv))
                 realizing_nodes = csv.encode()
@@ -104,7 +107,7 @@ class Watson(threading.Thread):
                     self.nodes = self.nodes[survived_node_index:]
 
                 reply = realizing_nodes
-            elif text_message == b'I am Client.':
+            elif professed == 'I am Client.':
                 id = count_clients
                 self.clients.append(phone_number)
                 self.logger.info('{} Client(id={}, ip:port={}) came here.'.format(self, id, phone_number))
