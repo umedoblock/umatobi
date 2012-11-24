@@ -51,7 +51,7 @@ def args_():
                      'case insensitive'
     parser.add_argument('--log-level',
                          metavar='LEVEL', dest='log_level',
-                         nargs='?', default='INFO',
+                         choices=_log_levels, default='INFO',
                          help=help_log_level)
     args = parser.parse_args()
     args.log_level = args.log_level.upper()
