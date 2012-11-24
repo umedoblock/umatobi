@@ -53,6 +53,7 @@ host: text
 port: integer
 joined: text # iso8601
 log_level: text
+num_nodes: integer
 
 # darkness commit to client.1.db database.
 [pickles]

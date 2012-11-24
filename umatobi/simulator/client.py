@@ -55,6 +55,7 @@ class Client(object):
         # Client set positive integer to id in self._init_attrs().
         self.id = -1
         self.nodes_per_darkness = self.NODES_PER_DARKNESS
+        self.node_index = -1
         div, mod = divmod(self.num_nodes, self.nodes_per_darkness)
         if mod == 0:
             mod = self.nodes_per_darkness
@@ -72,7 +73,7 @@ class Client(object):
         socket.setdefaulttimeout(self.timeout_sec)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        self._init_attrs()
+        _d_init_attrs = self._init_attrs()
 
         self.logger = make_logger(self.db_dir, 'client', self.id,
                                   level=self.log_level)
@@ -82,6 +83,8 @@ class Client(object):
         self.logger.info('client_db_path = {}'.format(self.client_db_path))
         self.logger.info('----- client.{} initilized end -----'.
                           format(self.id))
+        self.logger.debug('{} d={}'.format(self, _d_init_attrs))
+        self.logger.debug('{} node_index={}'.format(self, self.node_index))
         self.logger.debug('{} debug log test.'.format(self))
         self.logger.info('')
 
@@ -105,7 +108,8 @@ class Client(object):
         # for 内で darkness_process を作成し、
         # 順に darkness_processes に追加していく。
         for darkness_id in range(1, self.num_darkness + 1):
-            first_node_id = 1 + (darkness_id - 1) * self.nodes_per_darkness
+            first_node_id = self.node_index + \
+                            (darkness_id - 1) * self.nodes_per_darkness
             if darkness_id == self.num_darkness:
                 # 最後に端数を作成？
                 nodes_per_darkness = self.last_darkness_make_nodes
@@ -190,8 +194,10 @@ class Client(object):
         self.db_dir = os.path.join(self.simulation_dir, start_up)
         self.client_db_path = os.path.join(self.db_dir,
                                      'client.{}.db'.format(self.id))
+        self.node_index = d['node_index']
         self.schema_path = \
             os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
+        return d
 
     def _hello_watson(self):
         '''\
@@ -208,6 +214,7 @@ class Client(object):
         tries = 0
         sheep = {}
         sheep['profess'] = 'I am Client.'
+        sheep['num_nodes'] = self.num_nodes
         js = dict_becomes_jbytes(sheep)
         d = {}
         while tries < 3:

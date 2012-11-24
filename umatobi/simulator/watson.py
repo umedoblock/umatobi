@@ -27,6 +27,7 @@ class Watson(threading.Thread):
         self.office = office
         self.simulation_seconds = simulation_seconds
         self.log_level = log_level
+        self.registered_nodes = 0
 
       # self.simulation_dir = simulation_dir
         self.start_up = start_up
@@ -95,6 +96,7 @@ class Watson(threading.Thread):
                 continue
             sheep = jbytes_becomes_dict(text_message)
             professed = sheep['profess']
+            num_nodes = sheep['num_nodes']
 
             if professed == 'I am Node.':
                 csv = self.collect_nodes_as_csv()
@@ -118,13 +120,17 @@ class Watson(threading.Thread):
                 d['port'] = phone_number[1]
                 d['joined'] = current_isoformat_time()
                 d['log_level'] = self.log_level
+                d['num_nodes'] = num_nodes
                 sql = self.watson_db.insert('clients', d)
                 self.logger.debug('{} {}'.format(self, sql))
+                self.logger.info('{} recved={}'.format(self, d))
 
                 d.clear()
                 d['id'] = id
                 d['start_up'] = self.start_up
                 d['log_level'] = self.log_level
+                d['node_index'] = 1 + self.registered_nodes
+                self.registered_nodes += num_nodes
                 reply = dict_becomes_jbytes(d)
                 count_clients += 1
             else:
