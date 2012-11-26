@@ -13,12 +13,12 @@ class SQL(object):
         self.owner = owner
         logger = getattr(owner, 'logger', None)
         self.set_logger(logger)
-        self.schema = None
+        self._schema = None
 
         if self.schema_path:
-            self.schema = configparser.ConfigParser()
+            self._schema = configparser.ConfigParser()
             with open(self.schema_path) as f:
-                self.schema.read_file(f)
+                self._schema.read_file(f)
 
     def set_logger(self, logger, level='INFO'):
         if logger is None:
@@ -47,7 +47,7 @@ class SQL(object):
         if self._conn is None:
             raise RuntimeError('you must call read_table_schema() before call create_table().')
 
-        table_info = self.schema[table_name]
+        table_info = self._schema[table_name]
       # self.logger.debug('name =', table_info.name)
       # self.logger.debug('table_info =', table_info)
 
