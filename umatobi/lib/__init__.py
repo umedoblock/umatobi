@@ -30,6 +30,9 @@ def current_isoformat_time():
     now = time.time()
     return isoformat_time(now)
 
+LOGGER_FMT = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
+LOGGER_DATEFMT = '%Y-%m-%dT%H:%M:%S'
+
 def make_logger(log_dir='', name='', index=0, level=None):
     if not log_dir or not name in ('watson', 'client', 'darkness'):
         msg = 'log_dir(={}) must be available dir.'.format(log_dir)
@@ -48,8 +51,7 @@ def make_logger(log_dir='', name='', index=0, level=None):
     logger.setLevel(level)
 
     # create formatter and add it to the handlers
-    fmt = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
-    formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S')
+    formatter = logging.Formatter(LOGGER_FMT, datefmt=LOGGER_DATEFMT)
     # 2012-11-02T23:01:10.002 INFO ----- watson log -----
 
     # create file handler which logs even debug messages
