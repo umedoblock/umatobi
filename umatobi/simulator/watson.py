@@ -28,6 +28,8 @@ class Watson(threading.Thread):
         self.simulation_seconds = simulation_seconds
         self.log_level = log_level
         self.registered_nodes = 0
+        self.watson_db = None # sql.SQL()
+        self._s = None # datetime.datetime.today()
 
       # self.simulation_dir = simulation_dir
         self.start_up = start_up
