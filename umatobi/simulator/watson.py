@@ -39,7 +39,6 @@ class Watson(threading.Thread):
         self.schema_path = \
             os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
 
-      # self.watson_log = os.path.join(self.db_dir, 'watson.log')
         self.timeout_sec = 1
         self.nodes = []
         self.clients = []
