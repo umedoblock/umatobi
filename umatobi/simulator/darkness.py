@@ -42,6 +42,7 @@ class Darkness(object):
         self.good_bye_with_nodes = threading.Event()
 
         self.nodes = []
+        self.client_db = None
 
     def start(self):
         '''\
