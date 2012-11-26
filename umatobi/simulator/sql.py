@@ -7,7 +7,7 @@ class SQL(object):
     def __init__(self, owner=None, db_path=':memory:', schema_path=''):
         self.db_path = db_path
         self.schema_path = schema_path
-        self.conn = None
+        self._conn = None
         self.cur = None
         self._create_table = {}
         self.owner = owner
@@ -40,11 +40,11 @@ class SQL(object):
         self.create_db()
 
     def create_db(self):
-        self.conn = sqlite3.connect(self.db_path)
-        self.cur = self.conn.cursor()
+        self._conn = sqlite3.connect(self.db_path)
+        self.cur = self._conn.cursor()
 
     def create_table(self, table_name):
-        if self.conn is None:
+        if self._conn is None:
             raise RuntimeError('you must call read_table_schema() before call create_table().')
 
         table_info = self.schema[table_name]
@@ -62,7 +62,7 @@ class SQL(object):
         self.execute(sql)
 
     def commit(self):
-        self.conn.commit()
+        self._conn.commit()
 
     def execute(self, sql, values=()):
         # valuesが一つの場合、以下のようなsqlが発行されてしまう。
@@ -85,7 +85,7 @@ class SQL(object):
 
     def close(self):
         self.cur.close()
-        self.conn.close()
+        self._conn.close()
 
     def insert(self, table_name, d):
         static_part = 'insert into {} {} values '.format(table_name, tuple(d.keys()))
