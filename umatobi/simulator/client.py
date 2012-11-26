@@ -71,7 +71,7 @@ class Client(object):
 
         self.timeout_sec = 1
         socket.setdefaulttimeout(self.timeout_sec)
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sock = socket._socket(socket.AF_INET, socket._sock_DGRAM)
 
         _d_init_attrs = self._init_attrs()
 
@@ -132,7 +132,7 @@ class Client(object):
         # TODO: watson からの接続であると確認する。
         while True:
             try:
-                recved, recved_addr = self.sock.recvfrom(1024)
+                recved, recved_addr = self._sock.recvfrom(1024)
             except socket.timeout:
                 recved = b''
                 continue
@@ -185,7 +185,7 @@ class Client(object):
         '''
         d = self._hello_watson()
         if not d:
-            self.sock.close()
+            self._sock.close()
             raise RuntimeError('client cannot say "I am Client." to watson who is {}'.format(self.watson))
 
         self.id = d['id']
@@ -219,8 +219,8 @@ class Client(object):
         d = {}
         while tries < 3:
             try:
-                self.sock.sendto(js, self.watson)
-                recved_msg, who = self.sock.recvfrom(1024)
+                self._sock.sendto(js, self.watson)
+                recved_msg, who = self._sock.recvfrom(1024)
             except socket.timeout as raiz:
                 tries += 1
                 continue
