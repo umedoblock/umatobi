@@ -9,12 +9,12 @@ darkness: 漆黒の闇の中で蠢く謎の node の姿が！
 
 process 関係図
 
-watson-+-client.0
+watson-+-client.1
        |  |
-       |  +-darkness.0
-       |  | +-node.0
+       |  +-darkness.1
+       |  | +-node.1
        |  | +-node.?
-       |  | +-node.255
+       |  | +-node.381
        |  |
        |  +-darkness.X
        |  | +-node.X
@@ -22,6 +22,6 @@ watson-+-client.0
        |  +-darkness.31
        |    +-node.7936
        |    +-node.?
-       |    +-node.8191
+       |    +-node.8139
        |
        +-client.?'''
