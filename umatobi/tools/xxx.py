@@ -22,7 +22,6 @@ def args_xxx(description):
     return parser
 
 def show_timestamps(timestamps):
-    timestamps.sort(reverse=True)
     print('{:>6s} timestamp'.format('index'))
     for i, d in enumerate(timestamps):
         if i == 0:
@@ -42,6 +41,7 @@ def get_xxx_path(args, xxx):
     xxx_file = args.xxx_file
     if args.show_timestamps or args.timestamp == '00000000T000000':
         timestamps = os.listdir(simulation_dir)
+        timestamps.sort(reverse=True)
 
     xxx_path = ''
     if args.show_timestamps:
