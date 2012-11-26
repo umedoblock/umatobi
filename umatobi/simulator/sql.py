@@ -8,7 +8,7 @@ class SQL(object):
         self.db_path = db_path
         self.schema_path = schema_path
         self._conn = None
-        self.cur = None
+        self._cur = None
         self._create_table = {}
         self.owner = owner
         logger = getattr(owner, 'logger', None)
@@ -41,7 +41,7 @@ class SQL(object):
 
     def create_db(self):
         self._conn = sqlite3.connect(self.db_path)
-        self.cur = self._conn.cursor()
+        self._cur = self._conn.cursor()
 
     def create_table(self, table_name):
         if self._conn is None:
@@ -78,13 +78,13 @@ class SQL(object):
         # でも、せっかく書いた replace()。
         # 消すのはもったいないので残す。
         if values:
-            rows = self.cur.execute(sql, values)
+            rows = self._cur.execute(sql, values)
         else:
-            rows = self.cur.execute(sql)
+            rows = self._cur.execute(sql)
         return rows
 
     def close(self):
-        self.cur.close()
+        self._cur.close()
         self._conn.close()
 
     def insert(self, table_name, d):
@@ -126,7 +126,7 @@ class SQL(object):
         self.execute(sql)
         # rows[0] の先頭からの順番と、
         # schema で記述している column の順番は一致する
-        rows = self.cur.fetchall()
+        rows = self._cur.fetchall()
         return rows
 
     def get_table_names(self):
@@ -170,7 +170,7 @@ class SQL(object):
         #
         #     The type_code can be interpreted by comparing it to the Type
         #     Objects specified in the section below.
-        column_names = tuple(map(lambda x: x[0], self.cur.description))
+        column_names = tuple(map(lambda x: x[0], self._cur.description))
         return column_names
 
     def __str__(self):
