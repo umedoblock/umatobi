@@ -19,6 +19,7 @@ class Node(p2p.core.Node):
         self.id = id
         self.good_bye_with_darkness = good_bye_with_darkness
         self._queue_darkness = _queue_darkness
+        self._rad, self._x, self._y = 0.0, 0.0, 0.0
 
     def run(self):
         print('{} started.'.format(self))
