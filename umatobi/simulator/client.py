@@ -71,7 +71,7 @@ class Client(object):
 
         self.timeout_sec = 1
         socket.setdefaulttimeout(self.timeout_sec)
-        self._sock = socket._socket(socket.AF_INET, socket._sock_DGRAM)
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         _d_init_attrs = self._init_attrs()
 
