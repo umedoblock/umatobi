@@ -153,8 +153,6 @@ class Client(object):
         Client 終了処理。leave_thereにsignal を set することで、
         Clientの作成した Darkness達は一斉に終了処理を始める。
         '''
-        # TODO: #100 client.db をwatsonに送りつける。
-
         self.logger.info(('Client(id={}) set signal to leave_there '
                           'for Darknesses.').format(self.id))
         self.leave_there.set()
@@ -168,6 +166,19 @@ class Client(object):
 
         self.client_db.close()
         self.logger.info('{} client_db.close().'.format(self))
+      # self.logger.error('self._sock.getsockname() =', ('127.0.0.1', 20000))
+        # ip のみ比較、 compare only ip
+        if False and self._sock.getsockname()[0] != self.watson[0]:
+            self.logger.error('TODO: #100 client.db をwatsonに送りつける。')
+            # _sock=('0.0.0.0', 22343), watson=('localhost', 55555)
+            message = '{} _sock={}, watson={}'. \
+                       format(self, self._sock.getsockname(), self.watson)
+            self.logger.info(message)
+        else:
+            # ip が同じ
+            message = ('{} client and watson use same IP. Therefore '
+                       'don\'t send client.db to watson.').format(self)
+            self.logger.info(message)
 
         for darkness_process in self.darkness_processes:
             self.total_created_nodes += \
