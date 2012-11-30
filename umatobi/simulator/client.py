@@ -129,7 +129,7 @@ class Client(object):
             self.darkness_processes.append(darkness_process)
 
         # watson から終了通知("break down")が届くまで待機し続ける。
-        # TODO: watson からの接続であると確認する。
+        # TODO: #149 watson からの接続であると確認する。
         while True:
             try:
                 recved, recved_addr = self._sock.recvfrom(1024)
