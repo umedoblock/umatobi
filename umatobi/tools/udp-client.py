@@ -37,6 +37,8 @@ class UDPClient(threading.Thread):
         self.sock_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock_recv = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock_client.bind(self.client)
+        print('self.client =', self.client)
+        print('self.getsockname() =', self.sock_client.getsockname())
 
     def do(self):
         send_msg = self.message
