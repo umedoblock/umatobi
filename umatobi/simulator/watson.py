@@ -64,6 +64,17 @@ class Watson(threading.Thread):
 
         self._wait_clients()
         self._release_clients()
+        self._wait_client_db()
+        self._merge_db_to_simulation_db()
+
+    def _wait_client_db(self):
+        self.logger.info('{} は、client.#.dbの回収に乗り出した。'.format(self))
+        self.logger.info('{} なんて言いながら実は待機してるだけ。'.format(self))
+        self.logger.info('{} client.{}.dbの回収完了。'.format(self, 1))
+
+    def _merge_db_to_simulation_db(self):
+        self.logger.info('{} client.#.db の結合開始。'.format(self))
+        self.logger.info('{} client.#.db の結合終了。'.format(self))
 
     def join(self):
         '''watson threadがjoin'''
