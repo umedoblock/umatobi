@@ -6,6 +6,72 @@ import pickle
 from simulator.node import Node
 import simulator.sql
 from lib import make_logger
+from lib import Polling
+
+class ExhaleQueue(Polling):
+    def __init__(self, polling_secs, darkness):
+        Polling.__init__(self, polling_secs)
+
+        self.darkness = darkness
+        self.client_db_path = self.darkness.client_db_path
+        self.client_db = self.darkness.client_db
+        self.schema_path = self.darkness.schema_path
+        self._queue_darkness = self.darkness._queue_darkness
+        self.queue_size_total = 0
+        self.logger = self.darkness.logger
+        self.logger.info('{} created ExhaleQueue()'.format(self.darkness))
+
+    def run(self):
+        '''\
+        sqlite3は、sqlite3.connet()を実行したthreadでのみ、commit(), select()
+        などの操作を許可している。sqlite3.connet()を実行したthreadと
+        別のthreadでcommit(), select()などを行うと例外が発生する。
+        また、client_db.create_db()内で、sqlite3.connect()を実行している。
+        その為、Polling.run()内でsched.Sched()を実行するthreadを走らせ、
+        commit()も同時に行いたい場合、client_db.create_db()を実行するthreadと、
+        Polling.run() を実行するthreadは同一threadである必要があり、
+        run()内で、client_db.create_db()と、Polling.run()を行った。
+        '''
+        self.logger.info('{} run ExhaleQueue()'.format(self.darkness))
+        self.client_db.create_db()
+        self.logger.info('{} client_db.create_db().'.format(self.darkness))
+
+        Polling.run(self)
+        self.logger.info('{} queue_size_total={}'.format(self.darkness, self.queue_size_total))
+        self.logger.info('{} stop ExhaleQueue()'.format(self.darkness))
+
+    def is_continue(self):
+        if self.darkness.all_nodes_inactive.is_set():
+            self.inhole_queues_from_nodes()
+            self.client_db.close()
+            self.logger.info('{} client_db.close().'.format(self.darkness))
+            return False
+        else:
+            return True
+
+    def polling(self):
+        self.inhole_queues_from_nodes()
+
+    def inhole_queues_from_nodes(self):
+        '''\
+        _queue_darkness に残っている queue を一掃する。
+        '''
+        queue_size = self._queue_darkness.qsize()
+        self.queue_size_total += queue_size
+        self.logger.info('{} _queue_darkness.qsize()={}.'.format(self.darkness, queue_size))
+        pickle_record = {}
+        pickle_record['id'] = None
+        for i in range(queue_size):
+            pickled = self._queue_darkness.get()
+            pickle_record['pickle'] = pickled
+            self.client_db.insert('pickles', pickle_record)
+          # d = pickle.loads(pickled)
+          # self.logger.debug('{}.get() i={} d="{}" pickled="{}"'.format(self, i, d, pickled))
+      # client の db.pickles へ pickle 情報を commit
+        self.client_db.commit()
+        records = self.client_db.select('pickles', 'id,pickle',
+                                        conditions='')
+        self.logger.debug('pickles table dumped =\n"{}"'.format(records))
 
 class Darkness(object):
     '''漆黒の闇'''
@@ -36,13 +102,17 @@ class Darkness(object):
                                      'client.{}.db'.format(self.client_id))
         self.schema_path = \
             os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
+        self.client_db = simulator.sql.SQL(owner=self,
+                                           db_path=self.client_db_path,
+                                           schema_path=self.schema_path)
 
         self._queue_darkness = queue.Queue()
+        self.all_nodes_inactive = threading.Event()
+        self.exhale_queue = ExhaleQueue(1, self)
 
         self.good_bye_with_nodes = threading.Event()
 
         self.nodes = []
-        self.client_db = None
 
     def start(self):
         '''\
@@ -50,12 +120,10 @@ class Darkness(object):
         simulation に必要な node thread を多数作成する。
         node thread 作成後、Client が leave_there を
         signal 状態にするまで待機し続ける。
+        node が吐き出したqueueを、clientと共有するdbにcommitする。
         '''
-        self.client_db = simulator.sql.SQL(owner=self,
-                                           db_path=self.client_db_path,
-                                           schema_path=self.schema_path)
-        self.client_db.create_db()
-        self.logger.info('{} client_db.create_db().'.format(self))
+        # create db in ExhaleQueue()
+        self.exhale_queue.start()
 
         for i in range(self.num_nodes):
             id = self.first_node_id + i
@@ -84,28 +152,15 @@ class Darkness(object):
             node_.join()
             self.logger.info('{} thread joined.'.format(node_))
 
-        # _queue_darkness に残っている queue を全て吸い出し。
-        self.inhole_queues_from_nodes()
-
-        self.client_db.close()
-        self.logger.info('{} client_db.close().'.format(self))
-
-    def inhole_queues_from_nodes(self):
-        queue_size = self._queue_darkness.qsize()
-        self.logger.info('{} _queue_darkness.qsize()={}.'.format(self, queue_size))
-        pickle_record = {}
-        pickle_record['id'] = None
-        for i in range(queue_size):
-            pickled = self._queue_darkness.get()
-            pickle_record['pickle'] = pickled
-            self.client_db.insert('pickles', pickle_record)
-          # d = pickle.loads(pickled)
-          # self.logger.info('{}.get() i={} d="{}" pickled="{}"'.format(self, i, d, pickled))
-      # client の db.pickles へ pickle 情報を commit
-        self.client_db.commit()
-        records = self.client_db.select('pickles', 'id,pickle',
-                                        conditions='where id = 1')
-        self.logger.info('records = "{}"'.format(records))
+        # 全てのnodeが不活性となった後、queueにobjを追加するnodeは存在しない。
+        # また、不活性となった後、exhale_queue sched は自動的に停止する。
+        self.all_nodes_inactive.set()
+        # よって、ここより下でも上でも、inhole_queues_from_nodes()を
+        # 実行する必要はない。
+        # ただし、_queue_darkness内のqueueを取りこぼさないために、
+        # client_db.close() を確実に実行させるために、
+        # ExhaleQueue() 内の sched thread の終了を保証する必要がある。
+        self.exhale_queue.join()
 
     def stop(self):
         '''simulation 終了'''
