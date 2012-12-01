@@ -92,7 +92,7 @@ class Darkness(object):
 
     def inhole_queues_from_nodes(self):
         queue_size = self._queue_darkness.qsize()
-        self.logger.info('{} queue_size={}.'.format(self, queue_size))
+        self.logger.info('{} _queue_darkness.qsize()={}.'.format(self, queue_size))
         pickle_record = {}
         pickle_record['id'] = None
         for i in range(queue_size):
