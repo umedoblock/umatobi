@@ -4,6 +4,30 @@ import datetime
 import time
 import sys
 import os
+import threading
+import sched
+
+class Polling(threading.Thread):
+    def __init__(self, polling_secs):
+        threading.Thread.__init__(self)
+        self.polling_secs = polling_secs
+        # class sched.scheduler(timefunc, delayfunc)
+        self._sche = sched.scheduler(time.time, time.sleep)
+        self._sche.enter(self.polling_secs, 1, self._polling, ())
+
+    def polling(self):
+        raise NotImplementedError()
+
+    def is_continue(self):
+        raise NotImplementedError()
+
+    def _polling(self):
+        if self.is_continue():
+            self.polling()
+            self._sche.enter(self.polling_secs, 1, self._polling, ())
+
+    def run(self):
+        self._sche.run()
 
 def dict_becomes_jbytes(d):
     js = json.dumps(d)
