@@ -35,15 +35,17 @@ if __name__ == '__main__':
     client_rows = watson_db.select('clients', conditions='order by id')
     for client_row in client_rows:
         id_, num_nodes_ = (client_row[0], client_row[5])
-        total_nodes += num_nodes_
         print('id={}, num_nodes_={}'.format(id_, num_nodes_))
       # print('id={}, num_nodes_={}'.format(type(id_), type(num_nodes_)))
         client_db_path = \
             simulation_db_path.replace(r'simulation.db',
                                         'client.{}.db'.format(id_))
         client_db = simulator.sql.SQL(db_path=client_db_path)
+        client_db.id, client_db.num_nodes = id_, num_nodes_
+        total_nodes += client_db.num_nodes
         print('client_db =', client_db)
         client_db.access_db()
+        print('client_db.id =', client_db.id)
         client_dbs.append(client_db)
     print('total_nodes =', total_nodes)
 
