@@ -18,8 +18,7 @@ if __name__ == '__main__':
                               'simulation_tables.schema')
     simulation_db = simulator.sql.SQL(db_path=simulation_db_path,
                                       schema_path=schema_path)
-    print('schema_path =', schema_path)
-    print('simulation_db_path =', simulation_db_path)
+    print('simulation_db =', simulation_db)
     if os.path.exists(simulation_db_path):
         print('os.remove("{}")'.format(simulation_db_path))
         os.remove(simulation_db_path)
@@ -28,7 +27,7 @@ if __name__ == '__main__':
 
     watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
     watson_db = simulator.sql.SQL(db_path=watson_db_path)
-    print('watson_db_path =', watson_db_path)
+    print('watson_db =', watson_db)
     watson_db.access_db()
 
     client_dbs = []
@@ -43,7 +42,6 @@ if __name__ == '__main__':
             simulation_db_path.replace(r'simulation.db',
                                         'client.{}.db'.format(id_))
         client_db = simulator.sql.SQL(db_path=client_db_path)
-        print('client_db_path =', client_db_path)
         print('client_db =', client_db)
         client_db.access_db()
         client_dbs.append(client_db)
