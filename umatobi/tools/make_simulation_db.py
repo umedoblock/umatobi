@@ -14,5 +14,9 @@ def args_timestamp():
 if __name__ == '__main__':
     args = args_timestamp()
     simulation_db_path = get_xxx_path(args, 'db')
-    simulation_db = simulator.sql.SQL(db_path=simulation_db_path)
+    schema_path = os.path.join(os.path.dirname(__file__), '..', 'simulator',
+                              'simulation_tables.schema')
+    simulation_db = simulator.sql.SQL(db_path=simulation_db_path,
+                                      schema_path=schema_path)
+    print('schema_path =', schema_path)
     print('simulation_db_path =', simulation_db_path)
