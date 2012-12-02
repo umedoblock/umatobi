@@ -141,6 +141,20 @@ class SQL(object):
                 tables.append(row[2])
         return tuple(tables)
 
+    def get_table_schema(self, table_name):
+        sql = 'select * from sqlite_master;'
+        rows = self.execute(sql)
+      # print(self.get_column_names())
+      # ('type', 'name', 'tbl_name', 'rootpage', 'sql')
+        tables = []
+        for row in rows:
+            if table_name == row[2]:
+                schema = row[4]
+                break
+        else:
+            schema = 'cannot find "{}" table.'.format(table_name)
+        return schema
+
     def get_column_names(self, table_name):
         '''return column names'''
         # http://www.python.org/dev/peps/pep-0249/
