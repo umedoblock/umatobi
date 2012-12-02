@@ -141,7 +141,7 @@ class SQL(object):
                 tables.append(row[2])
         return tuple(tables)
 
-    def get_column_names(self):
+    def get_column_names(self, table_name):
         '''return column names'''
         # http://www.python.org/dev/peps/pep-0249/
         # Cursor attributes
@@ -171,6 +171,7 @@ class SQL(object):
         #
         #     The type_code can be interpreted by comparing it to the Type
         #     Objects specified in the section below.
+        self.select(table_name, conditions='limit 1')
         column_names = tuple(map(lambda x: x[0], self._cur.description))
         return column_names
 
