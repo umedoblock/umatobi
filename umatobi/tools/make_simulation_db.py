@@ -33,9 +33,9 @@ if __name__ == '__main__':
 
     print()
 
-    table_names = simulation_db.get_table_names()
-    print('table_names = {}'.format(table_names))
-    column_names = simulation_db.get_column_names('simulation')
-    print('column_names = {}'.format(column_names))
-    table_schema = simulation_db.get_table_schema('simulation')
-    print('table_schema = {}'.format(table_schema))
+  # table_names = simulation_db.get_table_names()
+  # print('table_names = {}'.format(table_names))
+  # column_names = simulation_db.get_column_names('simulation')
+  # print('column_names = {}'.format(column_names))
+  # table_schema = simulation_db.get_table_schema('simulation')
+  # print('table_schema = {}'.format(table_schema))
