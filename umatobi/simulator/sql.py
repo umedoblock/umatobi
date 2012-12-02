@@ -133,7 +133,7 @@ class SQL(object):
     def get_table_names(self):
         sql = 'select * from sqlite_master;'
         rows = self.execute(sql)
-      # print(self.column_names())
+      # print(self.get_column_names())
       # ('type', 'name', 'tbl_name', 'rootpage', 'sql')
         tables = []
         for row in rows:
@@ -141,7 +141,7 @@ class SQL(object):
                 tables.append(row[2])
         return tuple(tables)
 
-    def column_names(self):
+    def get_column_names(self):
         '''return column names'''
         # http://www.python.org/dev/peps/pep-0249/
         # Cursor attributes
