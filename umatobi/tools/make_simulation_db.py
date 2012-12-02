@@ -31,8 +31,7 @@ if __name__ == '__main__':
     print('watson_db_path =', watson_db_path)
     watson_db.access_db()
 
-    print()
-
+  # print()
   # table_names = simulation_db.get_table_names()
   # print('table_names = {}'.format(table_names))
   # column_names = simulation_db.get_column_names('simulation')
