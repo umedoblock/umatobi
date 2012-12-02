@@ -26,6 +26,13 @@ if __name__ == '__main__':
     simulation_db.create_db()
     simulation_db.create_table('simulation')
 
+    watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
+    watson_db = simulator.sql.SQL(db_path=watson_db_path)
+    print('watson_db_path =', watson_db_path)
+    watson_db.access_db()
+
+    print()
+
     table_names = simulation_db.get_table_names()
     print('table_names = {}'.format(table_names))
     column_names = simulation_db.get_column_names('simulation')
