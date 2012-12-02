@@ -64,11 +64,11 @@ def get_xxx_path(args, xxx):
 
         files = os.listdir(dir_name)
         xxx_files = gather_xxx_file(files, xxx)
-        if not xxx_file in xxx_files:
+        if xxx_file in xxx_files or xxx_file == 'simulation.db':
+            xxx_path = os.path.join(dir_name, xxx_file)
+        else:
             print('dir_name is "{}".'.format(dir_name))
             print('however, cannot use "{}" file'.format(xxx_file))
             print('please select {} file in below {} files.'.format(xxx, xxx))
             print('    ' + '\n    '.join(xxx_files))
-        else:
-            xxx_path = os.path.join(dir_name, xxx_file)
     return xxx_path
