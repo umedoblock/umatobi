@@ -31,6 +31,23 @@ if __name__ == '__main__':
     print('watson_db_path =', watson_db_path)
     watson_db.access_db()
 
+    clients_db = []
+    total_nodes = 0
+    client_rows = watson_db.select('clients', conditions='order by id')
+    for client_row in client_rows:
+        id_, num_nodes_ = (client_row[0], client_row[5])
+        total_nodes += num_nodes_
+        print('id={}, num_nodes_={}'.format(id_, num_nodes_))
+      # print('id={}, num_nodes_={}'.format(type(id_), type(num_nodes_)))
+        client_db_path = \
+            simulation_db_path.replace(r'simulation.db',
+                                        'client.{}.db'.format(id_))
+        client_db = simulator.sql.SQL(db_path=client_db_path)
+        print('client_db_path =', client_db_path)
+        print('client_db =', client_db)
+        client_db.access_db()
+    print('total_nodes =', total_nodes)
+
   # print()
   # table_names = simulation_db.get_table_names()
   # print('table_names = {}'.format(table_names))
