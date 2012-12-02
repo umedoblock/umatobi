@@ -120,6 +120,9 @@ class SQL(object):
         self.commit()
         return static_part + str(values)
 
+  # def __getattr__(self, name):
+  #     self.logger.info('called __getattr__() with name={}'.format(name))
+
     def select(self, table_name, select_columns='*', conditions=''):
         sql = 'select {} from {} {};'. \
                format(select_columns, table_name, conditions)
