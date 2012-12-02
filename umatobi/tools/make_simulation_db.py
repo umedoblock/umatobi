@@ -31,7 +31,7 @@ if __name__ == '__main__':
     print('watson_db_path =', watson_db_path)
     watson_db.access_db()
 
-    clients_db = []
+    client_dbs = []
     total_nodes = 0
     client_rows = watson_db.select('clients', conditions='order by id')
     for client_row in client_rows:
@@ -46,6 +46,7 @@ if __name__ == '__main__':
         print('client_db_path =', client_db_path)
         print('client_db =', client_db)
         client_db.access_db()
+        client_dbs.append(client_db)
     print('total_nodes =', total_nodes)
 
   # print()
