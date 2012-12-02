@@ -20,3 +20,15 @@ if __name__ == '__main__':
                                       schema_path=schema_path)
     print('schema_path =', schema_path)
     print('simulation_db_path =', simulation_db_path)
+    if os.path.exists(simulation_db_path):
+        print('os.remove("{}")'.format(simulation_db_path))
+        os.remove(simulation_db_path)
+    simulation_db.create_db()
+    simulation_db.create_table('simulation')
+
+    table_names = simulation_db.get_table_names()
+    print('table_names = {}'.format(table_names))
+    column_names = simulation_db.get_column_names('simulation')
+    print('column_names = {}'.format(column_names))
+    table_schema = simulation_db.get_table_schema('simulation')
+    print('table_schema = {}'.format(table_schema))
