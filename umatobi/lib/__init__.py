@@ -54,6 +54,9 @@ def current_isoformat_time():
     now = time.time()
     return isoformat_time(now)
 
+def isoformat_time_to_datetime(s):
+    return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S.%f")
+
 LOGGER_FMT = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
 LOGGER_DATEFMT = '%Y-%m-%dT%H:%M:%S'
 
