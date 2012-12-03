@@ -91,6 +91,7 @@ if __name__ == '__main__':
     watson_db.total_nodes = count_nodes(watson_db.client_dbs)
     watson_db.records = merge_client_dbs(watson_db.client_dbs)
     clients_db_grow_up_to_simulation_db(simulation_db, watson_db.records)
+    simulation_db.close()
 
   # print()
   # table_names = simulation_db.get_table_names()
