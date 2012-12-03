@@ -57,6 +57,15 @@ def merge_client_dbs(client_dbs):
   #     print(record)
     return records
 
+def clients_db_grow_up_to_simulation_db(simulation_db, records):
+    growing = {}
+    growing['id'] = None
+    for record in records:
+        growing['moment'] = record[0]
+        growing['pickle'] = record[1]
+        simulation_db.insert('growings', growing)
+    simulation_db.commit()
+
 if __name__ == '__main__':
     args = args_timestamp()
     simulation_db_path = get_xxx_path(args, 'db')
@@ -70,6 +79,7 @@ if __name__ == '__main__':
         os.remove(simulation_db_path)
     simulation_db.create_db()
     simulation_db.create_table('simulation')
+    simulation_db.create_table('growings')
 
     watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
     watson_db = simulator.sql.SQL(db_path=watson_db_path)
@@ -80,6 +90,7 @@ if __name__ == '__main__':
     watson_db.client_dbs = collect_client_dbs(watson_db)
     watson_db.total_nodes = count_nodes(watson_db.client_dbs)
     watson_db.records = merge_client_dbs(watson_db.client_dbs)
+    clients_db_grow_up_to_simulation_db(simulation_db, watson_db.records)
 
   # print()
   # table_names = simulation_db.get_table_names()

@@ -35,6 +35,8 @@ simulation_seconds: integer
 title: text
 memo: text
 version: text
+#[growings]
+#see client.1.db
 
 [nodes]
 # idはwatson, clientが管理する値であるから、autoincrement 付けない。
