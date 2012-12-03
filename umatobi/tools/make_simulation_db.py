@@ -42,7 +42,7 @@ def collect_client_dbs(watson_db):
         print('id={}, num_nodes_={}'.format(id_, num_nodes_))
       # print('id={}, num_nodes_={}'.format(type(id_), type(num_nodes_)))
         client_db_path = \
-            simulation_db_path.replace(r'simulation.db',
+            watson_db.simulation_db_path.replace(r'simulation.db',
                                         'client.{}.db'.format(id_))
         client_db = simulator.sql.SQL(db_path=client_db_path)
         client_db.id, client_db.num_nodes = id_, num_nodes_
@@ -76,6 +76,7 @@ if __name__ == '__main__':
 
     watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
     watson_db = simulator.sql.SQL(db_path=watson_db_path)
+    watson_db.simulation_db_path = simulation_db_path
     print('watson_db =', watson_db)
     watson_db.access_db()
 
