@@ -62,11 +62,10 @@ class ExhaleQueue(Polling):
         pickle_record = {}
         pickle_record['id'] = None
         for i in range(queue_size):
-            pickled = self._queue_darkness.get()
+            moment, pickled = self._queue_darkness.get()
+            pickle_record['moment'] = moment
             pickle_record['pickle'] = pickled
             self.client_db.insert('pickles', pickle_record)
-          # d = pickle.loads(pickled)
-          # self.logger.debug('{}.get() i={} d="{}" pickled="{}"'.format(self, i, d, pickled))
       # client の db.pickles へ pickle 情報を commit
         self.client_db.commit()
         records = self.client_db.select('pickles', 'id,pickle',

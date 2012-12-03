@@ -33,20 +33,18 @@ class Node(p2p.core.Node):
           # print('{} key_hex = {}'.format(self, key_hex))
 
             d['key'] = key_hex
-            d['now'] = current_isoformat_time()
             d['status'] = 'active'
             self.to_darkness(d)
 
         d['key'] = None
-        d['now'] = current_isoformat_time()
         d['status'] = 'inactive'
         self.to_darkness(d)
       # print('{} good bye(host={}, port={})'.format(self, self.host, self.port))
 
     def to_darkness(self, obj):
+        moment = current_isoformat_time()
         pds = pickle.dumps(obj)
-        self._queue_darkness.put(pds)
-      # print('{} put {}'.format(self, obj))
+        self._queue_darkness.put((moment, pds))
 
     def appear(self):
         super().appear()

@@ -62,6 +62,7 @@ num_nodes: integer
 # darkness commit to client.1.db database.
 [pickles]
 id: integer primary key autoincrement unique not null
+moment: text # iso8601
 pickle: blob not null
 
 # "name TEXT UNIQUE NOT NULL)")

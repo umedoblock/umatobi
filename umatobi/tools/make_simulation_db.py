@@ -13,26 +13,12 @@ def args_timestamp():
     args.xxx_file = 'simulation.db'
     return args
 
-def sort_client_db(client_db):
-    client_db.pickles = \
+def select_client_db(client_db):
+    client_db.queues = \
         client_db.select('pickles',
-                          select_columns='pickle',
+                          select_columns='moment,pickle',
                           conditions='order by id')
-    client_db.records = \
-        [pickle.loads(pickled[0]) for pickled in client_db.pickles]
-    #158 で対応するんだったら、ここのsort()は必要ない気がする。
-    client_db.records.sort(key=lambda x: x['now'])
-
-def merge_client_dbs(client_dbs):
-    records = []
-    for client_db in client_dbs:
-        sort_client_db(client_db)
-        records.extend(client_db.records)
-    #158 records の sort をする時に、大量のmemoryが必要になると思われる。
-    records.sort(key=lambda x: x['now'])
-  # for record in records:
-  #     print(record)
-    return records
+    client_db.queues = list(client_db.queues)
 
 def collect_client_dbs(watson_db):
     client_dbs = []
@@ -59,6 +45,17 @@ def count_nodes(client_dbs):
         total_nodes += client_db.num_nodes
     print('total_nodes =', total_nodes)
     return total_nodes
+
+def merge_client_dbs(client_dbs):
+    records = []
+    for client_db in client_dbs:
+        select_client_db(client_db)
+        records.extend(client_db.queues)
+    #158 records の sort をする時に、大量のmemoryが必要になると思われる。
+    records.sort(key=lambda x: x[0])
+  # for record in records:
+  #     print(record)
+    return records
 
 if __name__ == '__main__':
     args = args_timestamp()
