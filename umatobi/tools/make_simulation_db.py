@@ -1,5 +1,7 @@
 import sys
 import os
+import pickle
+import datetime
 
 from xxx import args_xxx, get_xxx_path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -10,6 +12,27 @@ def args_timestamp():
     args = parser.parse_args()
     args.xxx_file = 'simulation.db'
     return args
+
+def sort_client_db(client_db):
+    client_db.pickles = \
+        client_db.select('pickles',
+                          select_columns='pickle',
+                          conditions='order by id')
+    client_db.records = \
+        [pickle.loads(pickled[0]) for pickled in client_db.pickles]
+    #158 で対応するんだったら、ここのsort()は必要ない気がする。
+    client_db.records.sort(key=lambda x: x['now'])
+
+def merge_client_dbs(client_dbs):
+    records = []
+    for client_db in client_dbs:
+        sort_client_db(client_db)
+        records.extend(client_db.records)
+    #158 records の sort をする時に、大量のmemoryが必要になると思われる。
+    records.sort(key=lambda x: x['now'])
+  # for record in records:
+  #     print(record)
+    return records
 
 if __name__ == '__main__':
     args = args_timestamp()
@@ -48,6 +71,8 @@ if __name__ == '__main__':
         print('client_db.id =', client_db.id)
         client_dbs.append(client_db)
     print('total_nodes =', total_nodes)
+
+    records = merge_client_dbs(client_dbs)
 
   # print()
   # table_names = simulation_db.get_table_names()
