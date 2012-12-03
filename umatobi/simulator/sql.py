@@ -96,7 +96,6 @@ class SQL(object):
         sql = static_part + str(values)
         self.logger.debug('{}'.format(sql))
         self.execute(static_part + hatenas, values)
-        self.commit()
         return sql
 
     def update(self, table_name, d, where):
