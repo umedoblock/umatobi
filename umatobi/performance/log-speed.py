@@ -92,14 +92,21 @@ class SqliteLogger(threading.Thread):
         print('conn.in_transaction 0 =', self.conn.in_transaction)
         self.cur = self.conn.cursor()
         sql = 'insert into logs values(?,?,?,?)'
+        sql = "insert into logs ('message', 'now', 'id', 'level') values(?,?,?,?)"
         print('conn.in_transaction 1 =', self.conn.in_transaction)
+        d = {}
         for i in range(self.records_num):
             now = log_now()
             tup = (None, now, 'info', 'message {:08x}'.format(i))
+            d['id'] = tup[0]
+            d['now'] = tup[1]
+            d['level'] = tup[2]
+            d['message'] = tup[3]
 #           print('tup =', tup)
             while True:
                 try:
-                    self.cur.execute(sql, tup)
+                    self.cur.execute(sql, tuple(d.values()))
+                  # self.cur.execute(sql, tup)
                 except sqlite3.OperationalError as raiz:
                     if raiz.args[0] == 'database is locked':
                         continue
@@ -174,8 +181,8 @@ def sqlite3_file_performance():
 import cProfile
 # multi thread では :memory: を試せない。
 # stop_watch(sqlite3_memory_performance, 'sqlite3_memory_performance()')
-# stop_watch(sqlite3_file_performance, 'sqlite3_file_performance()')
+stop_watch(sqlite3_file_performance, 'sqlite3_file_performance()')
 # stop_watch(logger_performance, 'logger_performance()')
-stop_watch(logger_performance_sequential, 'logger_performance_sequential()')
+# stop_watch(logger_performance_sequential, 'logger_performance_sequential()')
 # cProfile.run('logger_performance()')
 # cProfile.run('sqlite3_file_performance()')
