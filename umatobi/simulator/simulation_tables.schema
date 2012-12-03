@@ -60,7 +60,8 @@ num_nodes: integer
 
 # client.1.db #################################################################
 # darkness commit to client.1.db database.
-[pickles]
+# nodes are growing.
+[growings]
 id: integer primary key autoincrement unique not null
 moment: text # iso8601
 pickle: blob not null

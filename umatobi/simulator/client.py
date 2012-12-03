@@ -99,8 +99,8 @@ class Client(object):
                                            schema_path=self.schema_path)
         self.client_db.create_db()
         self.logger.info('{} client_db.create_db().'.format(self))
-        self.client_db.create_table('pickles')
-        self.logger.info('{} client_db.create_table(\'pickles\').'.format(self))
+        self.client_db.create_table('growings')
+        self.logger.info('{} client_db.create_table(\'growings\').'.format(self))
 
         # Darkness が作成する node の数を設定する。
         nodes_per_darkness = self.nodes_per_darkness

@@ -59,18 +59,19 @@ class ExhaleQueue(Polling):
         queue_size = self._queue_darkness.qsize()
         self.queue_size_total += queue_size
         self.logger.info('{} _queue_darkness.qsize()={}.'.format(self.darkness, queue_size))
-        pickle_record = {}
-        pickle_record['id'] = None
+        growing = {}
+        growing['id'] = None
         for i in range(queue_size):
             moment, pickled = self._queue_darkness.get()
-            pickle_record['moment'] = moment
-            pickle_record['pickle'] = pickled
-            self.client_db.insert('pickles', pickle_record)
-      # client の db.pickles へ pickle 情報を commit
+            growing['moment'] = moment
+            growing['pickle'] = pickled
+            self.client_db.insert('growings', growing)
+      # client の db.growings へ pickle 情報を commit
         self.client_db.commit()
-        records = self.client_db.select('pickles', 'id,pickle',
-                                        conditions='')
-        self.logger.debug('pickles table dumped =\n"{}"'.format(records))
+        growings = self.client_db.select('growings', 'id,pickle',
+                                                conditions='')
+        self.logger.debug('growings table dumped =\n"{}"'. \
+                           format(growings))
 
 class Darkness(object):
     '''漆黒の闇'''

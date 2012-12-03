@@ -15,7 +15,7 @@ def args_timestamp():
 
 def select_client_db(client_db):
     client_db.queues = \
-        client_db.select('pickles',
+        client_db.select('growings',
                           select_columns='moment,pickle',
                           conditions='order by id')
     client_db.queues = list(client_db.queues)
