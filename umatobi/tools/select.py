@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
         print('{} table'.format(table_name))
         rows = db.select(table_name)
-        print(db.get_column_names())
+        print(db.get_column_names(table_name))
         for row in rows:
             print(row)
 
