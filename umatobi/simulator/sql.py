@@ -90,6 +90,14 @@ class SQL(object):
         self._cur.close()
         self._conn.close()
 
+    def inserts(self, table_name, tups):
+      # print('tups =', tups)
+        columns = tups[0]
+        static_part = 'insert into {} {} values '.format(table_name, columns)
+        hatenas = '({})'.format(', '.join('?' * len(columns)))
+
+        self._conn.executemany(static_part + hatenas, tups[1:])
+
     def insert(self, table_name, d):
         static_part = 'insert into {} {} values '.format(table_name, tuple(d.keys()))
         hatenas = '({})'.format(', '.join('?' * len(d)))

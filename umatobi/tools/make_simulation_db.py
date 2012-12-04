@@ -58,11 +58,38 @@ def merge_client_dbs(client_dbs):
 def clients_db_grow_up_to_simulation_db(simulation_db, records):
     growing = {}
     growing['id'] = None
+    growing['moment'] = None
+    growing['pickle'] = None
+    keys = tuple(growing.keys())
+
+    for i, key in enumerate(keys):
+        if key == 'id':
+            i_id = i
+        elif key == 'moment':
+            i_moment = i
+        elif key == 'pickle':
+            i_pickle = i
+
+    growings = []
+    growings.append(keys)
+
+    L = [None] * len(keys)
+    # L[i_id] = None
     for record in records:
-        growing['moment'] = record['moment']
-        growing['pickle'] = record['pickle']
-        simulation_db.insert('growings', growing)
+        L[i_moment] = record['moment']
+        L[i_pickle] = record['pickle']
+        growings.append(L)
+    simulation_db.inserts('growings', growings)
     simulation_db.commit()
+
+# def clients_db_grow_up_to_simulation_db(simulation_db, records):
+#     growing = {}
+#     growing['id'] = None
+#     for record in records:
+#         growing['moment'] = record['moment']
+#         growing['pickle'] = record['pickle']
+#         simulation_db.insert('growings', growing)
+#     simulation_db.commit()
 
 if __name__ == '__main__':
     args = args_timestamp()
