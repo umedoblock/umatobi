@@ -116,7 +116,6 @@ class SQL(object):
         self.logger.debug('for update sql =')
         self.logger.debug(sql)
         self.execute(sql, values)
-        self.commit()
         return static_part + str(values)
 
   # def __getattr__(self, name):
