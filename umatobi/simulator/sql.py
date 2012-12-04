@@ -25,7 +25,7 @@ class SQL(object):
     def set_logger(self, logger, level='INFO'):
         if logger is None:
             # #139 いつかどこかで暇な時にでも、lib.make_logger() と統合しよう。
-            logger = logging.getLogger('default')
+            logger = logging.getLogger(str(self))
             logger.setLevel(logging.DEBUG)
             formatter = logging.Formatter(LOGGER_FMT, datefmt=LOGGER_DATEFMT)
             # print() の代わりとして使用することを想定しているので、
