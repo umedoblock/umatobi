@@ -5,6 +5,7 @@ import logging
 
 from lib import LOGGER_FMT, LOGGER_DATEFMT
 
+#162 sqlite3 を継承すればいいへん？
 class SQL(object):
     def __init__(self, owner=None, db_path=':memory:', schema_path=''):
         self.db_path = db_path
