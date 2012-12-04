@@ -24,9 +24,8 @@ def collect_client_dbs(watson_db):
     client_dbs = []
     client_rows = watson_db.select('clients', conditions='order by id')
     for client_row in client_rows:
-        id_, num_nodes_ = (client_row[0], client_row[5])
+        id_, num_nodes_ = (client_row['id'], client_row['num_nodes'])
         print('id={}, num_nodes_={}'.format(id_, num_nodes_))
-      # print('id={}, num_nodes_={}'.format(type(id_), type(num_nodes_)))
         client_db_path = \
             watson_db.simulation_db_path.replace(r'simulation.db',
                                         'client.{}.db'.format(id_))
@@ -52,7 +51,7 @@ def merge_client_dbs(client_dbs):
         select_client_db(client_db)
         records.extend(client_db.queues)
     #158 records の sort をする時に、大量のmemoryが必要になると思われる。
-    records.sort(key=lambda x: x[0])
+    records.sort(key=lambda x: x['moment'])
   # for record in records:
   #     print(record)
     return records
@@ -61,8 +60,8 @@ def clients_db_grow_up_to_simulation_db(simulation_db, records):
     growing = {}
     growing['id'] = None
     for record in records:
-        growing['moment'] = record[0]
-        growing['pickle'] = record[1]
+        growing['moment'] = record['moment']
+        growing['pickle'] = record['pickle']
         simulation_db.insert('growings', growing)
     simulation_db.commit()
 

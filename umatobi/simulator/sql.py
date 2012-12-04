@@ -43,6 +43,7 @@ class SQL(object):
 
     def create_db(self):
         self._conn = sqlite3.connect(self.db_path)
+        self._conn.row_factory = sqlite3.Row
         self._cur = self._conn.cursor()
 
     def create_table(self, table_name):
