@@ -134,6 +134,7 @@ class Watson(threading.Thread):
                 d['log_level'] = self.log_level
                 d['num_nodes'] = num_nodes
                 sql = self.watson_db.insert('clients', d)
+                self.watson_db.commit()
                 self.logger.debug('{} {}'.format(self, sql))
                 self.logger.info('{} recved={}'.format(self, d))
 

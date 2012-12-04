@@ -44,6 +44,7 @@ class TestSQL(unittest.TestCase):
         d_insert['val_blob'] = b'bytes'
         d_insert['now'] = lib.current_isoformat_time()
         sql.insert('test_table', d_insert)
+        sql.commit()
 
       # d_select = {}
       # d_select['id'] = 1, d_select
@@ -91,6 +92,7 @@ class TestSQL(unittest.TestCase):
         d_insert['val_blob'] = b'bytes'
         d_insert['now'] = lib.current_isoformat_time()
         sql.insert('test_table', d_insert)
+        sql.commit()
 
         d_selected = sql.select('test_table')
 
