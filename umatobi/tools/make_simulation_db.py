@@ -43,7 +43,6 @@ def _select_client_db(client_db):
         client_db.select('growings',
                           select_columns='moment,pickle',
                           conditions='order by id')
-    client_db.queues = tuple(client_db.queues)
 
 def merge_client_dbs(client_dbs):
     records = []
