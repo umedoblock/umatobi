@@ -13,13 +13,6 @@ def args_timestamp():
     args.xxx_file = 'simulation.db'
     return args
 
-def select_client_db(client_db):
-    client_db.queues = \
-        client_db.select('growings',
-                          select_columns='moment,pickle',
-                          conditions='order by id')
-    client_db.queues = list(client_db.queues)
-
 def collect_client_dbs(watson_db):
     client_dbs = []
     client_rows = watson_db.select('clients', conditions='order by id')
@@ -45,10 +38,17 @@ def count_nodes(client_dbs):
     print('total_nodes =', total_nodes)
     return total_nodes
 
+def _select_client_db(client_db):
+    client_db.queues = \
+        client_db.select('growings',
+                          select_columns='moment,pickle',
+                          conditions='order by id')
+    client_db.queues = list(client_db.queues)
+
 def merge_client_dbs(client_dbs):
     records = []
     for client_db in client_dbs:
-        select_client_db(client_db)
+        _select_client_db(client_db)
         records.extend(client_db.queues)
     #158 records の sort をする時に、大量のmemoryが必要になると思われる。
     records.sort(key=lambda x: x['moment'])
