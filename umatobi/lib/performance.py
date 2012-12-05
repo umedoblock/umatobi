@@ -1,8 +1,8 @@
 import datetime
 
-def stop_watch(func, message):
+def stop_watch(func, args, message):
     s = datetime.datetime.today()
-    func()
+    ret = func(*args)
     e = datetime.datetime.today()
     t = (e - s).total_seconds()
 
@@ -12,6 +12,7 @@ def stop_watch(func, message):
         print()
     else:
         print('{:>28s} の処理にかかった時間: {:.3f}'.format(message, t))
+    return ret
 
 def log_now():
     now = datetime.datetime.today()
