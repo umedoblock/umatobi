@@ -12,11 +12,13 @@
 
 import sqlite3
 import os
+import sys
 import threading
 import logging
 
-from lib import stop_watch
-from lib import log_now
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from lib.performance import stop_watch
+from lib.performance import log_now
 
 threads_num = 1
 records_num = 1

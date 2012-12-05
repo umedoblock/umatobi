@@ -1,9 +1,12 @@
 import datetime
 import threading
 import queue
+import os
+import sys
 
-from lib import stop_watch
-from lib import log_now
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from lib.performance import stop_watch
+from lib.performance import log_now
 
 threads_num = 5
 times = 10 * 10000
