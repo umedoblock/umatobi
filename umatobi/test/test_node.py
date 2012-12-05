@@ -2,6 +2,7 @@ import os
 import sys
 import threading
 import unittest
+import queue
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import p2p.core
@@ -22,8 +23,11 @@ class TestNode(unittest.TestCase):
 
     def test_simulator_node(self):
         good_bye_with_nodes = threading.Event()
+        _queue_darkness = queue.Queue()
         node_ = \
-            simulator.node.Node('localhost', 10001, 0, good_bye_with_nodes)
+            simulator.node.Node('localhost', 10001, 0, good_bye_with_nodes,
+                                 _queue_darkness)
+
         node_status = node_.get_status()
         self.assertEqual(dict, type(node_status))
 

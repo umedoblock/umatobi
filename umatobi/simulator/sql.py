@@ -121,7 +121,7 @@ class SQL(object):
         self.logger.debug('set_part =', set_part)
         self.logger.debug('s =', s)
         self.logger.debug('where_clause =', where_clause)
-        self.logger.debug()
+        self.logger.debug('')
         sql = static_part + set_part + where_clause
         self.logger.debug('for update sql =')
         self.logger.debug(sql)

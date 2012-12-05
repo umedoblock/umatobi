@@ -17,6 +17,7 @@ class TestWatson(unittest.TestCase):
         simulation_seconds = 1
         simulation_dir = os.path.join(test_dir, 'umatobi-simulation')
         start_up = get_start_up()
+        log_level = 'INFO'
 
         db_dir = os.path.join(simulation_dir, start_up)
         watson_log = os.path.join(db_dir, 'watson.log')
@@ -27,7 +28,7 @@ class TestWatson(unittest.TestCase):
         self.assertFalse(os.path.exists(watson_log))
         # watson for test
         watson = Watson(office, simulation_seconds,
-                        simulation_dir, start_up)
+                        simulation_dir, start_up, log_level)
 
         self.assertTrue(os.path.exists(watson_log))
 
