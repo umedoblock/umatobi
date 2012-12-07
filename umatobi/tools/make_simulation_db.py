@@ -55,7 +55,22 @@ def merge_client_dbs(client_dbs):
   #     print(record)
     return records
 
-def clients_db_grow_up_to_simulation_db(simulation_db, records):
+def watson_make_simulation_db(simulation_db, watson_db):
+    print('simulation_db =', simulation_db)
+    print('watson_db =', watson_db)
+
+    if os.path.exists(simulation_db.path):
+        print('os.remove("{}")'.format(simulation_db.path))
+        os.remove(simulation_db.path)
+    simulation_db.create_db()
+    simulation_db.create_table('simulation')
+    simulation_db.create_table('growings')
+
+    watson_db.access_db()
+
+    watson_db.client_dbs = collect_client_dbs(watson_db)
+    watson_db.total_nodes = count_nodes(watson_db.client_dbs)
+    watson_db.records = merge_client_dbs(watson_db.client_dbs)
     growing = {}
     growing['id'] = None
     growing['moment'] = None
@@ -75,7 +90,7 @@ def clients_db_grow_up_to_simulation_db(simulation_db, records):
 
     L = [None] * len(keys)
     # L[i_id] = None
-    for record in records:
+    for record in watson_db.records:
         L[i_moment] = record['moment']
         L[i_pickle] = record['pickle']
         growings.append(L)
@@ -85,28 +100,18 @@ def clients_db_grow_up_to_simulation_db(simulation_db, records):
 if __name__ == '__main__':
     args = args_timestamp()
     simulation_db_path = get_xxx_path(args, 'db')
+    watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
     schema_path = os.path.join(os.path.dirname(__file__), '..', 'simulator',
                               'simulation_tables.schema')
+
     simulation_db = simulator.sql.SQL(db_path=simulation_db_path,
                                       schema_path=schema_path)
-    print('simulation_db =', simulation_db)
-    if os.path.exists(simulation_db_path):
-        print('os.remove("{}")'.format(simulation_db_path))
-        os.remove(simulation_db_path)
-    simulation_db.create_db()
-    simulation_db.create_table('simulation')
-    simulation_db.create_table('growings')
-
-    watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
+    simulation_db.path = simulation_db_path
     watson_db = simulator.sql.SQL(db_path=watson_db_path)
-    watson_db.simulation_db_path = simulation_db_path
-    print('watson_db =', watson_db)
-    watson_db.access_db()
+    watson_db.simulation_db_path = simulation_db.path
+    watson_db.path = watson_db_path
 
-    watson_db.client_dbs = collect_client_dbs(watson_db)
-    watson_db.total_nodes = count_nodes(watson_db.client_dbs)
-    watson_db.records = merge_client_dbs(watson_db.client_dbs)
-    clients_db_grow_up_to_simulation_db(simulation_db, watson_db.records)
+    watson_make_simulation_db(simulation_db, watson_db)
 
     for client_db in reversed(watson_db.client_dbs):
         client_db.close()
