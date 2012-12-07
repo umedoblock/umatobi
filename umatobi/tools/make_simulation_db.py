@@ -82,15 +82,6 @@ def clients_db_grow_up_to_simulation_db(simulation_db, records):
     simulation_db.inserts('growings', growings)
     simulation_db.commit()
 
-# def clients_db_grow_up_to_simulation_db(simulation_db, records):
-#     growing = {}
-#     growing['id'] = None
-#     for record in records:
-#         growing['moment'] = record['moment']
-#         growing['pickle'] = record['pickle']
-#         simulation_db.insert('growings', growing)
-#     simulation_db.commit()
-
 if __name__ == '__main__':
     args = args_timestamp()
     simulation_db_path = get_xxx_path(args, 'db')
