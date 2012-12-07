@@ -46,7 +46,9 @@ if __name__ == '__main__':
 
         print('{} table'.format(table_name))
         rows = db.select(table_name)
-        print(rows[0].keys())
+        print('rows =', rows)
+        if rows:
+            print(rows[0].keys())
         for row in rows:
             print(tuple(row))
 
