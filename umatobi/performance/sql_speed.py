@@ -75,6 +75,8 @@ def run():
 
     n_records = 1 * 200
     n_records = 10000 * 200
+    n_records = 10000 * 2
+    n_records = 10000 * 20
     print('n_records =', n_records)
     records = stop_watch(make_test_records, (n_records,),
                         'make_test_records()')
