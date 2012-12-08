@@ -30,12 +30,13 @@ def args_log(description):
 def args_theater(description):
     parser = _args_parse_basic(description)
     parser.add_argument(# db file
-                        metavar='db file', dest='db_or_log',
+                        metavar='simulation db file', dest='db_or_log',
                         nargs='?', default='',
                         help='simulation.db, watson.db, or client.1.db, ...')
     parser.add_argument('--sample', dest='sample',
                          action='store_true', default=False,
                          help='sample')
+    args.db_or_log = 'simulation.db'
     args = parser.parse_args()
     if args.sample:
         db_path = ''
