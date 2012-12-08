@@ -3,9 +3,9 @@ import sys
 import os
 
 def args_db(description):
-    parser = _args_xxx(description)
+    parser = _args_parse_basic(description)
     parser.add_argument(# db file
-                        metavar='db file', dest='xxx_file',
+                        metavar='db file', dest='db_or_log',
                         nargs='?', default='',
                         help='simulation.db, watson.db, or client.1.db, ...')
     parser.add_argument(# table name
@@ -13,24 +13,24 @@ def args_db(description):
                         nargs='?', default='',
                         help='table name')
     args = parser.parse_args()
-    db_path = _get_xxx_path(args, 'db')
+    db_path = _get_db_or_log_path(args, 'db')
     return args, db_path
 
 def args_log(description):
-    parser = _args_xxx(description)
+    parser = _args_parse_basic(description)
     parser.add_argument(# last argment, log file
-                        metavar='f', dest='xxx_file',
+                        metavar='f', dest='db_or_log',
                         nargs='?', default='',
                         help='watson.log, client.1.log or darkness.1.log, ...')
     args = parser.parse_args()
-    log_path = _get_xxx_path(args, 'log')
+    log_path = _get_db_or_log_path(args, 'log')
 
     return args, log_path
 
 def args_theater(description):
-    parser = _args_xxx(description)
+    parser = _args_parse_basic(description)
     parser.add_argument(# db file
-                        metavar='db file', dest='xxx_file',
+                        metavar='db file', dest='db_or_log',
                         nargs='?', default='',
                         help='simulation.db, watson.db, or client.1.db, ...')
     parser.add_argument('--sample', dest='sample',
@@ -40,11 +40,11 @@ def args_theater(description):
     if args.sample:
         db_path = ''
     else:
-        db_path = _get_xxx_path(args, 'db')
+        db_path = _get_db_or_log_path(args, 'db')
 
     return args, db_path
 
-def _args_xxx(description):
+def _args_parse_basic(description):
     parser = argparse.ArgumentParser(description)
     parser.add_argument('--show-timestamps', dest='show_timestamps',
                          action='store_true', default=False,
@@ -71,28 +71,28 @@ def _show_timestamps(timestamps):
         else:
             print('{:>6d} {}'.format(i, d))
 
-def _gather_xxx_file(files, xxx):
-    xxx_files = []
+def _gather_db_or_log(files, db_or_log):
+    dbs_or_logs = []
     for file_name in files:
-        if file_name.endswith('.{}'.format(xxx)):
-            xxx_files.append(file_name)
-    return xxx_files
+        if file_name.endswith('.{}'.format(db_or_log)):
+            dbs_or_logs.append(file_name)
+    return dbs_or_logs
 
-def _get_xxx_path(args, xxx):
+def _get_db_or_log_path(args, db_or_log):
     simulation_dir = args.simulation_dir
-    xxx_file = args.xxx_file
+    db_or_log = args.db_or_log
     if args.show_timestamps or args.timestamp == '00000000T000000':
         timestamps = os.listdir(simulation_dir)
         timestamps.sort(reverse=True)
 
-    xxx_path = ''
+    db_or_log_path = ''
     if args.show_timestamps:
         print('simulation_dir = "{}"'.format(simulation_dir))
         _show_timestamps(timestamps)
     else:
-        if not xxx_file:
+        if not db_or_log:
             ss = '{}_file muse be watson.{}, client.1.{}, ...'
-            message = ss.format(xxx, xxx, xxx)
+            message = ss.format(db_or_log, db_or_log, db_or_log)
             raise RuntimeError(message)
         if args.timestamp == '00000000T000000':
             try:
@@ -105,15 +105,15 @@ def _get_xxx_path(args, xxx):
         dir_name = os.path.join(simulation_dir, timestamp)
 
         files = os.listdir(dir_name)
-        xxx_files = _gather_xxx_file(files, xxx)
-        if xxx_file in xxx_files or xxx_file == 'simulation.db':
-            xxx_path = os.path.join(dir_name, xxx_file)
+        dbs_or_logs = _gather_db_or_log(files, db_or_log)
+        if db_or_log in dbs_or_logs or db_or_log == 'simulation.db':
+            db_or_log_path = os.path.join(dir_name, db_or_log)
         else:
             print('dir_name is "{}".'.format(dir_name))
-            print('however, cannot use "{}" file'.format(xxx_file))
-            print('please select {} file in below {} files.'.format(xxx, xxx))
-            print('    ' + '\n    '.join(xxx_files))
-    return xxx_path
+            print('however, cannot use "{}" file'.format(db_or_log))
+            print('please select {} file in below {} files.'.format(db_or_log, db_or_log))
+            print('    ' + '\n    '.join(dbs_or_logs))
+    return db_or_log_path
 
   # 参考
   # parser.add_argument('--recver-host', metavar='f', dest='recver_host',
