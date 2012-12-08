@@ -13,7 +13,7 @@ def args_db(description):
                         nargs='?', default='',
                         help='table name')
     args = parser.parse_args()
-    db_path = _get_db_or_log_path(args, 'db')
+    db_path = _get_db_or_log_path(args)
     return args, db_path
 
 def args_log(description):
@@ -23,7 +23,7 @@ def args_log(description):
                         nargs='?', default='',
                         help='watson.log, client.1.log or darkness.1.log, ...')
     args = parser.parse_args()
-    log_path = _get_db_or_log_path(args, 'log')
+    log_path = _get_db_or_log_path(args)
 
     return args, log_path
 
@@ -33,11 +33,11 @@ def args_theater(description):
                          action='store_true', default=False,
                          help='sample')
     args = parser.parse_args()
-    args.db_or_log_file = 'simulation.db'
     if args.sample:
         db_path = ''
     else:
-        db_path = _get_db_or_log_path(args, 'db')
+        args.db_or_log_file = 'simulation.db'
+        db_path = _get_db_or_log_path(args)
 
     return args, db_path
 
@@ -75,9 +75,10 @@ def _gather_db_or_log_files(files, db_or_log):
             dbs_or_logs.append(file_name)
     return dbs_or_logs
 
-def _get_db_or_log_path(args, db_or_log):
+def _get_db_or_log_path(args):
     simulation_dir = args.simulation_dir
     db_or_log_file = args.db_or_log_file
+    db_or_log = db_or_log_file.split('.')[-1]
     if args.show_timestamps or args.timestamp == '00000000T000000':
         timestamps = os.listdir(simulation_dir)
         timestamps.sort(reverse=True)
