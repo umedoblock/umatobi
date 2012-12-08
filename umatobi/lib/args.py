@@ -41,6 +41,12 @@ def args_theater(description):
 
     return args, db_path
 
+def args_make_simulation_db():
+    parser = _args_parse_basic('make_simulation_db.py')
+    args = parser.parse_args()
+    args.db_or_log_file = 'simulation.db'
+    return args
+
 def _args_parse_basic(description):
     parser = argparse.ArgumentParser(description)
     parser.add_argument('--show-timestamps', dest='show_timestamps',

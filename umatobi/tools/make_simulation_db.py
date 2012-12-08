@@ -4,14 +4,8 @@ import pickle
 import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from lib.args import _args_parse_basic, _get_db_or_log_path
+from lib.args import _get_db_or_log_path, args_make_simulation_db
 import simulator.sql
-
-def args_timestamp():
-    parser = _args_parse_basic('make_simulation_db.py')
-    args = parser.parse_args()
-    args.db_or_log_file = 'simulation.db'
-    return args
 
 def collect_client_dbs(watson_db):
     client_dbs = []
@@ -98,7 +92,7 @@ def watson_make_simulation_db(simulation_db, watson_db):
     simulation_db.commit()
 
 if __name__ == '__main__':
-    args = args_timestamp()
+    args = args_make_simulation_db()
     simulation_db_path = _get_db_or_log_path(args)
     watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
     schema_path = os.path.join(os.path.dirname(__file__), '..', 'simulator',
