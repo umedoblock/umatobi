@@ -71,7 +71,7 @@ def _show_timestamps(timestamps):
         else:
             print('{:>6d} {}'.format(i, d))
 
-def _gather_db_or_log(files, db_or_log):
+def _gather_db_or_log_files(files, db_or_log):
     dbs_or_logs = []
     for file_name in files:
         if file_name.endswith('.{}'.format(db_or_log)):
@@ -105,7 +105,7 @@ def _get_db_or_log_path(args, db_or_log):
         dir_name = os.path.join(simulation_dir, timestamp)
 
         files = os.listdir(dir_name)
-        dbs_or_logs = _gather_db_or_log(files, db_or_log)
+        dbs_or_logs = _gather_db_or_log_files(files, db_or_log)
         if db_or_log in dbs_or_logs or db_or_log == 'simulation.db':
             db_or_log_path = os.path.join(dir_name, db_or_log)
         else:
