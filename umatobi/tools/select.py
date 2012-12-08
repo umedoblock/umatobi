@@ -32,11 +32,12 @@ if __name__ == '__main__':
 
         print('{} table'.format(table_name))
         rows = db.select(table_name)
-        print('rows =', rows)
         if rows:
-            print(rows[0].keys())
-        for row in rows:
-            print(tuple(row))
+            print(tuple(rows[0].keys()))
+            for row in rows:
+                print(tuple(row))
+        else:
+            print('no record.')
 
     _debug = False
     if _debug:
