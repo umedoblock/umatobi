@@ -3,21 +3,8 @@ import os
 import sqlite3
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from lib.args import args_xxx, get_xxx_path
+from lib.args import args_db
 import simulator.sql
-
-def args_db():
-    parser = args_xxx(description='select.py')
-    parser.add_argument(# db file
-                        metavar='db file', dest='xxx_file',
-                        nargs='?', default='',
-                        help='simulation.db, watson.db, or client.1.db, ...')
-    parser.add_argument(# table name
-                        metavar='table name', dest='table_name',
-                        nargs='?', default='',
-                        help='table name')
-    args = parser.parse_args()
-    return args
 
 if __name__ == '__main__':
     # examples:
@@ -26,9 +13,8 @@ if __name__ == '__main__':
     # umatobi/select.py watson.db clients
     # umatobi/select.py --index=1 client.1.db pickles
 
-    args = args_db()
+    args, db_path = args_db('select.py')
   # print('args =', args)
-    db_path = get_xxx_path(args, 'db')
 
     if db_path:
         print('db_path =', db_path)
