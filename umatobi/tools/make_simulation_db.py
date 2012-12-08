@@ -10,7 +10,7 @@ import simulator.sql
 def args_timestamp():
     parser = args_db_or_log(description='make_simulation_db.py')
     args = parser.parse_args()
-    args.db_or_log_file = 'simulation.db'
+    args.db_or_log = 'simulation.db'
     return args
 
 def collect_client_dbs(watson_db):
