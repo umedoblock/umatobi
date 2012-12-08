@@ -45,7 +45,8 @@ def args_make_simulation_db():
     parser = _args_parse_basic('make_simulation_db.py')
     args = parser.parse_args()
     args.db_or_log_file = 'simulation.db'
-    return args
+    simulation_db_path = _get_db_or_log_path(args)
+    return args, simulation_db_path
 
 def _args_parse_basic(description):
     parser = argparse.ArgumentParser(description)
