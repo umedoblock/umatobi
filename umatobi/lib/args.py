@@ -28,30 +28,25 @@ def args_log(description):
     return args, log_path
 
 def args_theater(description):
-    parser = argparse.ArgumentParser(description)
-
-  # parser.add_argument('--recver-host', metavar='f', dest='recver_host',
-  #                      nargs='?',
-  #                      default='localhost',
-  #                      help='my.server.net')
+    parser = _args_xxx(description)
+    parser.add_argument(# db file
+                        metavar='db file', dest='xxx_file',
+                        nargs='?', default='',
+                        help='simulation.db, watson.db, or client.1.db, ...')
     parser.add_argument('--sample', dest='sample',
                          action='store_true', default=False,
                          help='sample')
-  # parser.add_argument('--one-packet-size',
-  #                      metavar='N', dest='one_packet_size',
-  #                      type=int, nargs='?', default=(1024 * 4),
-  #                      help='one packet size default is 4KO(4 * 1024)')
-    parser.add_argument('--sql-path', metavar='f', dest='sql_path',
-                         nargs='?',
-                         default='',
-                         help='simulate sql file path')
     args = parser.parse_args()
+    if args.sample:
+        db_path = ''
+    else:
+        db_path = _get_xxx_path(args, 'db')
 
-    return args
+    return args, db_path
 
 def _args_xxx(description):
     parser = argparse.ArgumentParser(description)
-    parser.add_argument('--show-timestamps', dest='_show_timestamps',
+    parser.add_argument('--show-timestamps', dest='show_timestamps',
                          action='store_true', default=False,
                          help='show index and directory timestamps')
     parser.add_argument('--simulation-dir',
@@ -86,12 +81,12 @@ def _gather_xxx_file(files, xxx):
 def _get_xxx_path(args, xxx):
     simulation_dir = args.simulation_dir
     xxx_file = args.xxx_file
-    if args._show_timestamps or args.timestamp == '00000000T000000':
+    if args.show_timestamps or args.timestamp == '00000000T000000':
         timestamps = os.listdir(simulation_dir)
         timestamps.sort(reverse=True)
 
     xxx_path = ''
-    if args._show_timestamps:
+    if args.show_timestamps:
         print('simulation_dir = "{}"'.format(simulation_dir))
         _show_timestamps(timestamps)
     else:
@@ -119,3 +114,16 @@ def _get_xxx_path(args, xxx):
             print('please select {} file in below {} files.'.format(xxx, xxx))
             print('    ' + '\n    '.join(xxx_files))
     return xxx_path
+
+  # 参考
+  # parser.add_argument('--recver-host', metavar='f', dest='recver_host',
+  #                      nargs='?',
+  #                      default='localhost',
+  #                      help='my.server.net')
+  # parser.add_argument('--one-packet-size',
+  #                      metavar='N', dest='one_packet_size',
+  #                      type=int, nargs='?', default=(1024 * 4),
+  #                      help='one packet size default is 4KO(4 * 1024)')
+  # parser.add_argument('--show-timestamps', dest='show_timestamps',
+  #                      action='store_true', default=False,
+  #                      help='show index and directory timestamps')

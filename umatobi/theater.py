@@ -6,18 +6,19 @@ from simulator.screen import display_sample
 from lib.args import args_theater
 
 if __name__ == '__main__':
-    args = args_theater('theater.')
+    args, db_path = args_theater('theater.')
 
     screen = Screen(sys.argv)
 
-    if args.sample:
-        screen.set_display(display_sample)
-  # elif args.sql_path:
-  #     raise RuntimeError('must set --sample.')
-  #     f = open(args.sql_path)
-  #     screen.take_resource(f)
-  #     screen.set_display(display_sql)
+    if db_path or args.sample:
+        if db_path:
+            print('db_path =', db_path)
+            screen.set_display(None)
+        if args.sample:
+            screen.set_display(display_sample)
+        screen.start()
+    elif args.show_timestamps:
+        pass
     else:
         raise RuntimeError('at least, must use --sample option.')
 
-    screen.start()
