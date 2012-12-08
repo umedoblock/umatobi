@@ -14,6 +14,7 @@ if __name__ == '__main__':
         if db_path:
             print('db_path =', db_path)
             screen.set_display(None)
+            raise()
         if args.sample:
             screen.set_display(display_sample)
         screen.start()
