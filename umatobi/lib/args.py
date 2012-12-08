@@ -5,7 +5,7 @@ import os
 def args_db(description):
     parser = _args_parse_basic(description)
     parser.add_argument(# db file
-                        metavar='db file', dest='db_or_log',
+                        metavar='db file', dest='db_or_log_file',
                         nargs='?', default='',
                         help='simulation.db, watson.db, or client.1.db, ...')
     parser.add_argument(# table name
@@ -19,7 +19,7 @@ def args_db(description):
 def args_log(description):
     parser = _args_parse_basic(description)
     parser.add_argument(# last argment, log file
-                        metavar='f', dest='db_or_log',
+                        metavar='f', dest='db_or_log_file',
                         nargs='?', default='',
                         help='watson.log, client.1.log or darkness.1.log, ...')
     args = parser.parse_args()
@@ -29,15 +29,11 @@ def args_log(description):
 
 def args_theater(description):
     parser = _args_parse_basic(description)
-    parser.add_argument(# db file
-                        metavar='simulation db file', dest='db_or_log',
-                        nargs='?', default='',
-                        help='simulation.db, watson.db, or client.1.db, ...')
     parser.add_argument('--sample', dest='sample',
                          action='store_true', default=False,
                          help='sample')
-    args.db_or_log = 'simulation.db'
     args = parser.parse_args()
+    args.db_or_log_file = 'simulation.db'
     if args.sample:
         db_path = ''
     else:
@@ -81,7 +77,7 @@ def _gather_db_or_log_files(files, db_or_log):
 
 def _get_db_or_log_path(args, db_or_log):
     simulation_dir = args.simulation_dir
-    db_or_log = args.db_or_log
+    db_or_log_file = args.db_or_log_file
     if args.show_timestamps or args.timestamp == '00000000T000000':
         timestamps = os.listdir(simulation_dir)
         timestamps.sort(reverse=True)
@@ -91,7 +87,7 @@ def _get_db_or_log_path(args, db_or_log):
         print('simulation_dir = "{}"'.format(simulation_dir))
         _show_timestamps(timestamps)
     else:
-        if not db_or_log:
+        if not db_or_log_file:
             ss = '{}_file muse be watson.{}, client.1.{}, ...'
             message = ss.format(db_or_log, db_or_log, db_or_log)
             raise RuntimeError(message)
@@ -107,11 +103,11 @@ def _get_db_or_log_path(args, db_or_log):
 
         files = os.listdir(dir_name)
         dbs_or_logs = _gather_db_or_log_files(files, db_or_log)
-        if db_or_log in dbs_or_logs or db_or_log == 'simulation.db':
-            db_or_log_path = os.path.join(dir_name, db_or_log)
+        if db_or_log_file in dbs_or_logs:
+            db_or_log_path = os.path.join(dir_name, db_or_log_file)
         else:
             print('dir_name is "{}".'.format(dir_name))
-            print('however, cannot use "{}" file'.format(db_or_log))
+            print('however, cannot use "{}" file'.format(db_or_log_file))
             print('please select {} file in below {} files.'.format(db_or_log, db_or_log))
             print('    ' + '\n    '.join(dbs_or_logs))
     return db_or_log_path
