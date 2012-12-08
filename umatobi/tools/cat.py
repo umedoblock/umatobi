@@ -1,4 +1,8 @@
-from xxx import args_xxx, get_xxx_path
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from lib.args import args_xxx, get_xxx_path
 
 def args_log():
     parser = args_xxx(description='cat.py')

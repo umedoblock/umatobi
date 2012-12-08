@@ -3,8 +3,8 @@ import os
 import pickle
 import datetime
 
-from xxx import args_xxx, get_xxx_path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from lib.args import args_xxx, get_xxx_path
 import simulator.sql
 
 def args_timestamp():

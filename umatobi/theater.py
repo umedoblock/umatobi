@@ -3,6 +3,7 @@ import sys
 
 from simulator.screen import Screen
 from simulator.screen import display_sample
+from lib.args import args_xxx
 
 def args_():
     parser = argparse.ArgumentParser(description='screen.')
