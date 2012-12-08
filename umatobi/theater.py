@@ -3,32 +3,10 @@ import sys
 
 from simulator.screen import Screen
 from simulator.screen import display_sample
-from lib.args import args_db
-
-def args_():
-    parser = argparse.ArgumentParser(description='screen.')
-
-  # parser.add_argument('--recver-host', metavar='f', dest='recver_host',
-  #                      nargs='?',
-  #                      default='localhost',
-  #                      help='my.server.net')
-    parser.add_argument('--sample', dest='sample',
-                         action='store_true', default=False,
-                         help='sample')
-  # parser.add_argument('--one-packet-size',
-  #                      metavar='N', dest='one_packet_size',
-  #                      type=int, nargs='?', default=(1024 * 4),
-  #                      help='one packet size default is 4KO(4 * 1024)')
-    parser.add_argument('--sql-path', metavar='f', dest='sql_path',
-                         nargs='?',
-                         default='',
-                         help='simulate sql file path')
-    args = parser.parse_args()
-
-    return args
+from lib.args import args_theater
 
 if __name__ == '__main__':
-    args = args_()
+    args = args_theater('theater.')
 
     screen = Screen(sys.argv)
 

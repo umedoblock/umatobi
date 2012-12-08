@@ -27,6 +27,28 @@ def args_log(description):
 
     return args, log_path
 
+def args_theater(description):
+    parser = argparse.ArgumentParser(description)
+
+  # parser.add_argument('--recver-host', metavar='f', dest='recver_host',
+  #                      nargs='?',
+  #                      default='localhost',
+  #                      help='my.server.net')
+    parser.add_argument('--sample', dest='sample',
+                         action='store_true', default=False,
+                         help='sample')
+  # parser.add_argument('--one-packet-size',
+  #                      metavar='N', dest='one_packet_size',
+  #                      type=int, nargs='?', default=(1024 * 4),
+  #                      help='one packet size default is 4KO(4 * 1024)')
+    parser.add_argument('--sql-path', metavar='f', dest='sql_path',
+                         nargs='?',
+                         default='',
+                         help='simulate sql file path')
+    args = parser.parse_args()
+
+    return args
+
 def _args_xxx(description):
     parser = argparse.ArgumentParser(description)
     parser.add_argument('--show-timestamps', dest='_show_timestamps',
