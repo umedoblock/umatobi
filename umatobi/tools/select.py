@@ -16,28 +16,30 @@ if __name__ == '__main__':
     args, db_path = args_db('select.py')
   # print('args =', args)
 
-    if db_path:
-        print('db_path =', db_path)
-        db = simulator.sql.SQL(db_path=db_path)
-        db.set_logger(None, level='INFO')
-        print('db =', db)
-        db.access_db()
-        print()
-        table_names = db.get_table_names()
-        table_name = args.table_name
-        if not table_name in table_names:
-            message = 'table name "{}" is not in table_names={}.'. \
-                       format(table_name, table_names)
-            raise RuntimeError(message)
+    if not db_path:
+        sys.exit(0)
 
-        print('{} table'.format(table_name))
-        rows = db.select(table_name)
-        if rows:
-            print(tuple(rows[0].keys()))
-            for row in rows:
-                print(tuple(row))
-        else:
-            print('no record.')
+    print('db_path =', db_path)
+    db = simulator.sql.SQL(db_path=db_path)
+    db.set_logger(None, level='INFO')
+    print('db =', db)
+    db.access_db()
+    print()
+    table_names = db.get_table_names()
+    table_name = args.table_name
+    if not table_name in table_names:
+        message = 'table name "{}" is not in table_names={}.'. \
+                   format(table_name, table_names)
+        raise RuntimeError(message)
+
+    print('{} table'.format(table_name))
+    rows = db.select(table_name)
+    if rows:
+        print(tuple(rows[0].keys()))
+        for row in rows:
+            print(tuple(row))
+    else:
+        print('no record.')
 
     _debug = False
     if _debug:

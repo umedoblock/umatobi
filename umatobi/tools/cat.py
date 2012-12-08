@@ -13,8 +13,10 @@ if __name__ == '__main__':
 
     args, log_path = args_log('cat.py')
 
-    if log_path:
-        print('log_path =', log_path)
-        with open(log_path) as f:
-            for line in f:
-                print(line, end='')
+    if not log_path:
+        sys.exit(0)
+
+    print('log_path =', log_path)
+    with open(log_path) as f:
+        for line in f:
+            print(line, end='')
