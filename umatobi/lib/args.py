@@ -13,7 +13,7 @@ def args_db(description):
                         nargs='?', default='',
                         help='table name')
     args = parser.parse_args()
-    db_path = _get_db_or_log_path(args)
+    db_path = _normalize_db_or_log_path(args)
     return args, db_path
 
 def args_log(description):
@@ -23,9 +23,14 @@ def args_log(description):
                         nargs='?', default='',
                         help='watson.log, client.1.log or darkness.1.log, ...')
     args = parser.parse_args()
-    log_path = _get_db_or_log_path(args)
+    log_path = _normalize_db_or_log_path(args)
 
     return args, log_path
+
+def _get_simulation_db_path(args):
+    args.db_or_log_file = 'simulation.db'
+    simulation_db_path = _normalize_db_or_log_path(args)
+    return simulation_db_path
 
 def args_theater(description):
     parser = _args_parse_basic(description)
@@ -34,18 +39,16 @@ def args_theater(description):
                          help='sample')
     args = parser.parse_args()
     if args.sample:
-        db_path = ''
+        simulation_db_path = ''
     else:
-        args.db_or_log_file = 'simulation.db'
-        db_path = _get_db_or_log_path(args)
+        simulation_db_path = _get_simulation_db_path(args)
 
-    return args, db_path
+    return args, simulation_db_path
 
 def args_make_simulation_db():
     parser = _args_parse_basic('make_simulation_db.py')
     args = parser.parse_args()
-    args.db_or_log_file = 'simulation.db'
-    simulation_db_path = _get_db_or_log_path(args)
+    simulation_db_path = _get_simulation_db_path(args)
     return args, simulation_db_path
 
 def _args_parse_basic(description):
@@ -82,10 +85,11 @@ def _gather_db_or_log_files(files, db_or_log):
             dbs_or_logs.append(file_name)
     return dbs_or_logs
 
-def _get_db_or_log_path(args):
+def _normalize_db_or_log_path(args):
     simulation_dir = args.simulation_dir
     db_or_log_file = args.db_or_log_file
     db_or_log = db_or_log_file.split('.')[-1]
+
     if args.show_timestamps or args.timestamp == '00000000T000000':
         timestamps = os.listdir(simulation_dir)
         timestamps.sort(reverse=True)
