@@ -2,6 +2,10 @@ import datetime
 import sys
 import math
 
+# sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from lib.args import args_make_simulation_db
+import simulator.sql
+
 from lib import formula
 
 try:
@@ -78,6 +82,18 @@ class Screen(object):
             print('fps =', fps)
 
             sys.exit(0)
+
+    def display_main(self, moving):
+        glBegin(GL_QUADS)
+        glColor3ub(0xff, 0xff, 0xff)
+        half_pi = math.pi / 2.0
+        for i in range(4):
+            for i in range(4):
+                n_half_pi = i * half_pi
+                wx = math.cos(n_half_pi) * 0.1
+                wy = math.sin(n_half_pi) * 0.1
+                glVertex2f(wx, wy)
+        glEnd()
 
     def _passed_time(self):
         e = datetime.datetime.today()

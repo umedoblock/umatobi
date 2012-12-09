@@ -4,6 +4,7 @@ import sys
 from simulator.screen import Screen
 from simulator.screen import display_sample
 from lib.args import args_theater
+import simulator.sql
 
 if __name__ == '__main__':
     args, db_path = args_theater('theater.')
@@ -12,9 +13,9 @@ if __name__ == '__main__':
 
     if db_path or args.sample:
         if db_path:
-            print('db_path =', db_path)
-            screen.set_display(None)
-            raise()
+            db = simulator.sql.SQL(db_path=db_path)
+            print('db =', db)
+          # screen.set_db(db)
         if args.sample:
             screen.set_display(display_sample)
         screen.start()
