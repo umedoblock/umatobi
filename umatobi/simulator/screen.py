@@ -84,15 +84,23 @@ class Screen(object):
             sys.exit(0)
 
     def display_main(self, moving):
+        self._moving_square(moving)
+
+    def _moving_square(self, moving):
         glBegin(GL_QUADS)
         glColor3ub(0xff, 0xff, 0xff)
         half_pi = math.pi / 2.0
+
+        leg = 0.02
+        # 0 <= moving <= pi / 4
+        rad = moving * 2
+        x = math.cos(rad) * 0.98
+        y = math.sin(rad) * 0.98
         for i in range(4):
-            for i in range(4):
-                n_half_pi = i * half_pi
-                wx = math.cos(n_half_pi) * 0.1
-                wy = math.sin(n_half_pi) * 0.1
-                glVertex2f(wx, wy)
+            n_half_pi = i * half_pi
+            wx = x + math.cos(n_half_pi) * leg
+            wy = y + math.sin(n_half_pi) * leg
+            glVertex2f(wx, wy)
         glEnd()
 
     def _passed_time(self):
