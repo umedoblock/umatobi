@@ -5,6 +5,7 @@ import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib.args import args_make_simulation_db
+from lib import SCHEMA_PATH
 import simulator.sql
 
 def collect_client_dbs(watson_db):
@@ -94,11 +95,9 @@ def watson_make_simulation_db(simulation_db, watson_db):
 if __name__ == '__main__':
     args, simulation_db_path = args_make_simulation_db()
     watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
-    schema_path = os.path.join(os.path.dirname(__file__), '..', 'simulator',
-                              'simulation_tables.schema')
 
     simulation_db = simulator.sql.SQL(db_path=simulation_db_path,
-                                      schema_path=schema_path)
+                                      schema_path=SCHEMA_PATH)
     simulation_db.path = simulation_db_path
     watson_db = simulator.sql.SQL(db_path=watson_db_path)
     watson_db.simulation_db_path = simulation_db.path

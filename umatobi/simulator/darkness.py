@@ -7,6 +7,7 @@ from simulator.node import Node
 import simulator.sql
 from lib import make_logger
 from lib import Polling
+from lib import SCHEMA_PATH
 
 class ExhaleQueue(Polling):
     def __init__(self, polling_secs, darkness):
@@ -100,8 +101,7 @@ class Darkness(object):
 
         self.client_db_path = os.path.join(self.db_dir,
                                      'client.{}.db'.format(self.client_id))
-        self.schema_path = \
-            os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
+        self.schema_path = SCHEMA_PATH
         self.client_db = simulator.sql.SQL(owner=self,
                                            db_path=self.client_db_path,
                                            schema_path=self.schema_path)

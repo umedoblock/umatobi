@@ -7,6 +7,7 @@ import multiprocessing
 from simulator.darkness import Darkness
 import simulator.sql
 from lib import make_logger, jbytes_becomes_dict, dict_becomes_jbytes
+from lib import SCHEMA_PATH
 
 def make_darkness(d_config):
     '''darkness process を作成'''
@@ -31,7 +32,6 @@ def make_darkness_d_config(db_dir, darkness_id, client_id, log_level,
     return d
 
 class Client(object):
-    SCHEMA = os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
     NODES_PER_DARKNESS = 4
 
     def __init__(self, watson, num_nodes, simulation_dir):
@@ -206,8 +206,7 @@ class Client(object):
         self.client_db_path = os.path.join(self.db_dir,
                                      'client.{}.db'.format(self.id))
         self.node_index = d['node_index']
-        self.schema_path = \
-            os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
+        self.schema_path = SCHEMA_PATH
         return d
 
     def _hello_watson(self):

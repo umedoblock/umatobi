@@ -8,6 +8,7 @@ import sqlite3
 
 from lib import make_logger, dict_becomes_jbytes, jbytes_becomes_dict
 from lib import current_isoformat_time
+from lib import SCHEMA_PATH
 import simulator.sql
 
 class Watson(threading.Thread):
@@ -36,8 +37,7 @@ class Watson(threading.Thread):
         self.db_dir = os.path.join(simulation_dir, self.start_up)
         self.simulation_db_path = os.path.join(self.db_dir, 'simulation.db')
         self.watson_db_path = os.path.join(self.db_dir, 'watson.db')
-        self.schema_path = \
-            os.path.join(os.path.dirname(__file__), 'simulation_tables.schema')
+        self.schema_path = SCHEMA_PATH
 
         self.timeout_sec = 1
         self.nodes = []
