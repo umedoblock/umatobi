@@ -16,19 +16,13 @@ class TestWatson(unittest.TestCase):
         office = ('localhost', 65530)
         simulation_seconds = 1
         simulation_dir = os.path.join(test_dir, 'umatobi-simulation')
-        start_up = get_start_up()
         log_level = 'INFO'
-
-        db_dir = os.path.join(simulation_dir, start_up)
-        watson_log = os.path.join(db_dir, 'watson.log')
-
-        # watsonが書き出す log 用の directory 作成
-        os.makedirs(db_dir)
 
         self.assertFalse(os.path.exists(watson_log))
         # watson for test
         watson = Watson(office, simulation_seconds,
-                        simulation_dir, start_up, log_level)
+                        simulation_dir, log_level)
+        watson.make_office()
 
         self.assertTrue(os.path.exists(watson_log))
 

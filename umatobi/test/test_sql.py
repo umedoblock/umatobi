@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+import datetime
 import unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -29,6 +30,7 @@ class TestSQL(unittest.TestCase):
         sql.create_table('test_table')
 
     def test_insert_and_select(self):
+        s = datetime.datetime.now()
         sql = simulator.sql.SQL(db_path=test_db_path,
                                 schema_path=test_schema_path)
         sql.create_db()
@@ -43,6 +45,8 @@ class TestSQL(unittest.TestCase):
         d_insert['val_text'] = 'text'
         d_insert['val_blob'] = b'bytes'
         d_insert['now'] = lib.current_isoformat_time()
+        e = datetime.datetime.now()
+        d_insert['elapsed_time'] = lib.elapsed_time(e, s)
         sql.insert('test_table', d_insert)
         sql.commit()
 
@@ -62,12 +66,14 @@ class TestSQL(unittest.TestCase):
         d['val_text'] = 4
         d['val_blob'] = 5
         d['now'] = 6
+        d['elapsed_time'] = 7
 
         d_insert['id'] = 1 # auto increment
         for column, index in d.items():
             self.assertEqual(d_insert[column], d_selected[0][index])
 
     def test_update_and_select(self):
+        s = datetime.datetime.now()
         d = {}
         d['id'] = 0
         d['val_null'] = 1
@@ -76,6 +82,7 @@ class TestSQL(unittest.TestCase):
         d['val_text'] = 4
         d['val_blob'] = 5
         d['now'] = 6
+        d['elapsed_time'] = 7
 
         sql = simulator.sql.SQL(db_path=test_db_path,
                                 schema_path=test_schema_path)
@@ -91,6 +98,8 @@ class TestSQL(unittest.TestCase):
         d_insert['val_text'] = 'text'
         d_insert['val_blob'] = b'bytes'
         d_insert['now'] = lib.current_isoformat_time()
+        e = datetime.datetime.now()
+        d_insert['elapsed_time'] = lib.elapsed_time(e, s)
         sql.insert('test_table', d_insert)
         sql.commit()
 
@@ -108,6 +117,8 @@ class TestSQL(unittest.TestCase):
         d_update['val_blob'] = b'bytes bytes'
         t = time.time() + 1000
         d_update['now'] = lib.isoformat_time(t)
+        e = datetime.datetime.now()
+        d_update['elapsed_time'] = lib.elapsed_time(e, s)
 
         d_where = {'id': 1}
         sql.update('test_table', d_update, d_where)
