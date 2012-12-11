@@ -5,7 +5,6 @@ import unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from simulator.watson import Watson
-from lib import get_start_up
 import p2p.core
 import simulator.node
 
@@ -20,9 +19,7 @@ class TestWatson(unittest.TestCase):
 
         self.assertFalse(os.path.exists(watson_log))
         # watson for test
-        watson = Watson(office, simulation_seconds,
-                        simulation_dir, log_level)
-        watson.make_office()
+        watson = Watson(office, simulation_seconds, simulation_dir, log_level)
 
         self.assertTrue(os.path.exists(watson_log))
 

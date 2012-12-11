@@ -23,4 +23,3 @@ if __name__ == '__main__':
         pass
     else:
         raise RuntimeError('at least, must use --sample option.')
-

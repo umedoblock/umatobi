@@ -36,7 +36,7 @@ def count_nodes(client_dbs):
 def _select_client_db(client_db):
     client_db.queues = \
         client_db.select('growings',
-                          select_columns='moment,pickle',
+                          select_columns='elapsed_time,pickle',
                           conditions='order by id')
 
 def merge_client_dbs(client_dbs):
@@ -45,9 +45,9 @@ def merge_client_dbs(client_dbs):
         _select_client_db(client_db)
         records.extend(client_db.queues)
     #158 records の sort をする時に、大量のmemoryが必要になると思われる。
-    records.sort(key=lambda x: x['moment'])
+    records.sort(key=lambda x: x['elapsed_time'])
   # for record in records:
-  #     print(record)
+  #     print(tuple(record))
     return records
 
 def watson_make_simulation_db(simulation_db, watson_db):
@@ -68,25 +68,25 @@ def watson_make_simulation_db(simulation_db, watson_db):
     watson_db.records = merge_client_dbs(watson_db.client_dbs)
     growing = {}
     growing['id'] = None
-    growing['moment'] = None
+    growing['elapsed_time'] = None
     growing['pickle'] = None
     keys = tuple(growing.keys())
 
     for i, key in enumerate(keys):
         if key == 'id':
             i_id = i
-        elif key == 'moment':
-            i_moment = i
+        elif key == 'elapsed_time':
+            i_elapsed_time = i
         elif key == 'pickle':
             i_pickle = i
 
     growings = []
     growings.append(keys)
 
-    L = [None] * len(keys)
     # L[i_id] = None
     for record in watson_db.records:
-        L[i_moment] = record['moment']
+        L = [None] * len(keys)
+        L[i_elapsed_time] = record['elapsed_time']
         L[i_pickle] = record['pickle']
         growings.append(L)
     simulation_db.inserts('growings', growings)

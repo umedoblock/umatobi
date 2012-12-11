@@ -11,15 +11,15 @@ from lib.performance import log_now, stop_watch
 def inserts_many_records(db, records):
     growing = {}
     growing['id'] = None
-    growing['moment'] = None
+    growing['elapsed_time'] = None
     growing['pickle'] = None
     keys = tuple(growing.keys())
 
     for i, key in enumerate(keys):
         if key == 'id':
             i_id = i
-        elif key == 'moment':
-            i_moment = i
+        elif key == 'elapsed_time':
+            i_elapsed_time = i
         elif key == 'pickle':
             i_pickle = i
 
@@ -29,7 +29,7 @@ def inserts_many_records(db, records):
     L = [None] * len(keys)
     # L[i_id] = None
     for record in records:
-        L[i_moment] = record['moment']
+        L[i_elapsed_time] = record['elapsed_time']
         L[i_pickle] = record['pickle']
         growings.append(L)
     db.inserts('growings', growings)
@@ -39,7 +39,7 @@ def insert_many_records(db, records):
     growing = {}
     growing['id'] = None
     for record in records:
-        growing['moment'] = record['moment']
+        growing['elapsed_time'] = record['elapsed_time']
         growing['pickle'] = record['pickle']
         db.insert('growings', growing)
     db.commit()
@@ -58,7 +58,7 @@ def make_test_records(n_records):
         d_sample['id'] = i + 1
         pickled = pickle.dumps(d_sample)
         d['id'] = None
-        d['moment'] = log_now()
+        d['elapsed_time'] = log_now()
         d['pickle'] = pickled
         records[i] = d
     return records

@@ -4,7 +4,7 @@ import argparse
 import datetime
 import multiprocessing
 
-from lib import make_logger, dict_becomes_jbytes, get_start_up
+from lib import make_logger, dict_becomes_jbytes
 from simulator.client import Client
 from simulator.watson import Watson
 
@@ -93,19 +93,14 @@ if __name__ == '__main__':
     if not os.path.isdir(args.simulation_dir):
         os.makedirs(args.simulation_dir, exist_ok=True)
 
-    start_up = get_start_up()
-    db_dir = os.path.join(args.simulation_dir, start_up)
-    os.mkdir(db_dir)
-
     # 各 object を作成するなど。
     watson = Watson(watson_office, args.simulation_seconds,
-                    args.simulation_dir, start_up,
-                    args.log_level)
+                    args.simulation_dir, args.log_level)
 
     # Watson start!
     watson.start()
 
-    # Client will get start_up attribute in build_up_attrs()
+    # Client will get start_up_time attribute in build_up_attrs()
     # after _hello_watson().
     client_process = multiprocessing.Process(target=make_client,
                                              args=(watson_office,

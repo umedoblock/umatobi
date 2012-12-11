@@ -42,16 +42,17 @@ def jbytes_becomes_dict(jb):
     d = json.loads(js)
     return d
 
-def get_start_up():
-    start_up = datetime.datetime.today().strftime('%Y%m%dT%H%M%S')
-    return start_up
+def make_start_up_time():
+    start_up_time = datetime.datetime.now()
+    return start_up_time
 
 def isoformat_time(t):
-    "'return time format '2012-11-02T23:22:27.002'"
-    msecs = (t - int(t)) * 1000
-    msecs = int(msecs)
+    "'return time format '2012-11-02T23:22:27.002481'"
+    # milli, micro
+    mmsecs = (t - int(t)) * 10 ** 6
+    mmsecs = int(mmsecs)
     fmt = "%Y-%m-%dT%H:%M:%S"
-    return time.strftime(fmt, time.localtime(t)) + '.{:03d}'.format(msecs)
+    return time.strftime(fmt, time.localtime(t)) + '.{:06d}'.format(mmsecs)
 
 def current_isoformat_time():
     now = time.time()
@@ -59,6 +60,11 @@ def current_isoformat_time():
 
 def isoformat_time_to_datetime(s):
     return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S.%f")
+
+def elapsed_time(self):
+    '''simulation 開始から現在までに経過した秒数。'''
+    now = datetime.datetime.now()
+    return (now - self.start_up_time).total_seconds()
 
 LOGGER_FMT = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
 LOGGER_DATEFMT = '%Y-%m-%dT%H:%M:%S'

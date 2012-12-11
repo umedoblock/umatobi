@@ -6,7 +6,7 @@ def args_db(description):
     parser = _args_parse_basic(description)
     parser.add_argument(# db file
                         metavar='db file', dest='db_or_log_file',
-                        nargs='?', default='',
+                        nargs='?', default='defalut.db',
                         help='simulation.db, watson.db, or client.1.db, ...')
     parser.add_argument(# table name
                         metavar='table name', dest='table_name',
@@ -20,7 +20,7 @@ def args_log(description):
     parser = _args_parse_basic(description)
     parser.add_argument(# last argment, log file
                         metavar='f', dest='db_or_log_file',
-                        nargs='?', default='',
+                        nargs='?', default='default.log',
                         help='watson.log, client.1.log or darkness.1.log, ...')
     args = parser.parse_args()
     log_path = _normalize_db_or_log_path(args)
@@ -115,6 +115,8 @@ def _normalize_db_or_log_path(args):
 
         files = os.listdir(dir_name)
         dbs_or_logs = _gather_db_or_log_files(files, db_or_log)
+        if db_or_log == 'db':
+            dbs_or_logs.append('simulation.db')
         if db_or_log_file in dbs_or_logs:
             db_or_log_path = os.path.join(dir_name, db_or_log_file)
         else:

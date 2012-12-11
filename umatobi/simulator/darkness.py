@@ -63,8 +63,8 @@ class ExhaleQueue(Polling):
         growing = {}
         growing['id'] = None
         for i in range(queue_size):
-            moment, pickled = self._queue_darkness.get()
-            growing['moment'] = moment
+            et, pickled = self._queue_darkness.get()
+            growing['elapsed_time'] = et
             growing['pickle'] = pickled
             self.client_db.insert('growings', growing)
       # client の db.growings へ pickle 情報を commit
@@ -84,7 +84,7 @@ class Darkness(object):
         '''
 
         # db_dir darkness_id client_id first_node_id
-        # num_nodes log_level
+        # num_nodes log_level start_up_time
         # made_nodes # share with client and darknesses
         # leave_there # share with client and another darknesses
         for attr, value in kwargs.items():
@@ -129,6 +129,7 @@ class Darkness(object):
             id = self.first_node_id + i
             host, port = 'localhost', 10000 + id
             node_ = Node(host, port, id,
+                         self.start_up_time,
                          self.good_bye_with_nodes,
                          self._queue_darkness
                          )

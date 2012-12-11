@@ -2,21 +2,22 @@ import sys, os
 import struct
 import math
 import pickle
+import datetime
 
 import p2p.core
-from lib import formula
-from lib import current_isoformat_time
+from lib import formula, elapsed_time
 
 class Node(p2p.core.Node):
 
     _output = print
 
-    def __init__(self, host, port, id, good_bye_with_darkness, _queue_darkness):
+    def __init__(self, host, port, id, start_up_time, good_bye_with_darkness, _queue_darkness):
         '''\
         simulator 用 node を初期化する。
         '''
         super().__init__(host, port)
         self.id = id
+        self.start_up_time = start_up_time
         self.good_bye_with_darkness = good_bye_with_darkness
         self._queue_darkness = _queue_darkness
         self._rad, self._x, self._y = 0.0, 0.0, 0.0
@@ -42,9 +43,10 @@ class Node(p2p.core.Node):
       # print('{} good bye(host={}, port={})'.format(self, self.host, self.port))
 
     def to_darkness(self, obj):
-        moment = current_isoformat_time()
+        et = elapsed_time(self)
         pds = pickle.dumps(obj)
-        self._queue_darkness.put((moment, pds))
+        tup = (et, pds)
+        self._queue_darkness.put(tup)
 
     def appear(self):
         super().appear()

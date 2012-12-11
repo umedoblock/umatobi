@@ -7,7 +7,7 @@ import multiprocessing
 from simulator.darkness import Darkness
 import simulator.sql
 from lib import make_logger, jbytes_becomes_dict, dict_becomes_jbytes
-from lib import SCHEMA_PATH
+from lib import SCHEMA_PATH, isoformat_time_to_datetime
 
 def make_darkness(d_config):
     '''darkness process を作成'''
@@ -15,13 +15,15 @@ def make_darkness(d_config):
     darkness_.start()
 
 def make_darkness_d_config(db_dir, darkness_id, client_id, log_level,
+                           start_up_time,
                            num_nodes, first_node_id, leave_there):
-    '''darkness process と client が DarknessConfig を介して通信する。'''
+    '''client と darkness process が DarknessConfig を介して通信する。'''
     d = {}
     d['db_dir'] = db_dir
     d['id'] = darkness_id
     d['client_id'] = client_id
     d['log_level'] = log_level
+    d['start_up_time'] = start_up_time
     d['first_node_id'] = first_node_id
     d['num_nodes'] = num_nodes
     # share with client and darknesses
@@ -40,8 +42,8 @@ class Client(object):
         watsonの待ち受けるUDP address = watson,
         作成するdarkness数 = num_darknesses,
         全ての simulate 結果を格納する simulation_dir と、
-        watsonが起動した時間(start_up)を使用し、 simulation_dir以下に
-        db_dir(=simulation_dir + '/' + start_up)を作成する。
+        watsonが起動した時間(start_up_time)を使用し、 simulation_dir以下に
+        db_dir(=simulation_dir + '/' + start_up_time)を作成する。
         '''
 
         if isinstance(num_nodes, int) and num_nodes > 0:
@@ -117,7 +119,8 @@ class Client(object):
             client_id = self.id
             darkness_d_config = \
                 make_darkness_d_config(self.db_dir, darkness_id, client_id,
-                               self.log_level, nodes_per_darkness,
+                               self.log_level, self.start_up_time,
+                               nodes_per_darkness,
                                first_node_id, self.leave_there)
             darkness_process = \
                 multiprocessing.Process(
@@ -190,9 +193,9 @@ class Client(object):
 
     def _init_attrs(self):
         '''\
-        watson に接続し、id, start_upを受信する。
+        watson に接続し、id, iso_start_up_timeを受信する。
         id は client.<id>.log として、log fileを作成するときに使用。
-        start_up は db_dirを決定する際に使用する。
+        start_up_time は db_dirを決定する際に使用する。
         '''
         d = self._hello_watson()
         if not d:
@@ -200,9 +203,12 @@ class Client(object):
             raise RuntimeError('client cannot say "I am Client." to watson who is {}'.format(self.watson))
 
         self.id = d['id']
-        start_up = d['start_up']
+        self.iso_start_up_time = d['iso_start_up_time']
+        self.start_up_time = \
+            isoformat_time_to_datetime(self.iso_start_up_time)
         self.log_level = d['log_level']
-        self.db_dir = os.path.join(self.simulation_dir, start_up)
+        self.db_dir = os.path.join(self.simulation_dir, \
+            self.iso_start_up_time)
         self.client_db_path = os.path.join(self.db_dir,
                                      'client.{}.db'.format(self.id))
         self.node_index = d['node_index']
@@ -211,7 +217,7 @@ class Client(object):
 
     def _hello_watson(self):
         '''\
-        watsonに "I am Client." をUDPで送信し、watson起動時刻(start_up)、
+        watsonに "I am Client." をUDPで送信し、watson起動時刻(start_up_time)、
         watsonへの接続順位(=id)をUDPで受信する。
         この時、受信するのはjson文字列。
         simulation 結果を格納する db_dir を作成するための情報を得る。
