@@ -94,6 +94,8 @@ def watson_make_simulation_db(simulation_db, watson_db):
 
 if __name__ == '__main__':
     args, simulation_db_path = args_make_simulation_db()
+    if not simulation_db_path:
+        raise RuntimeError('simulation_db_path is empty.')
     watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
 
     simulation_db = simulator.sql.SQL(db_path=simulation_db_path,
