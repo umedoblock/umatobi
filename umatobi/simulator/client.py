@@ -8,6 +8,7 @@ from simulator.darkness import Darkness
 import simulator.sql
 from lib import make_logger, jbytes_becomes_dict, dict_becomes_jbytes
 from lib import SCHEMA_PATH, isoformat_time_to_datetime
+from lib import set_logging_startTime_from_start_up_time
 
 def make_darkness(d_config):
     '''darkness process を作成'''
@@ -206,9 +207,10 @@ class Client(object):
         self.iso_start_up_time = d['iso_start_up_time']
         self.start_up_time = \
             isoformat_time_to_datetime(self.iso_start_up_time)
+        set_logging_startTime_from_start_up_time(self)
         self.log_level = d['log_level']
         self.db_dir = os.path.join(self.simulation_dir, \
-            self.iso_start_up_time)
+                                   self.iso_start_up_time)
         self.client_db_path = os.path.join(self.db_dir,
                                      'client.{}.db'.format(self.id))
         self.node_index = d['node_index']

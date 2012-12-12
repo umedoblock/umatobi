@@ -66,8 +66,22 @@ def elapsed_time(self):
     now = datetime.datetime.now()
     return (now - self.start_up_time).total_seconds()
 
-LOGGER_FMT = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
-LOGGER_DATEFMT = '%Y-%m-%dT%H:%M:%S'
+def datetime_to_float(dt):
+    float_ = time.mktime(dt.timetuple()) + (dt.microsecond / (10 ** 6))
+    return float_
+
+def set_logging_startTime_from_start_up_time(self):
+  # print('time.time() = {}'.format(time.time()))
+  # print('self.start_up_time = {}'.format(self.start_up_time))
+  # print('self.iso_start_up_time = {}'.format(self.iso_start_up_time))
+  # print('logging._startTime1 = {}'.format(logging._startTime))
+  # _startTime = time.time()
+  # self.relativeCreated = (self.created - _startTime) * 1000
+    logging._startTime = datetime_to_float(self.start_up_time)
+  # print('logging._startTime2 = {}'.format(logging._startTime))
+
+#   %(relativeCreated)d Time in milliseconds when the LogRecord was created,
+LOGGER_FMT = '%(relativeCreated)s %(levelname)s %(message)s'
 
 def make_logger(log_dir='', name='', index=0, level=None):
     if not log_dir or not name in ('watson', 'client', 'darkness'):
@@ -87,8 +101,7 @@ def make_logger(log_dir='', name='', index=0, level=None):
     logger.setLevel(level)
 
     # create formatter and add it to the handlers
-    formatter = logging.Formatter(LOGGER_FMT, datefmt=LOGGER_DATEFMT)
-    # 2012-11-02T23:01:10.002 INFO ----- watson log -----
+    formatter = logging.Formatter(LOGGER_FMT)
 
     # create file handler which logs even debug messages
     fh = logging.FileHandler(log_path)
@@ -109,6 +122,11 @@ def make_logger(log_dir='', name='', index=0, level=None):
         ch.setLevel(level)
 
     return logger
+
+#   LOGGER_FMT = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
+#   LOGGER_DATEFMT = '%Y-%m-%dT%H:%M:%S'
+#   formatter = logging.Formatter(LOGGER_FMT, datefmt=LOGGER_DATEFMT)
+#   2012-11-02T23:01:10.002 INFO ----- watson log -----
 
 #   # 2012-11-02T21:30:33.%f INFO ----- watson log -----
 #   fmt = '%(asctime)s %(levelname)s %(message)s'

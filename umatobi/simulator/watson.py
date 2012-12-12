@@ -8,6 +8,7 @@ import sqlite3
 
 from lib import make_logger, dict_becomes_jbytes, jbytes_becomes_dict
 from lib import make_start_up_time, elapsed_time
+from lib import set_logging_startTime_from_start_up_time
 from lib import SCHEMA_PATH
 import simulator.sql
 
@@ -30,9 +31,11 @@ class Watson(threading.Thread):
         self.registered_nodes = 0
         self.watson_db = None # sql.SQL()
 
-        self.simulation_dir = simulation_dir
         self.start_up_time = make_start_up_time()
         self.iso_start_up_time = self.start_up_time.isoformat()
+        set_logging_startTime_from_start_up_time(self)
+
+        self.simulation_dir = simulation_dir
         self.db_dir = \
             os.path.join(self.simulation_dir, self.iso_start_up_time)
         self.simulation_db_path = os.path.join(self.db_dir, 'simulation.db')

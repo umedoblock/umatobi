@@ -3,7 +3,7 @@ import configparser
 import sys
 import logging
 
-from lib import LOGGER_FMT, LOGGER_DATEFMT
+from lib import LOGGER_FMT
 
 class SQL(object):
     def __init__(self, owner=None, db_path=':memory:', schema_path=''):
