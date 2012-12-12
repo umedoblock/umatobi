@@ -27,7 +27,7 @@ class SQL(object):
             # #139 いつかどこかで暇な時にでも、lib.make_logger() と統合しよう。
             logger = logging.getLogger(str(self))
             logger.setLevel(logging.DEBUG)
-            formatter = logging.Formatter(LOGGER_FMT, datefmt=LOGGER_DATEFMT)
+            formatter = logging.Formatter(LOGGER_FMT)
             # print() の代わりとして使用することを想定しているので、
             # log message を sys.stdout に出力。
             ch = logging.StreamHandler(stream=sys.stdout)
