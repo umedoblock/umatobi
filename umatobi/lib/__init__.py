@@ -64,7 +64,9 @@ def isoformat_time_to_datetime(s):
 def elapsed_time(self):
     '''simulation 開始から現在までに経過した秒数。'''
     now = datetime.datetime.now()
-    return (now - self.start_up_time).total_seconds()
+    # relativeCreated の時間単位がmillisecondsのため、
+    # elapsed_time()もmilliseconds単位となるようにする。
+    return (now - self.start_up_time).total_seconds() * 1000
 
 def datetime_to_float(dt):
     float_ = time.mktime(dt.timetuple()) + (dt.microsecond / (10 ** 6))

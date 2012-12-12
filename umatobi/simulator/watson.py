@@ -102,7 +102,7 @@ class Watson(threading.Thread):
         count_inquiries = 0
         count_clients = 1
 
-        while elapsed_time(self) < self.simulation_seconds:
+        while elapsed_time(self) < self.simulation_seconds * 1000:
           # self.logger.info('passed time {:.3f}'.format(self.passed_time()))
 
             try:
