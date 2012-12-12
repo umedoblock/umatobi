@@ -62,11 +62,11 @@ def isoformat_time_to_datetime(s):
     return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S.%f")
 
 def elapsed_time(self):
-    '''simulation 開始から現在までに経過した秒数。'''
+    '''simulation 開始から現在までに経過したmilli秒数。'''
     now = datetime.datetime.now()
     # relativeCreated の時間単位がmillisecondsのため、
     # elapsed_time()もmilliseconds単位となるようにする。
-    return (now - self.start_up_time).total_seconds() * 1000
+    return int(((now - self.start_up_time) * 1000).total_seconds())
 
 def datetime_to_float(dt):
     float_ = time.mktime(dt.timetuple()) + (dt.microsecond / (10 ** 6))
@@ -83,7 +83,7 @@ def set_logging_startTime_from_start_up_time(self):
   # print('logging._startTime2 = {}'.format(logging._startTime))
 
 #   %(relativeCreated)d Time in milliseconds when the LogRecord was created,
-LOGGER_FMT = '%(relativeCreated)s %(levelname)s %(message)s'
+LOGGER_FMT = '%(relativeCreated)d %(levelname)s %(message)s'
 
 def make_logger(log_dir='', name='', index=0, level=None):
     if not log_dir or not name in ('watson', 'client', 'darkness'):

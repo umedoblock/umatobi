@@ -56,7 +56,7 @@ status: text not null
 id: integer primary key autoincrement unique not null
 host: text
 port: integer
-joined: real
+joined: integer
 log_level: text
 num_nodes: integer
 
@@ -65,7 +65,7 @@ num_nodes: integer
 # nodes are growing.
 [growings]
 id: integer primary key autoincrement unique not null
-elapsed_time: real
+elapsed_time: integer
 pickle: blob not null
 
 # "name TEXT UNIQUE NOT NULL)")
