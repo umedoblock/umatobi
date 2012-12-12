@@ -38,6 +38,8 @@ class SQL(object):
         self.logger = logger
 
     def access_db(self):
+        if not os.path.exits(self.db_path):
+            raise RuntimeError('cannot find "{}"'.format(self.db_path))
         self.create_db()
 
     def create_db(self):
