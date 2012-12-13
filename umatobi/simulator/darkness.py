@@ -131,11 +131,13 @@ class Darkness(object):
         for i in range(self.num_nodes):
             id = self.first_node_id + i
             host, port = 'localhost', 10000 + id
-            node_ = Node(host, port, id,
-                         self.start_up_time,
-                         self.good_bye_with_nodes,
-                         self._queue_darkness
-                         )
+            d_node = {
+                'host': host, 'port': port, 'id': id,
+                'start_up_time': self.start_up_time,
+                'good_bye_with_darkness': self.good_bye_with_nodes,
+                '_queue_darkness': self._queue_darkness
+            }
+            node_ = Node(**d_node)
             self.logger.info('{} created {}.'.format(self, node_))
             node_.start()
             self.nodes.append(node_)

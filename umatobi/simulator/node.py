@@ -5,21 +5,26 @@ import pickle
 import datetime
 
 import p2p.core
-from lib import formula, elapsed_time
+from lib import formula, elapsed_time, validate_kwargs
 
 class Node(p2p.core.Node):
 
     _output = print
 
-    def __init__(self, host, port, id, start_up_time, good_bye_with_darkness, _queue_darkness):
+    def __init__(self, **kwargs):
         '''\
         simulator 用 node を初期化する。
         '''
-        super().__init__(host, port)
-        self.id = id
-        self.start_up_time = start_up_time
-        self.good_bye_with_darkness = good_bye_with_darkness
-        self._queue_darkness = _queue_darkness
+        st_barrier = set([
+            'host', 'port', 'id', 'start_up_time',
+            'good_bye_with_darkness', '_queue_darkness'
+        ])
+        validate_kwargs(st_barrier, kwargs)
+        super().__init__(kwargs['host'], kwargs['port'])
+        del kwargs['host']
+        del kwargs['port']
+        for attr, value in kwargs.items():
+            setattr(self, attr, value)
         self._rad, self._x, self._y = 0.0, 0.0, 0.0
 
     def run(self):
