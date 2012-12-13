@@ -5,7 +5,7 @@ import pickle
 
 from simulator.node import Node
 import simulator.sql
-from lib import make_logger
+from lib import make_logger, validate_kwargs
 from lib import Polling
 from lib import SCHEMA_PATH
 
@@ -82,11 +82,14 @@ class Darkness(object):
         Darkness process 内で 多数の node thread を作成する。
         Client が leave_there を signal 状態にしたら終了処理を行う。
         '''
+        st_barrier = set([
+            'id', 'client_id', 'first_node_id',
+            'db_dir', 'num_nodes', 'log_level', 'start_up_time',
+            'made_nodes', # share with client and darknesses
+            'leave_there', # share with client and another darknesses
+        ])
+        validate_kwargs(st_barrier, kwargs)
 
-        # db_dir darkness_id client_id first_node_id
-        # num_nodes log_level start_up_time
-        # made_nodes # share with client and darknesses
-        # leave_there # share with client and another darknesses
         for attr, value in kwargs.items():
             # ここでは、logger を使えない。
             setattr(self, attr, value)

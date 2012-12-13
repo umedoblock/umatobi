@@ -15,25 +15,6 @@ def make_darkness(d_config):
     darkness_ = Darkness(**d_config)
     darkness_.start()
 
-def make_darkness_d_config(db_dir, darkness_id, client_id, log_level,
-                           start_up_time,
-                           num_nodes, first_node_id, leave_there):
-    '''client と darkness process が DarknessConfig を介して通信する。'''
-    d = {}
-    d['db_dir'] = db_dir
-    d['id'] = darkness_id
-    d['client_id'] = client_id
-    d['log_level'] = log_level
-    d['start_up_time'] = start_up_time
-    d['first_node_id'] = first_node_id
-    d['num_nodes'] = num_nodes
-    # share with client and darknesses
-    d['made_nodes'] = multiprocessing.Value('i', 0)
-    # share with client and another darknesses
-    d['leave_there'] = leave_there
-
-    return d
-
 class Client(object):
     NODES_PER_DARKNESS = 4
 
@@ -118,11 +99,20 @@ class Client(object):
                 nodes_per_darkness = self.last_darkness_make_nodes
             self.logger.info('darkness id={}, nodes_per_darkness={}'.format(darkness_id, nodes_per_darkness))
             client_id = self.id
-            darkness_d_config = \
-                make_darkness_d_config(self.db_dir, darkness_id, client_id,
-                               self.log_level, self.start_up_time,
-                               nodes_per_darkness,
-                               first_node_id, self.leave_there)
+
+            # client と darkness process が DarknessConfig を介して通信する。
+            darkness_d_config = {
+                'db_dir':  self.db_dir, 'id':  darkness_id,
+                'client_id':  client_id,
+                'log_level':  self.log_level,
+                'start_up_time':  self.start_up_time,
+                'first_node_id':  first_node_id,
+                'num_nodes':  nodes_per_darkness,
+                # share with client and darknesses
+                'made_nodes':  multiprocessing.Value('i', 0),
+                # share with client and another darknesses
+                'leave_there':  self.leave_there,
+            }
             darkness_process = \
                 multiprocessing.Process(
                     target=make_darkness,

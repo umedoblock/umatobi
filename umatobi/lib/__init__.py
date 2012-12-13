@@ -32,6 +32,15 @@ class Polling(threading.Thread):
     def run(self):
         self._sche.run()
 
+def validate_kwargs(st_barrier, kwargs):
+    if st_barrier != kwargs.keys():
+        st_unknown = kwargs.keys() - st_barrier
+        st_must = st_barrier - kwargs.keys()
+        message = ('unmatched st_barrier and kwargs.keys().\n'
+                   'unknown keys are {},\n'
+                   'must keys are {}').format(st_unknown, st_must)
+        raise RuntimeError(message)
+
 def dict_becomes_jbytes(d):
     js = json.dumps(d)
     jb = js.encode()
