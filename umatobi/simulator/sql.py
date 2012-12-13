@@ -1,5 +1,6 @@
 import sqlite3
 import configparser
+import os
 import sys
 import logging
 
@@ -38,7 +39,7 @@ class SQL(object):
         self.logger = logger
 
     def access_db(self):
-        if not os.path.exits(self.db_path):
+        if not os.path.exists(self.db_path):
             raise RuntimeError('cannot find "{}"'.format(self.db_path))
         self.create_db()
 
