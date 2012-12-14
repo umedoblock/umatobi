@@ -87,6 +87,7 @@ class Screen(object):
         self._moving_square(moving)
 
     def _moving_square(self, moving):
+        '''四角が 0 <= x <= pi / 2 の範囲で右往左往する。'''
         glBegin(GL_QUADS)
         glColor3ub(0xff, 0xff, 0xff)
         half_pi = math.pi / 2.0
