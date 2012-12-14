@@ -53,9 +53,8 @@ class Screen(object):
         glClear(GL_COLOR_BUFFER_BIT)
 
         passed_seconds = self._passed_time()
-        moving = formula._fmove(passed_seconds)
 
-        self.display_main(moving)
+        self.display_main(passed_seconds)
 
         glFlush()
         d = datetime.datetime.today()
@@ -83,11 +82,13 @@ class Screen(object):
 
             sys.exit(0)
 
-    def display_main(self, moving):
-        self._moving_square(moving)
+    def display_main(self, passed_seconds):
+        self._moving_square(passed_seconds)
 
-    def _moving_square(self, moving):
+    def _moving_square(self, passed_seconds):
         '''四角が 0 <= x <= pi / 2 の範囲で右往左往する。'''
+        moving = formula._fmove(passed_seconds)
+
         glBegin(GL_QUADS)
         glColor3ub(0xff, 0xff, 0xff)
         half_pi = math.pi / 2.0
@@ -108,7 +109,9 @@ class Screen(object):
         e = datetime.datetime.today()
         return (e - self.s).total_seconds()
 
-def display_sample(moving):
+def display_sample(passed_seconds):
+    moving = formula._fmove(passed_seconds)
+
     n = 100 # 100 個の点
     L = [] # 点の配置場所を tuple(rad, ix, iy) として格納
 
