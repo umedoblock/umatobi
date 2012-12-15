@@ -46,7 +46,7 @@ class TestSQL(unittest.TestCase):
         d_insert['val_blob'] = b'bytes'
         d_insert['now'] = lib.current_isoformat_time()
         e = datetime.datetime.now()
-        d_insert['elapsed_time'] = lib.elapsed_time(e, s)
+        d_insert['elapsed_time'] = (e - s).total_seconds()
         sql.insert('test_table', d_insert)
         sql.commit()
 
@@ -99,7 +99,7 @@ class TestSQL(unittest.TestCase):
         d_insert['val_blob'] = b'bytes'
         d_insert['now'] = lib.current_isoformat_time()
         e = datetime.datetime.now()
-        d_insert['elapsed_time'] = lib.elapsed_time(e, s)
+        d_insert['elapsed_time'] = (e - s).total_seconds()
         sql.insert('test_table', d_insert)
         sql.commit()
 
@@ -118,18 +118,22 @@ class TestSQL(unittest.TestCase):
         t = time.time() + 1000
         d_update['now'] = lib.isoformat_time(t)
         e = datetime.datetime.now()
-        d_update['elapsed_time'] = lib.elapsed_time(e, s)
+        d_update['elapsed_time'] = (e - s).total_seconds()
 
         d_where = {'id': 1}
         sql.update('test_table', d_update, d_where)
 
-        d_selected = sql.select('test_table')
+        d_selected = sql.select('test_table', conditions='where id = 1')
 
         print('d_selected =', d_selected)
+        self.assertNotEqual(d_update, d_selected)
         for column, index in d.items():
             if column == 'id':
                 self.assertEqual(d_insert[column], d_selected[0][index])
                 continue
+          # print(d_update[column], ',', d_selected[0][index])
+          # print(d_insert[column], ',', d_selected[0][index])
+          # print()
             self.assertEqual(d_update[column], d_selected[0][index])
             self.assertNotEqual(d_insert[column], d_selected[0][index])
 
