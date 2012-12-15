@@ -116,6 +116,9 @@ def watson_make_simulation_db(simulation_db, watson_db):
 
     simulation_db.total_nodes = \
         simulation_db.select('simulation', 'total_nodes')[0]['total_nodes']
+    pad_dummy_data_to_simulation_db(simulation_db)
+
+def pad_dummy_data_to_simulation_db(simulation_db):
     d_node = {
         'id': None,
         'host': 'dummy host',
