@@ -98,15 +98,15 @@ class Screen(object):
         records = self._db.select('growings', 'elapsed_time,pickle',
             conditions=conditions
         )
-        print('conditions =', conditions)
-        print('milliseconds = {}, len(records) = {}'. \
-               format(milliseconds, len(records)))
+      # print('conditions =', conditions)
+      # print('milliseconds = {}, len(records) = {}'. \
+      #        format(milliseconds, len(records)))
         if len(records) >= 1:
             len_body = 0.011
             len_leg = 0.033
             for record in records:
                 d = pickle.loads(record['pickle'])
-                print('d =', d)
+              # print('d =', d)
                 if d['key'] is not None:
                     _keyID = int(d['key'][:10], 16)
                     r, x, y = formula._key2rxy(_keyID)
