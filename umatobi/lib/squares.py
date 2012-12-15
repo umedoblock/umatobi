@@ -63,6 +63,24 @@ def _moving_squares(passed_seconds):
     _rotating_square_around_origin_15(passed_seconds)
     _rotating_square_around_origin_16(passed_seconds)
 
+def _tick_tack(passed_seconds):
+    '''四角が 0 <= x <= pi / 2 の範囲で右往左往する。'''
+    moving = formula._fmove(passed_seconds)
+
+    glColor3ub(0xff, 0xff, 0xff)
+
+    leg = 0.02
+    # 0 <= moving <= pi / 4
+    turn = math.pi / 2
+    q, r = divmod(passed_seconds, turn)
+    if int(q % 2) == 0:
+        rad = r
+    else:
+        rad = turn - r
+    x = math.cos(rad) * 0.98
+    y = math.sin(rad) * 0.98
+    put_on_square(rad, x, y, leg)
+
 def _moving_square_around_origin_2(passed_seconds):
     '''赤四角形が、原点を中心として時計回りで姿勢を変えずくるくる回る。'''
     ps = passed_seconds
@@ -186,23 +204,3 @@ def _rotating_square_around_origin_16(passed_seconds):
 def _rotating_square_on_origin(passed_seconds):
     '''白四角形が、原点上を時計回りでくるくる回る。'''
     put_on_square(-passed_seconds, 0, 0, 0.1)
-
-def _tick_tack(passed_seconds):
-    '''四角が 0 <= x <= pi / 2 の範囲で右往左往する。'''
-    moving = formula._fmove(passed_seconds)
-
-    glBegin(GL_QUADS)
-    glColor3ub(0xff, 0xff, 0xff)
-    half_pi = math.pi / 2.0
-
-    leg = 0.02
-    # 0 <= moving <= pi / 4
-    rad = moving * 2
-    x = math.cos(rad) * 0.98
-    y = math.sin(rad) * 0.98
-    for i in range(4):
-        n_half_pi = i * half_pi
-        wx = x + math.cos(n_half_pi) * leg
-        wy = y + math.sin(n_half_pi) * leg
-        glVertex2f(wx, wy)
-    glEnd()
