@@ -73,6 +73,9 @@ class TestSQL(unittest.TestCase):
         for column, index in d.items():
             self.assertEqual(d_insert[column], d_selected[0][index])
 
+    def test_update_and_update(self):
+        'impossible see #189'
+
     def test_insert_and_insert(self):
         s = datetime.datetime.now()
         d = {}
