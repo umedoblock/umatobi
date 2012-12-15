@@ -36,7 +36,7 @@ class UDPNode(threading.Thread):
         self.recver = recver
         self.type_ = type_
         self.one_packet_size = one_packet_size
-        self.s = None # datetime.datetime.today()
+        self.s = None # datetime.datetime.now()
         self.timeout_sec = 4
 
         socket.setdefaulttimeout(self.timeout_sec)
@@ -49,7 +49,7 @@ class UDPNode(threading.Thread):
             raise RuntimeError('unknown type: {}'.format(type_))
 
     def passed_time(self):
-        e = datetime.datetime.today()
+        e = datetime.datetime.now()
         return (e - self.s).total_seconds()
 
     def run(self):
@@ -67,7 +67,7 @@ class UDPNode(threading.Thread):
                 counter = struct.pack('>I', count)
                 msg = counter + hatena
                 if not self.s:
-                    self.s = datetime.datetime.today()
+                    self.s = datetime.datetime.now()
                 self.sock.sendto(msg, self.recver)
                 count += 1
                 total_send_size += len(msg)
@@ -82,7 +82,7 @@ class UDPNode(threading.Thread):
                     recv_msg, sender = \
                         self.sock.recvfrom(self.one_packet_size)
                     if not self.s:
-                        self.s = datetime.datetime.today()
+                        self.s = datetime.datetime.now()
                     count += 1
                     total_recv_size += len(recv_msg)
             except socket.timeout as raiz:

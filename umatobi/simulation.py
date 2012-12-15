@@ -71,7 +71,7 @@ if __name__ == '__main__':
     args = args_()
     watson_office = get_host_port(args.watson_office)
 
-  # t = datetime.datetime.today()
+  # t = datetime.datetime.now()
   # >>> t
   # datetime.datetime(2012, 10, 8, 18, 4, 59, 659608)
   # >>> t.strftime('%Y%m%dT%H%M%S')

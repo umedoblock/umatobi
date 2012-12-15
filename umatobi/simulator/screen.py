@@ -21,7 +21,7 @@ except BaseException as e:
 class Screen(object):
     def __init__(self, argv, pixel=500):
         self.frames = 0
-        self.s = datetime.datetime.today()
+        self.s = datetime.datetime.now()
         self.pixel = pixel
         width = height = pixel
         self.mode = GLUT_SINGLE | GLUT_RGBA
@@ -62,7 +62,7 @@ class Screen(object):
         self.display_main(passed_seconds)
 
         glFlush()
-        d = datetime.datetime.today()
+        d = datetime.datetime.now()
       # print('\r{}, {:.6f}'.format(d, moving), end='')
         print('\r{}'.format(d), end='')
 
@@ -114,7 +114,7 @@ class Screen(object):
                     put_on_square(r, x, y, len_body)
 
     def _passed_time(self):
-        e = datetime.datetime.today()
+        e = datetime.datetime.now()
         return (e - self.s).total_seconds()
 
 def display_sample(passed_seconds):

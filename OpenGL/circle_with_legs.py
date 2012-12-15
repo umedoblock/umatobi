@@ -63,7 +63,7 @@ def display():
     glEnd()
 
     glFlush()
-    d = datetime.datetime.today()
+    d = datetime.datetime.now()
     print('\r{}, {:.6f}'.format(d, moving), end='')
 
     frames += 1
@@ -97,7 +97,7 @@ def fmove():
     return move
 
 def passed_time():
-    e = datetime.datetime.today()
+    e = datetime.datetime.now()
     return (e - s).total_seconds()
 
 def keyboard(key, x, y):
@@ -118,7 +118,7 @@ def keyboard(key, x, y):
 
 frames = 0
 
-s = datetime.datetime.today()
+s = datetime.datetime.now()
 
 pixel = 500
 width = height = pixel

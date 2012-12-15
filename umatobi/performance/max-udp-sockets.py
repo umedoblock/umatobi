@@ -27,7 +27,7 @@ class UDPNode(threading.Thread):
         self.recver = recver
         self.type_ = type_
         self.one_packet_size = one_packet_size
-        self.s = None # datetime.datetime.today()
+        self.s = None # datetime.datetime.now()
         self.timeout_sec = 4
 
         socket.setdefaulttimeout(self.timeout_sec)

@@ -1,9 +1,9 @@
 import datetime
 
 def stop_watch(func, args, message):
-    s = datetime.datetime.today()
+    s = datetime.datetime.now()
     ret = func(*args)
-    e = datetime.datetime.today()
+    e = datetime.datetime.now()
     t = (e - s).total_seconds()
 
     if True:
@@ -15,5 +15,5 @@ def stop_watch(func, args, message):
     return ret
 
 def log_now():
-    now = datetime.datetime.today()
+    now = datetime.datetime.now()
     return now.strftime('%Y%m%dT%H%M%S')
