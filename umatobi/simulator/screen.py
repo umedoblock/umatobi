@@ -45,6 +45,11 @@ class Screen(object):
     def set_db(self, db):
         self._db = db
         self._db.access_db()
+        column_name = 'simulation_milliseconds'
+        self.simulation_milliseconds = \
+            self._db.select('simulation', \
+                             column_name)[0][column_name]
+        print('self.simulation_milliseconds =', self.simulation_milliseconds)
 
     def start(self):
         glutMainLoop()
