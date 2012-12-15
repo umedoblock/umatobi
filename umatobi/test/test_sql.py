@@ -3,6 +3,7 @@ import os
 import time
 import datetime
 import unittest
+import sqlite3
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import simulator.sql
@@ -71,6 +72,60 @@ class TestSQL(unittest.TestCase):
         d_insert['id'] = 1 # auto increment
         for column, index in d.items():
             self.assertEqual(d_insert[column], d_selected[0][index])
+
+    def test_insert_and_insert(self):
+        s = datetime.datetime.now()
+        d = {}
+        d['id'] = 0
+        d['val_null'] = 1
+        d['val_integer'] = 2
+        d['val_real'] = 3
+        d['val_text'] = 4
+        d['val_blob'] = 5
+        d['now'] = 6
+        d['elapsed_time'] = 7
+
+        sql = simulator.sql.SQL(db_path=test_db_path,
+                                schema_path=test_schema_path)
+        sql.create_db()
+        sql.create_table('test_table')
+
+        d_insert = {}
+        d_insert['id'] = None # integer primary key
+                              # autoincrement unique not null
+        d_insert['val_null'] = None
+        d_insert['val_integer'] = 3
+        d_insert['val_real'] = 10.0
+        d_insert['val_text'] = 'text'
+        d_insert['val_blob'] = b'bytes'
+        d_insert['now'] = lib.current_isoformat_time()
+        e = datetime.datetime.now()
+        d_insert['elapsed_time'] = (e - s).total_seconds()
+        sql.insert('test_table', d_insert)
+        sql.commit()
+
+        d_selected = sql.select('test_table')
+
+        d_insert['id'] = 1
+        for column, index in d.items():
+            self.assertEqual(d_insert[column], d_selected[0][index])
+
+        d_update = {}
+        d_update['val_null'] = 'None None'
+        d_update['val_integer'] = 30
+        d_update['val_real'] = 100.0
+        d_update['val_text'] = 'text text'
+        d_update['val_blob'] = b'bytes bytes'
+        t = time.time() + 1000
+        d_update['now'] = lib.isoformat_time(t)
+        e = datetime.datetime.now()
+        d_update['elapsed_time'] = (e - s).total_seconds()
+
+        d_update['id'] = 1
+        with self.assertRaises(sqlite3.IntegrityError) as raiz:
+            sql.insert('test_table', d_update)
+        args = raiz.exception.args
+        self.assertEqual(args[0], 'PRIMARY KEY must be unique')
 
     def test_update_and_select(self):
         s = datetime.datetime.now()
