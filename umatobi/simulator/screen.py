@@ -76,6 +76,17 @@ class Screen(object):
         # 地味だけど、重要
         glutSwapBuffers()
 
+    def _print_fps(self):
+        ps = self._passed_time()
+        fps = self.frames / ps
+        print('frames =', self.frames)
+        print('passed_seconds = {:.3f}'.format(ps))
+        print('fps = {:.3f}'.format(fps))
+
+    def _simulation_info(self):
+        print('\n')
+        self._print_fps()
+
     def _keyboard(self, key, x, y):
         code = ord(key)
         print()
@@ -84,23 +95,19 @@ class Screen(object):
             print('ESC')
         if ord(key) == 27 or ord(key) == 0x17 or ord(key) == 0x03:
           # ESC              ctr-w               ctr-c
-
-            passed_seconds = self._passed_time()
-            print('passed_seconds =', passed_seconds)
-            fps = self.frames / passed_seconds
-            print('fps =', fps)
-
+            self._simulation_info()
             sys.exit(0)
 
     def display_main(self, passed_seconds):
         milliseconds = _normalize_milliseconds(passed_seconds)
+        print('\rmilliseconds = {:7d}'.format(milliseconds), end='')
         s = milliseconds - 1000
         if s < 0:
             s = 0
         if s > self.simulation_milliseconds:
+            self._simulation_info()
             sys.exit(0)
         e = milliseconds
-        print('\re = {:7d}'.format(e), end='')
 
         conditions = \
             'where elapsed_time >= {} and elapsed_time < {}'.format(s, e)
