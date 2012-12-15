@@ -127,10 +127,11 @@ class Screen(object):
             len_leg = 0.033
             for record in records:
                 d = pickle.loads(record['pickle'])
-                print('d =', d)
+                print('elapsed_time={}, d = {}'.format(record['elapsed_time'], d))
                 if d['key'] is not None:
                     _keyID = int(d['key'][:10], 16)
                     r, x, y = formula._key2rxy(_keyID)
+                    print('r, x, y =', r, x, y)
 
                     put_on_square(r, x, y, len_body)
             print()
