@@ -60,6 +60,7 @@ def watson_make_simulation_db(simulation_db, watson_db):
     simulation_db.create_db()
     simulation_db.create_table('simulation')
     simulation_db.create_table('growings')
+    simulation_db.create_table('nodes')
 
     watson_db.access_db()
 
@@ -111,6 +112,23 @@ def watson_make_simulation_db(simulation_db, watson_db):
         L[i_pickle] = record['pickle']
         growings.append(L)
     simulation_db.inserts('growings', growings)
+    simulation_db.commit()
+
+    simulation_db.total_nodes = \
+        simulation_db.select('simulation', 'total_nodes')[0]['total_nodes']
+    d_node = {
+        'id': None,
+        'host': 'dummy host',
+        'port': 0,
+        'keyID': 0x00000000,
+        'key': b'0x dummy',
+        'rad': 0.0,
+        'x': 0.0,
+        'y': 0.0,
+        'status': 'dummy status',
+    }
+    for i in range(simulation_db.total_nodes):
+        simulation_db.insert('nodes', d_node)
     simulation_db.commit()
 
 if __name__ == '__main__':
