@@ -100,6 +100,7 @@ class Screen(object):
         if s > self.simulation_milliseconds:
             sys.exit(0)
         e = milliseconds
+        print('\re = {:7d}'.format(e), end='')
 
         conditions = \
             'where elapsed_time >= {} and elapsed_time < {}'.format(s, e)
