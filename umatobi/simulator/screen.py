@@ -18,6 +18,9 @@ except BaseException as e:
     print(e)
     sys.exit()
 
+def _normalize_milliseconds(seconds):
+    return int(seconds * 1000)
+
 class Screen(object):
     def __init__(self, argv, pixel=500):
         self.frames = 0
@@ -67,9 +70,6 @@ class Screen(object):
         self.display_main(passed_seconds)
 
         glFlush()
-        d = datetime.datetime.now()
-      # print('\r{}, {:.6f}'.format(d, moving), end='')
-        print('\r{}'.format(d), end='')
 
         self.frames += 1
 
@@ -93,7 +93,7 @@ class Screen(object):
             sys.exit(0)
 
     def display_main(self, passed_seconds):
-        milliseconds = int(passed_seconds * 1000)
+        milliseconds = _normalize_milliseconds(passed_seconds)
         s = milliseconds - 1000
         if s < 0:
             s = 0
