@@ -10,9 +10,9 @@ import simulator.sql
 if __name__ == '__main__':
     args, db_path = args_theater('theater.')
 
-    screen = Screen(sys.argv)
-
     if db_path or args.sample or args.moving_squares:
+        screen = Screen(sys.argv)
+
         if db_path:
             db = simulator.sql.SQL(db_path=db_path)
             print('db =', db)
