@@ -25,6 +25,7 @@ class Screen(object):
     def __init__(self, argv, pixel=500):
         self.frames = 0
         self.s = datetime.datetime.now()
+        self._last_select_milliseconds = 0
         self.pixel = pixel
         width = height = pixel
         self.mode = GLUT_SINGLE | GLUT_RGBA
@@ -100,7 +101,7 @@ class Screen(object):
 
     def display_main(self, passed_seconds):
         milliseconds = _normalize_milliseconds(passed_seconds)
-        print('\rmilliseconds = {:7d}'.format(milliseconds), end='')
+#       print('\rmilliseconds = {:7d}'.format(milliseconds), end='')
         s = milliseconds - 1000
         if s < 0:
             s = 0
@@ -110,7 +111,9 @@ class Screen(object):
         e = milliseconds
 
         conditions = \
-            'where elapsed_time >= {} and elapsed_time < {}'.format(s, e)
+            'where elapsed_time >= {} and elapsed_time < {}'. \
+             format(self._last_select_milliseconds, e)
+        self._last_select_milliseconds = e
         records = self._db.select('growings', 'elapsed_time,pickle',
             conditions=conditions
         )
@@ -119,6 +122,7 @@ class Screen(object):
       # print('milliseconds = {}, len(records) = {}'. \
       #        format(milliseconds, len(records)))
         if len(records) >= 1:
+            print('conditions={}, len(records)={}'.format(conditions, len(records)))
             len_body = 0.011
             len_leg = 0.033
             for record in records:
