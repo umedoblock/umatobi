@@ -16,7 +16,7 @@ if __name__ == '__main__':
         if db_path:
             db = simulator.sql.SQL(db_path=db_path)
             print('db =', db)
-          # screen.set_db(db)
+            screen.set_db(db)
         if args.sample:
             screen.set_display(display_sample)
         elif args.moving_squares:

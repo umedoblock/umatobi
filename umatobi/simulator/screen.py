@@ -1,11 +1,11 @@
 import datetime
 import sys
 import math
+import pickle
 
 # sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib.args import args_make_simulation_db
 import simulator.sql
-
 from lib import formula
 from lib.squares import put_on_square
 
@@ -41,6 +41,10 @@ class Screen(object):
 
     def set_display(self, display_main):
         self.display_main = display_main
+
+    def set_db(self, db):
+        self._db = db
+        self._db.access_db()
 
     def start(self):
         glutMainLoop()
@@ -84,7 +88,31 @@ class Screen(object):
             sys.exit(0)
 
     def display_main(self, passed_seconds):
-        pass
+        milliseconds = int(passed_seconds * 1000)
+        s = milliseconds - 1000
+        if s < 0:
+            s = 0
+        e = milliseconds
+        conditions = \
+            'where elapsed_time >= {} and elapsed_time < {}'.format(s, e)
+        records = self._db.select('growings', 'elapsed_time,pickle',
+            conditions=conditions
+        )
+        print('conditions =', conditions)
+        print('milliseconds = {}, len(records) = {}'. \
+               format(milliseconds, len(records)))
+        if len(records) >= 1:
+            len_body = 0.011
+            len_leg = 0.033
+            for record in records:
+                d = pickle.loads(record['pickle'])
+                print('d =', d)
+                if d['key'] is not None:
+                    _keyID = int(d['key'][:10], 16)
+                    r, x, y = formula._key2rxy(_keyID)
+
+                  # rxy = formula._key2rxy(d['key'])
+                    put_on_square(r, x, y, len_body)
 
     def _passed_time(self):
         e = datetime.datetime.today()
