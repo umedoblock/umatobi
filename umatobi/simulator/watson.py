@@ -44,6 +44,7 @@ class Watson(threading.Thread):
 
         self.timeout_sec = 1
         self.nodes = []
+        self.total_nodes = 0
         self.clients = []
 
         # socket() must set under setdefaulttimeout()
@@ -75,6 +76,22 @@ class Watson(threading.Thread):
         self._release_clients()
         self._wait_client_db()
         self._merge_db_to_simulation_db()
+        self._construct_simulation_table()
+        self.watson_db.close()
+
+    def _construct_simulation_table(self):
+        self.watson_db.create_table('simulation')
+        d_simulation = {}
+        d_simulation['watson_office'] = '{}:{}'.format(*self.office)
+        d_simulation['simulation_milliseconds'] = \
+            1000 * self.simulation_seconds
+        d_simulation['title'] = 'umatobi-simulation'
+        d_simulation['memo'] = 'なにかあれば'
+        d_simulation['total_nodes'] = self.total_nodes
+        d_simulation['n_clients'] = len(self.clients)
+        d_simulation['version'] = '0.0.0'
+        self.watson_db.insert('simulation', d_simulation)
+        self.watson_db.commit()
 
     def _wait_client_db(self):
         self.logger.info('{} は、client.#.dbの回収に乗り出した。'.format(self))
@@ -153,6 +170,7 @@ class Watson(threading.Thread):
                 d['log_level'] = self.log_level
                 d['node_index'] = 1 + self.registered_nodes
                 self.registered_nodes += num_nodes
+                self.total_nodes += num_nodes
                 reply = dict_becomes_jbytes(d)
                 count_clients += 1
             else:
