@@ -70,7 +70,7 @@ def _args_parse_basic(description):
     parser.add_argument('--timestamp',
                         metavar='timestamp', dest='timestamp',
                         nargs='?', default='00000000T000000',
-                        help='example: 20121122T175422')
+                        help='example: 20121122T175422.480184')
     return parser
 
 def _show_timestamps(timestamps):
@@ -116,6 +116,10 @@ def _normalize_db_or_log_path(args):
             timestamp = args.timestamp
         dir_name = os.path.join(simulation_dir, timestamp)
 
+        if sys.argv[0].endswith('cat.py'):
+            db_or_log = 'log'
+        else:
+            db_or_log = 'db'
         files = os.listdir(dir_name)
         dbs_or_logs = _gather_db_or_log_files(files, db_or_log)
         if db_or_log == 'db':
