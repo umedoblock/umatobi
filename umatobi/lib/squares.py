@@ -31,12 +31,16 @@ GLAY=(0x80, 0x80, 0x80)
 def put_on_square(r, x, y, leg, color=(0xff, 0xff, 0xff)):
     '''rは回転を制御する。x, yは軌道を制御する。'''
     glBegin(GL_QUADS)
+    put_on_squares(r, x, y, leg, color)
+    glEnd()
+
+def put_on_squares(r, x, y, leg, color=(0xff, 0xff, 0xff)):
+    '''rは回転を制御する。x, yは軌道を制御する。'''
     glColor3ub(*color)
     for i in range(4):
         wx = x + math.cos(r + N_HALF_PIS[i]) * leg
         wy = y + math.sin(r + N_HALF_PIS[i]) * leg
         glVertex2f(wx, wy)
-    glEnd()
 
 def _moving_squares(passed_seconds):
     _tick_tack(passed_seconds)

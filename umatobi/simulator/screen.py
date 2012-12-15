@@ -7,6 +7,7 @@ from lib.args import args_make_simulation_db
 import simulator.sql
 
 from lib import formula
+from lib.squares import put_on_square
 
 try:
     from OpenGL.GLUT import *
@@ -107,22 +108,14 @@ def display_sample(passed_seconds):
         rxy = (rad, ix, iy)
         L.append(rxy)
 
-    len_leg = 0.033
-
     # 白い正方形を配置
     # white Quads
-    glBegin(GL_QUADS)
-    glColor3ub(0xff, 0xff, 0xff)
     half_pi = math.pi / 2.0
     for rxy in L:
         rad, ix, iy = rxy
-        for i in range(4):
-            n_half_pi = i * half_pi
-            wx = math.cos(rad + n_half_pi) * len_leg / 3 + ix
-            wy = math.sin(rad + n_half_pi) * len_leg / 3 + iy
-            glVertex2f(wx, wy)
-    glEnd()
+        put_on_square(rad, ix, iy, 0.011)
 
+    len_leg = 0.033
     glBegin(GL_LINES)
     for rxy in L:
         rx, ry, gx, gy = formula._moving_legs(rxy, moving, leg=len_leg)
