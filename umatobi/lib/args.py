@@ -91,7 +91,10 @@ def _gather_db_or_log_files(files, db_or_log):
 def _normalize_db_or_log_path(args):
     simulation_dir = args.simulation_dir
     db_or_log_file = args.db_or_log_file
-    db_or_log = db_or_log_file.split('.')[-1]
+    if sys.argv[0].endswith('cat.py'):
+        db_or_log = 'log'
+    else:
+        db_or_log = 'db'
 
     if args.show_timestamps or args.timestamp == '00000000T000000':
         timestamps = os.listdir(simulation_dir)
@@ -116,10 +119,6 @@ def _normalize_db_or_log_path(args):
             timestamp = args.timestamp
         dir_name = os.path.join(simulation_dir, timestamp)
 
-        if sys.argv[0].endswith('cat.py'):
-            db_or_log = 'log'
-        else:
-            db_or_log = 'db'
         files = os.listdir(dir_name)
         dbs_or_logs = _gather_db_or_log_files(files, db_or_log)
         if db_or_log == 'db':
