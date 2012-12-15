@@ -127,12 +127,13 @@ class Screen(object):
             len_leg = 0.033
             for record in records:
                 d = pickle.loads(record['pickle'])
-              # print('d =', d)
+                print('d =', d)
                 if d['key'] is not None:
                     _keyID = int(d['key'][:10], 16)
                     r, x, y = formula._key2rxy(_keyID)
 
                     put_on_square(r, x, y, len_body)
+            print()
 
     def _passed_time(self):
         e = datetime.datetime.now()
