@@ -111,7 +111,6 @@ class Screen(object):
                     _keyID = int(d['key'][:10], 16)
                     r, x, y = formula._key2rxy(_keyID)
 
-                  # rxy = formula._key2rxy(d['key'])
                     put_on_square(r, x, y, len_body)
 
     def _passed_time(self):
@@ -141,7 +140,7 @@ def display_sample(passed_seconds):
     half_pi = math.pi / 2.0
     for rxy in L:
         rad, ix, iy = rxy
-        put_on_square(rad, ix, iy, 0.011)
+        put_on_square(rad, ix, iy, 0.015)
 
     len_leg = 0.033
     glBegin(GL_LINES)
