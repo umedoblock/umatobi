@@ -37,8 +37,11 @@ def args_theater(description):
     parser.add_argument('--sample', dest='sample',
                          action='store_true', default=False,
                          help='sample')
+    parser.add_argument('--moving-squares', dest='moving_squares',
+                         action='store_true', default=False,
+                         help='moving squares')
     args = parser.parse_args()
-    if args.sample:
+    if args.sample or args.moving_squares:
         simulation_db_path = ''
     else:
         simulation_db_path = _get_simulation_db_path(args)
