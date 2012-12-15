@@ -97,12 +97,16 @@ class Screen(object):
         s = milliseconds - 1000
         if s < 0:
             s = 0
+        if s > self.simulation_milliseconds:
+            sys.exit(0)
         e = milliseconds
+
         conditions = \
             'where elapsed_time >= {} and elapsed_time < {}'.format(s, e)
         records = self._db.select('growings', 'elapsed_time,pickle',
             conditions=conditions
         )
+
       # print('conditions =', conditions)
       # print('milliseconds = {}, len(records) = {}'. \
       #        format(milliseconds, len(records)))
