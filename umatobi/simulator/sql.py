@@ -98,6 +98,8 @@ class SQL(object):
         static_part = 'insert into {} {} values '.format(table_name, columns)
         hatenas = '({})'.format(', '.join('?' * len(columns)))
 
+        print('static_part + hatenas =')
+        print(static_part + hatenas)
         self._conn.executemany(static_part + hatenas, tups[1:])
 
     def insert(self, table_name, d):
