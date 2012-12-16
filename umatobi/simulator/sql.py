@@ -66,6 +66,10 @@ class SQL(object):
         self._create_table[table_name] = sql
         self.execute(sql)
 
+    def drop_table(self, table_name):
+        sql = 'drop table {}'.format(table_name)
+        self.execute(sql)
+
     def commit(self):
         self._conn.commit()
 
