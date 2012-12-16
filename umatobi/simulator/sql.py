@@ -75,7 +75,17 @@ class SQL(object):
         sql = 'drop table {}'.format(table_name)
         self.execute(sql)
 
+    def init_table(self, table_name):
+        try:
+            self.drop_table(table_name)
+        except sqlite3.OperationalError as raiz:
+            if raiz.args[0] != 'no such table: {}'.format(table_name):
+                raise raiz
+        self.create_table(table_name)
+
     def take_table(self, src, table_name):
+        self.init_table(table_name)
+
         records = src.select(table_name)
         L = []
       # print('records =', records)
