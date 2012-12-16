@@ -19,9 +19,12 @@ class SQL(object):
         self._schema = None
 
         if self.schema_path:
-            self._schema = configparser.ConfigParser()
-            with open(self.schema_path) as f:
-                self._schema.read_file(f)
+            self.read_schema()
+
+    def read_schema(self):
+        self._schema = configparser.ConfigParser()
+        with open(self.schema_path) as f:
+            self._schema.read_file(f)
 
     def set_logger(self, logger, level='INFO'):
         if logger is None:
