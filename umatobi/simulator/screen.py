@@ -125,21 +125,23 @@ class Screen(object):
       #        format(milliseconds, len(records)))
         if len(records) >= 1:
             print('conditions={}, len(records)={}'.format(conditions, len(records)))
-            len_body = 0.011
-            len_leg = 0.033
             for record in records:
                 d = pickle.loads(record['pickle'])
                 print('elapsed_time={}, d = {}'.format(record['elapsed_time'], d))
                 where = {'id': d['id']}
                 self._db.update('nodes', d, where)
                 self._db.commit()
-                if d['key'] is not None:
-                    _keyID = int(d['key'][:10], 16)
-                    r, x, y = formula._key2rxy(_keyID)
-                    print('r, x, y =', r, x, y)
-
-                    put_on_square(r, x, y, len_body)
             print()
+
+        len_body = 0.011
+        len_leg = 0.033
+        nodes = self._db.select('nodes')
+        for node in nodes:
+            if node['status'] == 'active':
+                _keyID = int(node['key'][:10], 16)
+                r, x, y = formula._key2rxy(_keyID)
+              # print('r, x, y =', r, x, y)
+                put_on_square(r, x, y, len_body)
 
     def _passed_time(self):
         e = datetime.datetime.now()
