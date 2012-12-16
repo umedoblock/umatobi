@@ -69,21 +69,8 @@ def watson_make_simulation_db(simulation_db, watson_db):
   # watson_db.total_nodes = count_nodes(watson_db.client_dbs)
     watson_db.total_nodes = \
         watson_db.select('simulation', 'total_nodes')[0]['total_nodes']
-    simulation_records = watson_db.select('simulation')
-    L = []
-    print('simulation_records =', simulation_records)
-    print('simulation_records[0] =', simulation_records[0])
-    print('simulation_records[0].keys() =', simulation_records[0].keys())
-    print('tuple(simulation_records[0]) =', tuple(simulation_records[0]))
-    print()
-    L.append(tuple(simulation_records[0].keys()))
-    L.append(tuple(simulation_records[0]))
-    tups = tuple(L)
-    print('tups =')
-    print(tups)
-    print()
-    simulation_db.inserts('simulation', tups)
-    simulation_db.commit()
+
+    simulation_db.take_table(watson_db, 'simulation')
   # print('dir(simulation_record) =', dir(simulation_record[0]))
   # print('simulation_record =', simulation_record[0].keys())
   # print('simulation_record =', tuple(simulation_record[0]))

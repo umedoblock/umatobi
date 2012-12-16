@@ -75,6 +75,23 @@ class SQL(object):
         sql = 'drop table {}'.format(table_name)
         self.execute(sql)
 
+    def take_table(self, src, table_name):
+        records = src.select(table_name)
+        L = []
+      # print('records =', records)
+      # print('records[0] =', records[0])
+      # print('records[0].keys() =', records[0].keys())
+      # print('tuple(records[0]) =', tuple(records[0]))
+      # print()
+        L.append(tuple(records[0].keys())) # column name
+        L.append(tuple(records[0]))
+        tups = tuple(L)
+        print('tups =')
+        print(tups)
+        print()
+        self.inserts(table_name, tups)
+        self.commit()
+
     def commit(self):
         self._conn.commit()
 
