@@ -8,6 +8,7 @@ from lib.args import args_make_simulation_db
 import simulator.sql
 from lib import formula
 from lib.squares import put_on_square
+from tools.make_simulation_db import init_nodes_table
 
 try:
     from OpenGL.GLUT import *
@@ -49,6 +50,7 @@ class Screen(object):
     def set_db(self, db):
         self._db = db
         self._db.access_db()
+        init_nodes_table(self._db)
         column_name = 'simulation_milliseconds'
         self.simulation_milliseconds = \
             self._db.select('simulation', \
