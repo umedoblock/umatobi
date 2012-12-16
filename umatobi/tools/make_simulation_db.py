@@ -2,6 +2,7 @@ import sys
 import os
 import pickle
 import datetime
+import sqlite3
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib.args import args_make_simulation_db
@@ -114,11 +115,12 @@ def watson_make_simulation_db(simulation_db, watson_db):
     simulation_db.inserts('growings', growings)
     simulation_db.commit()
 
-    simulation_db.total_nodes = \
-        simulation_db.select('simulation', 'total_nodes')[0]['total_nodes']
-    pad_dummy_data_to_simulation_db(simulation_db)
+    init_simulation_db(simulation_db)
 
-def pad_dummy_data_to_simulation_db(simulation_db):
+def init_simulation_db(simulation_db):
+    simulation_db.total_nodes = \
+        simulation_db.select_one('simulation', 'total_nodes')
+    print('simulation_db.total_nodes =', simulation_db.total_nodes)
     d_node = {
         'id': None,
         'host': 'dummy host',
