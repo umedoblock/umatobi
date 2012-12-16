@@ -105,15 +105,9 @@ def watson_make_simulation_db(simulation_db, watson_db):
     init_nodes_table(simulation_db)
 
 def init_nodes_table(simulation_db):
-    try:
-        simulation_db.drop_table('nodes')
-    except sqlite3.OperationalError as raiz:
-        if raiz.args[0] == 'no such table: nodes':
-            pass
-        else:
-            raise raiz
-    simulation_db.create_table('nodes')
+    simulation_db.init_table('nodes')
     print('created nodes table.')
+
     simulation_db.total_nodes = \
         simulation_db.select_one('simulation', 'total_nodes')
     print('simulation_db.total_nodes =', simulation_db.total_nodes)
