@@ -130,6 +130,9 @@ class Screen(object):
             for record in records:
                 d = pickle.loads(record['pickle'])
                 print('elapsed_time={}, d = {}'.format(record['elapsed_time'], d))
+                where = {'id': d['id']}
+                self._db.update('nodes', d, where)
+                self._db.commit()
                 if d['key'] is not None:
                     _keyID = int(d['key'][:10], 16)
                     r, x, y = formula._key2rxy(_keyID)
