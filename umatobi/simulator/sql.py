@@ -66,6 +66,11 @@ class SQL(object):
         self._create_table[table_name] = sql
         self.execute(sql)
 
+    def select_one(self, table_name, column_name):
+        record = self.select(table_name, select_columns=column_name,
+                             conditions='limit 1')[0]
+        return record[column_name]
+
     def drop_table(self, table_name):
         sql = 'drop table {}'.format(table_name)
         self.execute(sql)
