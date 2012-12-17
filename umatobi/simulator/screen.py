@@ -154,6 +154,16 @@ class Screen(object):
       # 左click 押した button=0, state=0, x=392, y=251  in self._mouse()
       # 左click 離した button=0, state=1, x=392, y=251  in self._mouse()
 
+      # screen = monitor
+      # print('GLUT_SCREEN_WIDTH =', glutGet(GLUT_SCREEN_WIDTH))
+      # print('GLUT_SCREEN_HEIGHT =', glutGet(GLUT_SCREEN_HEIGHT))
+      # glut window after changed
+      # print('GLUT_WINDOW_WIDTH =', glutGet(GLUT_WINDOW_WIDTH))
+      # print('GLUT_WINDOW_HEIGHT =', glutGet(GLUT_WINDOW_HEIGHT))
+      # glut window when init
+      # print('GLUT_INIT_WINDOW_WIDTH =', glutGet(GLUT_INIT_WINDOW_WIDTH))
+      # print('GLUT_INIT_WINDOW_HEIGHT =', glutGet(GLUT_INIT_WINDOW_HEIGHT))
+
         fmt = 'button={}, state={}, x={}, y={}  in self._mouse()'
         print(fmt.format(button, state, x, y))
 
