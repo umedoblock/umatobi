@@ -50,12 +50,12 @@ class LabelArea(object):
         self.exit(0)
 
 class Screen(object):
-    def __init__(self, argv, pixel=500):
+    def __init__(self, argv, width=500, height=500):
         self.frames = 0
         self.s = datetime.datetime.now()
         self._last_select_milliseconds = 0
-        self.pixel = pixel
-        width = height = pixel
+        self.width = width
+        self.height = self.height
         self.mode = GLUT_SINGLE | GLUT_RGBA
         # multi buffering
         self.mode |= GLUT_DOUBLE
@@ -65,7 +65,7 @@ class Screen(object):
 
         glutInit(argv)
         glutInitDisplayMode(self.mode)
-        glutInitWindowSize(width, height)
+        glutInitWindowSize(self.width, self.height)
         glutInitWindowPosition(0, 0)
         glutCreateWindow(argv[0].encode())
 
