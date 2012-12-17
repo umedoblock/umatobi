@@ -24,22 +24,30 @@ except BaseException as e:
 def _normalize_milliseconds(seconds):
     return int(seconds * 1000)
 
-class LabelArea(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
+class LabelArea(object):
 
     def run(self):
-        self.tk_root = tk.Tk()
-
-        self.buf = tk.StringVar()
-        self.buf.set('')
+        self._tk_root = tk.Tk()
+        self._buf = tk.StringVar()
+        self._buf.set('')
         # justify=tk.LEFT で複数行の場合の文字列を左寄せ指定している。
         ft = font_tuple = ('Helvetica', '8')
-        self.display = tk.Label(self.tk_root, textvariable=self.buf, font=ft,
+        self.display = tk.Label(self._tk_root, textvariable=self._buf, font=ft,
                                 bg='white', anchor=tk.W, justify=tk.LEFT)
         self.display.pack(side=tk.LEFT)
+        self._tk_root.mainloop()
 
-        self.tk_root.mainloop()
+    def __init__(self):
+        self._thread = threading.Thread(target=self.run)
+        self._thread.start()
+
+    def update(self, message):
+        self._buf.set(message)
+
+    def done(self):
+        self.display.master.destroy()
+        self.display.destroy()
+        self.exit(0)
 
 class Screen(object):
     def __init__(self, argv, pixel=500):
@@ -54,7 +62,6 @@ class Screen(object):
         self.nodes = []
 
         self.label_area = LabelArea()
-        self.label_area.start()
 
         glutInit(argv)
         glutInitDisplayMode(self.mode)
@@ -114,12 +121,17 @@ class Screen(object):
       # print(dir(self.label_area.tk_root))
         print('display =', self.label_area.display)
         print('display.master =', self.label_area.display.master)
-        self.label_area.display.destroy()
-        if self.label_area.display.master:
-            print('display.master.destroy()')
-            help(self.label_area.display.master.destroy)
-          # self.label_area.display.master.destroy()
-            print('display.master.destroyed')
+####### self.label_area.display.destroy()
+####### if self.label_area.display.master:
+#######     print('display.master.destroy()')
+#######     help(self.label_area.display.master.destroy)
+#######   # self.label_area.display.master.destroy()
+#######     print('display.master.destroyed')
+####### self.label_area._thread.destroy()
+       #self.label_area.done()
+       #raise()
+####### self.label_area._tk_root.destroy()
+      # self.label_area._thread.join(0.1)
       # self.label_area.join(0)
       # self.label_area.tk_root.master.destroy() master is None
       # self.label_area.tk_root.destroy() # 消せなくなる
@@ -130,6 +142,10 @@ class Screen(object):
 
       # AttributeError: 'NoneType' object has no attribute 'destroy'
       # self.label_area.tk_root.master.destroy()
+        count = 0
+        for th in threading.enumerate():
+            print('count={}, th={}'.format(count, th))
+            count += 1
 
     def _keyboard(self, key, x, y):
         code = ord(key)
@@ -139,7 +155,12 @@ class Screen(object):
             print('ESC')
         if ord(key) == 27 or ord(key) == 0x17 or ord(key) == 0x03:
           # ESC              ctr-w               ctr-c
+          # self.label_area._tk_root.destroy()
+          # self.label_area.done()
             self._simulation_info()
+          # self.label_area.display.destroy()
+          # self.label_area.display.master.destroy()
+            print('_keyboard() do sys.exit(0)')
             sys.exit(0)
 
     def display_main(self, passed_seconds):
@@ -185,7 +206,7 @@ class Screen(object):
               # print('r, x, y =', r, x, y)
                 put_on_square(r, x, y, len_body)
                 L.append('id: {}, key: {}'.format(node['id'], node['key']))
-        self.label_area.buf.set('\n'.join(L))
+        self.label_area.update('\n'.join(L))
 
     def _passed_time(self):
         e = datetime.datetime.now()
