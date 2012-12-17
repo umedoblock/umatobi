@@ -60,6 +60,8 @@ class Screen(object):
         # multi buffering
         self.mode |= GLUT_DOUBLE
         self.nodes = []
+        self._squares = []
+        self._debug = False
 
         self.label_area = LabelArea()
 
@@ -153,8 +155,11 @@ class Screen(object):
     def _mouse(self, button, state, x, y):
       # 左click 押した button=0, state=0, x=392, y=251  in self._mouse()
       # 左click 離した button=0, state=1, x=392, y=251  in self._mouse()
+        if self._debug:
+            fmt = 'button={}, state={}, x={}, y={}  in self._mouse()'
+            print(fmt.format(button, state, x, y))
 
-      # screen = monitor
+      # screen is monitor
       # print('GLUT_SCREEN_WIDTH =', glutGet(GLUT_SCREEN_WIDTH))
       # print('GLUT_SCREEN_HEIGHT =', glutGet(GLUT_SCREEN_HEIGHT))
       # glut window after changed
@@ -163,9 +168,26 @@ class Screen(object):
       # glut window when init
       # print('GLUT_INIT_WINDOW_WIDTH =', glutGet(GLUT_INIT_WINDOW_WIDTH))
       # print('GLUT_INIT_WINDOW_HEIGHT =', glutGet(GLUT_INIT_WINDOW_HEIGHT))
+        ww = glutGet(GLUT_WINDOW_WIDTH)
+        wh = glutGet(GLUT_WINDOW_HEIGHT)
+        rate = ww / wh
+        # math x, y axis
+        # origin is window center
+        mx = x - ww / 2
+        my = wh / 2 - y
 
-        fmt = 'button={}, state={}, x={}, y={}  in self._mouse()'
-        print(fmt.format(button, state, x, y))
+        # normalize
+        norm_x = int(mx)
+        norm_y = int(my * rate)
+        d = math.sqrt(norm_x ** 2 + norm_y ** 2)
+        cos = norm_x / d
+        sin = norm_y / d
+
+        if self._debug:
+            fmt2 = 'cos={}, sin={}  in self._mouse()'
+            print(fmt2.format(cos, sin))
+            square = (0, cos, sin, 0.05, (0xff, 0, 0))
+            self._squares.append(square)
 
     def _keyboard(self, key, x, y):
         code = ord(key)
@@ -227,6 +249,10 @@ class Screen(object):
                 put_on_square(r, x, y, len_body)
                 L.append('id: {}, key: {}'.format(node['id'], node['key']))
         self.label_area.update('\n'.join(L))
+
+        if self._squares:
+            for square in self._squares:
+                put_on_square(*square)
 
     def _passed_time(self):
         e = datetime.datetime.now()
