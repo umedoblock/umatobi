@@ -173,21 +173,33 @@ class Screen(object):
         rate = ww / wh
         # math x, y axis
         # origin is window center
+        # -ww / 2 <= x <= ww / 2
+        # -wh / 2 <= y <= wh / 2
         mx = x - ww / 2
         my = wh / 2 - y
 
         # normalize
+        norm_ww = ww / 2
+        norm_wh = wh / 2 * rate
+        norm_wd = math.sqrt(norm_ww ** 2 + norm_wh ** 2)
         norm_x = int(mx)
         norm_y = int(my * rate)
-        d = math.sqrt(norm_x ** 2 + norm_y ** 2)
-        cos = norm_x / d
-        sin = norm_y / d
+        norm_d = math.sqrt(norm_x ** 2 + norm_y ** 2)
+        cos = norm_x / norm_d
+        sin = norm_y / norm_d
 
-        if self._debug:
+        r = norm_ww
+        rate_d_about_r = norm_d / r
+      # print('rate_d_about_r =', rate_d_about_r)
+
+        band_width = 0.02
+      # self._debug = True
+        if math.fabs(1.0 - rate_d_about_r) <= band_width and self._debug:
             fmt2 = 'cos={}, sin={}  in self._mouse()'
-            print(fmt2.format(cos, sin))
+      #     print(fmt2.format(cos, sin))
             square = (0, cos, sin, 0.05, (0xff, 0, 0))
             self._squares.append(square)
+      # self._debug = not True
 
     def _keyboard(self, key, x, y):
         code = ord(key)
