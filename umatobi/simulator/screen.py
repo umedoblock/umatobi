@@ -72,6 +72,7 @@ class Screen(object):
         glutDisplayFunc(self._display)
         glutIdleFunc(glutPostRedisplay)
         glutKeyboardFunc(self._keyboard)
+        glutMouseFunc(self._mouse)
 
     def set_display(self, display_main):
         self.display_main = display_main
@@ -146,6 +147,15 @@ class Screen(object):
         for th in threading.enumerate():
             print('count={}, th={}'.format(count, th))
             count += 1
+
+#   def _mouse(self, *event):
+#       print('event={} in self._mouse()'.format(event))
+    def _mouse(self, button, state, x, y):
+      # 左click 押した button=0, state=0, x=392, y=251  in self._mouse()
+      # 左click 離した button=0, state=1, x=392, y=251  in self._mouse()
+
+        fmt = 'button={}, state={}, x={}, y={}  in self._mouse()'
+        print(fmt.format(button, state, x, y))
 
     def _keyboard(self, key, x, y):
         code = ord(key)
