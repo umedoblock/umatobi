@@ -2,6 +2,8 @@ import datetime
 import sys
 import math
 import pickle
+import threading
+import tkinter as tk
 
 # sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib.args import args_make_simulation_db
@@ -22,6 +24,23 @@ except BaseException as e:
 def _normalize_milliseconds(seconds):
     return int(seconds * 1000)
 
+class LabelArea(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.tk_root = tk.Tk()
+
+        self.buf = tk.StringVar()
+        self.buf.set('')
+        # justify=tk.LEFT で複数行の場合の文字列を左寄せ指定している。
+        ft = font_tuple = ('Helvetica', '8')
+        self.display = tk.Label(self.tk_root, textvariable=self.buf, font=ft,
+                                bg='white', anchor=tk.W, justify=tk.LEFT)
+        self.display.pack(side=tk.LEFT)
+
+        self.tk_root.mainloop()
+
 class Screen(object):
     def __init__(self, argv, pixel=500):
         self.frames = 0
@@ -33,6 +52,9 @@ class Screen(object):
         # multi buffering
         self.mode |= GLUT_DOUBLE
         self.nodes = []
+
+        self.label_area = LabelArea()
+        self.label_area.start()
 
         glutInit(argv)
         glutInitDisplayMode(self.mode)
@@ -89,6 +111,25 @@ class Screen(object):
     def _simulation_info(self):
         print('\n')
         self._print_fps()
+      # print(dir(self.label_area.tk_root))
+        print('display =', self.label_area.display)
+        print('display.master =', self.label_area.display.master)
+        self.label_area.display.destroy()
+        if self.label_area.display.master:
+            print('display.master.destroy()')
+            help(self.label_area.display.master.destroy)
+          # self.label_area.display.master.destroy()
+            print('display.master.destroyed')
+      # self.label_area.join(0)
+      # self.label_area.tk_root.master.destroy() master is None
+      # self.label_area.tk_root.destroy() # 消せなくなる
+      # self.label_area.tk_root.exit() # x
+      # self.label_area.display.master.destroy() # 消せなくなる
+      # self.label_area.master.destroy()
+      # self.label_area.tk_root.destroy() # 消せなくなる
+
+      # AttributeError: 'NoneType' object has no attribute 'destroy'
+      # self.label_area.tk_root.master.destroy()
 
     def _keyboard(self, key, x, y):
         code = ord(key)
@@ -133,6 +174,7 @@ class Screen(object):
                 self._db.commit()
             print()
 
+        L = []
         len_body = 0.011
         len_leg = 0.033
         nodes = self._db.select('nodes')
@@ -142,6 +184,8 @@ class Screen(object):
                 r, x, y = formula._key2rxy(_keyID)
               # print('r, x, y =', r, x, y)
                 put_on_square(r, x, y, len_body)
+                L.append('id: {}, key: {}'.format(node['id'], node['key']))
+        self.label_area.buf.set('\n'.join(L))
 
     def _passed_time(self):
         e = datetime.datetime.now()
