@@ -55,7 +55,7 @@ class Screen(object):
         self.s = datetime.datetime.now()
         self._last_select_milliseconds = 0
         self.width = width
-        self.height = self.height
+        self.height = height
         self.mode = GLUT_SINGLE | GLUT_RGBA
         # multi buffering
         self.mode |= GLUT_DOUBLE
