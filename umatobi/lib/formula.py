@@ -67,7 +67,32 @@ def _fmove(passed_seconds):
     return move
 
 if __name__ == '__main__':
+    expected = '''\
+        keyID=0x00000000, rxy=(0.000,0.000,1.000)
+        keyID=0x10000000, rxy=(0.393,0.383,0.924)
+        keyID=0x20000000, rxy=(0.785,0.707,0.707)
+        keyID=0x30000000, rxy=(1.178,0.924,0.383)
+        keyID=0x40000000, rxy=(1.571,1.000,0.000)
+        keyID=0x50000000, rxy=(1.963,0.924,-0.383)
+        keyID=0x60000000, rxy=(2.356,0.707,-0.707)
+        keyID=0x70000000, rxy=(2.749,0.383,-0.924)
+        keyID=0x80000000, rxy=(3.142,-0.000,-1.000)
+        keyID=0x90000000, rxy=(3.534,-0.383,-0.924)
+        keyID=0xa0000000, rxy=(3.927,-0.707,-0.707)
+        keyID=0xb0000000, rxy=(4.320,-0.924,-0.383)
+        keyID=0xc0000000, rxy=(4.712,-1.000,0.000)
+        keyID=0xd0000000, rxy=(5.105,-0.924,0.383)
+        keyID=0xe0000000, rxy=(5.498,-0.707,0.707)
+        keyID=0xf0000000, rxy=(5.890,-0.383,0.924)'''
+    expects = [s.strip() for s in expected.split('\n')]
+
+    i = 0
     for keyID in range(0, 1 << 32, 0x10000000):
         rxy = _key2rxy(keyID)
         rxy_s = '({})'.format(','.join(['{:.3f}'.format(xx) for xx in rxy]))
-        print('keyID=0x{:08x}, rxy={}'.format(keyID, rxy_s))
+        message = 'keyID=0x{:08x}, rxy={}'.format(keyID, rxy_s)
+        if expects[i] != message:
+            print('expectes =', expects[i])
+            print(' message =', message)
+            print()
+        i += 1
