@@ -1,6 +1,8 @@
 import math
 import struct
 
+import radrad
+
 def _key2rxy(_keyID):
     '''\
     時計を単位円として考えてください。
@@ -16,8 +18,9 @@ def _key2rxy(_keyID):
     '''
     norm_rad = (2.0 * math.pi) * (_keyID / 4294967296)
 
-    cs =  math.cos(norm_rad + (3.0 * math.pi / 2.0 ))
-    sn = -math.sin(norm_rad + (3.0 * math.pi / 2.0 ))
+    math_rad = radrad._norm_rad_to_math_rad(norm_rad)
+    cs = math.cos(math_rad)
+    sn = math.sin(math_rad)
 
     m = 1.00
     _x = cs * m
