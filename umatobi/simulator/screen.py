@@ -237,7 +237,7 @@ class Screen(object):
             'where elapsed_time >= {} and elapsed_time < {}'. \
              format(self._last_select_milliseconds, e)
         self._last_select_milliseconds = e
-        records = self._db.select('growings', 'elapsed_time,pickle',
+        records = self._memory_db.select('growings', 'elapsed_time,pickle',
             conditions=conditions
         )
 

@@ -87,21 +87,27 @@ class SQL(object):
         self.create_table(table_name)
 
     def take_table(self, src, table_name, auto_commit=True):
+#       print('take_table() =================================================')
         self.init_table(table_name)
 
         records = src.select(table_name)
         L = []
-      # print('records =', records)
-      # print('records[0] =', records[0])
-      # print('records[0].keys() =', records[0].keys())
-      # print('tuple(records[0]) =', tuple(records[0]))
-      # print()
-        L.append(tuple(records[0].keys())) # column name
-        L.append(tuple(records[0]))
+#       print('records =', records)
+        if self._conn.row_factory == sqlite3.Row:
+#           print('records[0] =', records[0])
+#           print('records[0].keys() =', records[0].keys())
+#           print('tuple(records[0]) =', tuple(records[0]))
+#           print()
+            L.append(tuple(records[0].keys())) # column name
+            for record in records:
+                L.append(tuple(record))
+        else:
+            message = 'row_factory(={}) is unknown. Therefore fail safe occured.'.format(self._conn.row_factory)
+            raise RuntimeError(message)
         tups = tuple(L)
-        print('tups =')
-        print(tups)
-        print()
+#       print('tups =')
+#       print(tups)
+#       print()
         self.inserts(table_name, tups)
         if auto_commit:
             self.commit()
@@ -199,6 +205,8 @@ class SQL(object):
         for row in rows:
             if row[0] == 'table' and row[2] != 'sqlite_sequence':
                 tables.append(row[2])
+        print('tuple(tables) =', tuple(tables))
+
         return tuple(tables)
 
     def get_table_schema(self, table_name):

@@ -20,6 +20,29 @@ def remove_test_db():
         if raiz.args != (2, 'No such file or directory'):
             raise raiz
 
+def insert_test_table_n_records(db, n_records):
+    s = datetime.datetime.now()
+    inserts = [None] * n_records
+    for i in range(n_records):
+        test = {}
+        test['id'] = None # integer primary key
+                          # autoincrement unique not null
+        test['val_null'] = None
+        test['val_integer'] = i * 1000
+        test['val_real'] = i * 111.111
+        test['val_text'] = 't' * (i + 1)
+        test['val_blob'] = b'bytes' * (i + 1)
+        test['now'] = lib.current_isoformat_time()
+        e = datetime.datetime.now()
+        test['elapsed_time'] = (e - s).total_seconds()
+        db.insert('test_table', test)
+        inserts[i] = test
+    #   print('[{}]'.format(i))
+    db.commit()
+    for i in range(n_records):
+        inserts[i]['id'] = i + 1
+    return inserts
+
 class TestSQL(unittest.TestCase):
     def tearDown(self):
         remove_test_db()
@@ -72,6 +95,41 @@ class TestSQL(unittest.TestCase):
         d_insert['id'] = 1 # auto increment
         for column, index in d.items():
             self.assertEqual(d_insert[column], d_selected[0][index])
+
+    def test_take_table(self):
+        db = simulator.sql.SQL(db_path=test_db_path,
+                               schema_path=test_schema_path)
+        db.create_db()
+        db.create_table('test_table')
+
+        n_records = 100
+        inserts = insert_test_table_n_records(db, n_records)
+
+#       print('-------------------------------------')
+        records = \
+            db.select('test_table', conditions='order by id')
+#       print('len(records)=', len(records))
+#       print('records=', records)
+#       print(records)
+#       print('-------------------------------------')
+        memory_db = \
+            simulator.sql.SQL(db_path=':memory:', schema_path=test_schema_path)
+        memory_db.create_db()
+        memory_db.take_table(db, 'test_table')
+
+        memory_records = \
+            memory_db.select('test_table', conditions='order by id')
+#       print('len(memory_records)=', len(memory_records))
+#       print('memory_records =')
+#       print(memory_records)
+#       print('-------------------------------------')
+        for i in range(n_records):
+#           print(i)
+#           print(dir(memory_records[i]))
+            self.assertEqual(list(inserts[i].keys()).sort(), \
+                             memory_records[i].keys().sort())
+            for key in memory_records[i].keys():
+                self.assertEqual(inserts[i][key], memory_records[i][key])
 
     def test_update_and_update(self):
         'impossible see #189'

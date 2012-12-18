@@ -21,3 +21,15 @@ now:    text
 
 # float
 elapsed_time: real
+
+[take_table]
+id: integer primary key autoincrement unique not null
+
+# int in Python
+val_integer: integer
+
+# float in Python
+val_real:    real
+
+# depends on text_factory, str by default in Python
+val_text:    text
