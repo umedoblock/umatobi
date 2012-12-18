@@ -14,17 +14,16 @@ def _key2rxy(_keyID):
     rad = 2 * PAI  * (今何時？ / 12.0)
     です。
     '''
-    rad = (2.0 * math.pi) * (_keyID / 4294967296)
+    norm_rad = (2.0 * math.pi) * (_keyID / 4294967296)
 
-    cs =  math.cos(rad + (3.0 * math.pi / 2.0 ))
-    sn = -math.sin(rad + (3.0 * math.pi / 2.0 ))
+    cs =  math.cos(norm_rad + (3.0 * math.pi / 2.0 ))
+    sn = -math.sin(norm_rad + (3.0 * math.pi / 2.0 ))
 
-    _rad = rad
     m = 1.00
     _x = cs * m
     _y = sn * m
 
-    return _rad, _x, _y
+    return norm_rad, _x, _y
 
 def _key_hex(key):
     'key を16進で表現する。'
