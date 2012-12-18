@@ -2,22 +2,7 @@ import math
 
 # norm means normalize, not normal.
 # 消すには惜しいので残すことにした。
-
-def _math_rad_to_norm_rad(math_rad):
-    norm_rad = -math_rad + math.pi / 2.0
-    if norm_rad < 0:
-        norm_rad += 2 * math.pi
-    if norm_rad > 2 * math.pi:
-        norm_rad -= 2 * math.pi
-    return norm_rad
-
-def _norm_rad_to_math_rad(norm_rad):
-    math_rad = -norm_rad + math.pi / 2.0
-    if math_rad < 0:
-        math_rad += 2 * math.pi
-    if math_rad > 2 * math.pi:
-        math_rad -= 2 * math.pi
-    return math_rad
+# けどやっぱり消して、testに移住させる。
 
 if __name__ == '__main__':
     import formula
