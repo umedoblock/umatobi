@@ -31,6 +31,11 @@ def norm_rad_to_keyID(norm_rad):
 ### rate = norm_rad / (2 * math.pi)
 ### return int((1 << 32) * norm_rad / (2 * math.pi))
 
+def _keyID_to_norm_rad(keyID):
+    rate = keyID / (1 << 32)
+    norm_rad = 2 * math.pi * rate
+    return norm_rad
+
 if __name__ == '__main__':
 
     half_pi = math.pi / 2
