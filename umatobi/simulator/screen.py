@@ -197,7 +197,7 @@ class Screen(object):
         if math.fabs(1.0 - rate_d_about_r) <= band_width:
             fmt2 = 'cos={}, sin={}  in self._mouse()'
       #     print(fmt2.format(cos, sin))
-            square = (0, cos, sin, 0.05, (0xff, 0, 0))
+            square = (0, cos, sin, 0.02, (0xff, 0, 0))
             self._squares.append(square)
       # self._debug = not True
 
