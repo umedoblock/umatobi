@@ -16,8 +16,8 @@ def _key2rxy(_keyID):
     rad = 2 * PAI  * (今何時？ / 12.0)
     です。
     '''
-    norm_rad = (2.0 * math.pi) * (_keyID / 4294967296)
 
+    norm_rad = keyID_to_norm_rad(_keyID)
     math_rad = radrad._norm_rad_to_math_rad(norm_rad)
     cs = math.cos(math_rad)
     sn = math.sin(math_rad)
@@ -27,6 +27,24 @@ def _key2rxy(_keyID):
     _y = sn * m
 
     return norm_rad, _x, _y
+
+def cos_sin_to_norm_rad(cs, sn):
+    if sn >= 0:
+        math_rad = math.acos(cs)
+    else:
+        math_rad = 2 * math.pi - math.acos(cs)
+    norm_rad = radrad._math_rad_to_norm_rad(math_rad)
+    return norm_rad
+
+def keyID_to_norm_rad(keyID):
+    rate = keyID / (1 << 32)
+    norm_rad = (2 * math.pi) * rate
+    return norm_rad
+
+def norm_rad_to_keyID(norm_rad):
+    rate = norm_rad / (2 * math.pi)
+    keyID = int((1 << 32) * rate)
+    return keyID
 
 def _key_hex(key):
     'key を16進で表現する。'
@@ -86,6 +104,7 @@ if __name__ == '__main__':
         keyID=0xf0000000, rxy=(5.890,-0.383,0.924)'''
     expects = [s.strip() for s in expected.split('\n')]
 
+    fail = False
     i = 0
     for keyID in range(0, 1 << 32, 0x10000000):
         rxy = _key2rxy(keyID)
@@ -95,4 +114,7 @@ if __name__ == '__main__':
             print('expectes =', expects[i])
             print(' message =', message)
             print()
+            fail = True
         i += 1
+    if not fail:
+        print('test success.')

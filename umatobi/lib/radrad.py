@@ -1,5 +1,6 @@
 import math
 
+import formula
 # norm means normalize, not normal.
 
 def _math_rad_to_norm_rad(math_rad):
@@ -18,24 +19,6 @@ def _norm_rad_to_math_rad(norm_rad):
         math_rad -= 2 * math.pi
     return math_rad
 
-def cos_sin_to_norm_rad(cs, sn):
-    if sn >= 0:
-        math_rad = math.acos(cs)
-    else:
-        math_rad = 2 * math.pi - math.acos(cs)
-    return _math_rad_to_norm_rad(math_rad)
-
-def norm_rad_to_keyID(norm_rad):
-    rate = norm_rad / (2 * math.pi)
-    return int((1 << 32) * rate)
-### rate = norm_rad / (2 * math.pi)
-### return int((1 << 32) * norm_rad / (2 * math.pi))
-
-def _keyID_to_norm_rad(keyID):
-    rate = keyID / (1 << 32)
-    norm_rad = 2 * math.pi * rate
-    return norm_rad
-
 if __name__ == '__main__':
 
     half_pi = math.pi / 2
@@ -46,7 +29,7 @@ if __name__ == '__main__':
 
     pairs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
     for cs, sn in pairs:
-        rd = cos_sin_to_norm_rad(cs, sn)
+        rd = formula.cos_sin_to_norm_rad(cs, sn)
         print('cs={:.3f}, sn={:.3f}, rd={:.3f}, n = {:.3f}'.format(cs, sn, rd, rd / math.pi))
     print('--')
 
@@ -58,7 +41,7 @@ if __name__ == '__main__':
         math_rad = step * i
         cs = math.cos(math_rad)
         sn = math.sin(math_rad)
-        norm_rad = cos_sin_to_norm_rad(cs, sn)
+        norm_rad = formula.cos_sin_to_norm_rad(cs, sn)
         _math_rad = _norm_rad_to_math_rad(norm_rad)
         d_rad = math.fabs(math_rad - _math_rad)
         if math_rad != _math_rad and d_rad >= 0.000001:
@@ -76,7 +59,7 @@ if __name__ == '__main__':
 
     i = 0
     for norm_rad, cs, sn in pairs:
-        keyID = norm_rad_to_keyID(norm_rad)
+        keyID = formula.norm_rad_to_keyID(norm_rad)
         print('cs={:.3f}, sn={:.3f}, keyID=0x{:08x}, norm_rd={:.3f}, n = {:.3f}'.format(cs, sn, keyID, norm_rad, norm_rad / math.pi))
         i += 1
         if i % (len(pairs) // 4) == 0:
