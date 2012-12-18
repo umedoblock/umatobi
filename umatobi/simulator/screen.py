@@ -82,17 +82,19 @@ class Screen(object):
     def set_db(self, db):
         self._db = db
         self._db.access_db()
-        init_nodes_table(self._db)
-        column_name = 'simulation_milliseconds'
-        self.simulation_milliseconds = \
-            self._db.select('simulation', \
-                             column_name)[0][column_name]
-        print('self.simulation_milliseconds =', self.simulation_milliseconds)
+      # init_nodes_table(self._db)
 
+        column_name = 'simulation_milliseconds'
         self._memory_db = simulator.sql.SQL(':memory:', schema_path=self._db.schema_path)
         self._memory_db.create_db()
         self._memory_db.take_db(self._db)
+        self._db.close()
         init_nodes_table(self._memory_db)
+
+        self.simulation_milliseconds = \
+            self._memory_db.select('simulation', \
+                             column_name)[0][column_name]
+        print('self.simulation_milliseconds =', self.simulation_milliseconds)
 
     def start(self):
         glutMainLoop()
