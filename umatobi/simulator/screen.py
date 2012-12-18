@@ -89,6 +89,11 @@ class Screen(object):
                              column_name)[0][column_name]
         print('self.simulation_milliseconds =', self.simulation_milliseconds)
 
+        self._memory_db = simulator.sql.SQL(':memory:', schema_path=self._db.schema_path)
+        self._memory_db.create_db()
+        self._memory_db.take_table(self._db, 'simulation')
+        init_nodes_table(self._memory_db)
+
     def start(self):
         glutMainLoop()
 
@@ -245,14 +250,17 @@ class Screen(object):
                 d = pickle.loads(record['pickle'])
                 print('elapsed_time={}, d = {}'.format(record['elapsed_time'], d))
                 where = {'id': d['id']}
-                self._db.update('nodes', d, where)
-                self._db.commit()
+#               self._db.update('nodes', d, where)
+#               self._db.commit()
+                self._memory_db.update('nodes', d, where)
+                self._memory_db.commit()
             print()
 
         L = []
         len_body = 0.011
         len_leg = 0.033
-        nodes = self._db.select('nodes')
+#       nodes = self._db.select('nodes')
+        nodes = self._memory_db.select('nodes')
         for node in nodes:
             if node['status'] == 'active':
                 _keyID = int(node['key'][:10], 16)
