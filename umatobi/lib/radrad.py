@@ -1,7 +1,7 @@
 import math
 
-import formula
 # norm means normalize, not normal.
+# 消すには惜しいので残すことにした。
 
 def _math_rad_to_norm_rad(math_rad):
     norm_rad = -math_rad + math.pi / 2.0
@@ -20,6 +20,7 @@ def _norm_rad_to_math_rad(norm_rad):
     return math_rad
 
 if __name__ == '__main__':
+    import formula
 
     half_pi = math.pi / 2
     for i in range(4):

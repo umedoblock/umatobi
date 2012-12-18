@@ -1,7 +1,8 @@
 import math
 import struct
+import os
 
-import radrad
+# norm means normalize, not normal.
 
 def _key2rxy(_keyID):
     '''\
@@ -18,7 +19,7 @@ def _key2rxy(_keyID):
     '''
 
     norm_rad = keyID_to_norm_rad(_keyID)
-    math_rad = radrad._norm_rad_to_math_rad(norm_rad)
+    math_rad = _norm_rad_to_math_rad(norm_rad)
     cs = math.cos(math_rad)
     sn = math.sin(math_rad)
 
@@ -33,7 +34,7 @@ def cos_sin_to_norm_rad(cs, sn):
         math_rad = math.acos(cs)
     else:
         math_rad = 2 * math.pi - math.acos(cs)
-    norm_rad = radrad._math_rad_to_norm_rad(math_rad)
+    norm_rad = _math_rad_to_norm_rad(math_rad)
     return norm_rad
 
 def keyID_to_norm_rad(keyID):
@@ -45,6 +46,22 @@ def norm_rad_to_keyID(norm_rad):
     rate = norm_rad / (2 * math.pi)
     keyID = int((1 << 32) * rate)
     return keyID
+
+def _math_rad_to_norm_rad(math_rad):
+    norm_rad = -math_rad + math.pi / 2.0
+    if norm_rad < 0:
+        norm_rad += 2 * math.pi
+    if norm_rad > 2 * math.pi:
+        norm_rad -= 2 * math.pi
+    return norm_rad
+
+def _norm_rad_to_math_rad(norm_rad):
+    math_rad = -norm_rad + math.pi / 2.0
+    if math_rad < 0:
+        math_rad += 2 * math.pi
+    if math_rad > 2 * math.pi:
+        math_rad -= 2 * math.pi
+    return math_rad
 
 def _key_hex(key):
     'key を16進で表現する。'
