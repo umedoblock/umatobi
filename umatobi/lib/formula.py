@@ -62,3 +62,9 @@ def _fmove(passed_seconds):
     t = abs(t)
     move = t * (math.pi / 4.0)
     return move
+
+if __name__ == '__main__':
+    for keyID in range(0, 1 << 32, 0x10000000):
+        rxy = _key2rxy(keyID)
+        rxy_s = '({})'.format(','.join(['{:.3f}'.format(xx) for xx in rxy]))
+        print('keyID=0x{:08x}, rxy={}'.format(keyID, rxy_s))
