@@ -91,7 +91,7 @@ class Screen(object):
 
         self._memory_db = simulator.sql.SQL(':memory:', schema_path=self._db.schema_path)
         self._memory_db.create_db()
-        self._memory_db.take_table(self._db, 'simulation')
+        self._memory_db.take_db(self._db)
         init_nodes_table(self._memory_db)
 
     def start(self):

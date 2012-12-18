@@ -86,7 +86,7 @@ class SQL(object):
                 raise raiz
         self.create_table(table_name)
 
-    def take_table(self, src, table_name):
+    def take_table(self, src, table_name, auto_commit=True):
         self.init_table(table_name)
 
         records = src.select(table_name)
@@ -103,6 +103,12 @@ class SQL(object):
         print(tups)
         print()
         self.inserts(table_name, tups)
+        if auto_commit:
+            self.commit()
+
+    def take_db(self, src):
+        for table_name in src.get_table_names():
+            self.take_table(src, table_name, auto_commit=False)
         self.commit()
 
     def commit(self):
