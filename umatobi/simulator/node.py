@@ -33,7 +33,7 @@ class Node(p2p.core.Node):
         d['id'] = self.id
         d['host'] = self.host
         d['port'] = self.port
-        while not self.good_bye_with_darkness.wait(timeout=2):
+        while not self.good_bye_with_darkness.wait(timeout=5):
             self.update_key()
             key_hex = self._key_hex()
           # print('{} key_hex = {}'.format(self, key_hex))
