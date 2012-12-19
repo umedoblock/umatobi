@@ -160,6 +160,9 @@ class Screen(object):
 #   def _mouse(self, *event):
 #       print('event={} in self._mouse()'.format(event))
     def _mouse(self, button, state, x, y):
+        if state != GLUT_DOWN:
+            # mouse button を離した時などは速終了。
+            return
       # 左click 押した button=0, state=0, x=392, y=251  in self._mouse()
       # 左click 離した button=0, state=1, x=392, y=251  in self._mouse()
         if self._debug:
