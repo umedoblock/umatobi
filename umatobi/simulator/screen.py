@@ -162,6 +162,12 @@ class Screen(object):
     def _mouse(self, button, state, x, y):
         if state != GLUT_DOWN:
             # mouse button を離した時などは速終了。
+            # 参考
+            # GLUT_LEFT_BUTTON
+            # GLUT_MIDDLE_BUTTON
+            # GLUT_RIGHT_BUTTON
+            # GLUT_UP
+            # GLUT_DOWN
             return
       # 左click 押した button=0, state=0, x=392, y=251  in self._mouse()
       # 左click 離した button=0, state=1, x=392, y=251  in self._mouse()
