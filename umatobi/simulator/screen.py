@@ -214,7 +214,7 @@ class Screen(object):
             print('clicked nodes = {}'.format(nodes))
             if len(nodes):
                 for node in nodes:
-                    square = (0, node['x'], node['y'], 0.02, (0x00, 0xff, 0))
+                    square = (node['rad'], node['x'], node['y'], 0.02, (0x00, 0xff, 0))
                     self._squares.append(square)
         if self._debug and math.fabs(1.0 - rate_d_about_r) <= band_width:
             # node が出没する箇所付近をclickした。
