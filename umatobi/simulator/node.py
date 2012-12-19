@@ -37,8 +37,13 @@ class Node(p2p.core.Node):
             self.update_key()
             key_hex = self._key_hex()
           # print('{} key_hex = {}'.format(self, key_hex))
+            _keyID = int(key_hex[:10], 16)
+            rad, x, y = formula._key2rxy(_keyID)
 
             d['key'] = key_hex
+            d['rad'] = rad
+            d['x'] = x
+            d['y'] = y
             d['status'] = 'active'
             self.to_darkness(d)
 
