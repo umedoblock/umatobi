@@ -163,7 +163,7 @@ class Client(object):
       # self.logger.error('self._sock.getsockname() =', ('127.0.0.1', 20000))
         # ip のみ比較、 compare only ip
         if False and self._udp_sock.getsockname()[0] != self.watson[0]:
-            self.logger.error('TODO: #100 client.db をwatsonに送りつける。')
+            self.logger.error('TODO: #169 simulation終了後、clientがclient.1.dbをwatsonにTCPにて送信。')
             # _sock=('0.0.0.0', 22343), watson=('localhost', 55555)
             message = '{} _sock={}, watson={}'. \
                        format(self, self._udp_sock.getsockname(), self.watson)
