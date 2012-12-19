@@ -55,7 +55,7 @@ class Client(object):
 
         self.timeout_sec = 1
         socket.setdefaulttimeout(self.timeout_sec)
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         _d_init_attrs = self._init_attrs()
 
@@ -126,7 +126,7 @@ class Client(object):
         # TODO: #149 watson からの接続であると確認する。
         while True:
             try:
-                recved, recved_addr = self._sock.recvfrom(1024)
+                recved, recved_addr = self._udp_sock.recvfrom(1024)
             except socket.timeout:
                 recved = b''
                 continue
@@ -162,11 +162,11 @@ class Client(object):
         self.logger.info('{} client_db.close().'.format(self))
       # self.logger.error('self._sock.getsockname() =', ('127.0.0.1', 20000))
         # ip のみ比較、 compare only ip
-        if False and self._sock.getsockname()[0] != self.watson[0]:
+        if False and self._udp_sock.getsockname()[0] != self.watson[0]:
             self.logger.error('TODO: #100 client.db をwatsonに送りつける。')
             # _sock=('0.0.0.0', 22343), watson=('localhost', 55555)
             message = '{} _sock={}, watson={}'. \
-                       format(self, self._sock.getsockname(), self.watson)
+                       format(self, self._udp_sock.getsockname(), self.watson)
             self.logger.info(message)
         else:
             # ip が同じ
@@ -190,7 +190,7 @@ class Client(object):
         '''
         d = self._hello_watson()
         if not d:
-            self._sock.close()
+            self._udp_sock.close()
             raise RuntimeError('client cannot say "I am Client." to watson who is {}'.format(self.watson))
 
         self.id = d['id']
@@ -227,8 +227,8 @@ class Client(object):
         d = {}
         while tries < 3:
             try:
-                self._sock.sendto(js, self.watson)
-                recved_msg, who = self._sock.recvfrom(1024)
+                self._udp_sock.sendto(js, self.watson)
+                recved_msg, who = self._udp_sock.recvfrom(1024)
             except socket.timeout as raiz:
                 tries += 1
                 continue
