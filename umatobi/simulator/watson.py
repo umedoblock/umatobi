@@ -49,9 +49,9 @@ class Watson(threading.Thread):
 
         # socket() must set under setdefaulttimeout()
         socket.setdefaulttimeout(self.timeout_sec)
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        self._sock.bind(self.office)
+        self._udp_sock.bind(self.office)
 
         self._make_office()
 
@@ -105,7 +105,7 @@ class Watson(threading.Thread):
     def join(self):
         '''watson threadがjoin'''
         threading.Thread.join(self)
-        self._sock.close()
+        self._udp_sock.close()
         self.logger.info('watson thread joined.')
 
     def _wait_clients(self):
@@ -125,7 +125,7 @@ class Watson(threading.Thread):
             try:
               # print('================= count_inquiries =', count_inquiries)
               # print('self._sock.recvfrom() ==============================')
-                text_message, phone_number = self._sock.recvfrom(1024)
+                text_message, phone_number = self._udp_sock.recvfrom(1024)
             except socket.timeout:
               # print('phone_number timeouted.')
                 phone_number = None
@@ -177,7 +177,7 @@ class Watson(threading.Thread):
                 self.logger.debug('crazy man.')
                 reply = b'Go back home.'
 
-            self._sock.sendto(reply, phone_number)
+            self._udp_sock.sendto(reply, phone_number)
             count_inquiries += 1
 
     def _release_clients(self):
@@ -189,7 +189,7 @@ class Watson(threading.Thread):
         self.logger.info('watson._release_clients()')
         for client in self.clients:
             result = b'break down.'
-            self._sock.sendto(result, client)
+            self._udp_sock.sendto(result, client)
 
     def collect_nodes_as_csv(self):
         '''watsonが把握しているnodeのaddressをcsv化する。'''
