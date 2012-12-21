@@ -72,7 +72,7 @@ class Watson(threading.Thread):
         self.watson_db.create_db()
         self.watson_db.create_table('clients')
 
-        self._wait_clients()
+        self._wait_udp_clients()
         self._release_clients()
         self._wait_client_db()
         self._merge_db_to_simulation_db()
@@ -108,7 +108,7 @@ class Watson(threading.Thread):
         self._udp_sock.close()
         self.logger.info('watson thread joined.')
 
-    def _wait_clients(self):
+    def _wait_udp_clients(self):
         '''\
         Client, Node からの接続を待つ。
         "I am Client." を受信したら、Clientからの接続と判断する。
