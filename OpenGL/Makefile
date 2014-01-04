@@ -3,6 +3,8 @@
 
 CC = gcc
 LOADLIBES = -lglut
+LOADLIBES = -lglut -lGL
+LOADLIBES = -lglut -lGL -lm
 
 all: tes0 tes1 tes2 tes3 tes4 tes5 tes6 tes7 tes7-1 \
 		tes8 tes9 tes10 tes11 tes12 tes13 tes14 tes15 \
