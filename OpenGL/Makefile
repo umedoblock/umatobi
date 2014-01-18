@@ -1,5 +1,5 @@
 # Makefile
-# Copyright (C) 2008 梅どぶろく umedoblock
+# Copyright (C) 2008 梅濁酒 umedoblock
 
 CC = gcc
 LOADLIBES = -lglut

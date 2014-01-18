@@ -1,5 +1,5 @@
 /* tes11.c
- * Copyright (C) 2008 梅どぶろく umedoblock
+ * Copyright (C) 2008 梅濁酒 umedoblock
  */
 
 #include <GL/gl.h>

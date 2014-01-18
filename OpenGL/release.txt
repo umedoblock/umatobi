@@ -3,7 +3,7 @@
 # 最終変更日時: 2012-09-19 06:13:45 +0900 (Wed, 19 Sep 2012)
 
 # release.txt
-# Copyright (C) 2008 梅どぶろく umedoblock
+# Copyright (C) 2008 梅濁酒 umedoblock
 
 H19/02/11
 tes0 ぽつんぽつんと3点ある。さみしい感じ。
