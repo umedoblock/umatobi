@@ -8,8 +8,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib.performance import stop_watch
 from lib.performance import log_now
 
-threads_num = 5
-times = 10 * 10000
+THREADS_NUM = 5
+TIMES = 10 * 10000
+TIMES = 10 * 100
 
 class QueueRotate(threading.Thread):
     def __init__(self, queue_in, queue_out, times):
@@ -23,7 +24,7 @@ class QueueRotate(threading.Thread):
             item = self.queue_in.get()
             self.queue_out.put(item)
 
-def queue_rotation_performance():
+def queue_rotation_performance(threads_num=THREADS_NUM, times=TIMES):
     threads = [None] * threads_num
     queues = [None] * threads_num
 
@@ -42,6 +43,7 @@ def queue_rotation_performance():
         thread.join()
 
     print('{} threads {} times rotate.'.format(len(threads), times))
+    print('therefore put() and get() {} queues.'.format(threads_num * times))
 
 class QueueConcentrateWorker(threading.Thread):
     def __init__(self, queue_concentrate, times, threads):
@@ -65,7 +67,7 @@ class QueueConcentrate(threading.Thread):
         for i in range(self.times):
             self.queue_concentrate.put(i)
 
-def queue_concentrate_performance():
+def queue_concentrate_performance(threads_num=THREADS_NUM, times=TIMES):
     threads = [None] * threads_num
     queue_concentrate = queue.Queue()
 
@@ -83,6 +85,8 @@ def queue_concentrate_performance():
     worker.join()
 
     print('{} threads {} times concentrate.'.format(len(threads), times))
+    print('therefore put() and get() {} queues.'.format(threads_num * times))
 
-stop_watch(queue_rotation_performance, 'queue_rotation_performance()')
-stop_watch(queue_concentrate_performance, 'queue_concentrate_performance()')
+if __name__ == "__main__":
+    stop_watch(queue_rotation_performance)
+    stop_watch(queue_concentrate_performance)
