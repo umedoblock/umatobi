@@ -1,0 +1,4 @@
+$ python umatobi/simulation.py
+$ python umatobi/tools/make_simulation_db.py
+$ python umatobi/theater.py
+ctrl-c で終了。
