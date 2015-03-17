@@ -26,8 +26,11 @@ umatobi/performance
 以下の script を実行すると、実行環境と python3 の
 性能評価を色々することが出来ます。
 
-umatobi/performance/max-XXX.py
+umatobi/performance/max-threads.py
+umatobi/performance/max-threads-in-system.py
 
-では、かなり重い負荷をかけることが出来ますので、
-お使いのPCが不安定になったりする場合があります。
+では、process, thread を大量に作成します。
+process, thread の大量作成によって、
+かなり重い負荷を開発環境にかけることが出来ますので、
+開発環境が不安定になったりする場合があります。
 注意して遊んでください。
