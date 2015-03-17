@@ -1,4 +1,25 @@
-$ python umatobi/simulation.py
-$ python umatobi/tools/make_simulation_db.py
-$ python umatobi/theater.py
+まだ、完成していません。
+OpenGL を動かすことが出来る程度です。
+
+= 説明
+umatobi/simulation.py:
+simulation 時に、各 process が管理する node で起こった事を、
+client.x.db に記録します。
+
+umatobi/make_simulation_db.py:
+各 process が作成した client.x.db を一つの simulation.db にまとめます。
+
+umatobi/theater.py:
+simulation.db を読み込み、OpenGL を使って、simulation 結果を表示します。
+
+= 実行方法
+$ python3 umatobi/simulation.py
+$ python3 umatobi/tools/make_simulation_db.py
+$ python3 umatobi/theater.py
+
 ctrl-c で終了。
+
+= python3 の性能評価
+umatobi/performance
+以下の script を実行すると、お使いの PC 上で python3 の
+性能評価を色々することが出来ます。
