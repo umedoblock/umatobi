@@ -2,6 +2,7 @@ import threading
 import os
 import sys
 import socket
+import socketserver
 import datetime
 import configparser
 import sqlite3
@@ -11,6 +12,99 @@ from lib import make_start_up_time, elapsed_time
 from lib import set_logging_startTime_from_start_up_time
 from lib import SCHEMA_PATH
 import simulator.sql
+
+class TCPOffice(socketserver.TCPServer):
+    pass
+
+class TCPClient(socketserver.StreamRequestHandler):
+#class BaseRequestHandler:
+#####def __init__(self, request, client_address, server):
+#####    self.request = request
+#####    self.client_address = client_address
+#####    self.server = server
+#####    self.setup()
+#####    try:
+#####        self.handle()
+#####    finally:
+#####        self.finish()
+
+#####def setup(self):
+#####    pass
+
+#####def handle(self):
+#####    pass
+
+#####def finish(self):
+#####    pass
+
+####class StreamRequestHandler(BaseRequestHandler):
+####    rbufsize = -1
+####    wbufsize = 0
+####
+####    # A timeout to apply to the request socket, if not None.
+####    timeout = None
+####
+####    # Disable nagle algorithm for this socket, if True.
+####    # Use only when wbufsize != 0, to avoid small packets.
+####    disable_nagle_algorithm = False
+####
+####    def setup(self):
+####        self.connection = self.request
+####        if self.timeout is not None:
+####            self.connection.settimeout(self.timeout)
+####        if self.disable_nagle_algorithm:
+####            self.connection.setsockopt(socket.IPPROTO_TCP,
+####                                       socket.TCP_NODELAY, True)
+####        self.rfile = self.connection.makefile('rb', self.rbufsize)
+####        self.wfile = self.connection.makefile('wb', self.wbufsize)
+####
+####    def finish(self):
+####        if not self.wfile.closed:
+####            self.wfile.flush()
+####        self.wfile.close()
+####        self.rfile.close()
+
+    def handle(self):
+        text_message = self.rfile.readline().strip()
+
+        sheep = jbytes_becomes_dict(text_message)
+        professed = sheep['profess']
+        num_nodes = sheep['num_nodes']
+
+        if professed == 'I am Client.':
+            id = self.server.client_index
+            self.server.client_index += 1
+            self.clients.append(phone_number)
+            self.logger.info('{} Client(id={}, ip:port={}) came here.'.format(self, id, phone_number))
+
+            d = {}
+            d['id'] = id
+            d['host'] = phone_number[0]
+            d['port'] = phone_number[1]
+            d['joined'] = elapsed_time(self.server)
+            d['log_level'] = self.server.log_level
+            d['num_nodes'] = num_nodes
+            sql = self.watson_db.insert('clients', d)
+            self.watson_db.commit()
+            self.logger.debug('{} {}'.format(self, sql))
+            self.logger.info('{} recved={}'.format(self, d))
+
+            d.clear()
+            d['id'] = id
+            d['iso_start_up_time'] = self.iso_start_up_time
+            d['log_level'] = self.log_level
+            d['node_index'] = 1 + self.registered_nodes
+            self.registered_nodes += num_nodes
+            self.total_nodes += num_nodes
+            reply = dict_becomes_jbytes(d)
+            count_clients += 1
+        else:
+            self.logger.debug('crazy man.')
+            reply = b'Go back home.'
+
+        self._udp_sock.sendto(reply, phone_number)
+        count_inquiries += 1
+        self.server.tcp_clients.append(self)
 
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
@@ -73,6 +167,7 @@ class Watson(threading.Thread):
         self.watson_db.create_table('clients')
 
         self._wait_udp_clients()
+        self._wait_tcp_clients()
         self._release_clients()
         self._wait_client_db()
         self._merge_db_to_simulation_db()
@@ -107,6 +202,30 @@ class Watson(threading.Thread):
         threading.Thread.join(self)
         self._udp_sock.close()
         self.logger.info('watson thread joined.')
+
+    def _tcp_office_open(self):
+        _wait_tcp_clients()
+
+    def _wait_tcp_clients(self):
+        self.tcp_office = TCPOffice(self.office, TCPClient)
+####### self.tcp_office.serve_forever()
+        self.tcp_office.handle_request()
+
+### def accept(self):
+###     """accept() -> (socket object, address info)
+
+###     Wait for an incoming connection.  Return a new socket
+###     representing the connection, and the address of the client.
+###     For IP sockets, the address info is a pair (hostaddr, port).
+###     """
+###     fd, addr = self._accept()
+###     sock = socket(self.family, self.type, self.proto, fileno=fd)
+###     # Issue #7995: if no default timeout is set and the listening
+###     # socket had a (non-zero) timeout, force the new socket in blocking
+###     # mode to override platform-specific socket flags inheritance.
+###     if getdefaulttimeout() is None and self.gettimeout():
+###         sock.setblocking(True)
+###     return sock, addr
 
     def _wait_udp_clients(self):
         '''\
