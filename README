@@ -21,10 +21,10 @@ $ python3 umatobi/theater.py
 
 ctrl-c で終了。
 
-= python3 の性能評価
+= 実行環境と python3 の性能評価
 umatobi/performance
-以下の script を実行すると、お使いの PC 上で python3 の
-限界の性能評価を色々することが出来ます。
+以下の script を実行すると、実行環境と python3 の
+性能評価を色々することが出来ます。
 
 umatobi/performance/max-XXX.py
 
