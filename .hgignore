@@ -11,3 +11,6 @@ core
 */simulation.db
 umatobi-simulation/
 kdenlive
+
+syntax: regexp
+OpenGL/tes[-0-9]+
