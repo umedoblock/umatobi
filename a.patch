@@ -1,0 +1,38 @@
+diff -r 20f4b10cc632 umatobi/performance/queue-speed.py
+--- a/umatobi/performance/queue-speed.py	Fri Sep 05 08:52:50 2014 +0900
++++ b/umatobi/performance/queue-speed.py	Fri Sep 05 09:05:30 2014 +0900
+@@ -12,6 +12,18 @@
+ TIMES = 10 * 10000
+ TIMES = 10 * 100
+ 
++class QueueRotateWorker(threading.Thread):
++    def __init__(self, queue_rotate, times, threads):
++        threading.Thread.__init__(self)
++        self.queue_rotate = queue_rotate
++        self.times = times
++        self.threads = threads
++        self.len_threads = len(threads)
++
++    def run(self):
++        for i in range(self.times * self.len_threads):
++            self.queue_rotate.get()
++
+ class QueueRotate(threading.Thread):
+     def __init__(self, queue_in, queue_out, times):
+         threading.Thread.__init__(self)
+@@ -37,11 +49,14 @@
+         thread.start()
+         threads[i] = thread
+ 
+-    queues[0].put('rotation object')
++    worker = QueueRotateWorker(queue_rotate, times, threads)
++    worker.start()
+ 
+     for thread in threads:
+         thread.join()
+ 
++    worker.join()
++
+     print('{} threads {} times rotate.'.format(len(threads), times))
+     print('therefore put() and get() {} queues.'.format(threads_num * times))
+ 
