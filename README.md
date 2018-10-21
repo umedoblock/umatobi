@@ -1,2 +1,0 @@
-# umatobi
-umatobi DHT simulator

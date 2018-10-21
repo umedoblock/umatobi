@@ -1,7 +1,17 @@
+= umatobi
+umatobi DHT simulator
+
 multi processing によって、simulation をする事を目的として開発を進めました。
 
 しかし、まだ、完成していません。
 OpenGL を動かすことが出来る程度です。
+
+= algorythm
+自分にとって n 個隣の node に，
+あなたにとって n 個隣の node を教えてと問い合わせる。
+log(N)回。
+
+see detail in ooo/umatobi.odp and ooo/umatobiAlgo.txt
 
 = 説明
 umatobi/simulation.py:
