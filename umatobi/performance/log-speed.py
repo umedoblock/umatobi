@@ -95,6 +95,7 @@ class SqliteLogger(threading.Thread):
         self.cur = self.conn.cursor()
         sql = 'insert into logs values(?,?,?,?)'
         sql = "insert into logs ('message', 'now', 'id', 'level') values(?,?,?,?)"
+        column_name = "logs"
         print('conn.in_transaction 1 =', self.conn.in_transaction)
         d = {}
         for i in range(self.records_num):
@@ -105,7 +106,19 @@ class SqliteLogger(threading.Thread):
             d['level'] = tup[2]
             d['message'] = tup[3]
 #           print('tup =', tup)
+            _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
+            key_names = '(' + _key_names + ')'
+            part_keys = f"('{_key_names}')"
+          # print("key_names =", key_names)
+            print("part_keys =", part_keys)
+
+            hatenas = '({})'.format(', '.join('?' * len(d)))
+          # print("hatenas =", hatenas)
+#           print("part_logs =", part_logs)
+            sql = "insert into " + column_name + part_keys + " values" + hatenas
             while True:
+                print(f"1, sql()={sql}")
+                print(f"1, d.values()={d.values()}")
                 try:
                     self.cur.execute(sql, tuple(d.values()))
                   # self.cur.execute(sql, tup)
