@@ -99,13 +99,10 @@ class SqliteLogger(threading.Thread):
         print('conn.in_transaction 1 =', self.conn.in_transaction)
         d = {}
         for i in range(self.records_num):
-            now = log_now()
-            tup = (None, now, 'info', 'message {:08x}'.format(i))
-            d['id'] = tup[0]
-            d['now'] = tup[1]
-            d['level'] = tup[2]
-            d['message'] = tup[3]
-#           print('tup =', tup)
+            d['id'] = None
+            d['now'] = log_now()
+            d['level'] = 'info'
+            d['message'] = 'message {:08x}'.format(i)
             _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
             key_names = '(' + _key_names + ')'
             part_keys = f"('{_key_names}')"
