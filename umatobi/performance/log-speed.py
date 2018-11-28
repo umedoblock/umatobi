@@ -99,6 +99,7 @@ class SqliteLogger(threading.Thread):
         print('conn.in_transaction 1 =', self.conn.in_transaction)
         d = {}
         for i in range(self.records_num):
+            d.clear()
             d['id'] = None
             d['now'] = log_now()
             d['level'] = 'info'
