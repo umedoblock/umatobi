@@ -183,7 +183,7 @@ def sqlite3_file_performance():
 import cProfile
 # multi thread では :memory: を試せない。
 # stop_watch(sqlite3_memory_performance, 'sqlite3_memory_performance()')
-stop_watch(sqlite3_file_performance, 'sqlite3_file_performance()')
+stop_watch(sqlite3_file_performance)
 # stop_watch(logger_performance, 'logger_performance()')
 # stop_watch(logger_performance_sequential, 'logger_performance_sequential()')
 # cProfile.run('logger_performance()')
