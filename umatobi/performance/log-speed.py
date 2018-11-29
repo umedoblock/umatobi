@@ -65,6 +65,17 @@ class LoggerLogger(threading.Thread):
         if self.lock:
             self.lock.release()
 
+def construct_sql_by_dict(column_name, d):
+    sql = ""
+    _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
+    key_names = '(' + _key_names + ')'
+    part_keys = f"('{_key_names}')"
+  # part_keys = f"('{_key_names}')"
+
+    hatenas = '({})'.format(', '.join('?' * len(d)))
+    sql = "insert into " + column_name + part_keys + " values" + hatenas
+    return sql
+
 class SqliteLogger(threading.Thread):
     def __init__(self, id, cur, records_num, conn, filename):
         threading.Thread.__init__(self)
@@ -105,15 +116,14 @@ class SqliteLogger(threading.Thread):
             d['level'] = 'info'
             d['message'] = 'message {:08x}'.format(i)
             _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
-            key_names = '(' + _key_names + ')'
             part_keys = f"('{_key_names}')"
-          # print("key_names =", key_names)
             print("part_keys =", part_keys)
 
             hatenas = '({})'.format(', '.join('?' * len(d)))
           # print("hatenas =", hatenas)
 #           print("part_logs =", part_logs)
             sql = "insert into " + column_name + part_keys + " values" + hatenas
+            sql = construct_sql_by_dict(column_name, d)
             while True:
                 print(f"1, sql()={sql}")
                 print(f"1, d.values()={d.values()}")
