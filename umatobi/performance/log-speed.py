@@ -120,7 +120,6 @@ class SqliteLogger(threading.Thread):
             while True:
                 try:
                     self.cur.execute(sql, tuple(d.values()))
-                  # self.cur.execute(sql, tup)
                 except sqlite3.OperationalError as raiz:
                     if raiz.args[0] == 'database is locked':
                         continue
