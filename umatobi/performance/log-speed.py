@@ -68,9 +68,7 @@ class LoggerLogger(threading.Thread):
 def construct_sql_by_dict(column_name, d):
     sql = ""
     _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
-    key_names = '(' + _key_names + ')'
     part_keys = f"('{_key_names}')"
-  # part_keys = f"('{_key_names}')"
 
     hatenas = '({})'.format(', '.join('?' * len(d)))
     sql = "insert into " + column_name + part_keys + " values" + hatenas
@@ -104,8 +102,6 @@ class SqliteLogger(threading.Thread):
                                                 # 20.399
         print('conn.in_transaction 0 =', self.conn.in_transaction)
         self.cur = self.conn.cursor()
-        sql = 'insert into logs values(?,?,?,?)'
-        sql = "insert into logs ('message', 'now', 'id', 'level') values(?,?,?,?)"
         column_name = "logs"
         print('conn.in_transaction 1 =', self.conn.in_transaction)
         d = {}
