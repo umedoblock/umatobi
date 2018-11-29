@@ -18,7 +18,7 @@ umatobi/simulation.py:
 simulation 時に、各 process が管理する node で起こった事を、
 client.x.db に記録します。
 
-umatobi/make_simulation_db.py:
+umatobi/tools/make_simulation_db.py
 各 process が作成した client.x.db を一つの simulation.db にまとめます。
 
 umatobi/theater.py:
