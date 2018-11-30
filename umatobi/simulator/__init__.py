@@ -55,15 +55,15 @@ watson[P]-+-client.1[P]
           |     +-...
           |     +-node.N[T]
 .............................
-another   +-client.C[P]
+another   +-client.C+1[P]
 PC        |   |
-          |   +-darkness.D[P]
+          |   +-darkness.D+1[P]
           |     +-node.N+1[T]
           |     +-...
           |     +-node.N[T]
 .............................
 another   |
-PC        +-client.C+1[P]
+PC2       +-client.C+2[P]
               |
               +-darkness.D+1[P]
                 +-node.N+1[T]
