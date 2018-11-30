@@ -65,15 +65,6 @@ class LoggerLogger(threading.Thread):
         if self.lock:
             self.lock.release()
 
-def construct_sql_by_dict(table_name, d):
-    sql = ""
-    _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
-    part_keys = f"('{_key_names}')"
-
-    hatenas = '({})'.format(', '.join('?' * len(d)))
-    sql = "insert into " + table_name + part_keys + " values" + hatenas
-    return sql
-
 class SqliteLogger(threading.Thread):
     def __init__(self, id, cur, records_num, conn, filename):
         threading.Thread.__init__(self)
@@ -102,7 +93,7 @@ class SqliteLogger(threading.Thread):
                                                 # 20.399
         print('conn.in_transaction 0 =', self.conn.in_transaction)
         self.cur = self.conn.cursor()
-        column_name = "logs"
+        table_name = "logs"
         print('conn.in_transaction 1 =', self.conn.in_transaction)
         d = {}
         for i in range(self.records_num):
@@ -112,7 +103,7 @@ class SqliteLogger(threading.Thread):
             d['level'] = 'info'
             d['message'] = 'message {:08x}'.format(i)
 
-            sql = construct_sql_by_dict(column_name, d)
+            sql = construct_sql_by_dict(table_name, d)
             while True:
                 try:
                     self.cur.execute(sql, tuple(d.values()))

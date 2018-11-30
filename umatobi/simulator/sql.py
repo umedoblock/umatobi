@@ -153,6 +153,15 @@ class SQL(object):
         print(static_part + hatenas)
         self._conn.executemany(static_part + hatenas, tups[1:])
 
+    def construct_sql_by_dict(table_name, d):
+        sql = ""
+        _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
+        part_keys = f"('{_key_names}')"
+
+        hatenas = '({})'.format(', '.join('?' * len(d)))
+        sql = "insert into " + table_name + part_keys + " values" + hatenas
+        return sql
+
     def insert(self, table_name, d):
         static_part = 'insert into {} {} values '.format(table_name, tuple(d.keys()))
         hatenas = '({})'.format(', '.join('?' * len(d)))
