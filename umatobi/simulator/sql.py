@@ -7,6 +7,17 @@ import logging
 from lib import LOGGER_FMT
 
 class SQL(object):
+    @staticmethod
+    def construct_insert_by_dict(table_name, d):
+        sql = ""
+        _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
+        part_keys = f"('{_key_names}')"
+
+        hatenas = '({})'.format(', '.join('?' * len(d)))
+        sql = "insert into " + table_name + part_keys + " values" + hatenas
+        values = tuple(d.values())
+        return sql, values
+
     def __init__(self, owner=None, db_path=':memory:', schema_path=''):
         self.db_path = db_path
         self.schema_path = schema_path
@@ -153,29 +164,13 @@ class SQL(object):
         print(static_part + hatenas)
         self._conn.executemany(static_part + hatenas, tups[1:])
 
-    def construct_insert_by_dict(table_name, d):
-        sql = ""
-        _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
-        part_keys = f"('{_key_names}')"
-
-        hatenas = '({})'.format(', '.join('?' * len(d)))
-        sql = "insert into " + table_name + part_keys + " values" + hatenas
-        return sql
-
-    def construct_insert_by_dict2(table_name, d):
-        static_part = 'insert into {} {} values '.format(table_name, tuple(d.keys()))
-        hatenas = '({})'.format(', '.join('?' * len(d)))
-        values = tuple(d.values())
-
-        sql = static_part + str(values)
-        return sql
-
     def insert(self, table_name, d):
-        sql = self.construct_insert_by_dict(table_name, d)
+        sql, values = SQL.construct_insert_by_dict(table_name, d)
 
         self.logger.debug('{}'.format(sql))
-        self.execute(static_part + hatenas, values)
-        return sql
+        self.logger.debug(f'values={values}')
+        self.execute(sql, values)
+        return sql, values
 
     def update(self, table_name, d, where):
         static_part = 'update {} set '.format(table_name)
