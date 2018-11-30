@@ -65,13 +65,13 @@ class LoggerLogger(threading.Thread):
         if self.lock:
             self.lock.release()
 
-def construct_sql_by_dict(column_name, d):
+def construct_sql_by_dict(table_name, d):
     sql = ""
     _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
     part_keys = f"('{_key_names}')"
 
     hatenas = '({})'.format(', '.join('?' * len(d)))
-    sql = "insert into " + column_name + part_keys + " values" + hatenas
+    sql = "insert into " + table_name + part_keys + " values" + hatenas
     return sql
 
 class SqliteLogger(threading.Thread):
