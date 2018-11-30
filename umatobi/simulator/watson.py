@@ -1,7 +1,6 @@
 import threading
 import os
 import sys
-import socket
 import socketserver
 import datetime
 import configparser
@@ -13,10 +12,23 @@ from lib import set_logging_startTime_from_start_up_time
 from lib import SCHEMA_PATH
 import simulator.sql
 
+class WatsonWaitByebye(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self):
+        while elapsed_time(self) < self.simulation_seconds * 1000:
+            time.sleep(1.0)
+
+        self.bye_bye()
+
+    def bye_bye(self):
+        self.shutdown()
+
 class TCPOffice(socketserver.TCPServer):
     pass
 
-class TCPClient(socketserver.StreamRequestHandler):
+class WatsonOffice(socketserver.StreamRequestHandler):
 #class BaseRequestHandler:
 #####def __init__(self, request, client_address, server):
 #####    self.request = request
@@ -71,6 +83,8 @@ class TCPClient(socketserver.StreamRequestHandler):
         professed = sheep['profess']
         num_nodes = sheep['num_nodes']
 
+        self.client_address
+
         if professed == 'I am Client.':
             id = self.server.client_index
             self.server.client_index += 1
@@ -102,7 +116,7 @@ class TCPClient(socketserver.StreamRequestHandler):
             self.logger.debug('crazy man.')
             reply = b'Go back home.'
 
-        self._udp_sock.sendto(reply, phone_number)
+        self.wfile.write(reply)
         count_inquiries += 1
         self.server.tcp_clients.append(self)
 
@@ -143,9 +157,6 @@ class Watson(threading.Thread):
 
         # socket() must set under setdefaulttimeout()
         socket.setdefaulttimeout(self.timeout_sec)
-        self._udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-        self._udp_sock.bind(self.office)
 
         self._make_office()
 
@@ -166,9 +177,18 @@ class Watson(threading.Thread):
         self.watson_db.create_db()
         self.watson_db.create_table('clients')
 
-        self._wait_udp_clients()
-        self._wait_tcp_clients()
+        watson_wait_bye_bye = WatsonWaitByebye()
+        watson_wait_bye_bye.start()
+
+        # Create the server, binding to localhost on port 9999
+        with socketserver.TCPServer(self.office, WatsonOffice) as watson_office:
+            self.wo = watson_office
+            watson_office.serve_forever()
+
+        watson_wait_bye_bye.join()
         self._release_clients()
+
+      # self._wait_tcp_clients()
         self._wait_client_db()
         self._merge_db_to_simulation_db()
         self._construct_simulation_table()
@@ -200,34 +220,13 @@ class Watson(threading.Thread):
     def join(self):
         '''watson threadがjoin'''
         threading.Thread.join(self)
-        self._udp_sock.close()
+        self._tcp_sock.close()
         self.logger.info('watson thread joined.')
 
     def _tcp_office_open(self):
         _wait_tcp_clients()
 
     def _wait_tcp_clients(self):
-        self.tcp_office = TCPOffice(self.office, TCPClient)
-####### self.tcp_office.serve_forever()
-        self.tcp_office.handle_request()
-
-### def accept(self):
-###     """accept() -> (socket object, address info)
-
-###     Wait for an incoming connection.  Return a new socket
-###     representing the connection, and the address of the client.
-###     For IP sockets, the address info is a pair (hostaddr, port).
-###     """
-###     fd, addr = self._accept()
-###     sock = socket(self.family, self.type, self.proto, fileno=fd)
-###     # Issue #7995: if no default timeout is set and the listening
-###     # socket had a (non-zero) timeout, force the new socket in blocking
-###     # mode to override platform-specific socket flags inheritance.
-###     if getdefaulttimeout() is None and self.gettimeout():
-###         sock.setblocking(True)
-###     return sock, addr
-
-    def _wait_udp_clients(self):
         '''\
         Client, Node からの接続を待つ。
         "I am Client." を受信したら、Clientからの接続と判断する。
@@ -244,7 +243,8 @@ class Watson(threading.Thread):
             try:
               # print('================= count_inquiries =', count_inquiries)
               # print('self._sock.recvfrom() ==============================')
-                text_message, phone_number = self._udp_sock.recvfrom(1024)
+                self.rdata = self.rfile.readline().strip()
+                text_message, phone_number = self._tcp_sock.recvfrom(1024)
             except socket.timeout:
               # print('phone_number timeouted.')
                 phone_number = None
@@ -296,7 +296,7 @@ class Watson(threading.Thread):
                 self.logger.debug('crazy man.')
                 reply = b'Go back home.'
 
-            self._udp_sock.sendto(reply, phone_number)
+            self._tcp_sock.send(reply, phone_number)
             count_inquiries += 1
 
     def _release_clients(self):
@@ -308,7 +308,8 @@ class Watson(threading.Thread):
         self.logger.info('watson._release_clients()')
         for client in self.clients:
             result = b'break down.'
-            self._udp_sock.sendto(result, client)
+            self._tcp_sock.send(result, client)
+            self.wfile.write(result)
 
     def collect_nodes_as_csv(self):
         '''watsonが把握しているnodeのaddressをcsv化する。'''
