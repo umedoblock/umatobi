@@ -162,12 +162,17 @@ class SQL(object):
         sql = "insert into " + table_name + part_keys + " values" + hatenas
         return sql
 
-    def insert(self, table_name, d):
+    def construct_insert_by_dict2(table_name, d):
         static_part = 'insert into {} {} values '.format(table_name, tuple(d.keys()))
         hatenas = '({})'.format(', '.join('?' * len(d)))
         values = tuple(d.values())
 
         sql = static_part + str(values)
+        return sql
+
+    def insert(self, table_name, d):
+        sql = self.construct_insert_by_dict(table_name, d)
+
         self.logger.debug('{}'.format(sql))
         self.execute(static_part + hatenas, values)
         return sql
