@@ -118,6 +118,15 @@ class SqliteLogger(threading.Thread):
         print('conn.in_transaction 3 =', self.conn.in_transaction)
         self.cur.close()
 
+def construct_sql_by_dict(table_name, d):
+    sql = ""
+    _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
+    part_keys = f"('{_key_names}')"
+
+    hatenas = '({})'.format(', '.join('?' * len(d)))
+    sql = "insert into " + table_name + part_keys + " values" + hatenas
+    return sql
+
 def logger_performance():
     path = '/tmp/loggerlogger.log'
     if os.path.exists(path):
