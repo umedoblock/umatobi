@@ -17,7 +17,7 @@ class WatsonWaitByebye(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        while elapsed_time(self) < self.simulation_seconds * 1000:
+        while elapsed_time(self.start_up_time) < self.simulation_seconds * 1000:
             time.sleep(1.0)
 
         self.bye_bye()
