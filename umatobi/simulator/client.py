@@ -10,6 +10,8 @@ from lib import make_logger, jbytes_becomes_dict, dict_becomes_jbytes
 from lib import SCHEMA_PATH, isoformat_time_to_datetime
 from lib import set_logging_startTime_from_start_up_time
 
+logger = None
+
 def make_darkness(d_config):
     '''darkness process を作成'''
     darkness_ = Darkness(**d_config)
@@ -18,15 +20,15 @@ def make_darkness(d_config):
 class Client(object):
     NODES_PER_DARKNESS = 4
 
-    def __init__(self, watson_office_addr, num_nodes, simulation_dir):
+    def __init__(self, watson_office_addr, num_nodes):
         '''\
         Clientは各PCに付き一つ作成する。
-        watsonの待ち受けるTCP address = watson,
-        作成するdarkness数 = num_darknesses,
-        全ての simulate 結果を格納する simulation_dir と、
-        watsonが起動した時間(start_up_time)を使用し、 simulation_dir以下に
-        db_dir(=simulation_dir + '/' + start_up_time)を作成する。
+        dir_name 以下に，Client が作成する一切合財を保存する。
         '''
+
+        global logger
+        if not logger:
+            logger = make_logger("", name="client", level='INFO')
 
         if isinstance(num_nodes, int) and num_nodes > 0:
             pass
@@ -34,7 +36,6 @@ class Client(object):
             raise RuntimeError('num_nodes must be positive integer.')
 
         self.watson_office_addr = watson_office_addr # (IP, PORT)
-        self.simulation_dir = simulation_dir
         self.num_nodes = num_nodes
         # Client set positive integer to id in self._init_attrs().
         self.id = -1
@@ -60,32 +61,33 @@ class Client(object):
         self._tcp_sock.connect(watson_office_addr)
         _d_init_attrs = self._init_attrs()
 
-        self.logger = make_logger(self.db_dir, 'client', self.id,
-                                  level=self.log_level)
-        self.logger.info('----- {} log start -----'.format(self))
-        self.logger.info('watson_office_addr = {}'.format(self.watson_office_addr))
-        self.logger.info('   db_dir = {}'.format(self.db_dir))
-        self.logger.info('client_db_path = {}'.format(self.client_db_path))
-        self.logger.info('----- client.{} initilized end -----'.
+        self.dir_name = dir_name
+
+
+        logger.info('----- {} log start -----'.format(self))
+        logger.info('watson_office_addr = {}'.format(self.watson_office_addr))
+        logger.info('   dir_name = {}'.format(self.dir_name))
+        logger.info('client_db_path = {}'.format(self.client_db_path))
+        logger.info('----- client.{} initilized end -----'.
                           format(self.id))
-        self.logger.debug('{} d={}'.format(self, _d_init_attrs))
-        self.logger.debug('{} node_index={}'.format(self, self.node_index))
-        self.logger.debug('{} debug log test.'.format(self))
-        self.logger.info('')
+        logger.debug('{} d={}'.format(self, _d_init_attrs))
+        logger.debug('{} node_index={}'.format(self, self.node_index))
+        logger.debug('{} debug log test.'.format(self))
+        logger.info('')
 
     def start(self):
         '''\
         Darknessを、たくさん作成する。
         作成後は、watsonから終了通知("break down")を受信するまで待機する。
         '''
-        self.logger.info('Client(id={}) started!'.format(self.id))
+        logger.info('Client(id={}) started!'.format(self.id))
         self.client_db = simulator.sql.SQL(owner=self,
                                            db_path=self.client_db_path,
                                            schema_path=self.schema_path)
         self.client_db.create_db()
-        self.logger.info('{} client_db.create_db().'.format(self))
+        logger.info('{} client_db.create_db().'.format(self))
         self.client_db.create_table('growings')
-        self.logger.info('{} client_db.create_table(\'growings\').'.format(self))
+        logger.info('{} client_db.create_table(\'growings\').'.format(self))
 
         # Darkness が作成する node の数を設定する。
         nodes_per_darkness = self.nodes_per_darkness
@@ -98,12 +100,12 @@ class Client(object):
             if darkness_id == self.num_darkness:
                 # 最後に端数を作成？
                 nodes_per_darkness = self.last_darkness_make_nodes
-            self.logger.info('darkness id={}, nodes_per_darkness={}'.format(darkness_id, nodes_per_darkness))
+            logger.info('darkness id={}, nodes_per_darkness={}'.format(darkness_id, nodes_per_darkness))
             client_id = self.id
 
             # client と darkness process が DarknessConfig を介して通信する。
             darkness_d_config = {
-                'db_dir':  self.db_dir, 'id':  darkness_id,
+                'dir_name':  self.dir_name, 'id':  darkness_id,
                 'client_id':  client_id,
                 'log_level':  self.log_level,
                 'start_up_time':  self.start_up_time,
@@ -133,7 +135,7 @@ class Client(object):
                 continue
 
             if recved == b'break down.':
-                self.logger.info('Client(id={}) got break down from {}.'.format(self.id, recved_addr))
+                logger.info('Client(id={}) got break down from {}.'.format(self.id, recved_addr))
                 break
 
         # Client 終了処理開始。
@@ -141,14 +143,14 @@ class Client(object):
 
     def join(self):
         '''threading.Thread を使用していた頃の名残。'''
-        self.logger.info('Client(id={}) thread joined.'.format(self.id))
+        logger.info('Client(id={}) thread joined.'.format(self.id))
 
     def _release(self):
         '''\
         Client 終了処理。leave_thereにsignal を set することで、
         Clientの作成した Darkness達は一斉に終了処理を始める。
         '''
-        self.logger.info(('Client(id={}) set signal to leave_there '
+        logger.info(('Client(id={}) set signal to leave_there '
                           'for Darknesses.').format(self.id))
         self.leave_there.set()
 
@@ -156,24 +158,24 @@ class Client(object):
             darkness_p.join()
             msg = 'Client(id={}), Darkness(id={}) process joined.'. \
                    format(self.id, darkness_p.d_config['id'])
-            self.logger.info(msg)
-        self.logger.info('Client(id={}) thread released.'.format(self.id))
+            logger.info(msg)
+        logger.info('Client(id={}) thread released.'.format(self.id))
 
         self.client_db.close()
-        self.logger.info('{} client_db.close().'.format(self))
-      # self.logger.error('self._sock.getsockname() =', ('127.0.0.1', 20000))
+        logger.info('{} client_db.close().'.format(self))
+      # logger.error('self._sock.getsockname() =', ('127.0.0.1', 20000))
         # ip のみ比較、 compare only ip
         if False and self._tcp_sock.getsockname()[0] != self.watson_office_addr[0]:
-            self.logger.error('TODO: #169 simulation終了後、clientがclient.1.dbをwatsonにTCPにて送信。')
+            logger.error('TODO: #169 simulation終了後、clientがclient.1.dbをwatsonにTCPにて送信。')
             # _sock=('0.0.0.0', 22343), watson_office_addr=('localhost', 55555)
             message = '{} _sock={}, watson_office_addr={}'. \
                        format(self, self._tcp_sock.getsockname(), self.watson_office_addr)
-            self.logger.info(message)
+            logger.info(message)
         else:
             # ip が同じ
             message = ('{} client and watson use same IP. Therefore '
                        'don\'t send client.db to watson.').format(self)
-            self.logger.info(message)
+            logger.info(message)
 
         for darkness_process in self.darkness_processes:
             self.total_created_nodes += \
@@ -181,14 +183,15 @@ class Client(object):
 
         message = 'Client(id={}) created num of nodes {}'. \
                     format(self.id, self.total_created_nodes)
-        self.logger.info(message)
+        logger.info(message)
 
     def _init_attrs(self):
         '''\
         watson に接続し、id, iso_start_up_timeを受信する。
         id は client.<id>.log として、log fileを作成するときに使用。
-        start_up_time は db_dirを決定する際に使用する。
+        start_up_time は dir_nameを決定する際に使用する。
         '''
+        logger.info("_init_attrs()")
         d = self._hello_watson()
         if not d:
             self._tcp_sock.close()
@@ -200,9 +203,7 @@ class Client(object):
             isoformat_time_to_datetime(self.iso_start_up_time)
         set_logging_startTime_from_start_up_time(self)
         self.log_level = d['log_level']
-        self.db_dir = os.path.join(self.simulation_dir, \
-                                   self.iso_start_up_time)
-        self.client_db_path = os.path.join(self.db_dir,
+        self.client_db_path = os.path.join(self.dir_name,
                                      'client.{}.db'.format(self.id))
         self.node_index = d['node_index']
         self.schema_path = SCHEMA_PATH
@@ -213,8 +214,8 @@ class Client(object):
         watsonに "I am Client." をTCPで送信し、watson起動時刻(start_up_time)、
         watsonへの接続順位(=id)をTCPで受信する。
         この時、受信するのはjson文字列。
-        simulation 結果を格納する db_dir を作成するための情報を得る。
-        db_dir 以下には、client.id.log, client.id.db 等を作成する。
+        simulation 結果を格納する dir_name を作成するための情報を得る。
+        dir_name 以下には、client.id.log, client.id.db 等を作成する。
 
         3 回 watson へ "I am Client." と伝えようとしても駄目だった場合、
         空の dictionary を返す。

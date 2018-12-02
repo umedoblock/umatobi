@@ -8,8 +8,8 @@ from lib import make_logger, make_start_up_time
 from simulator.client import Client
 from simulator.watson import Watson
 
-def make_client(watson_office_addr, num_nodes, simulation_dir):
-    client = Client(watson_office_addr, num_nodes, simulation_dir)
+def make_client(watson_office_addr, num_nodes):
+    client = Client(watson_office_addr, num_nodes)
     client.start()
     client.join()
 
@@ -117,8 +117,7 @@ if __name__ == '__main__':
     # after _hello_watson().
     client_process = multiprocessing.Process(target=make_client,
                                              args=(watson_office_addr,
-                                                   args.num_nodes,
-                                                   dir_name))
+                                                   args.num_nodes))
 
     # 本当は client_process を、ここで作らなくてもいい。
     # module の独立から考えると、むしろ作らない方が望ましいのだけど、
