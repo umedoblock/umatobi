@@ -14,8 +14,12 @@ import simulator.sql
 
 logger = None
 
-class TCPOffice(socketserver.TCPServer):
-    pass
+#  class socketserver.\
+#        TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)
+class WatsonTCPOffice(socketserver.TCPServer):
+    def __init__(self, office, RequestHandlerClass, start_up_time):
+        super().__init__(office, RequestHandlerClass)
+        self.start_up_time = start_up_time
 
 class WatsonOpenOffice(threading.Thread):
     def __init__(self, office):
@@ -24,8 +28,14 @@ class WatsonOpenOffice(threading.Thread):
 
     def run(self):
         # Create the server, binding to localhost on port ???
-        with socketserver.TCPServer(self.office, WatsonOffice) as watson_office:
+        logger.info(f"socketserver.TCPServer({self.office}, WatsonOpenOffice)")
+        with WatsonTCPOffice(self.office, WatsonOffice, self.start_up_time) as watson_office:
+            logger.info("watson_open_office.serve_forever()")
             watson_office.serve_forever()
+#       with socketserver.TCPServer(self.office, WatsonOffice) as watson_office:
+#           logger.info("watson_open_office.serve_forever()")
+#           watson_office.start_up_time = self.start_up_time
+#           watson_office.serve_forever()
 
 
 class WatsonOffice(socketserver.StreamRequestHandler):
@@ -77,25 +87,31 @@ class WatsonOffice(socketserver.StreamRequestHandler):
 ####        self.rfile.close()
 
     def handle(self):
+        logger.info("watson_office.handle()")
+        logger.info(f"WatsonOffice(request={self.request}, client_address={self.client_address}, server={self.server}")
         text_message = self.rfile.readline().strip()
+        logger.info(f"text_message = {text_message} in watson_office.handle()")
 
         sheep = jbytes_becomes_dict(text_message)
+        logger.info(f"sheep = {sheep} in watson_office.handle()")
         professed = sheep['profess']
         num_nodes = sheep['num_nodes']
 
-        self.client_address
+        logger.info(f"self.server.start_up_time={self.server.start_up_time}")
 
+        logger.info(f"professed = {professed} in watson_office.handle()")
+        logger.info(f"type(self.server)={type(self.server)}")
+        logger.info(f"type(self)={type(self)}")
+        logger.info(f"dir(self)={dir(self)}")
         if professed == 'I am Client.':
-            id = self.server.client_index
-            self.server.client_index += 1
-            self.clients.append(phone_number)
-            logger.info('{} Client(id={}, ip:port={}) came here.'.format(self, id, phone_number))
+            client_addr = self.client_address
 
+            logger.info('{} Client(id=0, ip:port={}) came here.'.format(self, client_addr))
             d = {}
-            d['id'] = id
-            d['host'] = phone_number[0]
-            d['port'] = phone_number[1]
-            d['joined'] = elapsed_time(self.server)
+          # d['id'] = id
+            d['host'] = client_addr[0]
+            d['port'] = client_addr[1]
+            d['joined'] = elapsed_time(self.server.start_up_time)
             d['log_level'] = self.server.log_level
             d['num_nodes'] = num_nodes
             sql = self.watson_db.insert('clients', d)
@@ -104,8 +120,8 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             logger.info('{} recved={}'.format(self, d))
 
             d.clear()
-            d['id'] = id
-            d['iso_start_up_time'] = self.iso_start_up_time
+            d['id'] = 0
+            d['start_up_time'] = self.start_up_time
             d['log_level'] = self.log_level
             d['node_index'] = 1 + self.registered_nodes
             self.registered_nodes += num_nodes
@@ -114,6 +130,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             count_clients += 1
         else:
             logger.debug('crazy man.')
+            logger.info(f'unknown professed = "{professed}" in watson_office.handle()')
             reply = b'Go back home.'
 
         self.wfile.write(reply)
@@ -128,11 +145,12 @@ class Watson(threading.Thread):
         watson: Cient, Node からの TCP 接続を待つ。
         起動時刻を start_up_time と名付けて記録する。
         '''
+        threading.Thread.__init__(self)
+
         global logger
         if not logger:
             logger = make_logger(dir_name, name="watson", level=log_level)
 
-        threading.Thread.__init__(self)
         self.watson_office_addr = watson_office_addr
         self.simulation_seconds = simulation_seconds
         self.log_level = log_level
@@ -169,11 +187,15 @@ class Watson(threading.Thread):
                                      schema_path=self.schema_path)
         self.watson_db.create_db()
         self.watson_db.create_table('clients')
+        logger.info("watson created clients table.")
 
         watson_open_office = WatsonOpenOffice(self.watson_office_addr)
+        logger.info("watson_open_office.start()")
+        watson_open_office.start_up_time = self.start_up_time
         watson_open_office.start()
 
         while elapsed_time(self.start_up_time) < self.simulation_seconds * 1000:
+            logger.info("watson time.sleep(1.0)")
             time.sleep(1.0)
 
         self._release_clients()

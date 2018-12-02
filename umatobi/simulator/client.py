@@ -36,6 +36,7 @@ class Client(object):
             raise RuntimeError('num_nodes must be positive integer.')
 
         self.watson_office_addr = watson_office_addr # (IP, PORT)
+        logger.info(f"self.watson_office_addr={self.watson_office_addr}")
         self.num_nodes = num_nodes
         # Client set positive integer to id in self._init_attrs().
         self.id = -1
@@ -58,6 +59,7 @@ class Client(object):
         socket.setdefaulttimeout(self.timeout_sec)
         self._tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+        logger.info(f"self._tcp_sock.connect(={watson_office_addr})")
         self._tcp_sock.connect(watson_office_addr)
         _d_init_attrs = self._init_attrs()
 
@@ -228,13 +230,26 @@ class Client(object):
         js = dict_becomes_jbytes(sheep)
         d = {}
         while tries < 3:
+            logger.info(f"js={js}")
             try:
                 self._tcp_sock.send(js)
+            except socket.timeout as e:
+                logger.info(f"{str(self)} was timeout by send(), tries={tries}")
+                tries += 1
+                continue
+            break
+        logger.info(f"{str(self)} send() js={js}, tries={tries}")
+
+        tries = 0
+        while tries < 3:
+            try:
                 recved_msg, who = self._tcp_sock.recv(1024)
-            except socket.timeout as raiz:
+            except socket.timeout as e:
+                logger.info(f"{str(self)} was timeout by recv(), tries={tries}")
                 tries += 1
                 continue
           # if self.watson == who:
+            logger.info(f"recved_msg={recved_msg}")
             d = jbytes_becomes_dict(recved_msg)
             break
 
