@@ -95,9 +95,8 @@ def set_logging_startTime_from_start_up_time(self):
 LOGGER_FMT = '%(relativeCreated)d %(levelname)s %(message)s'
 
 def make_logger(log_dir='', name='', index=0, level=None):
-    if not log_dir or not name in ('admin', 'watson', 'client', 'darkness'):
-        msg = 'log_dir(={}) must be available dir.'.format(log_dir)
-        msg += 'name(={}) must be watson, client or darkness.'.format(name)
+    if not name in ('admin', 'watson', 'client', 'darkness'):
+        msg = 'name(={}) must be watson, client or darkness.'.format(name)
         raise RuntimeError(msg)
 
     if name in ("admin", "watson"):
@@ -106,7 +105,8 @@ def make_logger(log_dir='', name='', index=0, level=None):
         name_and_index = '.'.join([name, str(index)])
     ext = 'log'
     base_name = '.'.join([name_and_index, ext])
-    log_path = os.path.join(log_dir, base_name)
+    if log_dir:
+        log_path = os.path.join(log_dir, base_name)
 
     logger = logging.getLogger(name_and_index)
     logger.setLevel(level)
@@ -115,10 +115,11 @@ def make_logger(log_dir='', name='', index=0, level=None):
     formatter = logging.Formatter(LOGGER_FMT)
 
     # create file handler which logs even debug messages
-    fh = logging.FileHandler(log_path)
-    fh.setLevel(level)
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
+    if log_dir:
+        fh = logging.FileHandler(log_path)
+        fh.setLevel(level)
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
 
     # create console handler with a higher log level
     ch = logging.StreamHandler(sys.stdout)
@@ -127,9 +128,11 @@ def make_logger(log_dir='', name='', index=0, level=None):
     logger.addHandler(ch)
 
     # extra setting.
-    logger.log_path = log_path
+    if log_dir:
+        logger.log_path = log_path
     if level is not None:
-        fh.setLevel(level)
+        if log_dir:
+            fh.setLevel(level)
         ch.setLevel(level)
 
     return logger
