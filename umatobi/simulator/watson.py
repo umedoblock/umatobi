@@ -155,9 +155,6 @@ class Watson(threading.Thread):
         self.total_nodes = 0
         self.clients = []
 
-        # socket() must set under setdefaulttimeout()
-        socket.setdefaulttimeout(self.timeout_sec)
-
         self._make_office()
 
     def _make_office(self):
@@ -185,7 +182,6 @@ class Watson(threading.Thread):
             self.wo = watson_office
             watson_office.serve_forever()
 
-        watson_wait_bye_bye.join()
         self._release_clients()
 
       # self._wait_tcp_clients()
