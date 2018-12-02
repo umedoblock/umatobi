@@ -95,12 +95,12 @@ def set_logging_startTime_from_start_up_time(self):
 LOGGER_FMT = '%(relativeCreated)d %(levelname)s %(message)s'
 
 def make_logger(log_dir='', name='', index=0, level=None):
-    if not log_dir or not name in ('watson', 'client', 'darkness'):
+    if not log_dir or not name in ('admin', 'watson', 'client', 'darkness'):
         msg = 'log_dir(={}) must be available dir.'.format(log_dir)
         msg += 'name(={}) must be watson, client or darkness.'.format(name)
         raise RuntimeError(msg)
 
-    if name == 'watson':
+    if name in ("admin", "watson"):
         name_and_index = name
     else:
         name_and_index = '.'.join([name, str(index)])
