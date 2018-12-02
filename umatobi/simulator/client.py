@@ -63,7 +63,7 @@ class Client(object):
         self.logger = make_logger(self.db_dir, 'client', self.id,
                                   level=self.log_level)
         self.logger.info('----- {} log start -----'.format(self))
-        self.logger.info('   watson = {}'.format(self.watson))
+        self.logger.info('watson_office_addr = {}'.format(self.watson_office_addr))
         self.logger.info('   db_dir = {}'.format(self.db_dir))
         self.logger.info('client_db_path = {}'.format(self.client_db_path))
         self.logger.info('----- client.{} initilized end -----'.
@@ -163,11 +163,11 @@ class Client(object):
         self.logger.info('{} client_db.close().'.format(self))
       # self.logger.error('self._sock.getsockname() =', ('127.0.0.1', 20000))
         # ip のみ比較、 compare only ip
-        if False and self._tcp_sock.getsockname()[0] != self.watson[0]:
+        if False and self._tcp_sock.getsockname()[0] != self.watson_office_addr[0]:
             self.logger.error('TODO: #169 simulation終了後、clientがclient.1.dbをwatsonにTCPにて送信。')
-            # _sock=('0.0.0.0', 22343), watson=('localhost', 55555)
-            message = '{} _sock={}, watson={}'. \
-                       format(self, self._tcp_sock.getsockname(), self.watson)
+            # _sock=('0.0.0.0', 22343), watson_office_addr=('localhost', 55555)
+            message = '{} _sock={}, watson_office_addr={}'. \
+                       format(self, self._tcp_sock.getsockname(), self.watson_office_addr)
             self.logger.info(message)
         else:
             # ip が同じ
@@ -192,7 +192,7 @@ class Client(object):
         d = self._hello_watson()
         if not d:
             self._tcp_sock.close()
-            raise RuntimeError('client cannot say "I am Client." to watson who is {}'.format(self.watson))
+            raise RuntimeError('client cannot say "I am Client." to watson where is {}'.format(self.watson_office_addr))
 
         self.id = d['id']
         self.iso_start_up_time = d['iso_start_up_time']
@@ -228,7 +228,7 @@ class Client(object):
         d = {}
         while tries < 3:
             try:
-                self._tcp_sock.send(js, self.watson)
+                self._tcp_sock.send(js)
                 recved_msg, who = self._tcp_sock.recv(1024)
             except socket.timeout as raiz:
                 tries += 1

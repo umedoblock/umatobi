@@ -121,7 +121,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
 
-    def __init__(self, office, simulation_seconds, simulation_dir, log_level):
+    def __init__(self, watson_office_addr, simulation_seconds, simulation_dir, log_level):
         '''\
         watson: Cient, Node からの TCP 接続を待つ。
         起動時刻を start_up_time と名付けて記録する。
@@ -131,7 +131,7 @@ class Watson(threading.Thread):
         を作成する。
         '''
         threading.Thread.__init__(self)
-        self.office = office
+        self.watson_office_addr = watson_office_addr
         self.simulation_seconds = simulation_seconds
         self.log_level = log_level
         self.registered_nodes = 0
@@ -172,7 +172,7 @@ class Watson(threading.Thread):
         self.watson_db.create_db()
         self.watson_db.create_table('clients')
 
-        watson_open_office = WatsonOpenOffice(self.office)
+        watson_open_office = WatsonOpenOffice(self.watson_office_addr)
         watson_open_office.start()
 
         while elapsed_time(self.start_up_time) < self.simulation_seconds * 1000:
@@ -192,7 +192,7 @@ class Watson(threading.Thread):
     def _construct_simulation_table(self):
         self.watson_db.create_table('simulation')
         d_simulation = {}
-        d_simulation['watson_office'] = '{}:{}'.format(*self.office)
+        d_simulation['watson_office_addr'] = '{}:{}'.format(*self.watson_office_addr)
         d_simulation['simulation_milliseconds'] = \
             1000 * self.simulation_seconds
         d_simulation['title'] = 'umatobi-simulation'
@@ -312,4 +312,4 @@ class Watson(threading.Thread):
         return csv
 
     def __str__(self):
-        return 'Watson({}:{})'.format(*self.office)
+        return 'Watson({}:{})'.format(*self.watson_office_addr)

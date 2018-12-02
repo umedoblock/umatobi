@@ -8,18 +8,18 @@ from lib import make_logger, dict_becomes_jbytes
 from simulator.client import Client
 from simulator.watson import Watson
 
-def make_client(watson_office, num_nodes, simulation_dir):
-    client = Client(watson_office, num_nodes, simulation_dir)
+def make_client(watson_office_addr, num_nodes, simulation_dir):
+    client = Client(watson_office_addr, num_nodes, simulation_dir)
     client.start()
     client.join()
 
 def args_():
     parser = argparse.ArgumentParser(description='simulation.')
 
-    parser.add_argument('--watson-office', metavar='f', dest='watson_office',
+    parser.add_argument('--watson-office-addr', metavar='f', dest='watson_office_addr',
                          nargs='?',
                          default='localhost:55555',
-                         help='defalut watson office is localhost:55555')
+                         help='defalut watson office addr is localhost:55555')
     parser.add_argument('--simulation-seconds', metavar='N',
                          dest='simulation_seconds',
                          type=int, nargs='?', default=10,
@@ -69,7 +69,7 @@ def get_host_port(host_port):
 if __name__ == '__main__':
     # 引数の解析
     args = args_()
-    watson_office = get_host_port(args.watson_office)
+    watson_office_addr = get_host_port(args.watson_office_addr)
 
   # t = datetime.datetime.now()
   # >>> t
@@ -94,7 +94,7 @@ if __name__ == '__main__':
         os.makedirs(args.simulation_dir, exist_ok=True)
 
     # 各 object を作成するなど。
-    watson = Watson(watson_office, args.simulation_seconds,
+    watson = Watson(watson_office_addr, args.simulation_seconds,
                     args.simulation_dir, args.log_level)
 
     # Watson start!
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     # Client will get start_up_time attribute in build_up_attrs()
     # after _hello_watson().
     client_process = multiprocessing.Process(target=make_client,
-                                             args=(watson_office,
+                                             args=(watson_office_addr,
                                                    args.num_nodes,
                                                    args.simulation_dir))
 
