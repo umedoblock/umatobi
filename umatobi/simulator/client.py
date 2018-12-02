@@ -18,7 +18,7 @@ def make_darkness(d_config):
 class Client(object):
     NODES_PER_DARKNESS = 4
 
-    def __init__(self, watson, num_nodes, simulation_dir):
+    def __init__(self, watson_office_addr, num_nodes, simulation_dir):
         '''\
         Clientは各PCに付き一つ作成する。
         watsonの待ち受けるTCP address = watson,
@@ -33,7 +33,7 @@ class Client(object):
         else:
             raise RuntimeError('num_nodes must be positive integer.')
 
-        self.watson = watson
+        self.watson_office_addr = watson_office_addr # (IP, PORT)
         self.simulation_dir = simulation_dir
         self.num_nodes = num_nodes
         # Client set positive integer to id in self._init_attrs().
@@ -57,7 +57,7 @@ class Client(object):
         socket.setdefaulttimeout(self.timeout_sec)
         self._tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        self._tcp_sock.connect()
+        self._tcp_sock.connect(watson_office_addr)
         _d_init_attrs = self._init_attrs()
 
         self.logger = make_logger(self.db_dir, 'client', self.id,
