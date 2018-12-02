@@ -12,6 +12,8 @@ from lib import set_logging_startTime_from_start_up_time
 from lib import SCHEMA_PATH
 import simulator.sql
 
+logger = None
+
 class TCPOffice(socketserver.TCPServer):
     pass
 
@@ -87,7 +89,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             id = self.server.client_index
             self.server.client_index += 1
             self.clients.append(phone_number)
-            self.logger.info('{} Client(id={}, ip:port={}) came here.'.format(self, id, phone_number))
+            logger.info('{} Client(id={}, ip:port={}) came here.'.format(self, id, phone_number))
 
             d = {}
             d['id'] = id
@@ -98,8 +100,8 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             d['num_nodes'] = num_nodes
             sql = self.watson_db.insert('clients', d)
             self.watson_db.commit()
-            self.logger.debug('{} {}'.format(self, sql))
-            self.logger.info('{} recved={}'.format(self, d))
+            logger.debug('{} {}'.format(self, sql))
+            logger.info('{} recved={}'.format(self, d))
 
             d.clear()
             d['id'] = id
@@ -111,7 +113,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             reply = dict_becomes_jbytes(d)
             count_clients += 1
         else:
-            self.logger.debug('crazy man.')
+            logger.debug('crazy man.')
             reply = b'Go back home.'
 
         self.wfile.write(reply)
@@ -126,6 +128,10 @@ class Watson(threading.Thread):
         watson: Cient, Node からの TCP 接続を待つ。
         起動時刻を start_up_time と名付けて記録する。
         '''
+        global logger
+        if not logger:
+            logger = make_logger(dir_name, name="watson", level=log_level)
+
         threading.Thread.__init__(self)
         self.watson_office_addr = watson_office_addr
         self.simulation_seconds = simulation_seconds
@@ -152,10 +158,9 @@ class Watson(threading.Thread):
         '''watson が書き出す log 用の directory 作成'''
         os.makedirs(self.dir_name, exist_ok=True)
 
-        self.logger = make_logger(self.dir_name, 'watson', level=self.log_level)
-        self.logger.info('----- watson office start up. -----')
+        logger.info('----- watson office start up. -----')
         message = 'simulation_seconds={}'.format(self.simulation_seconds)
-        self.logger.info(message)
+        logger.info(message)
 
     def run(self):
         '''simulation 開始'''
@@ -197,19 +202,19 @@ class Watson(threading.Thread):
         self.watson_db.commit()
 
     def _wait_client_db(self):
-        self.logger.info('{} は、client.#.dbの回収に乗り出した。'.format(self))
-        self.logger.info('{} なんて言いながら実は待機してるだけ。'.format(self))
-        self.logger.info('{} client.{}.dbの回収完了。'.format(self, 1))
+        logger.info('{} は、client.#.dbの回収に乗り出した。'.format(self))
+        logger.info('{} なんて言いながら実は待機してるだけ。'.format(self))
+        logger.info('{} client.{}.dbの回収完了。'.format(self, 1))
 
     def _merge_db_to_simulation_db(self):
-        self.logger.info('{} client.#.db の結合開始。'.format(self))
-        self.logger.info('{} client.#.db の結合終了。'.format(self))
+        logger.info('{} client.#.db の結合開始。'.format(self))
+        logger.info('{} client.#.db の結合終了。'.format(self))
 
     def join(self):
         '''watson threadがjoin'''
         threading.Thread.join(self)
         self._tcp_sock.close()
-        self.logger.info('watson thread joined.')
+        logger.info('watson thread joined.')
 
     def _tcp_office_open(self):
         _wait_tcp_clients()
@@ -226,7 +231,7 @@ class Watson(threading.Thread):
         count_clients = 1
 
         while elapsed_time(self) < self.simulation_seconds * 1000:
-          # self.logger.info('passed time {:.3f}'.format(self.passed_time()))
+          # logger.info('passed time {:.3f}'.format(self.passed_time()))
 
             try:
               # print('================= count_inquiries =', count_inquiries)
@@ -245,7 +250,7 @@ class Watson(threading.Thread):
 
             if professed == 'I am Node.':
                 csv = self.collect_nodes_as_csv()
-                self.logger.info('realizing_nodes = "{}"'.format(csv))
+                logger.info('realizing_nodes = "{}"'.format(csv))
                 realizing_nodes = csv.encode()
 
                 self.nodes.append(phone_number)
@@ -257,7 +262,7 @@ class Watson(threading.Thread):
             elif professed == 'I am Client.':
                 id = count_clients
                 self.clients.append(phone_number)
-                self.logger.info('{} Client(id={}, ip:port={}) came here.'.format(self, id, phone_number))
+                logger.info('{} Client(id={}, ip:port={}) came here.'.format(self, id, phone_number))
 
                 d = {}
                 d['id'] = id
@@ -268,8 +273,8 @@ class Watson(threading.Thread):
                 d['num_nodes'] = num_nodes
                 sql = self.watson_db.insert('clients', d)
                 self.watson_db.commit()
-                self.logger.debug('{} {}'.format(self, sql))
-                self.logger.info('{} recved={}'.format(self, d))
+                logger.debug('{} {}'.format(self, sql))
+                logger.info('{} recved={}'.format(self, d))
 
                 d.clear()
                 d['id'] = id
@@ -281,7 +286,7 @@ class Watson(threading.Thread):
                 reply = dict_becomes_jbytes(d)
                 count_clients += 1
             else:
-                self.logger.debug('crazy man.')
+                logger.debug('crazy man.')
                 reply = b'Go back home.'
 
             self._tcp_sock.send(reply, phone_number)
@@ -293,7 +298,7 @@ class Watson(threading.Thread):
         各Clientに終了処理を行わせる。
         Clientは、終了処理中に client.id.db を送信してくる。
         '''
-        self.logger.info('watson._release_clients()')
+        logger.info('watson._release_clients()')
         for client in self.clients:
             result = b'break down.'
             self._tcp_sock.send(result, client)
