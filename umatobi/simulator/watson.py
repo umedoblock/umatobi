@@ -182,6 +182,9 @@ class Watson(threading.Thread):
             self.wo = watson_office
             watson_office.serve_forever()
 
+        while elapsed_time(self.start_up_time) < self.simulation_seconds * 1000:
+            time.sleep(1.0)
+
         self._release_clients()
 
       # self._wait_tcp_clients()
