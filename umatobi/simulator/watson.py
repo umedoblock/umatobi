@@ -12,19 +12,6 @@ from lib import set_logging_startTime_from_start_up_time
 from lib import SCHEMA_PATH
 import simulator.sql
 
-class WatsonWaitByebye(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-
-    def run(self):
-        while elapsed_time(self.start_up_time) < self.simulation_seconds * 1000:
-            time.sleep(1.0)
-
-        self.bye_bye()
-
-    def bye_bye(self):
-        self.shutdown()
-
 class TCPOffice(socketserver.TCPServer):
     pass
 
@@ -184,9 +171,6 @@ class Watson(threading.Thread):
                                      schema_path=self.schema_path)
         self.watson_db.create_db()
         self.watson_db.create_table('clients')
-
-        watson_wait_bye_bye = WatsonWaitByebye()
-        watson_wait_bye_bye.start()
 
         watson_open_office = WatsonOpenOffice(self.office)
         watson_open_office.start()
