@@ -121,31 +121,24 @@ class WatsonOffice(socketserver.StreamRequestHandler):
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
 
-    def __init__(self, watson_office_addr, simulation_seconds, simulation_dir, log_level):
+    def __init__(self, watson_office_addr, simulation_seconds, dir_name, log_level):
         '''\
         watson: Cient, Node からの TCP 接続を待つ。
         起動時刻を start_up_time と名付けて記録する。
-        simulation_dir 以下に起動時刻を元にした db_dir を作成する。
-        db_dir 以下に、simulation結果の生成物、
-        simulation.db, watson.0.log, client.0.log ...
-        を作成する。
         '''
         threading.Thread.__init__(self)
         self.watson_office_addr = watson_office_addr
         self.simulation_seconds = simulation_seconds
         self.log_level = log_level
+        self.dir_name = dir_name
         self.registered_nodes = 0
         self.watson_db = None # sql.SQL()
 
         self.start_up_time = make_start_up_time()
-        self.iso_start_up_time = self.start_up_time.isoformat()
         set_logging_startTime_from_start_up_time(self)
 
-        self.simulation_dir = simulation_dir
-        self.db_dir = \
-            os.path.join(self.simulation_dir, self.iso_start_up_time)
-        self.simulation_db_path = os.path.join(self.db_dir, 'simulation.db')
-        self.watson_db_path = os.path.join(self.db_dir, 'watson.db')
+        self.simulation_db_path = os.path.join(self.dir_name, 'simulation.db')
+        self.watson_db_path = os.path.join(self.dir_name, 'watson.db')
         self.schema_path = SCHEMA_PATH
 
         self.timeout_sec = 1
@@ -157,9 +150,9 @@ class Watson(threading.Thread):
 
     def _make_office(self):
         '''watson が書き出す log 用の directory 作成'''
-        os.makedirs(self.db_dir)
+        os.makedirs(self.dir_name, exist_ok=True)
 
-        self.logger = make_logger(self.db_dir, 'watson', level=self.log_level)
+        self.logger = make_logger(self.dir_name, 'watson', level=self.log_level)
         self.logger.info('----- watson office start up. -----')
         message = 'simulation_seconds={}'.format(self.simulation_seconds)
         self.logger.info(message)

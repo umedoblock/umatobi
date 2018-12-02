@@ -4,7 +4,7 @@ import argparse
 import datetime
 import multiprocessing
 
-from lib import make_logger, dict_becomes_jbytes
+from lib import make_logger, make_start_up_time
 from simulator.client import Client
 from simulator.watson import Watson
 
@@ -69,6 +69,7 @@ def get_host_port(host_port):
 if __name__ == '__main__':
     # 引数の解析
     args = args_()
+
     watson_office_addr = get_host_port(args.watson_office_addr)
 
   # t = datetime.datetime.now()
@@ -80,22 +81,34 @@ if __name__ == '__main__':
   #
   #
   # simulation_dir
-  # |-- 20121008T180459 # db_dir
+  # |-- 20121008T180459 # isoformat(), dirname = simulation_dir + isoformat()
   # |   |-- simulation.db # client.{0,1,2,...}.dbをmergeし、
   # |   |                 # watson が最後に作成する。
   # |   |-- watson.log  # watson の起動・停止・接続受付について
   # |   |-- client.0.db # client_db node が吐き出す SQL 文を書き込む。
   # |   `-- client.1.db # client_db
-  # `-- 20121008T200822 # db_dir
+  # `-- 20121008T200822 # isoformat()
   #     |-- client.0.db # client_db
   #     `-- client.1.db # client_db
 
-    if not os.path.isdir(args.simulation_dir):
-        os.makedirs(args.simulation_dir, exist_ok=True)
+    simulation_dir = args.simulation_dir
+
+  # simulation_dir 以下に起動時刻を元にした dir_name を作成する。
+  # dir_name 以下に、simulation結果の生成物、
+  # simulation.db, watson.0.log, client.0.log ...
+  # を作成する。
+
+    start_up_time = make_start_up_time().isoformat()
+    dir_name = os.path.join(simulation_dir, start_up_time)
+
+    if not os.path.isdir(dir_name): os.makedirs(dir_name, exist_ok=True)
+
+    logger = make_logger(dir_name, name="admin", level="INFO")
+    logger.info("simulation start !")
 
     # 各 object を作成するなど。
     watson = Watson(watson_office_addr, args.simulation_seconds,
-                    args.simulation_dir, args.log_level)
+                    dir_name, args.log_level)
 
     # Watson start!
     watson.start()
@@ -105,7 +118,7 @@ if __name__ == '__main__':
     client_process = multiprocessing.Process(target=make_client,
                                              args=(watson_office_addr,
                                                    args.num_nodes,
-                                                   args.simulation_dir))
+                                                   dir_name))
 
     # 本当は client_process を、ここで作らなくてもいい。
     # module の独立から考えると、むしろ作らない方が望ましいのだけど、
