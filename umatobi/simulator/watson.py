@@ -125,7 +125,7 @@ class Watson(threading.Thread):
 
     def __init__(self, office, simulation_seconds, simulation_dir, log_level):
         '''\
-        watson: Cient, Node からの UDP 接続を待つ。
+        watson: Cient, Node からの TCP 接続を待つ。
         起動時刻を start_up_time と名付けて記録する。
         simulation_dir 以下に起動時刻を元にした db_dir を作成する。
         db_dir 以下に、simulation結果の生成物、
