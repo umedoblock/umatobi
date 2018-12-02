@@ -28,6 +28,17 @@ class WatsonWaitByebye(threading.Thread):
 class TCPOffice(socketserver.TCPServer):
     pass
 
+class WatsonOpenOffice(threading.Thread):
+    def __init__(self, office):
+        threading.Thread.__init__(self)
+        self.office = office
+
+    def run(self):
+        # Create the server, binding to localhost on port ???
+        with socketserver.TCPServer(self.office, WatsonOffice) as watson_office:
+            watson_office.serve_forever()
+
+
 class WatsonOffice(socketserver.StreamRequestHandler):
 #class BaseRequestHandler:
 #####def __init__(self, request, client_address, server):
@@ -177,15 +188,16 @@ class Watson(threading.Thread):
         watson_wait_bye_bye = WatsonWaitByebye()
         watson_wait_bye_bye.start()
 
-        # Create the server, binding to localhost on port 9999
-        with socketserver.TCPServer(self.office, WatsonOffice) as watson_office:
-            self.wo = watson_office
-            watson_office.serve_forever()
+        watson_open_office = WatsonOpenOffice(self.office)
+        watson_open_office.start()
 
         while elapsed_time(self.start_up_time) < self.simulation_seconds * 1000:
             time.sleep(1.0)
 
         self._release_clients()
+
+        # close watson office
+        watson_open_office.shutdown()
 
       # self._wait_tcp_clients()
         self._wait_client_db()
