@@ -21,7 +21,7 @@ class Client(object):
     def __init__(self, watson, num_nodes, simulation_dir):
         '''\
         Clientは各PCに付き一つ作成する。
-        watsonの待ち受けるUDP address = watson,
+        watsonの待ち受けるTCP address = watson,
         作成するdarkness数 = num_darknesses,
         全ての simulate 結果を格納する simulation_dir と、
         watsonが起動した時間(start_up_time)を使用し、 simulation_dir以下に
@@ -210,8 +210,8 @@ class Client(object):
 
     def _hello_watson(self):
         '''\
-        watsonに "I am Client." をUDPで送信し、watson起動時刻(start_up_time)、
-        watsonへの接続順位(=id)をUDPで受信する。
+        watsonに "I am Client." をTCPで送信し、watson起動時刻(start_up_time)、
+        watsonへの接続順位(=id)をTCPで受信する。
         この時、受信するのはjson文字列。
         simulation 結果を格納する db_dir を作成するための情報を得る。
         db_dir 以下には、client.id.log, client.id.db 等を作成する。
