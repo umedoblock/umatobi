@@ -30,7 +30,7 @@
 # simulation.db ###############################################################
 # watson.db, clients.1.db を一纏めにし作成される。
 [simulation]
-watson_office: text
+watson_office_addr: text
 simulation_milliseconds: integer
 title: text
 memo: text
