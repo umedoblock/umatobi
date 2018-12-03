@@ -13,16 +13,6 @@ import simulator.sql
 
 logger = None
 
-#  class socketserver.\
-#        TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)
-class WatsonTCPOffice(socketserver.TCPServer):
-    def __init__(self, office_addr, RequestHandlerClass, start_up_orig, watson_db):
-        thread_id = threading.get_ident()
-        logger.info(f"thread_id={thread_id} in WatsonTCPOffice.__init__()")
-        super().__init__(office_addr, RequestHandlerClass)
-        self.start_up_orig = start_up_orig
-        self.watson_db = watson_db
-
 class WatsonOpenOffice(threading.Thread):
     def __init__(self, office_addr, start_up_orig, watson_db_path):
         threading.Thread.__init__(self)
@@ -46,6 +36,15 @@ class WatsonOpenOffice(threading.Thread):
 #           watson_office.start_up_time = self.start_up_time
 #           watson_office.serve_forever()
 
+#  class socketserver.\
+#        TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)
+class WatsonTCPOffice(socketserver.TCPServer):
+    def __init__(self, office_addr, RequestHandlerClass, start_up_orig, watson_db):
+        thread_id = threading.get_ident()
+        logger.info(f"thread_id={thread_id} in WatsonTCPOffice.__init__()")
+        super().__init__(office_addr, RequestHandlerClass)
+        self.start_up_orig = start_up_orig
+        self.watson_db = watson_db
 
 class WatsonOffice(socketserver.StreamRequestHandler):
 #class BaseRequestHandler:
