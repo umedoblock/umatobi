@@ -38,9 +38,9 @@ class WatsonOpenOffice(threading.Thread):
     def run(self):
         # Create the server, binding to localhost on port ???
         logger.info(f"socketserver.TCPServer({self.office_addr}, WatsonOpenOffice)")
-        with WatsonTCPOffice(self.office_addr, WatsonOffice, self.start_up_orig, self.watson_db) as watson_office:
+        with WatsonTCPOffice(self.office_addr, WatsonOffice, self.start_up_orig, self.watson_db) as watson_tcp_office:
             logger.info("watson_open_office.serve_forever()")
-            watson_office.serve_forever()
+            watson_tcp_office.serve_forever()
 #       with socketserver.TCPServer(self.office, WatsonOffice) as watson_office:
 #           logger.info("watson_open_office.serve_forever()")
 #           watson_office.start_up_time = self.start_up_time
