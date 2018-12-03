@@ -96,20 +96,20 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             self.server.clients.append(self)
 
             logger.debug(f'Client(id={id}, ip:port={client_addr}) came here.')
-            d_insert = {
+            insert_clients = {
                 'id': client_id,
                 'host': client_addr[0],
                 'port': client_addr[1],
                 'joined': elapsed_time(self.server.start_up_orig),
                 'num_nodes': num_nodes,
             }
-            sql = self.server.watson_db.insert('clients', d_insert)
+            sql = self.server.watson_db.insert('clients', insert_clients)
             logger.debug(f"watson_db.insert({sql})")
             self.server.watson_db.commit()
             logger.debug('{} {}'.format(self, sql))
-            logger.debug('{} recved={}'.format(self, d_insert))
+            logger.debug('{} recved={}'.format(self, insert_clients))
 
-            d_json = {
+            to_client = {
                 'dir_name': self.server.watson.dir_name,
                 'client_id': client_id,
                 'start_up_time': self.server.start_up_orig.isoformat(),
@@ -117,7 +117,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
                 'log_level': self.server.watson.log_level,
             }
             self.server.watson.total_nodes += num_nodes
-            reply = dict_becomes_jbytes(d_json)
+            reply = dict_becomes_jbytes(to_client)
         else:
             logger.info(f'unknown professed = "{professed}" in watson_office.handle()')
             reply = b'Go back home.'
