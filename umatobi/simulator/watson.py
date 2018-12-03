@@ -350,7 +350,7 @@ class Watson(threading.Thread):
                 d['id'] = id
                 d['start_up_time'] = self.start_up_time
                 d['log_level'] = self.log_level
-                d['node_index'] = 1 + self.registered_nodes
+                d['node_index'] = self.registered_nodes
                 self.registered_nodes += num_nodes
                 self.total_nodes += num_nodes
                 reply = dict_becomes_jbytes(d)
