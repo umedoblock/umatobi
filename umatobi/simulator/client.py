@@ -27,7 +27,7 @@ class Client(object):
 
         global logger
         if not logger:
-            logger = make_logger("", name="client", level='INFO')
+            logger = make_logger(".", name="client", level='INFO')
 
         if isinstance(num_nodes, int) and num_nodes > 0:
             pass
@@ -192,8 +192,8 @@ class Client(object):
         id は client.<id>.log として、log fileを作成するときに使用。
         start_up_time は dir_nameを決定する際に使用する。
         '''
-        logger.info("_init_attrs()")
         d = self._hello_watson()
+        logger.info(f"_hello_watson() return d={d} in Client._init_attrs()")
         if not d:
             self._tcp_sock.close()
             raise RuntimeError('client cannot say "I am Client." to watson where is {}'.format(self.watson_office_addr))
@@ -236,8 +236,11 @@ class Client(object):
                 logger.info(f"{str(self)} was timeout by send(), tries={tries}")
                 tries += 1
                 continue
+            logger.info(f"send js={js} in _hello_watson()")
             break
-        logger.info(f"{str(self)} send() js={js}, tries={tries}")
+
+        if tries >= 3:
+            raise RuntimeError(f"cannot send js={js}")
 
         tries = 0
         while tries < 3:

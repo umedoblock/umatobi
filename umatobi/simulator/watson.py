@@ -101,10 +101,10 @@ class WatsonOffice(socketserver.StreamRequestHandler):
         logger.info("watson_office.handle()")
     #   self.server in WatsonOffice class means WatsonTCPOffice instance.
         logger.info(f"WatsonOffice(request={self.request}, client_address={self.client_address}, server={self.server}")
-        text_message = self.rfile.readline().strip()
-        logger.info(f"text_message = {text_message} in watson_office.handle()")
+        binary_message = self.rfile.read()
+        logger.info(f"binary_message = {binary_message} in watson_office.handle()")
 
-        sheep = jbytes_becomes_dict(text_message)
+        sheep = jbytes_becomes_dict(binary_message)
         logger.info(f"sheep = {sheep} in watson_office.handle()")
         professed = sheep['profess']
         num_nodes = sheep['num_nodes']
