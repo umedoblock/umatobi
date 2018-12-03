@@ -114,6 +114,8 @@ if __name__ == '__main__':
 
     # Watson start!
     watson.start()
+    watson.watson_office_addr_assigned.wait()
+    watson_office_addr = watson.watson_office_addr
 
     # Client will get start_up_time attribute in build_up_attrs()
     # after _hello_watson().

@@ -30,6 +30,7 @@ class WatsonOpenOffice(threading.Thread):
             logger.info("watson_open_office.serve_forever()")
             # WatsonOpenOffice() run on different thread of WatsonTCPOffice.
             self.in_serve_forever.set()
+            self.watson.watson_office_addr_assigned.set()
             watson_tcp_office.serve_forever()
 
 # WatsonTCPOffice and WatsonOffice classes are on same thread.
@@ -185,6 +186,7 @@ class Watson(threading.Thread):
         logger.info(f"thread_id={thread_id} in Watson.__init__()")
 
         self.watson_office_addr = watson_office_addr
+        self.watson_office_addr_assigned = threading.Event()
         self.simulation_seconds = simulation_seconds
         self.log_level = log_level
         self.dir_name = dir_name
