@@ -31,13 +31,7 @@ class WatsonOpenOffice(threading.Thread):
             # WatsonOpenOffice() run on different thread of WatsonTCPOffice.
             self.in_serve_forever.set()
             watson_tcp_office.serve_forever()
-#       with socketserver.TCPServer(self.office, WatsonOffice) as watson_office:
-#           logger.info("watson_open_office.serve_forever()")
-#           watson_office.start_up_time = self.start_up_time
-#           watson_office.serve_forever()
 
-#  class socketserver.\
-#        TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)
 # WatsonTCPOffice and WatsonOffice classes are on same thread.
 class WatsonTCPOffice(socketserver.TCPServer):
     def __init__(self, watson):
