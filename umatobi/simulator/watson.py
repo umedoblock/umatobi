@@ -62,8 +62,7 @@ class WatsonTCPOffice(socketserver.TCPServer):
     #   self.server in WatsonOffice class means WatsonTCPOffice instance.
         self.start_up_orig = watson.start_up_orig
         self.watson_db_path = watson.watson_db_path
-        self.watson_db = simulator.sql.SQL(owner=self,
-                                           db_path=self.watson_db_path)
+        self.watson_db = simulator.sql.SQL(db_path=self.watson_db_path)
         self.watson_db.access_db()
 
     def shutdown_request(self, request):
@@ -180,9 +179,8 @@ class Watson(threading.Thread):
 
     def run(self):
         '''simulation 開始'''
-        self.watson_db = simulator.sql.SQL(owner=self,
-                                     db_path=self.watson_db_path,
-                                     schema_path=self.schema_path)
+        self.watson_db = simulator.sql.SQL(db_path=self.watson_db_path,
+                                           schema_path=self.schema_path)
         self.watson_db.create_db()
         self.watson_db.create_table('clients')
         logger.debug("watson created clients table.")

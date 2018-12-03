@@ -105,8 +105,7 @@ class Darkness(object):
         self.client_db_path = os.path.join(self.dir_name,
                                      'client.{}.db'.format(self.client_id))
         self.schema_path = SCHEMA_PATH
-        self.client_db = simulator.sql.SQL(owner=self,
-                                           db_path=self.client_db_path,
+        self.client_db = simulator.sql.SQL(db_path=self.client_db_path,
                                            schema_path=self.schema_path)
 
         self._queue_darkness = queue.Queue()

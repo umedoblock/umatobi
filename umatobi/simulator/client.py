@@ -80,8 +80,7 @@ class Client(object):
         作成後は、watsonから終了通知("break down")を受信するまで待機する。
         '''
         logger.info('Client(id={}) started!'.format(self.id))
-        self.client_db = simulator.sql.SQL(owner=self,
-                                           db_path=self.client_db_path,
+        self.client_db = simulator.sql.SQL(db_path=self.client_db_path,
                                            schema_path=self.schema_path)
         self.client_db.create_db()
         logger.info('{} client_db.create_db().'.format(self))

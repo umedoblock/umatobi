@@ -9,7 +9,7 @@ from lib.args import args_make_simulation_db
 from lib import SCHEMA_PATH, make_logger
 import simulator.sql
 
-logger = None
+logger = make_logger(log_dir="", name=os.path.basename(__file__), level="DEBUG")
 
 def collect_client_dbs(watson_db):
     client_dbs = []
@@ -126,8 +126,6 @@ def init_nodes_table(simulation_db):
     simulation_db.commit()
 
 if __name__ == '__main__':
-    logger = make_logger("", __file__, level="INFO")
-
     args, simulation_db_path = args_make_simulation_db()
     if not simulation_db_path:
         raise RuntimeError('simulation_db_path is empty.')
