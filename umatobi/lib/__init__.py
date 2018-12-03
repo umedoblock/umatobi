@@ -78,7 +78,7 @@ def elapsed_time(start_up_orig):
     return int(((now - start_up_orig) * 1000).total_seconds())
 
 #   %(relativeCreated)d Time in milliseconds when the LogRecord was created,
-LOGGER_FMT = '%(relativeCreated)d %(levelname)s %(message)s'
+LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(message)s'
 
 def make_logger(log_dir='', name='', index=0, level=None):
     if not name in ('admin', 'watson', 'client', 'darkness'):
