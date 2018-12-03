@@ -6,10 +6,7 @@ import logging
 
 from lib import LOGGER_FMT, make_logger
 
-global logger
-logger = None
-if not logger:
-    logger = make_logger(name="admin", level="DEBUG")
+logger = make_logger(log_dir="", name=os.path.basename(__file__), level="DEBUG")
 
 class SQL(object):
     @staticmethod
@@ -23,15 +20,12 @@ class SQL(object):
         values = tuple(d.values())
         return sql, values
 
-    def __init__(self, owner=None, db_path=':memory:', schema_path=''):
+    def __init__(self, db_path=':memory:', schema_path=''):
         self.db_path = db_path
         self.schema_path = schema_path
         self._conn = None
         self._cur = None
         self._create_table = {}
-        self.owner = owner
-        logger = getattr(owner, 'logger', None)
-        self.set_logger(logger)
         self._schema = None
 
         if self.schema_path:
@@ -41,21 +35,6 @@ class SQL(object):
         self._schema = configparser.ConfigParser()
         with open(self.schema_path) as f:
             self._schema.read_file(f)
-
-    def set_logger(self, logger, level='INFO'):
-        if logger is None:
-            # #139 いつかどこかで暇な時にでも、lib.make_logger() と統合しよう。
-            logger = logging.getLogger(str(self))
-            logger.setLevel(logging.DEBUG)
-            formatter = logging.Formatter(LOGGER_FMT)
-            # print() の代わりとして使用することを想定しているので、
-            # log message を sys.stdout に出力。
-            ch = logging.StreamHandler(stream=sys.stdout)
-            ch.setLevel(level)
-            ch.setFormatter(formatter)
-            logger.addHandler(ch)
-
-        self.logger = logger
 
     def access_db(self):
         logger.debug(f"self.db_path={self.db_path} in access_db()")
@@ -73,8 +52,8 @@ class SQL(object):
             raise RuntimeError('you must call read_table_schema() before call create_table().')
 
         table_info = self._schema[table_name]
-      # self.logger.debug('name =', table_info.name)
-      # self.logger.debug('table_info =', table_info)
+      # logger.debug('name =', table_info.name)
+      # logger.debug('table_info =', table_info)
 
         columns = []
         for column_name, explain in table_info.items():
@@ -166,45 +145,52 @@ class SQL(object):
         static_part = 'insert into {} {} values '.format(table_name, columns)
         hatenas = '({})'.format(', '.join('?' * len(columns)))
 
-        print('static_part + hatenas =')
-        print(static_part + hatenas)
+        logger.debug('static_part + hatenas =')
+        logger.debug(static_part + hatenas)
+        logger.debug("values=")
+        logger.debug(tups[1:])
         self._conn.executemany(static_part + hatenas, tups[1:])
 
     def insert(self, table_name, d):
         sql, values = SQL.construct_insert_by_dict(table_name, d)
 
-        self.logger.debug(f'sql={sql} in SQL.insert()')
-        self.logger.debug(f'values={values} in SQL.insert()')
+        logger.debug(f'sql={sql} in SQL.insert()')
+        logger.debug(f'values={values} in SQL.insert()')
         self.execute(sql, values)
         return sql, values
 
     def update(self, table_name, d, where):
         static_part = 'update {} set '.format(table_name)
-        self.logger.debug('tuple(d.keys()) =', tuple(d.keys()))
+        logger.debug(f'tuple(d.keys()) = {tuple(d.keys())}')
         set_part = ', '.join(['{} = ?'.format(column) for column in d.keys()])
         set_part += ' '
         s = ' and '.join(['{} = {}'.format(k, v) for k, v in where.items()])
         where_clause = 'where {}'.format(s)
         values = tuple(d.values())
 
-        self.logger.debug('static_part =', static_part)
-        self.logger.debug('set_part =', set_part)
-        self.logger.debug('s =', s)
-        self.logger.debug('where_clause =', where_clause)
-        self.logger.debug('')
+        logger.debug(f'static_part = {static_part}')
+        logger.debug(f'set_part ={set_part}')
+        logger.debug(f's = {s}')
+        logger.debug(f'where_clause = {where_clause}')
         sql = static_part + set_part + where_clause
-        self.logger.debug('for update sql =')
-        self.logger.debug(sql)
+        logger.debug('update sql=')
+        logger.debug(sql)
+        logger.debug('values=')
+        logger.debug(values)
         self.execute(sql, values)
         return static_part + str(values)
 
   # def __getattr__(self, name):
-  #     self.logger.info('called __getattr__() with name={}'.format(name))
+  #     logger.info('called __getattr__() with name={}'.format(name))
 
     def select(self, table_name, select_columns='*', conditions=''):
-        sql = 'select {} from {} {};'. \
-               format(select_columns, table_name, conditions)
-        self.logger.debug('{} select sql =\n{}'.format(self.owner, sql))
+        sql = 'select {} from {}'. \
+               format(select_columns, table_name)
+        if conditions:
+            sql += f" {conditions}"
+        sql += ';'
+        logger.debug(f'select sql=')
+        logger.debug(sql)
         self.execute(sql)
         # rows[0] の先頭からの順番と、
         # schema で記述している column の順番は一致する
@@ -220,7 +206,8 @@ class SQL(object):
         for row in rows:
             if row[0] == 'table' and row[2] != 'sqlite_sequence':
                 tables.append(row[2])
-        print('tuple(tables) =', tuple(tables))
+        logger.debug('tuple(tables)=')
+        logger.debug(tuple(tables))
 
         return tuple(tables)
 
@@ -273,6 +260,6 @@ class SQL(object):
         return column_names
 
     def __str__(self):
-        message = 'SQL(owner={}, db_path="{}", schema_path="{}")'. \
-                   format(self.owner, self.db_path, self.schema_path)
+        message = 'SQL(db_path="{}", schema_path="{}")'. \
+                   format(self.db_path, self.schema_path)
         return message

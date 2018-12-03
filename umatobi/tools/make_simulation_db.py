@@ -6,23 +6,25 @@ import sqlite3
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib.args import args_make_simulation_db
-from lib import SCHEMA_PATH
+from lib import SCHEMA_PATH, make_logger
 import simulator.sql
+
+logger = None
 
 def collect_client_dbs(watson_db):
     client_dbs = []
     client_rows = watson_db.select('clients', conditions='order by id')
     for client_row in client_rows:
         id_, num_nodes_ = (client_row['id'], client_row['num_nodes'])
-        print('id={}, num_nodes_={}'.format(id_, num_nodes_))
+        logger.debug('id={}, num_nodes_={}'.format(id_, num_nodes_))
         client_db_path = \
             watson_db.simulation_db_path.replace(r'simulation.db',
                                         'client.{}.db'.format(id_))
         client_db = simulator.sql.SQL(db_path=client_db_path)
         client_db.id, client_db.num_nodes = id_, num_nodes_
-        print('client_db =', client_db)
+        logger.debug(f'client_db={client_db}')
         client_db.access_db()
-        print('client_db.id =', client_db.id)
+        logger.debug(f'client_db.id={client_db.id}')
         client_dbs.append(client_db)
 
     return client_dbs
@@ -31,7 +33,7 @@ def count_nodes(client_dbs):
     total_nodes = 0
     for client_db in client_dbs:
         total_nodes += client_db.num_nodes
-    print('total_nodes =', total_nodes)
+    logger.debug(f'total_nodes={total_nodes}')
     return total_nodes
 
 def _select_client_db(client_db):
@@ -48,15 +50,15 @@ def merge_client_dbs(client_dbs):
     #158 records の sort をする時に、大量のmemoryが必要になると思われる。
     records.sort(key=lambda x: x['elapsed_time'])
   # for record in records:
-  #     print(tuple(record))
+  #     logger.debug(f'tuple(record)')
     return records
 
 def watson_make_simulation_db(simulation_db, watson_db):
-    print('simulation_db =', simulation_db)
-    print('watson_db =', watson_db)
+    logger.debug(f'simulation_db={simulation_db}')
+    logger.debug(f'watson_db={watson_db}')
 
     if os.path.exists(simulation_db.path):
-        print('os.remove("{}")'.format(simulation_db.path))
+        logger.debug(f'os.remove("{simulation_db.path}")')
         os.remove(simulation_db.path)
     simulation_db.create_db()
     simulation_db.create_table('simulation')
@@ -70,10 +72,7 @@ def watson_make_simulation_db(simulation_db, watson_db):
     watson_db.total_nodes = \
         watson_db.select('simulation', 'total_nodes')[0]['total_nodes']
 
-  # print('dir(simulation_record) =', dir(simulation_record[0]))
-  # print('simulation_record =', simulation_record[0].keys())
-  # print('simulation_record =', tuple(simulation_record[0]))
-    print('watson_db.total_nodes = {}'.format(watson_db.total_nodes))
+    logger.debug(f'watson_db.total_nodes={watson_db.total_nodes}')
     watson_db.records = merge_client_dbs(watson_db.client_dbs)
     growing = {}
     growing['id'] = None
@@ -106,11 +105,11 @@ def watson_make_simulation_db(simulation_db, watson_db):
 
 def init_nodes_table(simulation_db):
     simulation_db.init_table('nodes')
-    print('created nodes table.')
+    logger.debug('created nodes table.')
 
     simulation_db.total_nodes = \
         simulation_db.select_one('simulation', 'total_nodes')
-    print('simulation_db.total_nodes =', simulation_db.total_nodes)
+    logger.debug(f'simulation_db.total_nodes={simulation_db.total_nodes}')
     d_node = {
         'id': None,
         'host': 'dummy host',
@@ -127,6 +126,8 @@ def init_nodes_table(simulation_db):
     simulation_db.commit()
 
 if __name__ == '__main__':
+    logger = make_logger("", __file__, level="INFO")
+
     args, simulation_db_path = args_make_simulation_db()
     if not simulation_db_path:
         raise RuntimeError('simulation_db_path is empty.')
