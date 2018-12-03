@@ -133,7 +133,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             logger.info('{} recved={}'.format(self, d))
 
             d.clear()
-            d['id'] = 0
+            d['client_id'] = 0
             d['start_up_time'] = self.server.start_up_orig.isoformat()
             d['node_index'] = 1 + self.server.watson.total_nodes
             self.server.watson.total_nodes += num_nodes

@@ -198,7 +198,7 @@ class Client(object):
             self._tcp_sock.close()
             raise RuntimeError('client cannot say "I am Client." to watson where is {}'.format(self.watson_office_addr))
 
-        self.id = d['id']
+        self.id = d['client_id']
         self.start_up_time = d['start_up_time']
         self.client_db_path = os.path.join(self.dir_name,
                                      'client.{}.db'.format(self.id))
