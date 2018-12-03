@@ -17,6 +17,8 @@ logger = None
 #        TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)
 class WatsonTCPOffice(socketserver.TCPServer):
     def __init__(self, office_addr, RequestHandlerClass, start_up_orig, watson_db):
+        thread_id = threading.get_ident()
+        logger.info(f"thread_id={thread_id} in WatsonTCPOffice.__init__()")
         super().__init__(office_addr, RequestHandlerClass)
         self.start_up_orig = start_up_orig
         self.watson_db = watson_db
@@ -24,6 +26,8 @@ class WatsonTCPOffice(socketserver.TCPServer):
 class WatsonOpenOffice(threading.Thread):
     def __init__(self, office_addr, start_up_orig, watson_db_path):
         threading.Thread.__init__(self)
+        thread_id = threading.get_ident()
+        logger.info(f"thread_id={thread_id} in WatsonOpenOffice.__init__()")
         self.office_addr = office_addr
         self.start_up_orig = start_up_orig
         self.watson_db_path = watson_db_path
@@ -92,6 +96,8 @@ class WatsonOffice(socketserver.StreamRequestHandler):
 ####        self.rfile.close()
 
     def handle(self):
+        thread_id = threading.get_ident()
+        logger.info(f"thread_id={thread_id} in WatsonOffice.__init__()")
         logger.info("watson_office.handle()")
         logger.info(f"WatsonOffice(request={self.request}, client_address={self.client_address}, server={self.server}")
         text_message = self.rfile.readline().strip()
@@ -155,6 +161,8 @@ class Watson(threading.Thread):
         global logger
         if not logger:
             logger = make_logger(dir_name, name="watson", level=log_level)
+        thread_id = threading.get_ident()
+        logger.info(f"thread_id={thread_id} in Watson.__init__()")
 
         self.watson_office_addr = watson_office_addr
         self.simulation_seconds = simulation_seconds
