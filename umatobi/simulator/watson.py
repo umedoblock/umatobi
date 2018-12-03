@@ -160,7 +160,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
                 'dir_name': self.server.watson.dir_name,
                 'client_id': client_id,
                 'start_up_time': self.server.start_up_orig.isoformat(),
-                'node_index': 1 + self.server.watson.total_nodes,
+                'node_index': self.server.watson.total_nodes,
             }
             self.server.watson.total_nodes += num_nodes
             reply = dict_becomes_jbytes(d_json)

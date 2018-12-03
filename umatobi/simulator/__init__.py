@@ -35,38 +35,38 @@ Thread means [T].
 
 localhost PC
 
-watson[P]-+-client.1[P]
+watson[P]-+-client.0[P]
+          |   |
+          |   +-darkness.0[P]
+          |   | +-node.0[T]
+          |   | +-node.1[T]
+          |   | +-...
+          |   | +-node.X-1[T]
           |   |
           |   +-darkness.1[P]
-          |   | +-node.1[T]
-          |   | +-node.2[T]
-          |   | +-...
           |   | +-node.X[T]
-          |   |
-          |   +-darkness.2[P]
           |   | +-node.X+1[T]
-          |   | +-node.X+2[T]
           |   | +-...
-          |   | +-node.Y[T]
+          |   | +-node.Y-1[T]
           |   |
-          |   +-darkness.D[P]
+          |   +-darkness.D-1[P]
+          |     +-node.Y[T]
           |     +-node.Y+1[T]
-          |     +-node.Y+2[T]
           |     +-...
-          |     +-node.N[T]
+          |     +-node.N-1[T]
 .............................
-another   +-client.C+1[P]
+another   +-client.C+0[P]
 PC        |   |
-          |   +-darkness.D+1[P]
-          |     +-node.N+1[T]
-          |     +-...
+          |   +-darkness.D+0[P]
           |     +-node.N[T]
+          |     +-...
+          |     +-node.?[T]
 .............................
 another   |
-PC2       +-client.C+2[P]
+PC2       +-client.C+1[P]
               |
               +-darkness.D+1[P]
-                +-node.N+1[T]
+                +-node.?[T]
                 +-...
 別PCでも simulation に参加できる事を想定している。
 '''
