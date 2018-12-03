@@ -93,9 +93,9 @@ class Client(object):
 
         # for 内で darkness_process を作成し、
         # 順に darkness_processes に追加していく。
-        for darkness_id in range(1, self.num_darkness + 1):
+        for darkness_id in range(0, self.num_darkness):
             first_node_id = self.node_index + \
-                            (darkness_id - 1) * self.nodes_per_darkness
+                            darkness_id * self.nodes_per_darkness
             if darkness_id == self.num_darkness:
                 # 最後に端数を作成？
                 nodes_per_darkness = self.last_darkness_make_nodes
