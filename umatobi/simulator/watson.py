@@ -30,6 +30,7 @@ class WatsonOpenOffice(threading.Thread):
         logger.info(f"socketserver.TCPServer({self.office_addr}, WatsonOpenOffice)")
         with WatsonTCPOffice(self.office_addr, WatsonOffice, self.start_up_orig, self.watson_db) as watson_tcp_office:
             logger.info("watson_open_office.serve_forever()")
+            # WatsonOpenOffice() run on different thread of WatsonTCPOffice.
             watson_tcp_office.serve_forever()
 #       with socketserver.TCPServer(self.office, WatsonOffice) as watson_office:
 #           logger.info("watson_open_office.serve_forever()")
