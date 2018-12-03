@@ -37,7 +37,25 @@ class WatsonTCPOffice(socketserver.TCPServer):
     def __init__(self, watson):
         thread_id = threading.get_ident()
         logger.info(f"thread_id={thread_id} in WatsonTCPOffice.__init__()")
-        super().__init__(watson.watson_office_addr, WatsonOffice)
+        ip, port = watson.watson_office_addr
+        while True:
+            addr = (ip, port)
+            try:
+                super().__init__(addr, WatsonOffice)
+            except OSError as oe:
+                if oe.errno != 98:
+                    raise(oe)
+
+              # [Errno 98] Address already in use
+                port += 1
+                if port > 65535:
+                    raise RuntimeError("port number is over 65535")
+                continue
+            break
+
+        # watson_office_addr が決定されている。
+        watson.watson_office_addr = addr
+
         self.watson = watson
         self.clients = []
     #   self.server in WatsonOffice class means WatsonTCPOffice instance.
@@ -211,6 +229,7 @@ class Watson(threading.Thread):
         # to watson instance
         # in WatsonOpenOffice.run()
         watson_open_office.in_serve_forever.wait()
+        # watson.watson_office_addr が決定している。
 
         while elapsed_time(self.start_up_orig) < self.simulation_seconds * 1000:
             logger.info("watson time.sleep(1.0)")
