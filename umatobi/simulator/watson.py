@@ -70,53 +70,6 @@ class WatsonTCPOffice(socketserver.TCPServer):
         pass
 
 class WatsonOffice(socketserver.StreamRequestHandler):
-#class BaseRequestHandler:
-#####def __init__(self, request, client_address, server):
-#####    self.request = request
-#####    self.client_address = client_address
-#####    self.server = server
-#####    self.setup()
-#####    try:
-#####        self.handle()
-#####    finally:
-#####        self.finish()
-
-#####def setup(self):
-#####    pass
-
-#####def handle(self):
-#####    pass
-
-#####def finish(self):
-#####    pass
-
-####class StreamRequestHandler(BaseRequestHandler):
-####    rbufsize = -1
-####    wbufsize = 0
-####
-####    # A timeout to apply to the request socket, if not None.
-####    timeout = None
-####
-####    # Disable nagle algorithm for this socket, if True.
-####    # Use only when wbufsize != 0, to avoid small packets.
-####    disable_nagle_algorithm = False
-####
-####    def setup(self):
-####        self.connection = self.request
-####        if self.timeout is not None:
-####            self.connection.settimeout(self.timeout)
-####        if self.disable_nagle_algorithm:
-####            self.connection.setsockopt(socket.IPPROTO_TCP,
-####                                       socket.TCP_NODELAY, True)
-####        self.rfile = self.connection.makefile('rb', self.rbufsize)
-####        self.wfile = self.connection.makefile('wb', self.wbufsize)
-####
-####    def finish(self):
-####        if not self.wfile.closed:
-####            self.wfile.flush()
-####        self.wfile.close()
-####        self.rfile.close()
-
     def handle(self):
         thread_id = threading.get_ident()
         logger.info(f"thread_id={thread_id} in WatsonOffice.handle()")
