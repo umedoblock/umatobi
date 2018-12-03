@@ -22,14 +22,11 @@ class WatsonOpenOffice(threading.Thread):
         self.office_addr = office_addr
         self.start_up_orig = start_up_orig
         self.watson_db_path = watson_db_path
-        self.watson_db = simulator.sql.SQL(owner=self,
-                                           db_path=watson_db_path)
-        self.watson_db.access_db()
 
     def run(self):
         # Create the server, binding to localhost on port ???
         logger.info(f"socketserver.TCPServer({self.office_addr}, WatsonOpenOffice)")
-        with WatsonTCPOffice(self.office_addr, WatsonOffice, self.start_up_orig, self.watson_db) as watson_tcp_office:
+        with WatsonTCPOffice(self.office_addr, WatsonOffice, self.start_up_orig, self.watson_db_path) as watson_tcp_office:
             logger.info("watson_open_office.serve_forever()")
             # WatsonOpenOffice() run on different thread of WatsonTCPOffice.
             watson_tcp_office.serve_forever()
@@ -42,12 +39,15 @@ class WatsonOpenOffice(threading.Thread):
 #        TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)
 # WatsonTCPOffice and WatsonOffice classes are on same thread.
 class WatsonTCPOffice(socketserver.TCPServer):
-    def __init__(self, office_addr, RequestHandlerClass, start_up_orig, watson_db):
+    def __init__(self, office_addr, RequestHandlerClass, start_up_orig, watson_db_path):
         thread_id = threading.get_ident()
         logger.info(f"thread_id={thread_id} in WatsonTCPOffice.__init__()")
         super().__init__(office_addr, RequestHandlerClass)
         self.start_up_orig = start_up_orig
-        self.watson_db = watson_db
+        self.watson_db_path = watson_db_path
+        self.watson_db = simulator.sql.SQL(owner=self,
+                                           db_path=self.watson_db_path)
+        self.watson_db.access_db()
 
 class WatsonOffice(socketserver.StreamRequestHandler):
 #class BaseRequestHandler:
