@@ -143,6 +143,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             logger.info(f'unknown professed = "{professed}" in watson_office.handle()')
             reply = b'Go back home.'
 
+        logger.info(f"reply={reply}")
         self.wfile.write(reply)
         self.server.clients.append(self)
 
