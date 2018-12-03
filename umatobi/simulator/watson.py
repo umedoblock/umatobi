@@ -22,11 +22,14 @@ class WatsonTCPOffice(socketserver.TCPServer):
         self.watson_db = watson_db
 
 class WatsonOpenOffice(threading.Thread):
-    def __init__(self, office_addr, start_up_orig, watson_db):
+    def __init__(self, office_addr, start_up_orig, watson_db_path):
         threading.Thread.__init__(self)
         self.office_addr = office_addr
         self.start_up_orig = start_up_orig
-        self.watson_db = watson_db
+        self.watson_db_path = watson_db_path
+        self.watson_db = simulator.sql.SQL(owner=self,
+                                           db_path=watson_db_path)
+        self.watson_db.access_db()
 
     def run(self):
         # Create the server, binding to localhost on port ???
@@ -117,6 +120,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             d['joined'] = elapsed_time(self.server.start_up_orig)
             d['num_nodes'] = num_nodes
             sql = self.server.watson_db.insert('clients', d)
+            logger.info(f"watson_db.insert({sql})")
             self.server.watson_db.commit()
             logger.debug('{} {}'.format(self, sql))
             logger.info('{} recved={}'.format(self, d))
@@ -190,7 +194,7 @@ class Watson(threading.Thread):
         self.watson_db.create_table('clients')
         logger.info("watson created clients table.")
 
-        watson_open_office = WatsonOpenOffice(self.watson_office_addr, self.start_up_orig, self.watson_db)
+        watson_open_office = WatsonOpenOffice(self.watson_office_addr, self.start_up_orig, self.watson_db_path)
         logger.info("watson_open_office.start()")
         watson_open_office.start()
 
