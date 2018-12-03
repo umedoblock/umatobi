@@ -107,7 +107,7 @@ class Client(object):
             darkness_d_config = {
                 'dir_name':  self.dir_name, 'id':  darkness_id,
                 'client_id':  client_id,
-                'log_level':  self.log_level,
+                'log_level':  "INFO",
                 'start_up_time':  self.start_up_time,
                 'first_node_id':  first_node_id,
                 'num_nodes':  nodes_per_darkness,
