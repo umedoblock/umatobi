@@ -16,22 +16,22 @@ logger = None
 #  class socketserver.\
 #        TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)
 class WatsonTCPOffice(socketserver.TCPServer):
-    def __init__(self, office, RequestHandlerClass, start_up_orig, watson_db):
-        super().__init__(office, RequestHandlerClass)
+    def __init__(self, office_addr, RequestHandlerClass, start_up_orig, watson_db):
+        super().__init__(office_addr, RequestHandlerClass)
         self.start_up_orig = start_up_orig
         self.watson_db = watson_db
 
 class WatsonOpenOffice(threading.Thread):
-    def __init__(self, office, start_up_orig, watson_db):
+    def __init__(self, office_addr, start_up_orig, watson_db):
         threading.Thread.__init__(self)
-        self.office = office
+        self.office_addr = office_addr
         self.start_up_orig = start_up_orig
         self.watson_db = watson_db
 
     def run(self):
         # Create the server, binding to localhost on port ???
-        logger.info(f"socketserver.TCPServer({self.office}, WatsonOpenOffice)")
-        with WatsonTCPOffice(self.office, WatsonOffice, self.start_up_orig, self.watson_db) as watson_office:
+        logger.info(f"socketserver.TCPServer({self.office_addr}, WatsonOpenOffice)")
+        with WatsonTCPOffice(self.office_addr, WatsonOffice, self.start_up_orig, self.watson_db) as watson_office:
             logger.info("watson_open_office.serve_forever()")
             watson_office.serve_forever()
 #       with socketserver.TCPServer(self.office, WatsonOffice) as watson_office:
