@@ -139,25 +139,27 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             self.server.clients.append(self.request)
 
             logger.info(f'Client(client_id={client_id}, ip:port={client_addr}) came here.')
-            d = {}
-            d['client_id'] = client_id
-            d['host'] = client_addr[0]
-            d['port'] = client_addr[1]
-            d['joined'] = elapsed_time(self.server.start_up_orig)
-            d['num_nodes'] = num_nodes
-            sql = self.server.watson_db.insert('clients', d)
+            d_insert = {
+                'client_id': client_id,
+                'host': client_addr[0],
+                'port': client_addr[1],
+                'joined': elapsed_time(self.server.start_up_orig),
+                'num_nodes': num_nodes,
+            }
+            sql = self.server.watson_db.insert('clients', d_insert)
             logger.info(f"watson_db.insert({sql})")
             self.server.watson_db.commit()
             logger.debug('{} {}'.format(self, sql))
-            logger.info('{} recved={}'.format(self, d))
+            logger.info('{} recved={}'.format(self, d_insert))
 
-            d.clear()
-            d['dir_name'] = self.server.watson.dir_name
-            d['client_id'] = client_id
-            d['start_up_time'] = self.server.start_up_orig.isoformat()
-            d['node_index'] = 1 + self.server.watson.total_nodes
+            d_json = {
+                'dir_name': self.server.watson.dir_name,
+                'client_id': client_id,
+                'start_up_time': self.server.start_up_orig.isoformat(),
+                'node_index': 1 + self.server.watson.total_nodes,
+            }
             self.server.watson.total_nodes += num_nodes
-            reply = dict_becomes_jbytes(d)
+            reply = dict_becomes_jbytes(d_json)
         else:
             logger.debug('crazy man.')
             logger.info(f'unknown professed = "{professed}" in watson_office.handle()')
