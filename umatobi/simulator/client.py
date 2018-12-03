@@ -62,8 +62,6 @@ class Client(object):
         self._tcp_sock.connect(watson_office_addr)
         _d_init_attrs = self._init_attrs()
 
-
-
         logger.info('----- {} log start -----'.format(self))
         logger.info('watson_office_addr = {}'.format(self.watson_office_addr))
         logger.info('   dir_name = {}'.format(self.dir_name))
