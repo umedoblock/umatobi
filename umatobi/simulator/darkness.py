@@ -84,7 +84,7 @@ class Darkness(object):
         '''
         st_barrier = set([
             'id', 'client_id', 'first_node_id',
-            'db_dir', 'num_nodes', 'log_level', 'start_up_time',
+            'dir_name', 'num_nodes', 'log_level', 'start_up_time',
             'made_nodes', # share with client and darknesses
             'leave_there', # share with client and another darknesses
         ])
@@ -95,14 +95,14 @@ class Darkness(object):
             setattr(self, attr, value)
           # print(self, attr, value)
 
-        self.logger = make_logger(self.db_dir, 'darkness',
+        self.logger = make_logger(self.dir_name, 'darkness',
                                   self.id, self.log_level)
         # ここより下からloggerを使えるようになる。
         self.logger.info(('{} initilized, '
                           'num_nodes={}.').format(self, self.num_nodes))
         self.logger.debug('{} debug log test.'.format(self))
 
-        self.client_db_path = os.path.join(self.db_dir,
+        self.client_db_path = os.path.join(self.dir_name,
                                      'client.{}.db'.format(self.client_id))
         self.schema_path = SCHEMA_PATH
         self.client_db = simulator.sql.SQL(owner=self,
