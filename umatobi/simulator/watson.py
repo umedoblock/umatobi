@@ -167,7 +167,6 @@ class Watson(threading.Thread):
         self.timeout_sec = 1
         self.nodes = []
         self.total_nodes = 0
-        self.clients = []
 
         self._make_office()
 
@@ -223,7 +222,7 @@ class Watson(threading.Thread):
         d_simulation['title'] = 'umatobi-simulation'
         d_simulation['memo'] = 'なにかあれば'
         d_simulation['total_nodes'] = self.total_nodes
-        d_simulation['n_clients'] = len(self.clients)
+        d_simulation['n_clients'] = len(self.watson_tcp_office.clients)
         d_simulation['version'] = '0.0.0'
         self.watson_db.insert('simulation', d_simulation)
         self.watson_db.commit()
@@ -259,11 +258,6 @@ class Watson(threading.Thread):
             logger.debug(f"watson_office_client.request={watson_office_client.request} in _release_clients()")
             watson_office_client.wfile.write(result)
             watson_office_client.bye_bye()
-
-    def collect_nodes_as_csv(self):
-        '''watsonが把握しているnodeのaddressをcsv化する。'''
-        csv = ','.join(['{}:{}'.format(*node) for node in self.nodes])
-        return csv
 
     def __str__(self):
         return 'Watson({}:{})'.format(*self.watson_office_addr)
