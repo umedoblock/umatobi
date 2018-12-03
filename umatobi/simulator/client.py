@@ -126,6 +126,7 @@ class Client(object):
         # watson から終了通知("break down")が届くまで待機し続ける。
         # TODO: #149 watson からの接続であると確認する。
         while True:
+            logger.info(f'self._tcp_sock={self._tcp_sock} in Client.start()')
             try:
                 recved_msg = self._tcp_sock.recv(1024)
             except socket.timeout:
@@ -133,11 +134,13 @@ class Client(object):
                 continue
 
             if recved_msg == b'break down.':
-                logger.info('Client(id={}) got break down from {}.'.format(self.id, recved_addr))
+                logger.info('Client(id={}) got break down from {}.'.format(self.id, recved_msg))
                 break
 
         # Client 終了処理開始。
         self._release()
+
+        self._tcp_sock.shutdown(socket.SHUT_WR)
 
     def join(self):
         '''threading.Thread を使用していた頃の名残。'''
