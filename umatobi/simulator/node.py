@@ -5,7 +5,7 @@ import pickle
 import datetime
 
 import p2p.core
-from lib import formula, elapsed_time, validate_kwargs
+from lib import formula, elapsed_time, validate_kwargs, isoformat_time_to_datetime
 
 class Node(p2p.core.Node):
 
@@ -53,7 +53,8 @@ class Node(p2p.core.Node):
       # print('{} good bye(host={}, port={})'.format(self, self.host, self.port))
 
     def to_darkness(self, obj):
-        et = elapsed_time(self)
+        start_up_orig = isoformat_time_to_datetime(self.start_up_time)
+        et = elapsed_time(start_up_orig)
         pds = pickle.dumps(obj)
         tup = (et, pds)
         self._queue_darkness.put(tup)
