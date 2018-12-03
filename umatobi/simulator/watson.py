@@ -20,14 +20,14 @@ class WatsonOpenOffice(threading.Thread):
         self.watson = watson
         self.in_serve_forever = threading.Event()
         thread_id = threading.get_ident()
-        logger.info(f"thread_id={thread_id} in WatsonOpenOffice.__init__()")
+        logger.debug(f"thread_id={thread_id} in WatsonOpenOffice.__init__()")
 
     def run(self):
         # Create the server, binding to localhost on port ???
-        logger.info(f"socketserver.TCPServer({self.watson.watson_office_addr}, WatsonOpenOffice)")
+        logger.debug(f"socketserver.TCPServer({self.watson.watson_office_addr}, WatsonOpenOffice)")
         with WatsonTCPOffice(self.watson) as watson_tcp_office:
             self.watson.watson_tcp_office = watson_tcp_office
-            logger.info("watson_open_office.serve_forever()")
+            logger.debug("watson_open_office.serve_forever()")
             # WatsonOpenOffice() run on different thread of WatsonTCPOffice.
             self.in_serve_forever.set()
             self.watson.watson_office_addr_assigned.set()
@@ -37,7 +37,7 @@ class WatsonOpenOffice(threading.Thread):
 class WatsonTCPOffice(socketserver.TCPServer):
     def __init__(self, watson):
         thread_id = threading.get_ident()
-        logger.info(f"thread_id={thread_id} in WatsonTCPOffice.__init__()")
+        logger.debug(f"thread_id={thread_id} in WatsonTCPOffice.__init__()")
         ip, port = watson.watson_office_addr
         while True:
             addr = (ip, port)
@@ -72,30 +72,30 @@ class WatsonTCPOffice(socketserver.TCPServer):
 class WatsonOffice(socketserver.StreamRequestHandler):
     def handle(self):
         thread_id = threading.get_ident()
-        logger.info(f"thread_id={thread_id} in WatsonOffice.handle()")
-        logger.info("watson_office.handle()")
+        logger.debug(f"thread_id={thread_id} in WatsonOffice.handle()")
+        logger.debug("watson_office.handle()")
     #   self.server in WatsonOffice class means WatsonTCPOffice instance.
-        logger.info(f"WatsonOffice(request={self.request}, client_address={self.client_address}, server={self.server}")
+        logger.debug(f"WatsonOffice(request={self.request}, client_address={self.client_address}, server={self.server}")
         text_message = self.rfile.readline().strip()
-        logger.info(f"text_message = {text_message} in watson_office.handle()")
+        logger.debug(f"text_message = {text_message} in watson_office.handle()")
 
         sheep = jtext_becomes_dict(text_message)
-        logger.info(f"sheep = {sheep} in watson_office.handle()")
+        logger.debug(f"sheep = {sheep} in watson_office.handle()")
         professed = sheep['profess']
         num_nodes = sheep['num_nodes']
 
-        logger.info(f"self.server.start_up_orig={self.server.start_up_orig}")
+        logger.debug(f"self.server.start_up_orig={self.server.start_up_orig}")
 
-        logger.info(f"professed = {professed} in watson_office.handle()")
-        logger.info(f"type(self.server)={type(self.server)}")
-        logger.info(f"type(self)={type(self)}")
-        logger.info(f"dir(self)={dir(self)}")
+        logger.debug(f"professed = {professed} in watson_office.handle()")
+        logger.debug(f"type(self.server)={type(self.server)}")
+        logger.debug(f"type(self)={type(self)}")
+        logger.debug(f"dir(self)={dir(self)}")
         if professed == 'I am Client.':
             client_addr = self.client_address
             client_id = len(self.server.clients)
             self.server.clients.append(self)
 
-            logger.info(f'Client(id={id}, ip:port={client_addr}) came here.')
+            logger.debug(f'Client(id={id}, ip:port={client_addr}) came here.')
             d_insert = {
                 'id': client_id,
                 'host': client_addr[0],
@@ -104,25 +104,25 @@ class WatsonOffice(socketserver.StreamRequestHandler):
                 'num_nodes': num_nodes,
             }
             sql = self.server.watson_db.insert('clients', d_insert)
-            logger.info(f"watson_db.insert({sql})")
+            logger.debug(f"watson_db.insert({sql})")
             self.server.watson_db.commit()
             logger.debug('{} {}'.format(self, sql))
-            logger.info('{} recved={}'.format(self, d_insert))
+            logger.debug('{} recved={}'.format(self, d_insert))
 
             d_json = {
                 'dir_name': self.server.watson.dir_name,
                 'client_id': client_id,
                 'start_up_time': self.server.start_up_orig.isoformat(),
                 'node_index': self.server.watson.total_nodes,
+                'log_level': self.server.watson.log_level,
             }
             self.server.watson.total_nodes += num_nodes
             reply = dict_becomes_jbytes(d_json)
         else:
-            logger.debug('crazy man.')
             logger.info(f'unknown professed = "{professed}" in watson_office.handle()')
             reply = b'Go back home.'
 
-        logger.info(f"reply={reply}")
+        logger.debug(f"reply={reply}")
         self.wfile.write(reply)
 
     def finish(self):
@@ -145,7 +145,9 @@ class Watson(threading.Thread):
         if not logger:
             logger = make_logger(dir_name, name="watson", level=log_level)
         thread_id = threading.get_ident()
+        logger.debug("debuging...")
         logger.info(f"thread_id={thread_id} in Watson.__init__()")
+        self.log_level = log_level
 
         self.watson_office_addr = watson_office_addr
         self.watson_office_addr_assigned = threading.Event()
@@ -184,11 +186,11 @@ class Watson(threading.Thread):
                                      schema_path=self.schema_path)
         self.watson_db.create_db()
         self.watson_db.create_table('clients')
-        logger.info("watson created clients table.")
+        logger.debug("watson created clients table.")
 
         watson_open_office = WatsonOpenOffice(self)
         self.watson_open_office = watson_open_office
-        logger.info("watson_open_office.start()")
+        logger.debug("watson_open_office.start()")
         watson_open_office.start()
         # wait a minute
         # to set watson_open_office instance
@@ -198,7 +200,7 @@ class Watson(threading.Thread):
         # watson.watson_office_addr が決定している。
 
         while elapsed_time(self.start_up_orig) < self.simulation_seconds * 1000:
-            logger.info("watson time.sleep(1.0)")
+            logger.debug("watson time.sleep(1.0)")
             time.sleep(1.0)
 
         self._release_clients()
@@ -238,7 +240,7 @@ class Watson(threading.Thread):
     def join(self):
         '''watson threadがjoin'''
         threading.Thread.join(self)
-        logger.info('watson thread joined.')
+        logger.debug('watson thread joined.')
 
     def _tcp_office_open(self):
         _wait_tcp_clients()
@@ -249,12 +251,12 @@ class Watson(threading.Thread):
         各Clientに終了処理を行わせる。
         Clientは、終了処理中に client.id.db を送信してくる。
         '''
-        logger.info('watson._release_clients()')
+        logger.debug('watson._release_clients()')
         for watson_office_client in self.watson_tcp_office.clients:
             result = b'break down.'
-            logger.info(f"type(watson_office_client)={type(watson_office_client)} in _release_clients()")
-            logger.info(f"watson_office_client={watson_office_client} in _release_clients()")
-            logger.info(f"watson_office_client.request={watson_office_client.request} in _release_clients()")
+            logger.debug(f"type(watson_office_client)={type(watson_office_client)} in _release_clients()")
+            logger.debug(f"watson_office_client={watson_office_client} in _release_clients()")
+            logger.debug(f"watson_office_client.request={watson_office_client.request} in _release_clients()")
             watson_office_client.wfile.write(result)
             watson_office_client.bye_bye()
 

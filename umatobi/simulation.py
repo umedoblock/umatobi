@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     if not os.path.isdir(dir_name): os.makedirs(dir_name, exist_ok=True)
 
-    logger = make_logger(dir_name, name="admin", level="INFO")
+    logger = make_logger(dir_name, name="admin", level=args.log_level)
     logger.info("simulation start !")
 
     # 各 object を作成するなど。

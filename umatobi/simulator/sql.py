@@ -58,7 +58,7 @@ class SQL(object):
         self.logger = logger
 
     def access_db(self):
-        logger.info(f"self.db_path={self.db_path} in access_db()")
+        logger.debug(f"self.db_path={self.db_path} in access_db()")
         if not os.path.exists(self.db_path):
             raise RuntimeError('cannot find "{}"'.format(self.db_path))
         self.create_db()
@@ -173,8 +173,8 @@ class SQL(object):
     def insert(self, table_name, d):
         sql, values = SQL.construct_insert_by_dict(table_name, d)
 
-        self.logger.info(f'sql={sql} in SQL.insert()')
-        self.logger.info(f'values={values} in SQL.insert()')
+        self.logger.debug(f'sql={sql} in SQL.insert()')
+        self.logger.debug(f'values={values} in SQL.insert()')
         self.execute(sql, values)
         return sql, values
 

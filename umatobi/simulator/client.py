@@ -61,6 +61,7 @@ class Client(object):
         logger.info(f"self._tcp_sock.connect(={watson_office_addr})")
         self._tcp_sock.connect(watson_office_addr)
         _d_init_attrs = self._init_attrs()
+        logger = make_logger(self.dir_name, name="client", level=self.log_level)
 
         logger.info('----- {} log start -----'.format(self))
         logger.info('watson_office_addr = {}'.format(self.watson_office_addr))
@@ -105,7 +106,7 @@ class Client(object):
             darkness_d_config = {
                 'dir_name':  self.dir_name, 'id':  darkness_id,
                 'client_id':  client_id,
-                'log_level':  "INFO",
+                'log_level':  self.log_level,
                 'start_up_time':  self.start_up_time,
                 'first_node_id':  first_node_id,
                 'num_nodes':  nodes_per_darkness,
@@ -126,7 +127,7 @@ class Client(object):
         # watson から終了通知("break down")が届くまで待機し続ける。
         # TODO: #149 watson からの接続であると確認する。
         while True:
-            logger.info(f'self._tcp_sock={self._tcp_sock} in Client.start()')
+            logger.debug(f'self._tcp_sock={self._tcp_sock} in Client.start()')
             try:
                 recved_msg = self._tcp_sock.recv(1024)
             except socket.timeout:
@@ -193,7 +194,7 @@ class Client(object):
         start_up_time は dir_nameを決定する際に使用する。
         '''
         d = self._hello_watson()
-        logger.info(f"_hello_watson() return d={d} in Client._init_attrs()")
+        logger.debug(f"_hello_watson() return d={d} in Client._init_attrs()")
         if not d:
             self._tcp_sock.close()
             raise RuntimeError('client cannot say "I am Client." to watson where is {}'.format(self.watson_office_addr))
@@ -204,6 +205,7 @@ class Client(object):
         self.client_db_path = os.path.join(self.dir_name,
                                      'client.{}.db'.format(self.id))
         self.node_index = d['node_index']
+        self.log_level = d['log_level']
         self.schema_path = SCHEMA_PATH
         return d
 
@@ -226,14 +228,14 @@ class Client(object):
         js = dict_becomes_jbytes(sheep)
         d = {}
         while tries < 3:
-            logger.info(f"js={js}")
+            logger.debug(f"js={js}")
             try:
                 self._tcp_sock.sendall(js)
             except socket.timeout as e:
-                logger.info(f"{str(self)} was timeout by send(), tries={tries}")
+                logger.debug(f"{str(self)} was timeout by send(), tries={tries}")
                 tries += 1
                 continue
-            logger.info(f"send js={js} in _hello_watson()")
+            logger.debug(f"send js={js} in _hello_watson()")
             break
 
         if tries >= 3:
@@ -244,11 +246,11 @@ class Client(object):
             try:
                 recved_msg = self._tcp_sock.recv(1024)
             except socket.timeout as e:
-                logger.info(f"{str(self)} was timeout by recv(), tries={tries}")
+                logger.debug(f"{str(self)} was timeout by recv(), tries={tries}")
                 tries += 1
                 continue
           # if self.watson == who:
-            logger.info(f"recved_msg={recved_msg}")
+            logger.debug(f"recved_msg={recved_msg}")
             jt = recved_msg.decode("utf-8")
             d = jtext_becomes_dict(jt)
             break
