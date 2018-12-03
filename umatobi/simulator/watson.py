@@ -36,7 +36,6 @@ class WatsonOpenOffice(threading.Thread):
 #           watson_office.start_up_time = self.start_up_time
 #           watson_office.serve_forever()
 
-            d['node_index'] = 1 + self.server.watson.total_nodes
 #  class socketserver.\
 #        TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)
 # WatsonTCPOffice and WatsonOffice classes are on same thread.
