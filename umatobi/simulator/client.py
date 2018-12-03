@@ -127,12 +127,12 @@ class Client(object):
         # TODO: #149 watson からの接続であると確認する。
         while True:
             try:
-                recved, recved_addr = self._tcp_sock.recv(1024)
+                recved_msg = self._tcp_sock.recv(1024)
             except socket.timeout:
                 recved = b''
                 continue
 
-            if recved == b'break down.':
+            if recved_msg == b'break down.':
                 logger.info('Client(id={}) got break down from {}.'.format(self.id, recved_addr))
                 break
 
