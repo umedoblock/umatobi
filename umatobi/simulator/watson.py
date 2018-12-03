@@ -358,9 +358,11 @@ class Watson(threading.Thread):
         Clientは、終了処理中に client.id.db を送信してくる。
         '''
         logger.info('watson._release_clients()')
-        for client in self.clients:
+        for tcp_office_client in self.watson_tcp_office.clients:
             result = b'break down.'
-            self._tcp_sock.send(result, client)
+            logger.info(f"type(tcp_office_client)={type(tcp_office_client)} in _release_clients()")
+            logger.info(f"tcp_office_client={tcp_office_client} in _release_clients()")
+            self._tcp_sock.send(result, tcp_office_client)
             self.wfile.write(result)
 
     def collect_nodes_as_csv(self):
