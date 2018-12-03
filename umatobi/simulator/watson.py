@@ -135,9 +135,10 @@ class WatsonOffice(socketserver.StreamRequestHandler):
         logger.info(f"dir(self)={dir(self)}")
         if professed == 'I am Client.':
             client_addr = self.client_address
-            client_id = 0
+            client_id = len(self.server.clients)
+            self.server.clients.append(self.request)
 
-            logger.info('{} Client(client_id=0, ip:port={}) came here.'.format(self, client_addr))
+            logger.info(f'Client(client_id={client_id}, ip:port={client_addr}) came here.')
             d = {}
             d['client_id'] = client_id
             d['host'] = client_addr[0]
@@ -152,7 +153,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
 
             d.clear()
             d['dir_name'] = self.server.watson.dir_name
-            d['client_id'] = 0
+            d['client_id'] = client_id
             d['start_up_time'] = self.server.start_up_orig.isoformat()
             d['node_index'] = 1 + self.server.watson.total_nodes
             self.server.watson.total_nodes += num_nodes
@@ -164,7 +165,6 @@ class WatsonOffice(socketserver.StreamRequestHandler):
 
         logger.info(f"reply={reply}")
         self.wfile.write(reply)
-        self.server.clients.append(self)
 
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
