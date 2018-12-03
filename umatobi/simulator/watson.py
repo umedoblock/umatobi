@@ -6,7 +6,7 @@ import datetime, time
 import configparser
 import sqlite3
 
-from lib import make_logger, dict_becomes_jbytes, jbytes_becomes_dict
+from lib import make_logger, dict_becomes_jbytes, jtext_becomes_dict
 from lib import make_start_up_orig, elapsed_time
 from lib import SCHEMA_PATH
 import simulator.sql
@@ -104,7 +104,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
         text_message = self.rfile.readline().strip()
         logger.info(f"text_message = {text_message} in watson_office.handle()")
 
-        sheep = jbytes_becomes_dict(text_message)
+        sheep = jtext_becomes_dict(text_message)
         logger.info(f"sheep = {sheep} in watson_office.handle()")
         professed = sheep['profess']
         num_nodes = sheep['num_nodes']
@@ -274,15 +274,14 @@ class Watson(threading.Thread):
             try:
               # print('================= count_inquiries =', count_inquiries)
               # print('self._sock.recvfrom() ==============================')
-                self.rdata = self.rfile.readline().strip()
-                text_message, phone_number = self._tcp_sock.recvfrom(1024)
+                text_message = self.rfile.readline().strip()
             except socket.timeout:
               # print('phone_number timeouted.')
                 phone_number = None
 
             if not phone_number:
                 continue
-            sheep = jbytes_becomes_dict(text_message)
+            sheep = jtext_becomes_dict(text_message)
             professed = sheep['profess']
             num_nodes = sheep['num_nodes']
 

@@ -46,9 +46,8 @@ def dict_becomes_jbytes(d):
     jb = js.encode()
     return jb
 
-def jbytes_becomes_dict(jb):
-    js = jb.decode()
-    d = json.loads(js)
+def jtext_becomes_dict(jt):
+    d = json.loads(jt)
     return d
 
 def make_start_up_orig():

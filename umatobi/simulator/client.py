@@ -6,7 +6,7 @@ import multiprocessing
 
 from simulator.darkness import Darkness
 import simulator.sql
-from lib import make_logger, jbytes_becomes_dict, dict_becomes_jbytes
+from lib import make_logger, jtext_becomes_dict, dict_becomes_jbytes
 from lib import SCHEMA_PATH, isoformat_time_to_datetime
 
 logger = None
@@ -252,7 +252,8 @@ class Client(object):
                 continue
           # if self.watson == who:
             logger.info(f"recved_msg={recved_msg}")
-            d = jbytes_becomes_dict(recved_msg)
+            jt = recved_msg.decode("utf-8")
+            d = jtext_becomes_dict(jt)
             break
 
       # print('who =', file=sys.stderr)
