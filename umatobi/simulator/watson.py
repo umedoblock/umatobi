@@ -15,18 +15,16 @@ logger = None
 
 # WatsonTCPOffice and WatsonOpenOffice classes are on different thread.
 class WatsonOpenOffice(threading.Thread):
-    def __init__(self, office_addr, start_up_orig, watson_db_path):
+    def __init__(self, watson):
         threading.Thread.__init__(self)
+        self.watson = watson
         thread_id = threading.get_ident()
         logger.info(f"thread_id={thread_id} in WatsonOpenOffice.__init__()")
-        self.office_addr = office_addr
-        self.start_up_orig = start_up_orig
-        self.watson_db_path = watson_db_path
 
     def run(self):
         # Create the server, binding to localhost on port ???
-        logger.info(f"socketserver.TCPServer({self.office_addr}, WatsonOpenOffice)")
-        with WatsonTCPOffice(self.office_addr, WatsonOffice, self.start_up_orig, self.watson_db_path) as watson_tcp_office:
+        logger.info(f"socketserver.TCPServer({self.watson.watson_office_addr}, WatsonOpenOffice)")
+        with WatsonTCPOffice(self.watson.watson_office_addr, WatsonOffice, self.watson) as watson_tcp_office:
             logger.info("watson_open_office.serve_forever()")
             # WatsonOpenOffice() run on different thread of WatsonTCPOffice.
             watson_tcp_office.serve_forever()
@@ -35,16 +33,20 @@ class WatsonOpenOffice(threading.Thread):
 #           watson_office.start_up_time = self.start_up_time
 #           watson_office.serve_forever()
 
+            d['node_index'] = 1 + self.server.watson.total_nodes
 #  class socketserver.\
 #        TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)
 # WatsonTCPOffice and WatsonOffice classes are on same thread.
 class WatsonTCPOffice(socketserver.TCPServer):
-    def __init__(self, office_addr, RequestHandlerClass, start_up_orig, watson_db_path):
+    def __init__(self, office_addr, RequestHandlerClass, watson):
         thread_id = threading.get_ident()
         logger.info(f"thread_id={thread_id} in WatsonTCPOffice.__init__()")
         super().__init__(office_addr, RequestHandlerClass)
-        self.start_up_orig = start_up_orig
-        self.watson_db_path = watson_db_path
+        self.clients = []
+    #   self.server in WatsonOffice class means WatsonTCPOffice instance.
+        self.watson = watson
+        self.start_up_orig = watson.start_up_orig
+        self.watson_db_path = watson.watson_db_path
         self.watson_db = simulator.sql.SQL(owner=self,
                                            db_path=self.watson_db_path)
         self.watson_db.access_db()
@@ -101,6 +103,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
         thread_id = threading.get_ident()
         logger.info(f"thread_id={thread_id} in WatsonOffice.handle()")
         logger.info("watson_office.handle()")
+    #   self.server in WatsonOffice class means WatsonTCPOffice instance.
         logger.info(f"WatsonOffice(request={self.request}, client_address={self.client_address}, server={self.server}")
         text_message = self.rfile.readline().strip()
         logger.info(f"text_message = {text_message} in watson_office.handle()")
@@ -136,19 +139,16 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             d.clear()
             d['id'] = 0
             d['start_up_time'] = self.server.start_up_orig.isoformat()
-            d['node_index'] = 1 + self.registered_nodes
-            self.registered_nodes += num_nodes
-            self.total_nodes += num_nodes
+            d['node_index'] = 1 + self.server.watson.total_nodes
+            self.server.watson.total_nodes += num_nodes
             reply = dict_becomes_jbytes(d)
-            count_clients += 1
         else:
             logger.debug('crazy man.')
             logger.info(f'unknown professed = "{professed}" in watson_office.handle()')
             reply = b'Go back home.'
 
         self.wfile.write(reply)
-        count_inquiries += 1
-        self.server.tcp_clients.append(self)
+        self.server.clients.append(self)
 
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
@@ -204,7 +204,7 @@ class Watson(threading.Thread):
         self.watson_db.create_table('clients')
         logger.info("watson created clients table.")
 
-        watson_open_office = WatsonOpenOffice(self.watson_office_addr, self.start_up_orig, self.watson_db_path)
+        watson_open_office = WatsonOpenOffice(self)
         logger.info("watson_open_office.start()")
         watson_open_office.start()
 
