@@ -13,6 +13,7 @@ import simulator.sql
 
 logger = None
 
+# WatsonTCPOffice and WatsonOpenOffice classes are on different thread.
 class WatsonOpenOffice(threading.Thread):
     def __init__(self, office_addr, start_up_orig, watson_db_path):
         threading.Thread.__init__(self)
@@ -39,6 +40,7 @@ class WatsonOpenOffice(threading.Thread):
 
 #  class socketserver.\
 #        TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)
+# WatsonTCPOffice and WatsonOffice classes are on same thread.
 class WatsonTCPOffice(socketserver.TCPServer):
     def __init__(self, office_addr, RequestHandlerClass, start_up_orig, watson_db):
         thread_id = threading.get_ident()
