@@ -81,13 +81,8 @@ def elapsed_time(start_up_orig):
 LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(message)s'
 
 def make_logger(log_dir='', name='', index=0, level=None):
-    if not name in ('admin', 'watson', 'client', 'darkness'):
-        msg = 'name(={}) must be watson, client or darkness.'.format(name)
-        raise RuntimeError(msg)
-
-    if name in ("admin", "watson"):
-        name_and_index = name
-    else:
+    name_and_index = name
+    if name in ("client", "darkness"):
         name_and_index = '.'.join([name, str(index)])
     ext = 'log'
     base_name = '.'.join([name_and_index, ext])
