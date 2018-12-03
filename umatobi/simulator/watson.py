@@ -66,6 +66,9 @@ class WatsonTCPOffice(socketserver.TCPServer):
                                            db_path=self.watson_db_path)
         self.watson_db.access_db()
 
+    def shutdown_request(self, request):
+        pass
+
 class WatsonOffice(socketserver.StreamRequestHandler):
 #class BaseRequestHandler:
 #####def __init__(self, request, client_address, server):
@@ -137,7 +140,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
         if professed == 'I am Client.':
             client_addr = self.client_address
             client_id = len(self.server.clients)
-            self.server.clients.append(self.request)
+            self.server.clients.append(self)
 
             logger.info(f'Client(client_id={client_id}, ip:port={client_addr}) came here.')
             d_insert = {
@@ -168,6 +171,12 @@ class WatsonOffice(socketserver.StreamRequestHandler):
 
         logger.info(f"reply={reply}")
         self.wfile.write(reply)
+
+    def finish(self):
+        pass
+
+    def bye_bye(self):
+        super().finish()
 
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
@@ -360,12 +369,13 @@ class Watson(threading.Thread):
         Clientは、終了処理中に client.id.db を送信してくる。
         '''
         logger.info('watson._release_clients()')
-        for tcp_office_client in self.watson_tcp_office.clients:
+        for watson_office_client in self.watson_tcp_office.clients:
             result = b'break down.'
-            logger.info(f"type(tcp_office_client)={type(tcp_office_client)} in _release_clients()")
-            logger.info(f"tcp_office_client={tcp_office_client} in _release_clients()")
-            self._tcp_sock.send(result, tcp_office_client)
-            self.wfile.write(result)
+            logger.info(f"type(watson_office_client)={type(watson_office_client)} in _release_clients()")
+            logger.info(f"watson_office_client={watson_office_client} in _release_clients()")
+            logger.info(f"watson_office_client.request={watson_office_client.request} in _release_clients()")
+            watson_office_client.wfile.write(result)
+            watson_office_client.bye_bye()
 
     def collect_nodes_as_csv(self):
         '''watsonが把握しているnodeのaddressをcsv化する。'''
