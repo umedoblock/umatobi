@@ -51,9 +51,9 @@ def jbytes_becomes_dict(jb):
     d = json.loads(js)
     return d
 
-def make_start_up_time():
-    start_up_time = datetime.datetime.now()
-    return start_up_time
+def make_start_up_orig():
+    start_up_orig = datetime.datetime.now()
+    return start_up_orig
 
 def isoformat_time(t):
     "'return time format '2012-11-02T23:22:27.002481'"
@@ -61,6 +61,7 @@ def isoformat_time(t):
     mmsecs = (t - int(t)) * 10 ** 6
     mmsecs = int(mmsecs)
     fmt = "%Y-%m-%dT%H:%M:%S"
+  # datetime.datetime.strptime("2008-09-03T20:56:35.450686", "%Y-%m-%dT%H:%M:%S.%f")
     return time.strftime(fmt, time.localtime(t)) + '.{:06d}'.format(mmsecs)
 
 def current_isoformat_time():
@@ -70,26 +71,12 @@ def current_isoformat_time():
 def isoformat_time_to_datetime(s):
     return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S.%f")
 
-def elapsed_time(start_up_time):
+def elapsed_time(start_up_orig):
     '''simulation 開始から現在までに経過したmilli秒数。'''
     now = datetime.datetime.now()
     # relativeCreated の時間単位がmillisecondsのため、
     # elapsed_time()もmilliseconds単位となるようにする。
-    return int(((now - start_up_time) * 1000).total_seconds())
-
-def datetime_to_float(dt):
-    float_ = time.mktime(dt.timetuple()) + (dt.microsecond / (10 ** 6))
-    return float_
-
-def set_logging_startTime_from_start_up_time(self):
-  # print('time.time() = {}'.format(time.time()))
-  # print('self.start_up_time = {}'.format(self.start_up_time))
-  # print('self.iso_start_up_time = {}'.format(self.iso_start_up_time))
-  # print('logging._startTime1 = {}'.format(logging._startTime))
-  # _startTime = time.time()
-  # self.relativeCreated = (self.created - _startTime) * 1000
-    logging._startTime = datetime_to_float(self.start_up_time)
-  # print('logging._startTime2 = {}'.format(logging._startTime))
+    return int(((now - start_up_orig) * 1000).total_seconds())
 
 #   %(relativeCreated)d Time in milliseconds when the LogRecord was created,
 LOGGER_FMT = '%(relativeCreated)d %(levelname)s %(message)s'

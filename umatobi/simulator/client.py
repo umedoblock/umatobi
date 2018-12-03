@@ -8,7 +8,6 @@ from simulator.darkness import Darkness
 import simulator.sql
 from lib import make_logger, jbytes_becomes_dict, dict_becomes_jbytes
 from lib import SCHEMA_PATH, isoformat_time_to_datetime
-from lib import set_logging_startTime_from_start_up_time
 
 logger = None
 

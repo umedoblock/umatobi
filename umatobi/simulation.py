@@ -4,7 +4,7 @@ import argparse
 import datetime
 import multiprocessing
 
-from lib import make_logger, make_start_up_time
+from lib import make_logger, make_start_up_orig
 from simulator.client import Client
 from simulator.watson import Watson
 
@@ -98,7 +98,8 @@ if __name__ == '__main__':
   # simulation.db, watson.0.log, client.0.log ...
   # を作成する。
 
-    start_up_time = make_start_up_time().isoformat()
+    start_up_orig = make_start_up_orig()
+    start_up_time = start_up_orig.isoformat()
     dir_name = os.path.join(simulation_dir, start_up_time)
 
     if not os.path.isdir(dir_name): os.makedirs(dir_name, exist_ok=True)
@@ -108,6 +109,7 @@ if __name__ == '__main__':
 
     # 各 object を作成するなど。
     watson = Watson(watson_office_addr, args.simulation_seconds,
+                    start_up_orig,
                     dir_name, args.log_level)
 
     # Watson start!
