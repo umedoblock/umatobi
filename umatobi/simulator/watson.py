@@ -97,7 +97,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
 
     def handle(self):
         thread_id = threading.get_ident()
-        logger.info(f"thread_id={thread_id} in WatsonOffice.__init__()")
+        logger.info(f"thread_id={thread_id} in WatsonOffice.handle()")
         logger.info("watson_office.handle()")
         logger.info(f"WatsonOffice(request={self.request}, client_address={self.client_address}, server={self.server}")
         text_message = self.rfile.readline().strip()
