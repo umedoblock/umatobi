@@ -57,7 +57,7 @@ status: text not null
 # [simulation]
 # see simulation.db
 [clients]
-client_id: integer primary key autoincrement unique not null
+id: integer primary key autoincrement unique not null
 host: text
 port: integer
 joined: integer

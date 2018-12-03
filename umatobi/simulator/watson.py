@@ -142,9 +142,9 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             client_id = len(self.server.clients)
             self.server.clients.append(self)
 
-            logger.info(f'Client(client_id={client_id}, ip:port={client_addr}) came here.')
+            logger.info(f'Client(id={id}, ip:port={client_addr}) came here.')
             d_insert = {
-                'client_id': client_id,
+                'id': client_id,
                 'host': client_addr[0],
                 'port': client_addr[1],
                 'joined': elapsed_time(self.server.start_up_orig),
