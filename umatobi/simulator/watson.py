@@ -18,15 +18,18 @@ class WatsonOpenOffice(threading.Thread):
     def __init__(self, watson):
         threading.Thread.__init__(self)
         self.watson = watson
+        self.in_serve_forever = threading.Event()
         thread_id = threading.get_ident()
         logger.info(f"thread_id={thread_id} in WatsonOpenOffice.__init__()")
 
     def run(self):
         # Create the server, binding to localhost on port ???
         logger.info(f"socketserver.TCPServer({self.watson.watson_office_addr}, WatsonOpenOffice)")
-        with WatsonTCPOffice(self.watson.watson_office_addr, WatsonOffice, self.watson) as watson_tcp_office:
+        with WatsonTCPOffice(self.watson) as watson_tcp_office:
+            self.watson.watson_tcp_office = watson_tcp_office
             logger.info("watson_open_office.serve_forever()")
             # WatsonOpenOffice() run on different thread of WatsonTCPOffice.
+            self.in_serve_forever.set()
             watson_tcp_office.serve_forever()
 #       with socketserver.TCPServer(self.office, WatsonOffice) as watson_office:
 #           logger.info("watson_open_office.serve_forever()")
@@ -38,13 +41,13 @@ class WatsonOpenOffice(threading.Thread):
 #        TCPServer(server_address, RequestHandlerClass, bind_and_activate=True)
 # WatsonTCPOffice and WatsonOffice classes are on same thread.
 class WatsonTCPOffice(socketserver.TCPServer):
-    def __init__(self, office_addr, RequestHandlerClass, watson):
+    def __init__(self, watson):
         thread_id = threading.get_ident()
         logger.info(f"thread_id={thread_id} in WatsonTCPOffice.__init__()")
-        super().__init__(office_addr, RequestHandlerClass)
+        super().__init__(watson.watson_office_addr, WatsonOffice)
+        self.watson = watson
         self.clients = []
     #   self.server in WatsonOffice class means WatsonTCPOffice instance.
-        self.watson = watson
         self.start_up_orig = watson.start_up_orig
         self.watson_db_path = watson.watson_db_path
         self.watson_db = simulator.sql.SQL(owner=self,
@@ -205,8 +208,14 @@ class Watson(threading.Thread):
         logger.info("watson created clients table.")
 
         watson_open_office = WatsonOpenOffice(self)
+        self.watson_open_office = watson_open_office
         logger.info("watson_open_office.start()")
         watson_open_office.start()
+        # wait a minute
+        # to set watson_open_office instance
+        # to watson instance
+        # in WatsonOpenOffice.run()
+        watson_open_office.in_serve_forever.wait()
 
         while elapsed_time(self.start_up_orig) < self.simulation_seconds * 1000:
             logger.info("watson time.sleep(1.0)")
@@ -215,7 +224,7 @@ class Watson(threading.Thread):
         self._release_clients()
 
         # close watson office
-        watson_open_office.shutdown()
+        self.watson_tcp_office.shutdown()
 
       # self._wait_tcp_clients()
         self._wait_client_db()
@@ -249,7 +258,6 @@ class Watson(threading.Thread):
     def join(self):
         '''watson threadがjoin'''
         threading.Thread.join(self)
-        self._tcp_sock.close()
         logger.info('watson thread joined.')
 
     def _tcp_office_open(self):
