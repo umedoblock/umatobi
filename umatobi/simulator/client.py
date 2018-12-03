@@ -231,7 +231,7 @@ class Client(object):
         while tries < 3:
             logger.info(f"js={js}")
             try:
-                self._tcp_sock.send(js)
+                self._tcp_sock.sendall(js)
             except socket.timeout as e:
                 logger.info(f"{str(self)} was timeout by send(), tries={tries}")
                 tries += 1
@@ -245,7 +245,7 @@ class Client(object):
         tries = 0
         while tries < 3:
             try:
-                recved_msg, who = self._tcp_sock.recv(1024)
+                recved_msg = self._tcp_sock.recv(1024)
             except socket.timeout as e:
                 logger.info(f"{str(self)} was timeout by recv(), tries={tries}")
                 tries += 1

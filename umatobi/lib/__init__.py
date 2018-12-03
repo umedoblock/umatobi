@@ -42,7 +42,7 @@ def validate_kwargs(st_barrier, kwargs):
         raise RuntimeError(message)
 
 def dict_becomes_jbytes(d):
-    js = json.dumps(d)
+    js = json.dumps(d) + "\n"
     jb = js.encode()
     return jb
 
