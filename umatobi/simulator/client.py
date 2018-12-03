@@ -62,7 +62,6 @@ class Client(object):
         self._tcp_sock.connect(watson_office_addr)
         _d_init_attrs = self._init_attrs()
 
-        self.dir_name = dir_name
 
 
         logger.info('----- {} log start -----'.format(self))
@@ -200,6 +199,7 @@ class Client(object):
 
         self.id = d['client_id']
         self.start_up_time = d['start_up_time']
+        self.dir_name = d['dir_name']
         self.client_db_path = os.path.join(self.dir_name,
                                      'client.{}.db'.format(self.id))
         self.node_index = d['node_index']
