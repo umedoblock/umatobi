@@ -21,7 +21,15 @@ def _parse_logger_setting(parser):
 def get_logger_args():
     parser = argparse.ArgumentParser("logger setting")
     parser = _parse_logger_setting(parser)
-    logger_args = parser.parse_args()
+
+    args, argv = parser.parse_known_args()
+    # argv には，parser.add_argument() で追加していない
+    # arg が格納されている。
+    logger_args = args
+    if logger_args.log_level in ("DEBUG", *range(1, 10 + 1)):
+        # range(1, 10 + 1) means NOTSET < log_level <= logging.DEBUG
+        print(f"argv={argv}", file=sys.stderr)
+
     return logger_args
 
 global logger
