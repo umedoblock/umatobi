@@ -24,14 +24,6 @@ def args_():
                          dest='simulation_seconds',
                          type=int, nargs='?', default=10,
                          help='simulation seconds. defalut is 10')
-  # parser.add_argument('--host', metavar='f', dest='host',
-  #                      nargs='?',
-  #                      default='localhost',
-  #                      help='defalut is localhost')
-  # parser.add_argument('--port',
-  #                      metavar='N', dest='port',
-  #                      type=int, nargs='?', default=10000,
-  #                      help='first bind port.')
     parser.add_argument('--simulation-dir',
                          metavar='N', dest='simulation_dir',
                          nargs='?', default='./umatobi-simulation',
@@ -40,10 +32,6 @@ def args_():
                          metavar='N', dest='num_nodes',
                          type=int, nargs='?', default=5,
                          help='simulation num of nodes.')
-  # parser.add_argument('--sql-path', metavar='f', dest='sql_path',
-  #                      nargs='?',
-  #                      default='',
-  #                      help='simulate sql file path')
     _log_levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
     log_levels = list(_log_levels)
     log_levels.insert(-1, 'or')
