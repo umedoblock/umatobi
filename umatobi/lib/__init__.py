@@ -80,18 +80,14 @@ def elapsed_time(start_up_orig):
 #   %(relativeCreated)d Time in milliseconds when the LogRecord was created,
 LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(message)s'
 
-def make_logger(log_dir=None, name='', index=0, level="INFO"):
-    name_and_index = name
-    if name in ("client", "darkness"):
-        name_and_index = '.'.join([name, str(index)])
-    ext = 'log'
-    base_name = '.'.join([name_and_index, ext])
+def make_logger(log_dir=None, name='', level="INFO"):
+    base_name = '.'.join([name, "log"])
 
     log_path = ""
     if log_dir is not None:
         log_path = os.path.join(log_dir, base_name)
 
-    logger = logging.getLogger(name_and_index)
+    logger = logging.getLogger(name)
     logger.setLevel(level)
 
     # create formatter and add it to the handlers
