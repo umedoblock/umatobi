@@ -109,10 +109,6 @@ def make_logger(log_dir=None, name='', level="INFO"):
     # extra setting.
     if log_path:
         logger.log_path = log_path
-    if level is not None:
-        if log_path:
-            fh.setLevel(level)
-        ch.setLevel(level)
 
     return logger
 
