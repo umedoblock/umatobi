@@ -123,6 +123,7 @@ def _normalize_db_or_log_path(args):
         timestamps = os.listdir(simulation_dir)
         timestamps.sort(reverse=True)
 
+    logger.debug("args =", args)
     db_or_log_path = ''
     if args.show_timestamps:
         print('simulation_dir = "{}"'.format(simulation_dir))
@@ -140,8 +141,12 @@ def _normalize_db_or_log_path(args):
                 raise raiz
         else:
             timestamp = args.timestamp
+        print("args.timestamp =", args.timestamp)
+        print("timestamps =", timestamps)
+        print("timestamp =", timestamp)
         dir_name = os.path.join(simulation_dir, timestamp)
 
+        print("dir_name =", dir_name)
         files = os.listdir(dir_name)
         dbs_or_logs = _gather_db_or_log_files(files, db_or_log)
         if db_or_log == 'db':
