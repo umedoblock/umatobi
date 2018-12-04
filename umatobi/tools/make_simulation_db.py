@@ -11,9 +11,10 @@ from lib import SCHEMA_PATH, make_logger
 import simulator.sql
 
 global logger
-if __name__ != '__main__':
-    logger_args = get_logger_args()
-    logger = make_logger(name=__name__, level=logger_args.log_level)
+logger_args = get_logger_args()
+logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
+logger.debug(f"__file__ = {__file__}")
+logger.debug(f"__name__ = {__name__}")
 
 def collect_client_dbs(watson_db):
     client_dbs = []
@@ -130,10 +131,11 @@ def init_nodes_table(simulation_db):
     simulation_db.commit()
 
 if __name__ == '__main__':
+  # print(f"__file__ = {__file__}")
+  # print(f"__name__ = {__name__}")
     args, simulation_db_path = args_make_simulation_db()
     if not simulation_db_path:
         raise RuntimeError('simulation_db_path is empty.')
-    logger = make_logger(__name__, level=args.log_level)
 
     watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
 
