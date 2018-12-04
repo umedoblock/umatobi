@@ -99,16 +99,14 @@ def make_logger(log_dir=None, name='', level="INFO"):
         fh.setLevel(level)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
+        # extra setting.
+        logger.log_path = log_path
 
     # create console handler with a higher log level
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(level)
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-
-    # extra setting.
-    if log_path:
-        logger.log_path = log_path
 
     return logger
 
