@@ -81,6 +81,7 @@ def elapsed_time(start_up_orig):
 LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(message)s'
 
 def make_logger(log_dir=None, name='', level="INFO"):
+    name = name.replace(".py", "")
     base_name = '.'.join([name, "log"])
 
     log_path = ""
