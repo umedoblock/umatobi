@@ -1,4 +1,4 @@
-import argparse
+import argparse, re
 import sys
 import os
 
@@ -121,6 +121,7 @@ def _normalize_db_or_log_path(args):
 
     if args.show_timestamps or args.timestamp == '00000000T000000':
         timestamps = os.listdir(simulation_dir)
+        timestamps = [ts for ts in timestamps if re.match("\d{4}-\d{2}-\d{2}T", ts)]
         timestamps.sort(reverse=True)
 
     logger.debug("args =", args)
