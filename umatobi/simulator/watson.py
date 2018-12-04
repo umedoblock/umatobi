@@ -94,7 +94,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             client_id = len(self.server.clients)
             self.server.clients.append(self)
 
-            logger.debug(f'Client(id={id}, ip:port={client_addr}) came here.')
+            logger.info(f'Client(id={client_id}, ip:port={client_addr}) came here.')
             insert_clients = {
                 'id': client_id,
                 'host': client_addr[0],
@@ -116,12 +116,13 @@ class WatsonOffice(socketserver.StreamRequestHandler):
                 'log_level': self.server.watson.log_level,
             }
             self.server.watson.total_nodes += num_nodes
+            logger.info(f'watson.total_nodes={self.server.watson.total_nodes}, Client(id={client_id}).')
             reply = dict_becomes_jbytes(to_client)
         else:
             logger.info(f'unknown professed = "{professed}" in watson_office.handle()')
             reply = b'Go back home.'
 
-        logger.debug(f"reply={reply}")
+        logger.info(f'watson send to_client={reply}) to Client(id={client_id}).')
         self.wfile.write(reply)
 
     def finish(self):

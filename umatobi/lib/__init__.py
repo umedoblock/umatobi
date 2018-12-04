@@ -80,6 +80,42 @@ def elapsed_time(start_up_orig):
 #   %(relativeCreated)d Time in milliseconds when the LogRecord was created,
 LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(message)s'
 
+def make_logger2(log_dir=None, name='', level="INFO"):
+    name = name.replace(".py", "")
+    base_name = '.'.join([name, "log"])
+
+    log_path = ""
+    if log_dir is not None:
+        log_path = os.path.join(log_dir, base_name)
+
+    print(f"logging.getLogger(name={name}) in make_logger(name={name})")
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter(LOGGER_FMT + f"pid={os.getpid()}, thread_id={threading.get_ident()}")
+
+    # create file handler which logs even debug messages
+    fh = None
+    if log_path:
+        fh = logging.FileHandler(log_path)
+        fh.setLevel(level)
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
+        print(f"logger.addHandler(fh={fh}) in make_logger(name={name})")
+        # extra setting.
+        logger.log_path = log_path
+
+    # create console handler with a higher log level
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(level)
+    ch.setFormatter(formatter)
+    print(f"logger.addHandler(ch={ch}) in make_logger(name={name})")
+    logger.addHandler(ch)
+    print(f'logger.manager.loggerDict={logger.manager.loggerDict}')
+
+    return logger, fh, ch
+
 def make_logger(log_dir=None, name='', level="INFO"):
     name = name.replace(".py", "")
     base_name = '.'.join([name, "log"])
@@ -88,18 +124,21 @@ def make_logger(log_dir=None, name='', level="INFO"):
     if log_dir is not None:
         log_path = os.path.join(log_dir, base_name)
 
+    print(f"logging.getLogger(name={name}) in make_logger(name={name})")
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
     # create formatter and add it to the handlers
-    formatter = logging.Formatter(LOGGER_FMT)
+    formatter = logging.Formatter(LOGGER_FMT + f"pid={os.getpid()}, thread_id={threading.get_ident()}")
 
     # create file handler which logs even debug messages
+    fh = None
     if log_path:
         fh = logging.FileHandler(log_path)
         fh.setLevel(level)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
+        print(f"logger.addHandler(fh={fh}) in make_logger(name={name})")
         # extra setting.
         logger.log_path = log_path
 
@@ -107,9 +146,34 @@ def make_logger(log_dir=None, name='', level="INFO"):
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(level)
     ch.setFormatter(formatter)
+    print(f"logger.addHandler(ch={ch}) in make_logger(name={name})")
     logger.addHandler(ch)
+    print("logger =", logger)
 
     return logger
+
+def remove_logger(log_dir=None, name='', level="INFO"):
+    name = name.replace(".py", "")
+    print(f"logging.getLogger(name={name}) in remove_logger(name={name})")
+    _logger = logging.getLogger(name)
+    _logger.setLevel(level)
+
+    formatter = logging.Formatter(LOGGER_FMT)
+
+    log_path = ""
+    if log_dir is not None:
+        log_path = os.path.join(log_dir, base_name)
+        fh = logging.FileHandler(log_path)
+        fh.setLevel(level)
+        fh.setFormatter(formatter)
+        print(f"_logger.removeHandler(fh={fh}) in remove_logger(name={name})")
+        _logger.removeHandler(fh)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(level)
+    ch.setFormatter(formatter)
+    print(f"_logger.removeHandler(ch={ch}) in remove_logger(name={name})")
+    _logger.removeHandler(ch)
 
 #   LOGGER_FMT = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
 #   LOGGER_DATEFMT = '%Y-%m-%dT%H:%M:%S'

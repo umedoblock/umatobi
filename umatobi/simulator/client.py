@@ -7,9 +7,10 @@ import multiprocessing
 from simulator.darkness import Darkness
 import simulator.sql
 from lib import make_logger, jtext_becomes_dict, dict_becomes_jbytes
+from lib import make_logger2
+from lib import remove_logger
 from lib import SCHEMA_PATH, isoformat_time_to_datetime
-
-logger = None
+from lib.args import get_logger_args
 
 def make_darkness(d_config):
     '''darkness process を作成'''
@@ -26,8 +27,22 @@ class Client(object):
         '''
 
         global logger
-        if not logger:
-            logger = make_logger(".", name="client", level='INFO')
+        logger_args = get_logger_args()
+#       _logger, _fh, _ch = make_logger2(name=os.path.basename(__file__), level=logger_args.log_level)
+        _logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
+#       print(f"_logger.manager.loggerDict={_logger.manager.loggerDict}")
+#       print(f"_logger={_logger}, fh={_fh}, _ch={_ch}")
+#       print(f"_logger.manager.loggerDict.keys()={_logger.manager.loggerDict.keys()}")
+        loggerDict=_logger.manager.loggerDict
+#       print(f"loggerDict['client']={loggerDict['client']}")
+#       print(f"id(loggerDict['client'])={id(loggerDict['client'])}")
+#       print(f"dir(loggerDict['client'])={dir(loggerDict['client'])}")
+#       print(f"loggerDict['client'].handlers={loggerDict['client'].handlers}")
+        handlers_client=loggerDict['client'].handlers
+#       print(f"ch={_ch}, id(_ch)={id(_ch)}")
+        logger = _logger
+      # logger.debug(f"__file__ = {__file__}")
+      # logger.debug(f"__name__ = {__name__}")
 
         if isinstance(num_nodes, int) and num_nodes > 0:
             pass
@@ -35,7 +50,7 @@ class Client(object):
             raise RuntimeError('num_nodes must be positive integer.')
 
         self.watson_office_addr = watson_office_addr # (IP, PORT)
-        logger.info(f"self.watson_office_addr={self.watson_office_addr}")
+      # logger.info(f"self.watson_office_addr={self.watson_office_addr}")
         self.num_nodes = num_nodes
         # Client set positive integer to id in self._init_attrs().
         self.id = -1
@@ -58,10 +73,18 @@ class Client(object):
         socket.setdefaulttimeout(self.timeout_sec)
         self._tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        logger.info(f"self._tcp_sock.connect(={watson_office_addr})")
+      # logger.info(f"self._tcp_sock.connect(={watson_office_addr})")
+      # remove_logger(name=os.path.basename(__file__), level=logger_args.log_level)
         self._tcp_sock.connect(watson_office_addr)
+
         _d_init_attrs = self._init_attrs()
-        logger = make_logger(self.dir_name, name="client", level=self.log_level)
+
+        client_id = self.id
+        logger_name = os.path.basename(__file__) + f".{client_id}"
+      # _logger.removeHandler(_fh)
+      # _logger.removeHandler(_ch)
+        handlers_client.clear()
+        logger, _fh, _ch = make_logger2(self.dir_name, name=logger_name, level=self.log_level)
 
         logger.info('----- {} log start -----'.format(self))
         logger.info('watson_office_addr = {}'.format(self.watson_office_addr))
@@ -193,7 +216,7 @@ class Client(object):
         start_up_time は dir_nameを決定する際に使用する。
         '''
         d = self._hello_watson()
-        logger.debug(f"_hello_watson() return d={d} in Client._init_attrs()")
+      # logger.debug(f"_hello_watson() return d={d} in Client._init_attrs()")
         if not d:
             self._tcp_sock.close()
             raise RuntimeError('client cannot say "I am Client." to watson where is {}'.format(self.watson_office_addr))
@@ -227,14 +250,14 @@ class Client(object):
         js = dict_becomes_jbytes(sheep)
         d = {}
         while tries < 3:
-            logger.debug(f"js={js}")
+          # logger.debug(f"js={js}")
             try:
                 self._tcp_sock.sendall(js)
             except socket.timeout as e:
-                logger.debug(f"{str(self)} was timeout by send(), tries={tries}")
+          #     logger.debug(f"{str(self)} was timeout by send(), tries={tries}")
                 tries += 1
                 continue
-            logger.debug(f"send js={js} in _hello_watson()")
+          # logger.debug(f"send js={js} in _hello_watson()")
             break
 
         if tries >= 3:
@@ -245,11 +268,11 @@ class Client(object):
             try:
                 recved_msg = self._tcp_sock.recv(1024)
             except socket.timeout as e:
-                logger.debug(f"{str(self)} was timeout by recv(), tries={tries}")
+          #     logger.debug(f"{str(self)} was timeout by recv(), tries={tries}")
                 tries += 1
                 continue
           # if self.watson == who:
-            logger.debug(f"recved_msg={recved_msg}")
+          # logger.debug(f"recved_msg={recved_msg}")
             jt = recved_msg.decode("utf-8")
             d = jtext_becomes_dict(jt)
             break

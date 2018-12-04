@@ -120,6 +120,7 @@ if __name__ == '__main__':
     # terminal 上で、別 process を起動させる手間を考えると楽なので、
     # ここで作ってしまう。 Makefile とか作りたくない。。。
     client_process.start()
+    logger.info(f"client_process.pid={client_process.pid}")
     client_process.join()
 
     # 終了処理
