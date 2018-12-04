@@ -80,13 +80,15 @@ def elapsed_time(start_up_orig):
 #   %(relativeCreated)d Time in milliseconds when the LogRecord was created,
 LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(message)s'
 
-def make_logger(log_dir='', name='', index=0, level=None):
+def make_logger(log_dir=None, name='', index=0, level=None):
     name_and_index = name
     if name in ("client", "darkness"):
         name_and_index = '.'.join([name, str(index)])
     ext = 'log'
     base_name = '.'.join([name_and_index, ext])
-    if log_dir:
+
+    log_path = ""
+    if log_dir is not None:
         log_path = os.path.join(log_dir, base_name)
 
     logger = logging.getLogger(name_and_index)
@@ -96,7 +98,7 @@ def make_logger(log_dir='', name='', index=0, level=None):
     formatter = logging.Formatter(LOGGER_FMT)
 
     # create file handler which logs even debug messages
-    if log_dir:
+    if log_path:
         fh = logging.FileHandler(log_path)
         fh.setLevel(level)
         fh.setFormatter(formatter)
@@ -109,10 +111,10 @@ def make_logger(log_dir='', name='', index=0, level=None):
     logger.addHandler(ch)
 
     # extra setting.
-    if log_dir:
+    if log_path:
         logger.log_path = log_path
     if level is not None:
-        if log_dir:
+        if log_path:
             fh.setLevel(level)
         ch.setLevel(level)
 
