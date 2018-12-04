@@ -6,10 +6,14 @@ import sqlite3
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib.args import args_make_simulation_db
+from lib.args import get_logger_args
 from lib import SCHEMA_PATH, make_logger
 import simulator.sql
 
-logger = make_logger(log_dir="", name=os.path.basename(__file__), level="DEBUG")
+global logger
+if __name__ != '__main__':
+    logger_args = get_logger_args()
+    logger = make_logger(name=__name__, level=logger_args.log_level)
 
 def collect_client_dbs(watson_db):
     client_dbs = []
@@ -129,6 +133,8 @@ if __name__ == '__main__':
     args, simulation_db_path = args_make_simulation_db()
     if not simulation_db_path:
         raise RuntimeError('simulation_db_path is empty.')
+    logger = make_logger(__name__, level=args.log_level)
+
     watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
 
     simulation_db = simulator.sql.SQL(db_path=simulation_db_path,
