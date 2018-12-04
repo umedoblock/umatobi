@@ -9,6 +9,13 @@ from lib import make_logger, validate_kwargs
 from lib import Polling
 from lib import SCHEMA_PATH
 
+from lib.args import get_logger_args
+global logger
+logger_args = get_logger_args()
+logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
+logger.debug(f"__file__ = {__file__}")
+logger.debug(f"__name__ = {__name__}")
+
 class ExhaleQueue(Polling):
     def __init__(self, polling_secs, darkness):
         Polling.__init__(self, polling_secs)
@@ -19,8 +26,7 @@ class ExhaleQueue(Polling):
         self.schema_path = self.darkness.schema_path
         self._queue_darkness = self.darkness._queue_darkness
         self.queue_size_total = 0
-        self.logger = self.darkness.logger
-        self.logger.info('{} created ExhaleQueue()'.format(self.darkness))
+        logger.info('{} created ExhaleQueue()'.format(self.darkness))
 
     def run(self):
         '''\
@@ -33,19 +39,19 @@ class ExhaleQueue(Polling):
         Polling.run() を実行するthreadは同一threadである必要があり、
         run()内で、client_db.create_db()と、Polling.run()を行った。
         '''
-        self.logger.info('{} run ExhaleQueue()'.format(self.darkness))
+        logger.info('{} run ExhaleQueue()'.format(self.darkness))
         self.client_db.create_db()
-        self.logger.info('{} client_db.create_db().'.format(self.darkness))
+        logger.info('{} client_db.create_db().'.format(self.darkness))
 
         Polling.run(self)
-        self.logger.info('{} queue_size_total={}'.format(self.darkness, self.queue_size_total))
-        self.logger.info('{} stop ExhaleQueue()'.format(self.darkness))
+        logger.info('{} queue_size_total={}'.format(self.darkness, self.queue_size_total))
+        logger.info('{} stop ExhaleQueue()'.format(self.darkness))
 
     def is_continue(self):
         if self.darkness.all_nodes_inactive.is_set():
             self.inhole_queues_from_nodes()
             self.client_db.close()
-            self.logger.info('{} client_db.close().'.format(self.darkness))
+            logger.info('{} client_db.close().'.format(self.darkness))
             return False
         else:
             return True
@@ -59,7 +65,7 @@ class ExhaleQueue(Polling):
         '''
         queue_size = self._queue_darkness.qsize()
         self.queue_size_total += queue_size
-        self.logger.info('{} _queue_darkness.qsize()={}.'.format(self.darkness, queue_size))
+        logger.info('{} _queue_darkness.qsize()={}.'.format(self.darkness, queue_size))
         growing = {}
         growing['id'] = None
         for i in range(queue_size):
@@ -71,7 +77,7 @@ class ExhaleQueue(Polling):
         self.client_db.commit()
         growings = self.client_db.select('growings', 'id,pickle',
                                                 conditions='')
-        self.logger.debug('growings table dumped =\n"{}"'. \
+        logger.debug('growings table dumped =\n"{}"'. \
                            format(growings))
 
 class Darkness(object):
@@ -91,16 +97,12 @@ class Darkness(object):
         validate_kwargs(st_barrier, kwargs)
 
         for attr, value in kwargs.items():
-            # ここでは、logger を使えない。
+            logger.debug(f"setattr(attr={attr}, value={value})")
             setattr(self, attr, value)
-          # print(self, attr, value)
 
-        self.logger = make_logger(self.dir_name, 'darkness',
-                                  self.id, self.log_level)
-        # ここより下からloggerを使えるようになる。
-        self.logger.info(('{} initilized, '
+        logger.info(('{} initilized, '
                           'num_nodes={}.').format(self, self.num_nodes))
-        self.logger.debug('{} debug log test.'.format(self))
+        logger.debug('{} debug log test.'.format(self))
 
         self.client_db_path = os.path.join(self.dir_name,
                                      'client.{}.db'.format(self.client_id))
@@ -137,7 +139,7 @@ class Darkness(object):
                 '_queue_darkness': self._queue_darkness
             }
             node_ = Node(**d_node)
-            self.logger.info('{} created {}.'.format(self, node_))
+            logger.info('{} created {}.'.format(self, node_))
             node_.start()
             self.nodes.append(node_)
 
@@ -146,16 +148,16 @@ class Darkness(object):
             msg = '{} made a node.'.format(self)
         else:
             msg = '{} made {} nodes.'.format(self, self.made_nodes.value)
-        self.logger.info(msg)
+        logger.info(msg)
 
         self.leave_there.wait()
-        self.logger.info(('{} got leave_there signal.').format(self))
-        self.logger.info(('{} set good_bye_with_nodes signal.').format(self))
+        logger.info(('{} got leave_there signal.').format(self))
+        logger.info(('{} set good_bye_with_nodes signal.').format(self))
         self.good_bye_with_nodes.set()
 
         for node_ in self.nodes:
             node_.join()
-            self.logger.info('{} thread joined.'.format(node_))
+            logger.info('{} thread joined.'.format(node_))
 
         # 全てのnodeが不活性となった後、queueにobjを追加するnodeは存在しない。
         # また、不活性となった後、exhale_queue sched は自動的に停止する。
@@ -170,7 +172,7 @@ class Darkness(object):
     def stop(self):
         '''simulation 終了'''
         for i in range(self.num_nodes):
-            self.logger.info('stop node i={}'.format(i))
+            logger.info('stop node i={}'.format(i))
 
     def __str__(self):
         return 'Darkness(id={})'.format(self.id)
