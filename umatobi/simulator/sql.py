@@ -5,8 +5,18 @@ import sys
 import logging
 
 from lib import LOGGER_FMT, make_logger
+from lib.args import get_logger_args
 
-logger = make_logger(log_dir="", name=os.path.basename(__file__), level="DEBUG")
+# print("__name__ =", __name__)
+# __name__ = simulator.sql
+# print("__file__ =", __file__)
+# __file__ = umatobi/tools/../simulator/sql.py
+
+global logger
+logger_args = get_logger_args()
+logger = make_logger(logger_args.simulation_dir, \
+                     name=os.path.basename(__name__), \
+                     level=logger_args.log_level)
 
 class SQL(object):
     @staticmethod
