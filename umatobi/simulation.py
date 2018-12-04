@@ -5,6 +5,7 @@ import datetime
 import multiprocessing
 
 from lib import make_logger, make_start_up_orig
+from lib.args import get_logger_args
 from simulator.client import Client
 from simulator.watson import Watson
 
@@ -55,6 +56,12 @@ def get_host_port(host_port):
     return host, port
 
 if __name__ == '__main__':
+    logger_args = get_logger_args()
+    logger = make_logger(logger_args.simulation_dir, \
+                         name="admin", \
+                         level=logger_args.log_level)
+    logger.info("simulation start !")
+
     # 引数の解析
     args = args_()
 
@@ -91,9 +98,6 @@ if __name__ == '__main__':
     dir_name = os.path.join(simulation_dir, start_up_time)
 
     if not os.path.isdir(dir_name): os.makedirs(dir_name, exist_ok=True)
-
-    logger = make_logger(dir_name, name="admin", level=args.log_level)
-    logger.info("simulation start !")
 
     # 各 object を作成するなど。
     watson = Watson(watson_office_addr, args.simulation_seconds,
