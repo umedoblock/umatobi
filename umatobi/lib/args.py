@@ -75,7 +75,7 @@ def _args_parse_basic(description):
     parser.add_argument('--log-level',
                          metavar='LEVEL', dest='log_level',
                          choices=log_levels, default='INFO',
-                         help='default INFO')
+                         help=f'default INFO, must be in {log_levels}')
     return parser
 
 def _show_timestamps(timestamps):
