@@ -54,6 +54,24 @@ def args_make_simulation_db():
     simulation_db_path = _get_simulation_db_path(args)
     return args, simulation_db_path
 
+def _parse_logger_setting(parser):
+    log_levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+    parser.add_argument('--log-level',
+                         metavar='LEVEL', dest='log_level',
+                         choices=log_levels, default='INFO',
+                         help=f'default INFO, must be in {log_levels}')
+    parser.add_argument('--simulation-dir',
+                         metavar='N', dest='simulation_dir',
+                         nargs='?', default='./umatobi-simulation',
+                         help='simulation directory.')
+    return parser
+
+def get_logger_args():
+    parser = argparse.ArgumentParser("logger setting")
+    parser = _parse_logger_setting(parser)
+    logger_args = parser.parse_args()
+    return logger_args
+
 def _args_parse_basic(description):
     parser = argparse.ArgumentParser(description)
     parser.add_argument('--show-timestamps', dest='show_timestamps',
