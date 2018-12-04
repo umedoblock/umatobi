@@ -71,6 +71,11 @@ def _args_parse_basic(description):
                         metavar='timestamp', dest='timestamp',
                         nargs='?', default='00000000T000000',
                         help='example: 20121122T175422.480184')
+    log_levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+    parser.add_argument('--log-level',
+                         metavar='LEVEL', dest='log_level',
+                         choices=log_levels, default='INFO',
+                         help='default INFO')
     return parser
 
 def _show_timestamps(timestamps):
