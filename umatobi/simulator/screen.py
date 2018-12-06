@@ -320,9 +320,8 @@ class Screen(object):
                 L.append('id: {}, key: {}'.format(node['id'], node['key']))
         self.label_area.update('\n'.join(L))
 
-        if self._squares:
-            for square in self._squares:
-                put_on_square(*square)
+        for square in self._squares:
+            put_on_square(*square)
 
     def _passed_time(self):
         e = datetime.datetime.now()
