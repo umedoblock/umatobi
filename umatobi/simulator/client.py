@@ -33,8 +33,8 @@ class Client(object):
         loggerDict=_logger.manager.loggerDict
         handlers_client=loggerDict['client'].handlers
         logger = _logger
-      # logger.debug(f"__file__ = {__file__}")
-      # logger.debug(f"__name__ = {__name__}")
+        logger.debug(f"__file__ = {__file__}")
+        logger.debug(f"__name__ = {__name__}")
 
         if isinstance(num_nodes, int) and num_nodes > 0:
             pass
@@ -42,7 +42,7 @@ class Client(object):
             raise RuntimeError('num_nodes must be positive integer.')
 
         self.watson_office_addr = watson_office_addr # (IP, PORT)
-      # logger.info(f"self.watson_office_addr={self.watson_office_addr}")
+        logger.info(f"self.watson_office_addr={self.watson_office_addr}")
         self.num_nodes = num_nodes
         # Client set positive integer to id in self._init_attrs().
         self.id = -1
@@ -65,7 +65,7 @@ class Client(object):
         socket.setdefaulttimeout(self.timeout_sec)
         self._tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-      # logger.info(f"self._tcp_sock.connect(={watson_office_addr})")
+        logger.info(f"self._tcp_sock.connect(={watson_office_addr})")
       # remove_logger(name=os.path.basename(__file__), level=logger_args.log_level)
         self._tcp_sock.connect(watson_office_addr)
 
