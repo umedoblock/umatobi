@@ -167,26 +167,8 @@ class Screen(object):
 #   def _mouse(self, *event):
 #       print('event={} in self._mouse()'.format(event))
 
-    def _mouse_sample(self, button, state, x, y):
-        fmt = 'button={}, state={}, x={}, y={}  in self._mouse_sample()'
-        print(fmt.format(button, state, x, y))
-
-    def _mouse(self, button, state, x, y):
-        if state != GLUT_DOWN:
-            # mouse button を離した時などは速終了。
-            # 参考
-            # GLUT_LEFT_BUTTON
-            # GLUT_MIDDLE_BUTTON
-            # GLUT_RIGHT_BUTTON
-            # GLUT_UP
-            # GLUT_DOWN
-            return
-      # 左click 押した button=0, state=0, x=392, y=251  in self._mouse()
-      # 左click 離した button=0, state=1, x=392, y=251  in self._mouse()
-        if self._debug:
-            fmt = 'button={}, state={}, x={}, y={}  in self._mouse()'
-            print(fmt.format(button, state, x, y))
-
+    @staticmethod
+    def get_current_cos_sin(x, y):
       # screen is monitor
       # print('GLUT_SCREEN_WIDTH =', glutGet(GLUT_SCREEN_WIDTH))
       # print('GLUT_SCREEN_HEIGHT =', glutGet(GLUT_SCREEN_HEIGHT))
@@ -205,6 +187,7 @@ class Screen(object):
         # -wh / 2 <= y <= wh / 2
         mx = x - ww / 2
         my = wh / 2 - y
+        logger.info(f'mx={mx} my={my}, x={x}, y={y} in self._mouse_sample()')
 
         # normalize
         norm_ww = ww / 2
@@ -213,8 +196,33 @@ class Screen(object):
         norm_x = int(mx)
         norm_y = int(my * rate)
         norm_d = math.sqrt(norm_x ** 2 + norm_y ** 2)
-        cos = norm_x / norm_d
-        sin = norm_y / norm_d
+        cos_ = norm_x / norm_d
+        sin_ = norm_y / norm_d
+        return cos_, sin_
+
+    def _mouse_sample(self, button, state, x, y):
+        fmt = 'button={}, state={}, x={}, y={}  in self._mouse_sample()'
+        print(fmt.format(button, state, x, y))
+        cos_, sin_ = Screen.get_current_cos_sin(x, y)
+        logger.info(f'cos_={cos_} sin_={sin_}, x={x}, y={y} in self._mouse_sample()')
+
+    def _mouse(self, button, state, x, y):
+        if state != GLUT_DOWN:
+            # mouse button を離した時などは速終了。
+            # 参考
+            # GLUT_LEFT_BUTTON
+            # GLUT_MIDDLE_BUTTON
+            # GLUT_RIGHT_BUTTON
+            # GLUT_UP
+            # GLUT_DOWN
+            return
+      # 左click 押した button=0, state=0, x=392, y=251  in self._mouse()
+      # 左click 離した button=0, state=1, x=392, y=251  in self._mouse()
+        if self._debug:
+            fmt = 'button={}, state={}, x={}, y={}  in self._mouse()'
+            print(fmt.format(button, state, x, y))
+
+        cos_, sin_ = Screen.get_current_cos_sin(x, y)
 
         r = norm_ww
         rate_d_about_r = norm_d / r
@@ -223,7 +231,7 @@ class Screen(object):
         band_width = 0.02
       # self._debug = True
         if math.fabs(1.0 - rate_d_about_r) <= band_width:
-            clicked_rad = formula.cos_sin_to_norm_rad(cos, sin)
+            clicked_rad = formula.cos_sin_to_norm_rad(cos_, sin_)
             min_rad = clicked_rad - 0.02
             max_rad = clicked_rad + 0.02
 
@@ -240,9 +248,9 @@ class Screen(object):
                     self._squares.append(square)
         if self._debug and math.fabs(1.0 - rate_d_about_r) <= band_width:
             # node が出没する箇所付近をclickした。
-            fmt2 = 'cos={}, sin={}  in self._mouse()'
-      #     print(fmt2.format(cos, sin))
-            square = (0, cos, sin, 0.02, (0xff, 0, 0))
+            fmt2 = 'cos_={}, sin_={}  in self._mouse()'
+      #     print(fmt2.format(cos_, sin_))
+            square = (0, cos_, sin_, 0.02, (0xff, 0, 0))
             self._squares.append(square)
       # self._debug = not True
 
