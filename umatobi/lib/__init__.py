@@ -89,8 +89,8 @@ def make_logger2(log_dir=None, name='', level="INFO"):
         log_path = os.path.join(log_dir, base_name)
 
     print(f"logging.getLogger(name={name}) in make_logger(name={name})")
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
+    logger_obj = logging.getLogger(name)
+    logger_obj.setLevel(level)
 
     # create formatter and add it to the handlers
     formatter = logging.Formatter(LOGGER_FMT + f"pid={os.getpid()}, thread_id={threading.get_ident()}")
@@ -101,20 +101,20 @@ def make_logger2(log_dir=None, name='', level="INFO"):
         fh = logging.FileHandler(log_path)
         fh.setLevel(level)
         fh.setFormatter(formatter)
-        logger.addHandler(fh)
-        print(f"logger.addHandler(fh={fh}) in make_logger(name={name})")
+        logger_obj.addHandler(fh)
+        print(f"logger_obj.addHandler(fh={fh}) in make_logger(name={name})")
         # extra setting.
-        logger.log_path = log_path
+        logger_obj.log_path = log_path
 
     # create console handler with a higher log level
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(level)
     ch.setFormatter(formatter)
-    print(f"logger.addHandler(ch={ch}) in make_logger(name={name})")
-    logger.addHandler(ch)
-    print(f'logger.manager.loggerDict={logger.manager.loggerDict}')
+    print(f"logger_obj.addHandler(ch={ch}) in make_logger(name={name})")
+    logger_obj.addHandler(ch)
+    print(f'logger_obj.manager.loggerDict={logger_obj.manager.loggerDict}')
 
-    return logger, fh, ch
+    return logger_obj, fh, ch
 
 def make_logger(log_dir=None, name='', id_=None, level="INFO"):
     name = name.replace(".py", "")
@@ -126,8 +126,8 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
         log_path = os.path.join(log_dir, base_name)
 
     print(f"logging.getLogger(name={name}) in make_logger(name={name})")
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
+    logger_obj = logging.getLogger(name)
+    logger_obj.setLevel(level)
 
     # create formatter and add it to the handlers
     formatter = logging.Formatter(LOGGER_FMT + f"pid={os.getpid()}, thread_id={threading.get_ident()}")
@@ -138,20 +138,20 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
         fh = logging.FileHandler(log_path)
         fh.setLevel(level)
         fh.setFormatter(formatter)
-        logger.addHandler(fh)
-        print(f"logger.addHandler(fh={fh}) in make_logger(name={name})")
+        logger_obj.addHandler(fh)
+        print(f"logger_obj.addHandler(fh={fh}) in make_logger(name={name})")
         # extra setting.
-        logger.log_path = log_path
+        logger_obj.log_path = log_path
 
     # create console handler with a higher log level
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(level)
     ch.setFormatter(formatter)
-    print(f"logger.addHandler(ch={ch}) in make_logger(name={name})")
-    logger.addHandler(ch)
-    print("logger =", logger)
+    print(f"logger_obj.addHandler(ch={ch}) in make_logger(name={name})")
+    logger_obj.addHandler(ch)
+    print("logger_obj =", logger_obj)
 
-    return logger
+    return logger_obj
 
 def remove_logger(log_dir=None, name='', level="INFO"):
     name = name.replace(".py", "")
