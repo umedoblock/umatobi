@@ -27,10 +27,8 @@ class ExhaleQueue(Polling):
         self._queue_darkness = self.darkness._queue_darkness
         self.queue_size_total = 0
         logger.info('{} created ExhaleQueue()'.format(self.darkness))
+        self.polling_secs = polling_secs
         self.sleep_secs = polling_secs * (self.darkness.id / self.darkness.num_darkness)
-        logger.debug(f'darkness.id={darkness.id}, sleep_secs={self.sleep_secs}, polling_secs={polling_secs}, darkness.id={self.darkness.id}, darkness.num_darkness={darkness.num_darkness}.')
-        logger.info(f'ExhaleQueue wait {self.sleep_secs} secs.')
-        self.slept = False
 
     def run(self):
         '''\
@@ -44,11 +42,13 @@ class ExhaleQueue(Polling):
         run()内で、client_db.create_db()と、Polling.run()を行った。
         '''
         logger.info('{} run ExhaleQueue()'.format(self.darkness))
-        if not self.slept:
-            time.sleep(self.sleep_secs)
-            self.slept = True
+        logger.debug(f'darkness.id={self.darkness.id}, sleep_secs={self.sleep_secs}, polling_secs={self.polling_secs}, darkness.id={self.darkness.id}, darkness.num_darkness={self.darkness.num_darkness}.')
+        logger.info(f'ExhaleQueue wait {self.sleep_secs} secs.')
+
         self.client_db.create_db()
         logger.info('{} client_db.create_db().'.format(self.darkness))
+
+        time.sleep(self.sleep_secs)
 
         Polling.run(self)
         logger.info('{} queue_size_total={}'.format(self.darkness, self.queue_size_total))
