@@ -116,12 +116,13 @@ def make_logger2(log_dir=None, name='', level="INFO"):
 
     return logger, fh, ch
 
-def make_logger(log_dir=None, name='', level="INFO"):
+def make_logger(log_dir=None, name='', id_=None, level="INFO"):
     name = name.replace(".py", "")
-    base_name = '.'.join([name, "log"])
-
     log_path = ""
+    if id_ is not None:
+        name = f"{name}.{str(id_)}"
     if log_dir is not None:
+        base_name = '.'.join([name, "log"])
         log_path = os.path.join(log_dir, base_name)
 
     print(f"logging.getLogger(name={name}) in make_logger(name={name})")

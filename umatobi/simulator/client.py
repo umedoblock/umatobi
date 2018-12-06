@@ -72,7 +72,6 @@ class Client(object):
         _d_init_attrs = self._init_attrs()
 
         client_id = self.id
-        logger_name = os.path.basename(__file__) + f".{client_id}"
       # _logger.removeHandler(_fh)
       # _logger.removeHandler(_ch)
         logger.debug(f"handlers_client = {handlers_client}")
@@ -82,7 +81,7 @@ class Client(object):
                 doubt_handlers.append(handler)
         for doubt_handler in doubt_handlers:
             handlers_client.remove(doubt_handler)
-        logger = make_logger(self.dir_name, name=logger_name, level=self.log_level)
+        logger = make_logger(log_dir=self.dir_name, name=os.path.basename(__file__), id_=self.id, level=self.log_level)
 
         logger.info('----- {} log start -----'.format(self))
         logger.info('watson_office_addr = {}'.format(self.watson_office_addr))
