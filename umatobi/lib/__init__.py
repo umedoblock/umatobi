@@ -125,9 +125,7 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
         base_name = '.'.join([name, "log"])
         log_path = os.path.join(log_dir, base_name)
 
-    print(f"logging.getLogger(name={name}) in make_logger(name={name})")
     logger_obj = logging.getLogger(name)
-    print(f"==================logging.getLogger(logger_obj={logger_obj}, id(logger_obj)={id(logger_obj)} in make_logger(name={name})")
     logger_obj.setLevel(level)
 
     # create formatter and add it to the handlers
@@ -140,7 +138,6 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
         fh.setLevel(level)
         fh.setFormatter(formatter)
         logger_obj.addHandler(fh)
-        print(f"logger_obj.addHandler(fh={fh}) in make_logger(name={name})")
         # extra setting.
         logger_obj.log_path = log_path
 
@@ -148,10 +145,7 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(level)
     ch.setFormatter(formatter)
-    print(f"==================logger_obj.addHandler(ch={ch}, id(ch)={id(ch)}) in make_logger(name={name})")
     logger_obj.addHandler(ch)
-    print(f"++++++++++++++++++++++++++logger_obj(={logger_obj}.addHandler(ch={ch}) in make_logger(name={name})")
-    print("logger_obj =", logger_obj)
 
     return logger_obj
 
