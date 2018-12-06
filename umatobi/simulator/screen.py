@@ -198,12 +198,21 @@ class Screen(object):
         norm_d = math.sqrt(norm_x ** 2 + norm_y ** 2)
         cos_ = norm_x / norm_d
         sin_ = norm_y / norm_d
-        return cos_, sin_
+
+        r = norm_ww
+        # clickした箇所と原点(=単位円の中心)からの距離
+        distance_of_click_on_from_origin = norm_d / r
+        docofo = distance_of_click_on_from_origin
+
+        logger.debug('distance_of_click_on_from_origin={docofo} in get_current_cos_sin()')
+
+        return cos_, sin_, docofo
 
     def _mouse_sample(self, button, state, x, y):
         logger.info(f'button={button}, state={state}, x={x}, y={y} in self._mouse_sample()')
-        cos_, sin_ = Screen.get_current_cos_sin(x, y)
+        cos_, sin_, docofo = Screen.get_current_cos_sin(x, y)
         logger.info(f'cos_={cos_} sin_={sin_}, x={x}, y={y} in self._mouse_sample()')
+        logger.info(f'distance_of_click_on_from_origin={docofo} in _mouse_sample()')
 
     def _mouse(self, button, state, x, y):
         if state != GLUT_DOWN:
@@ -219,15 +228,12 @@ class Screen(object):
       # 左click 離した button=0, state=1, x=392, y=251  in self._mouse()
         logger.DEBUG(f'button={button}, state={state}, x={x}, y={y} in self._mouse_sample()')
 
-        cos_, sin_ = Screen.get_current_cos_sin(x, y)
-
-        r = norm_ww
-        rate_d_about_r = norm_d / r
-      # print('rate_d_about_r =', rate_d_about_r)
+        cos_, sin_, docofo = Screen.get_current_cos_sin(x, y)
 
         band_width = 0.02
       # self._debug = True
-        if math.fabs(1.0 - rate_d_about_r) <= band_width:
+        if math.fabs(1.0 - docoo) <= band_width:
+            # 単位円の円周付近(=band_width) を click した。
             clicked_rad = formula.cos_sin_to_norm_rad(cos_, sin_)
             min_rad = clicked_rad - 0.02
             max_rad = clicked_rad + 0.02
@@ -243,7 +249,7 @@ class Screen(object):
                     #TODO: squares に登録済みのnodeは再追加しない。
                     square = (node['rad'], node['x'], node['y'], 0.02, (0x00, 0xff, 0))
                     self._squares.append(square)
-        if self._debug and math.fabs(1.0 - rate_d_about_r) <= band_width:
+        if self._debug and math.fabs(1.0 - docoo) <= band_width:
             # node が出没する箇所付近をclickした。
             fmt2 = 'cos_={}, sin_={}  in self._mouse()'
       #     print(fmt2.format(cos_, sin_))
