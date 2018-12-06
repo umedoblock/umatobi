@@ -81,9 +81,9 @@ class Screen(object):
         glutIdleFunc(glutPostRedisplay)
         glutKeyboardFunc(self._keyboard)
         glutMouseFunc(self.click_on)
-        glutMouseFunc(self.click_on_sample)
 
     def set_display(self, display_main):
+        glutMouseFunc(self.click_on_sample)
         self.display_main = display_main
 
     def set_db(self, db):
