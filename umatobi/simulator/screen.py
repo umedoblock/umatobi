@@ -81,6 +81,7 @@ class Screen(object):
         glutIdleFunc(glutPostRedisplay)
         glutKeyboardFunc(self._keyboard)
         glutMouseFunc(self._mouse)
+        glutMouseFunc(self._mouse_sample)
 
     def set_display(self, display_main):
         self.display_main = display_main
@@ -165,6 +166,11 @@ class Screen(object):
 
 #   def _mouse(self, *event):
 #       print('event={} in self._mouse()'.format(event))
+
+    def _mouse_sample(self, button, state, x, y):
+        fmt = 'button={}, state={}, x={}, y={}  in self._mouse()'
+        print(fmt.format(button, state, x, y))
+
     def _mouse(self, button, state, x, y):
         if state != GLUT_DOWN:
             # mouse button を離した時などは速終了。
