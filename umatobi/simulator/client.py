@@ -131,17 +131,18 @@ class Client(object):
 
             # client と darkness process が DarknessConfig を介して通信する。
             darkness_d_config = {
-                'dir_name':  self.dir_name, 'id':  darkness_id,
+                'id':  darkness_id,
                 'client_id':  client_id,
-                'log_level':  self.log_level,
                 'start_up_time':  self.start_up_time,
-                'first_node_id':  first_node_id,
+                'dir_name':  self.dir_name,
+                'log_level':  self.log_level,
                 'num_nodes':  nodes_per_darkness,
+                'first_node_id':  first_node_id,
+                'num_darkness': self.num_darkness,
                 # share with client and darknesses
                 'made_nodes':  multiprocessing.Value('i', 0),
                 # share with client and another darknesses
                 'leave_there':  self.leave_there,
-                'num_darkness': self.num_darkness,
             }
             darkness_process = \
                 multiprocessing.Process(
