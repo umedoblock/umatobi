@@ -235,7 +235,7 @@ class Screen(object):
 
         band_width = 0.02
       # self._debug = True
-        if math.fabs(1.0 - docoo) <= band_width:
+        if math.fabs(1.0 - docofo) <= band_width:
             # 単位円の円周付近(=band_width) を click した。
             clicked_rad = formula.cos_sin_to_norm_rad(cos_, sin_)
             min_rad = clicked_rad - 0.02
@@ -252,7 +252,7 @@ class Screen(object):
                     #TODO: squares に登録済みのnodeは再追加しない。
                     square = (node['rad'], node['x'], node['y'], 0.02, (0x00, 0xff, 0))
                     self._squares.append(square)
-        if self._debug and math.fabs(1.0 - docoo) <= band_width:
+        if self._debug and math.fabs(1.0 - docofo) <= band_width:
             # node が出没する箇所付近をclickした。
             fmt2 = 'cos_={}, sin_={}  in self.click_on()'
       #     print(fmt2.format(cos_, sin_))
