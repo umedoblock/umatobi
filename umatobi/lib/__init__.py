@@ -130,7 +130,7 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
     logger_obj.setLevel(level)
 
     # create formatter and add it to the handlers
-    formatter = logging.Formatter(LOGGER_FMT + f"pid={os.getpid()}, thread_id={threading.get_ident()}")
+    formatter = logging.Formatter(LOGGER_FMT + f", pid={os.getpid()}, thread_id={threading.get_ident()}")
 
     # create file handler which logs even debug messages
     fh = None
