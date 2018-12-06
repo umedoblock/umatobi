@@ -126,7 +126,7 @@ class Client(object):
             if darkness_id == self.num_darkness - 1:
                 # 最後に端数を作成？
                 nodes_per_darkness = self.last_darkness_make_nodes
-            logger.info('darkness id={}, nodes_per_darkness={}'.format(darkness_id, nodes_per_darkness))
+            logger.info(f'client_id={self.id}, darkness id={darkness_id}, num_darkness={self.num_darkness}, num_nodes={nodes_per_darkness}, first_node_id={first_node_id}')
             client_id = self.id
 
             # client と darkness process が DarknessConfig を介して通信する。
@@ -141,6 +141,7 @@ class Client(object):
                 'made_nodes':  multiprocessing.Value('i', 0),
                 # share with client and another darknesses
                 'leave_there':  self.leave_there,
+                'num_darkness': self.num_darkness,
             }
             darkness_process = \
                 multiprocessing.Process(
@@ -148,8 +149,10 @@ class Client(object):
                     args=(darkness_d_config,),
                 )
             darkness_process.d_config = darkness_d_config
-            darkness_process.start()
             self.darkness_processes.append(darkness_process)
+
+        for darkness_process in self.darkness_processes:
+            darkness_process.start()
 
         # watson から終了通知("break down")が届くまで待機し続ける。
         # TODO: #149 watson からの接続であると確認する。

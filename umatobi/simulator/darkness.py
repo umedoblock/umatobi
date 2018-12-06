@@ -1,5 +1,5 @@
 import sys, os
-import threading
+import threading, time
 import queue
 import pickle
 
@@ -27,6 +27,10 @@ class ExhaleQueue(Polling):
         self._queue_darkness = self.darkness._queue_darkness
         self.queue_size_total = 0
         logger.info('{} created ExhaleQueue()'.format(self.darkness))
+        self.sleep_secs = polling_secs * (self.darkness.id / self.darkness.num_darkness)
+        logger.debug(f'darkness.id={darkness.id}, sleep_secs={self.sleep_secs}, polling_secs={polling_secs}, darkness.id={self.darkness.id}, darkness.num_darkness={darkness.num_darkness}.')
+        logger.info(f'ExhaleQueue wait {self.sleep_secs} secs.')
+        self.slept = False
 
     def run(self):
         '''\
@@ -40,6 +44,9 @@ class ExhaleQueue(Polling):
         run()内で、client_db.create_db()と、Polling.run()を行った。
         '''
         logger.info('{} run ExhaleQueue()'.format(self.darkness))
+        if not self.slept:
+            time.sleep(self.sleep_secs)
+            self.slept = True
         self.client_db.create_db()
         logger.info('{} client_db.create_db().'.format(self.darkness))
 
@@ -93,6 +100,7 @@ class Darkness(object):
             'dir_name', 'num_nodes', 'log_level', 'start_up_time',
             'made_nodes', # share with client and darknesses
             'leave_there', # share with client and another darknesses
+            'num_darkness',
         ])
         validate_kwargs(st_barrier, kwargs)
 
