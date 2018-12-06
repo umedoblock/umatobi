@@ -255,13 +255,6 @@ class Screen(object):
                 #TODO: squares に登録済みのnodeは再追加しない。
                 square = (node['rad'], node['x'], node['y'], 0.02, (0x00, 0xff, 0))
                 self._squares.append(square)
-        if self._debug and math.fabs(1.0 - docofo) <= band_width:
-            # node が出没する箇所付近をclickした。
-            fmt2 = 'cos_={}, sin_={}  in self.click_on()'
-      #     print(fmt2.format(cos_, sin_))
-            square = (0, cos_, sin_, 0.02, (0xff, 0, 0))
-            self._squares.append(square)
-      # self._debug = not True
 
     def _keyboard(self, key, x, y):
         code = ord(key)
