@@ -229,7 +229,7 @@ class Screen(object):
             return
       # 左click 押した button=0, state=0, x=392, y=251  in self.click_on()
       # 左click 離した button=0, state=1, x=392, y=251  in self.click_on()
-        logger.DEBUG(f'button={button}, state={state}, x={x}, y={y} in self.click_on_sample()')
+        logger.debug(f'button={button}, state={state}, x={x}, y={y} in self.click_on_sample()')
 
         cos_, sin_, docofo = Screen.get_current_cos_sin(x, y)
 
