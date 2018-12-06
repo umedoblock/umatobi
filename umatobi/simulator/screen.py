@@ -80,8 +80,8 @@ class Screen(object):
         glutDisplayFunc(self._display)
         glutIdleFunc(glutPostRedisplay)
         glutKeyboardFunc(self._keyboard)
-        glutMouseFunc(self._mouse)
-        glutMouseFunc(self._mouse_sample)
+        glutMouseFunc(self.click_on)
+        glutMouseFunc(self.click_on_sample)
 
     def set_display(self, display_main):
         self.display_main = display_main
@@ -164,8 +164,8 @@ class Screen(object):
             print('count={}, th={}'.format(count, th))
             count += 1
 
-#   def _mouse(self, *event):
-#       print('event={} in self._mouse()'.format(event))
+#   def click_on(self, *event):
+#       print('event={} in self.click_on()'.format(event))
 
     @staticmethod
     def get_current_cos_sin(x, y):
@@ -187,7 +187,7 @@ class Screen(object):
         # -wh / 2 <= y <= wh / 2
         mx = x - ww / 2
         my = wh / 2 - y
-        logger.info(f'mx={mx} my={my}, x={x}, y={y} in self._mouse_sample()')
+        logger.info(f'mx={mx} my={my}, x={x}, y={y} in self.click_on_sample()')
 
         # normalize
         norm_ww = ww / 2
@@ -204,20 +204,20 @@ class Screen(object):
 
         r = norm_ww
         # clickした箇所と原点(=単位円の中心)からの距離
-        distance_of_click_on_from_origin = norm_d / r
-        docofo = distance_of_click_on_from_origin
+        distance_ofclick_on_from_origin = norm_d / r
+        docofo = distance_ofclick_on_from_origin
 
-        logger.debug('distance_of_click_on_from_origin={docofo} in get_current_cos_sin()')
+        logger.debug('distance_ofclick_on_from_origin={docofo} in get_current_cos_sin()')
 
         return cos_, sin_, docofo
 
-    def _mouse_sample(self, button, state, x, y):
-        logger.info(f'button={button}, state={state}, x={x}, y={y} in self._mouse_sample()')
+    def click_on_sample(self, button, state, x, y):
+        logger.info(f'button={button}, state={state}, x={x}, y={y} in self.click_on_sample()')
         cos_, sin_, docofo = Screen.get_current_cos_sin(x, y)
-        logger.info(f'cos_={cos_} sin_={sin_}, x={x}, y={y} in self._mouse_sample()')
-        logger.info(f'distance_of_click_on_from_origin={docofo} in _mouse_sample()')
+        logger.info(f'cos_={cos_} sin_={sin_}, x={x}, y={y} in self.click_on_sample()')
+        logger.info(f'distance_ofclick_on_from_origin={docofo} in click_on_sample()')
 
-    def _mouse(self, button, state, x, y):
+    def click_on(self, button, state, x, y):
         if state != GLUT_DOWN:
             # mouse button を離した時などは速終了。
             # 参考
@@ -227,9 +227,9 @@ class Screen(object):
             # GLUT_UP
             # GLUT_DOWN
             return
-      # 左click 押した button=0, state=0, x=392, y=251  in self._mouse()
-      # 左click 離した button=0, state=1, x=392, y=251  in self._mouse()
-        logger.DEBUG(f'button={button}, state={state}, x={x}, y={y} in self._mouse_sample()')
+      # 左click 押した button=0, state=0, x=392, y=251  in self.click_on()
+      # 左click 離した button=0, state=1, x=392, y=251  in self.click_on()
+        logger.DEBUG(f'button={button}, state={state}, x={x}, y={y} in self.click_on_sample()')
 
         cos_, sin_, docofo = Screen.get_current_cos_sin(x, y)
 
@@ -254,7 +254,7 @@ class Screen(object):
                     self._squares.append(square)
         if self._debug and math.fabs(1.0 - docoo) <= band_width:
             # node が出没する箇所付近をclickした。
-            fmt2 = 'cos_={}, sin_={}  in self._mouse()'
+            fmt2 = 'cos_={}, sin_={}  in self.click_on()'
       #     print(fmt2.format(cos_, sin_))
             square = (0, cos_, sin_, 0.02, (0xff, 0, 0))
             self._squares.append(square)
