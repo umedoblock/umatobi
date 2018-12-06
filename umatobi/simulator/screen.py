@@ -201,8 +201,7 @@ class Screen(object):
         return cos_, sin_
 
     def _mouse_sample(self, button, state, x, y):
-        fmt = 'button={}, state={}, x={}, y={}  in self._mouse_sample()'
-        print(fmt.format(button, state, x, y))
+        logger.info(f'button={button}, state={state}, x={x}, y={y} in self._mouse_sample()')
         cos_, sin_ = Screen.get_current_cos_sin(x, y)
         logger.info(f'cos_={cos_} sin_={sin_}, x={x}, y={y} in self._mouse_sample()')
 
@@ -218,9 +217,7 @@ class Screen(object):
             return
       # 左click 押した button=0, state=0, x=392, y=251  in self._mouse()
       # 左click 離した button=0, state=1, x=392, y=251  in self._mouse()
-        if self._debug:
-            fmt = 'button={}, state={}, x={}, y={}  in self._mouse()'
-            print(fmt.format(button, state, x, y))
+        logger.DEBUG(f'button={button}, state={state}, x={x}, y={y} in self._mouse_sample()')
 
         cos_, sin_ = Screen.get_current_cos_sin(x, y)
 
