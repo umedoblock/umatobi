@@ -1,5 +1,5 @@
 import datetime
-import sys
+import sys, os
 import math
 import pickle
 import threading
@@ -8,9 +8,15 @@ import tkinter as tk
 # sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib.args import args_make_simulation_db
 import simulator.sql
-from lib import formula
+from lib import formula, make_logger
 from lib.squares import put_on_square
 from tools.make_simulation_db import init_nodes_table
+from lib.args import get_logger_args
+global logger
+logger_args = get_logger_args()
+logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
+logger.debug(f"__file__ = {__file__}")
+logger.debug(f"__name__ = {__name__}")
 
 try:
     from OpenGL.GLUT import *
