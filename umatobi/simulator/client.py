@@ -3,6 +3,7 @@ import threading
 import sqlite3
 import socket
 import multiprocessing
+from logging import StreamHandler
 
 from simulator.darkness import Darkness
 import simulator.sql
@@ -28,18 +29,9 @@ class Client(object):
 
         global logger
         logger_args = get_logger_args()
-#       _logger, _fh, _ch = make_logger2(name=os.path.basename(__file__), level=logger_args.log_level)
         _logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
-#       print(f"_logger.manager.loggerDict={_logger.manager.loggerDict}")
-#       print(f"_logger={_logger}, fh={_fh}, _ch={_ch}")
-#       print(f"_logger.manager.loggerDict.keys()={_logger.manager.loggerDict.keys()}")
         loggerDict=_logger.manager.loggerDict
-#       print(f"loggerDict['client']={loggerDict['client']}")
-#       print(f"id(loggerDict['client'])={id(loggerDict['client'])}")
-#       print(f"dir(loggerDict['client'])={dir(loggerDict['client'])}")
-#       print(f"loggerDict['client'].handlers={loggerDict['client'].handlers}")
         handlers_client=loggerDict['client'].handlers
-#       print(f"ch={_ch}, id(_ch)={id(_ch)}")
         logger = _logger
       # logger.debug(f"__file__ = {__file__}")
       # logger.debug(f"__name__ = {__name__}")
@@ -83,8 +75,14 @@ class Client(object):
         logger_name = os.path.basename(__file__) + f".{client_id}"
       # _logger.removeHandler(_fh)
       # _logger.removeHandler(_ch)
-        handlers_client.clear()
-        logger, _fh, _ch = make_logger2(self.dir_name, name=logger_name, level=self.log_level)
+        logger.debug(f"handlers_client = {handlers_client}")
+        doubt_handlers = []
+        for handler in handlers_client:
+            if isinstance(handler, StreamHandler):
+                doubt_handlers.append(handler)
+        for doubt_handler in doubt_handlers:
+            handlers_client.remove(doubt_handler)
+        logger = make_logger(self.dir_name, name=logger_name, level=self.log_level)
 
         logger.info('----- {} log start -----'.format(self))
         logger.info('watson_office_addr = {}'.format(self.watson_office_addr))
