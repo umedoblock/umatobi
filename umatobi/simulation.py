@@ -57,7 +57,7 @@ def get_host_port(host_port):
 
 if __name__ == '__main__':
     logger_args = get_logger_args()
-    logger = make_logger(logger_args.simulation_dir, \
+    logger = make_logger(log_dir=logger_args.simulation_dir, \
                          name="admin", \
                          level=logger_args.log_level)
     logger.info("simulation start !")
