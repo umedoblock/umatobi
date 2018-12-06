@@ -196,6 +196,9 @@ class Screen(object):
         norm_x = int(mx)
         norm_y = int(my * rate)
         norm_d = math.sqrt(norm_x ** 2 + norm_y ** 2)
+        if norm_d == 0:
+            logger.debug('norm_d={norm_d} in get_current_cos_sin()')
+            return None, None, 0
         cos_ = norm_x / norm_d
         sin_ = norm_y / norm_d
 
