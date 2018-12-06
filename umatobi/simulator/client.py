@@ -123,7 +123,7 @@ class Client(object):
         for darkness_id in range(0, self.num_darkness):
             first_node_id = self.node_index + \
                             darkness_id * self.nodes_per_darkness
-            if darkness_id == self.num_darkness:
+            if darkness_id == self.num_darkness - 1:
                 # 最後に端数を作成？
                 nodes_per_darkness = self.last_darkness_make_nodes
             logger.info('darkness id={}, nodes_per_darkness={}'.format(darkness_id, nodes_per_darkness))
