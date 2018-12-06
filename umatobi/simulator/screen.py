@@ -168,7 +168,7 @@ class Screen(object):
 #       print('event={} in self._mouse()'.format(event))
 
     def _mouse_sample(self, button, state, x, y):
-        fmt = 'button={}, state={}, x={}, y={}  in self._mouse()'
+        fmt = 'button={}, state={}, x={}, y={}  in self._mouse_sample()'
         print(fmt.format(button, state, x, y))
 
     def _mouse(self, button, state, x, y):
