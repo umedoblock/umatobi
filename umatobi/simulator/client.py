@@ -33,6 +33,7 @@ class Client(object):
         loggerDict=_logger.manager.loggerDict
         handlers_client=loggerDict['client'].handlers
         logger = _logger
+        logger.info(f"========logger1={id(logger)}")
         logger.debug(f"__file__ = {__file__}")
         logger.debug(f"__name__ = {__name__}")
 
@@ -84,8 +85,11 @@ class Client(object):
             # 上の make_logger(name=client) と下の make_logger(name=client.0)
             # では，getLogger() に渡す名前が異なるから重複logの出る理由が分からない。
             # logging が bug ってるのかなぁ？って思ってしまう。
-            handlers_client.remove(doubt_handler)
+          # handlers_client.remove(doubt_handler)
+          # logger.error(f"handlers_client={handlers_client}")
+            logger.error(f"handlers_client={id(handlers_client)}")
         logger = make_logger(log_dir=self.dir_name, name=os.path.basename(__file__), id_=self.id, level=self.log_level)
+        logger.info(f"========logger2={id(logger)}")
 
         logger.info('----- {} log start -----'.format(self))
         logger.info('watson_office_addr = {}'.format(self.watson_office_addr))

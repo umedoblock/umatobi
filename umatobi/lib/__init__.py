@@ -127,6 +127,7 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
 
     print(f"logging.getLogger(name={name}) in make_logger(name={name})")
     logger_obj = logging.getLogger(name)
+    print(f"==================logging.getLogger(logger_obj={logger_obj}, id(logger_obj)={id(logger_obj)} in make_logger(name={name})")
     logger_obj.setLevel(level)
 
     # create formatter and add it to the handlers
@@ -147,8 +148,9 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(level)
     ch.setFormatter(formatter)
-    print(f"logger_obj.addHandler(ch={ch}) in make_logger(name={name})")
+    print(f"==================logger_obj.addHandler(ch={ch}, id(ch)={id(ch)}) in make_logger(name={name})")
     logger_obj.addHandler(ch)
+    print(f"++++++++++++++++++++++++++logger_obj(={logger_obj}.addHandler(ch={ch}) in make_logger(name={name})")
     print("logger_obj =", logger_obj)
 
     return logger_obj
