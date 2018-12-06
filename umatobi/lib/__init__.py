@@ -54,6 +54,10 @@ def make_start_up_orig():
     start_up_orig = datetime.datetime.now()
     return start_up_orig
 
+def tell_shutdown_time():
+    shutdown_time = datetime.datetime.now()
+    return shutdown_time
+
 def isoformat_time(t):
     "'return time format '2012-11-02T23:22:27.002481'"
     # milli, micro

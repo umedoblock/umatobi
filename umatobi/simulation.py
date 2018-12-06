@@ -4,7 +4,7 @@ import argparse
 import datetime
 import multiprocessing
 
-from lib import make_logger, make_start_up_orig
+from lib import make_logger, make_start_up_orig, tell_shutdown_time
 from lib.args import get_logger_args
 from simulator.client import Client
 from simulator.watson import Watson
@@ -57,9 +57,13 @@ def get_host_port(host_port):
 
 if __name__ == '__main__':
     logger_args = get_logger_args()
+    start_up_orig = make_start_up_orig()
+    start_up_time = start_up_orig.isoformat()
+
     logger = make_logger(log_dir=logger_args.simulation_dir, \
                          name="admin", \
                          level=logger_args.log_level)
+    logger.info(f"start_up_time={start_up_time}")
     logger.info("simulation start !")
 
     # 引数の解析
@@ -92,9 +96,6 @@ if __name__ == '__main__':
   # dir_name 以下に、simulation結果の生成物、
   # simulation.db, watson.0.log, client.0.log ...
   # を作成する。
-
-    start_up_orig = make_start_up_orig()
-    start_up_time = start_up_orig.isoformat()
     dir_name = os.path.join(simulation_dir, start_up_time)
 
     if not os.path.isdir(dir_name): os.makedirs(dir_name, exist_ok=True)
@@ -125,3 +126,7 @@ if __name__ == '__main__':
 
     # 終了処理
     watson.join()
+
+    logger.info("simulation end !")
+    shutdown_time = tell_shutdown_time()
+    logger.info(f"shutdown_time={shutdown_time}")
