@@ -80,6 +80,10 @@ class Client(object):
             if isinstance(handler, StreamHandler):
                 doubt_handlers.append(handler)
         for doubt_handler in doubt_handlers:
+            # TODO: 以下一行が，log の二重出力対策に決定的に重要。
+            # 上の make_logger(name=client) と下の make_logger(name=client.0)
+            # では，getLogger() に渡す名前が異なるから重複logの出る理由が分からない。
+            # logging が bug ってるのかなぁ？って思ってしまう。
             handlers_client.remove(doubt_handler)
         logger = make_logger(log_dir=self.dir_name, name=os.path.basename(__file__), id_=self.id, level=self.log_level)
 
