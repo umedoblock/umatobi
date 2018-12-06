@@ -237,21 +237,24 @@ class Screen(object):
       # self._debug = True
         if math.fabs(1.0 - docofo) <= band_width:
             # 単位円の円周付近(=band_width) を click した。
+
+            # click した箇所の，rad を計算。
             clicked_rad = formula.cos_sin_to_norm_rad(cos_, sin_)
+
+            # click した箇所の前後 0.02 の範囲内にいる nodes を調べる。
             min_rad = clicked_rad - 0.02
             max_rad = clicked_rad + 0.02
-
-            # node が出没している時に、出没箇所をclickした。
             condition = '''
                 where rad >= {} and rad <= {}
             '''.format(min_rad, max_rad)
             nodes = self._memory_db.select('nodes', conditions=condition)
-            print('clicked nodes = {}'.format(nodes))
-            if len(nodes):
-                for node in nodes:
-                    #TODO: squares に登録済みのnodeは再追加しない。
-                    square = (node['rad'], node['x'], node['y'], 0.02, (0x00, 0xff, 0))
-                    self._squares.append(square)
+
+            # click した箇所の前後 0.02 の範囲内にいる nodes を表示。
+            logger.info(f'clicked nodes = {nodes}')
+            for node in nodes:
+                #TODO: squares に登録済みのnodeは再追加しない。
+                square = (node['rad'], node['x'], node['y'], 0.02, (0x00, 0xff, 0))
+                self._squares.append(square)
         if self._debug and math.fabs(1.0 - docofo) <= band_width:
             # node が出没する箇所付近をclickした。
             fmt2 = 'cos_={}, sin_={}  in self.click_on()'
