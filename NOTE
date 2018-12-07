@@ -5,12 +5,11 @@ node, darkness, client, watson, theater 各々の関係，概要。
 
 simulation の末端(=node)から，watson までの道のり。
 node は darkness と _queue_darkness という Queue() を共有。
-darkness は client と client_db を共有。
+darkness は client と client.N.db を共有。
 client は client.N.db を watson へ送信する。
 watson は client.N.db を client から受信し保存する。
-watson はこの時同時に watson.db を作成し，
-今回の simulation に関する情報を保存する。
-watson は同時に，client.N.db を統合して simulation.db を作成する。
+watson は client.N.db を統合して simulation.db を作成する。
+watson は watson.db を作成し，今回の simulation に関する情報を保存する。
 theater は，simulation.db を読み込んで simulation 結果を描画する。
 
 #########################################################################
@@ -46,8 +45,6 @@ theater.py
 watson が作成した simulation.db を読み込んで，
 simulation 結果を表示してくれる。
 
-###
-theater.py
 main thread とは別に，3 つの threads を持つ。
 sqlite3_thread, make_figures_thread, drawing_thread
 
@@ -62,7 +59,7 @@ TODO: 効率を考えて，insert() にした方が良いのか考え中。
       面倒くさそう。id が既にinsertされているか？
       と判断しないといけないし。数行で済みそうではあるけど。
 ###
-make_figures_thread
+make_figures_thread in theater.py
 memory.db 上の nodes table を読み込んで，opengl が描画する figure を
 作成し，drawing_thread と共有する figures に書き込む。
 
