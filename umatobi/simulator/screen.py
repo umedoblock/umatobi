@@ -272,14 +272,7 @@ class Screen(object):
             sys.exit(0)
 
     def display_main(self, passed_seconds):
-        milliseconds = _normalize_milliseconds(passed_seconds)
-        s = milliseconds - 1000
-        if s < 0:
-            s = 0
-        if s > self.simulation_milliseconds:
-            self._simulation_info()
-            sys.exit(0)
-        e = milliseconds
+        s, e = self.get_a_second_ago_and_now(passed_seconds)
 
         conditions = \
             'where elapsed_time >= {} and elapsed_time < {}'. \
@@ -314,6 +307,18 @@ class Screen(object):
 
         for square in self._squares:
             put_on_square(*square)
+
+    def get_a_second_ago_and_now(self, passed_seconds):
+        milliseconds = _normalize_milliseconds(passed_seconds)
+        e = milliseconds
+        s = e - 1000
+        if s < 0:
+            s = 0
+        if s > self.simulation_milliseconds:
+            self._simulation_info()
+            sys.exit(0)
+
+        return s, e
 
     def _passed_time(self):
         e = datetime.datetime.now()
