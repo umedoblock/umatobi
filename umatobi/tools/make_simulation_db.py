@@ -108,6 +108,10 @@ def watson_make_simulation_db(simulation_db, watson_db):
     simulation_db.take_table(watson_db, 'simulation')
     init_nodes_table(simulation_db)
 
+# theater 内にて update() によって node を更新するので，
+# 更新対象となる node の存在が不可欠である。
+# その更新対象となるnode を dummy としてここで作成する。
+# refs #14
 def init_nodes_table(simulation_db):
     simulation_db.init_table('nodes')
     logger.debug('created nodes table.')
