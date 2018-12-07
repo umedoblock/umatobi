@@ -16,14 +16,14 @@ logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_leve
 logger.debug(f"__file__ = {__file__}")
 logger.debug(f"__name__ = {__name__}")
 
-def collect_client_dbs(watson_db):
+def collect_client_dbs(simulation_db):
     client_dbs = []
-    client_rows = watson_db.select('clients', conditions='order by id')
+    client_rows = simulation_db.select('clients', conditions='order by id')
     for client_row in client_rows:
         id_, num_nodes_ = (client_row['id'], client_row['num_nodes'])
         logger.debug('id={}, num_nodes_={}'.format(id_, num_nodes_))
         client_db_path = \
-            watson_db.simulation_db_path.replace(r'simulation.db',
+            simulation_db.path.replace(r'simulation.db',
                                         'client.{}.db'.format(id_))
         client_db = simulator.sql.SQL(db_path=client_db_path)
         client_db.id, client_db.num_nodes = id_, num_nodes_
@@ -51,6 +51,7 @@ def merge_client_dbs(client_dbs):
     records = []
     for client_db in client_dbs:
         _select_client_db(client_db)
+        logger.info(f'client_db.queues={client_db.queues}')
         records.extend(client_db.queues)
     #158 records の sort をする時に、大量のmemoryが必要になると思われる。
     records.sort(key=lambda x: x['elapsed_time'])
@@ -58,27 +59,22 @@ def merge_client_dbs(client_dbs):
   #     logger.debug(f'tuple(record)')
     return records
 
-def watson_make_simulation_db(simulation_db, watson_db):
+def watson_make_simulation_db(simulation_db):
     logger.debug(f'simulation_db={simulation_db}')
-    logger.debug(f'watson_db={watson_db}')
 
     if os.path.exists(simulation_db.path):
         logger.debug(f'os.remove("{simulation_db.path}")')
-        os.remove(simulation_db.path)
-    simulation_db.create_db()
-    simulation_db.create_table('simulation')
-    simulation_db.create_table('growings')
-    simulation_db.create_table('nodes')
+      # os.remove(simulation_db.path)
+    simulation_db.access_db()
+  # simulation_db.create_table('growings')
 
-    watson_db.access_db()
+    simulation_db.client_dbs = collect_client_dbs(simulation_db)
+  # simulation_db.total_nodes = count_nodes(simulation_db.client_dbs)
+    simulation_db.total_nodes = \
+        simulation_db.select('simulation', 'total_nodes')[0]['total_nodes']
 
-    watson_db.client_dbs = collect_client_dbs(watson_db)
-  # watson_db.total_nodes = count_nodes(watson_db.client_dbs)
-    watson_db.total_nodes = \
-        watson_db.select('simulation', 'total_nodes')[0]['total_nodes']
-
-    logger.debug(f'watson_db.total_nodes={watson_db.total_nodes}')
-    watson_db.records = merge_client_dbs(watson_db.client_dbs)
+    logger.debug(f'simulation_db.total_nodes={simulation_db.total_nodes}')
+    simulation_db.records = merge_client_dbs(simulation_db.client_dbs)
     growing = {}
     growing['id'] = None
     growing['elapsed_time'] = None
@@ -97,15 +93,14 @@ def watson_make_simulation_db(simulation_db, watson_db):
     growings.append(keys)
 
     # L[i_id] = None
-    for record in watson_db.records:
+    for record in simulation_db.records:
         L = [None] * len(keys)
         L[i_elapsed_time] = record['elapsed_time']
         L[i_pickle] = record['pickle']
         growings.append(L)
-    simulation_db.inserts('growings', growings)
+    simulation_db.inserts('growings', tuple(growings))
     simulation_db.commit()
 
-    simulation_db.take_table(watson_db, 'simulation')
     init_nodes_table(simulation_db)
 
 # theater 内にて update() によって node を更新するので，
@@ -141,20 +136,14 @@ if __name__ == '__main__':
     if not simulation_db_path:
         raise RuntimeError('simulation_db_path is empty.')
 
-    watson_db_path = simulation_db_path.replace(r'simulation.db', 'watson.db')
-
     simulation_db = simulator.sql.SQL(db_path=simulation_db_path,
                                       schema_path=SCHEMA_PATH)
     simulation_db.path = simulation_db_path
-    watson_db = simulator.sql.SQL(db_path=watson_db_path)
-    watson_db.simulation_db_path = simulation_db.path
-    watson_db.path = watson_db_path
 
-    watson_make_simulation_db(simulation_db, watson_db)
+    watson_make_simulation_db(simulation_db)
 
-    for client_db in reversed(watson_db.client_dbs):
+    for client_db in reversed(simulation_db.client_dbs):
         client_db.close()
-    watson_db.close()
     simulation_db.close()
 
   # print()
