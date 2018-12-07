@@ -273,7 +273,6 @@ class Screen(object):
 
     def display_main(self, passed_seconds):
         milliseconds = _normalize_milliseconds(passed_seconds)
-#       print('\rmilliseconds = {:7d}'.format(milliseconds), end='')
         s = milliseconds - 1000
         if s < 0:
             s = 0
@@ -290,9 +289,6 @@ class Screen(object):
             conditions=conditions
         )
 
-      # print('conditions =', conditions)
-      # print('milliseconds = {}, len(records) = {}'. \
-      #        format(milliseconds, len(records)))
         if len(records) >= 1:
             self._squares.clear()
             print('conditions={}, len(records)={}'.format(conditions, len(records)))
@@ -300,8 +296,6 @@ class Screen(object):
                 d = pickle.loads(record['pickle'])
                 print('elapsed_time={}, d = {}'.format(record['elapsed_time'], d))
                 where = {'id': d['id']}
-#               self._db.update('nodes', d, where)
-#               self._db.commit()
                 self._memory_db.update('nodes', d, where)
                 self._memory_db.commit()
             print()
@@ -309,13 +303,11 @@ class Screen(object):
         L = []
         len_body = 0.011
         len_leg = 0.033
-#       nodes = self._db.select('nodes')
         nodes = self._memory_db.select('nodes')
         for node in nodes:
             if node['status'] == 'active':
                 _keyID = int(node['key'][:10], 16)
                 r, x, y = formula._key2rxy(_keyID)
-              # print('r, x, y =', r, x, y)
                 put_on_square(r, x, y, len_body)
                 L.append('id: {}, key: {}'.format(node['id'], node['key']))
         self.label_area.update('\n'.join(L))
