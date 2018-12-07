@@ -314,7 +314,7 @@ class Screen(object):
         s = e - 1000
         if s < 0:
             s = 0
-        if s > self.simulation_milliseconds:
+        if e > self.simulation_milliseconds:
             self._simulation_info()
             sys.exit(0)
 
