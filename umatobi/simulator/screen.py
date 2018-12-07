@@ -272,8 +272,11 @@ class Screen(object):
             sys.exit(0)
 
     def display_main(self, passed_seconds):
+        # 1. 現在より1秒前と現在の時刻を，各々 s, e に格納。
         s, e = self.get_a_second_ago_and_now(passed_seconds)
 
+        # 2. s <= elapsed_time < e を満たす record を
+        #    memorydb 上の growings table から検索する。
         conditions = \
             'where elapsed_time >= {} and elapsed_time < {}'. \
              format(self._last_select_milliseconds, e)
