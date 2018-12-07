@@ -103,6 +103,10 @@ def watson_make_simulation_db(simulation_db):
 
     init_nodes_table(simulation_db)
 
+    for client_db in reversed(simulation_db.client_dbs):
+        client_db.close()
+    simulation_db.close()
+
 # theater 内にて update() によって node を更新するので，
 # 更新対象となる node の存在が不可欠である。
 # その更新対象となるnode を dummy としてここで作成する。
@@ -141,10 +145,6 @@ if __name__ == '__main__':
     simulation_db.path = simulation_db_path
 
     watson_make_simulation_db(simulation_db)
-
-    for client_db in reversed(simulation_db.client_dbs):
-        client_db.close()
-    simulation_db.close()
 
   # print()
   # table_names = simulation_db.get_table_names()
