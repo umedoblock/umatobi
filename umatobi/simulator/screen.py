@@ -23,8 +23,8 @@ try:
     from OpenGL.GL import *
     from OpenGL.GLU import *
 except BaseException as e:
-    print('''ERROR: PyOpenGL not installed properly.''')
-    print(e)
+    logger.error('ERROR: PyOpenGL not installed properly.')
+    logger.error(e)
     sys.exit()
 
 def _normalize_milliseconds(seconds):
@@ -101,7 +101,7 @@ class Screen(object):
         self.simulation_milliseconds = \
             self._memory_db.select('simulation', \
                              column_name)[0][column_name]
-        print('self.simulation_milliseconds =', self.simulation_milliseconds)
+        logger.info(f'self.simulation_milliseconds={self.simulation_milliseconds}')
 
     def start(self):
         glutMainLoop()
@@ -128,16 +128,16 @@ class Screen(object):
     def _print_fps(self):
         ps = self._passed_time()
         fps = self.frames / ps
-        logger.info('frames =', self.frames)
-        logger.info('passed_seconds = {:.3f}'.format(ps))
-        logger.info('fps = {:.3f}'.format(fps))
+        logger.info(f'frames={self.frames}')
+        logger.info(f'passed_seconds={ps:.3f}')
+        logger.info(f'fps={fps:.3f}')
 
     def _simulation_info(self):
         logger.info('\n')
         self._print_fps()
       # print(dir(self.label_area.tk_root))
-        logger.info('display =', self.label_area.display)
-        logger.info('display.master =', self.label_area.display.master)
+        logger.info('display={self.label_area.display}')
+        logger.info('display.master={self.label_area.display.master}')
 ####### self.label_area.display.destroy()
 ####### if self.label_area.display.master:
 #######     print('display.master.destroy()')
@@ -257,10 +257,10 @@ class Screen(object):
 
     def _keyboard(self, key, x, y):
         code = ord(key)
-        print()
-        print('key={}, x={}, y={}, code={}'.format(key, x, y, code))
+        logger.debug()
+        logger.debug('key={}, x={}, y={}, code={}'.format(key, x, y, code))
         if key.decode() == chr(27):
-            print('ESC')
+            logger.debug('ESC')
         if ord(key) == 27 or ord(key) == 0x17 or ord(key) == 0x03:
           # ESC              ctr-w               ctr-c
           # self.label_area._tk_root.destroy()
@@ -268,7 +268,7 @@ class Screen(object):
             self._simulation_info()
           # self.label_area.display.destroy()
           # self.label_area.display.master.destroy()
-            print('_keyboard() do sys.exit(0)')
+            logger.debug('_keyboard() do sys.exit(0)')
             sys.exit(0)
 
     def display_main(self, passed_seconds):
@@ -291,7 +291,7 @@ class Screen(object):
                 where = {'id': d['id']}
                 self._memory_db.update('nodes', d, where)
                 self._memory_db.commit()
-            print()
+            logger.info("")
 
         L = []
         len_body = 0.011
