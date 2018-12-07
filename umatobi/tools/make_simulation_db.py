@@ -55,8 +55,6 @@ def merge_client_dbs(client_dbs):
         records.extend(client_db.queues)
     #158 records の sort をする時に、大量のmemoryが必要になると思われる。
     records.sort(key=lambda x: x['elapsed_time'])
-  # for record in records:
-  #     logger.debug(f'tuple(record)')
     return records
 
 def watson_make_simulation_db(simulation_db):
@@ -66,7 +64,6 @@ def watson_make_simulation_db(simulation_db):
     simulation_db.create_table('growings')
 
     simulation_db.client_dbs = collect_client_dbs(simulation_db)
-  # simulation_db.total_nodes = count_nodes(simulation_db.client_dbs)
     simulation_db.total_nodes = \
         simulation_db.select('simulation', 'total_nodes')[0]['total_nodes']
 
