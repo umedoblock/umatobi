@@ -66,7 +66,7 @@ def watson_make_simulation_db(simulation_db):
         logger.debug(f'os.remove("{simulation_db.path}")')
       # os.remove(simulation_db.path)
     simulation_db.access_db()
-  # simulation_db.create_table('growings')
+    simulation_db.create_table('growings')
 
     simulation_db.client_dbs = collect_client_dbs(simulation_db)
   # simulation_db.total_nodes = count_nodes(simulation_db.client_dbs)
