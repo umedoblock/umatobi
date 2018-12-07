@@ -62,9 +62,6 @@ def merge_client_dbs(client_dbs):
 def watson_make_simulation_db(simulation_db):
     logger.debug(f'simulation_db={simulation_db}')
 
-    if os.path.exists(simulation_db.path):
-        logger.debug(f'os.remove("{simulation_db.path}")')
-      # os.remove(simulation_db.path)
     simulation_db.access_db()
     simulation_db.create_table('growings')
 
