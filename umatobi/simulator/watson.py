@@ -61,9 +61,8 @@ class WatsonTCPOffice(socketserver.TCPServer):
         self.clients = []
     #   self.server in WatsonOffice class means WatsonTCPOffice instance.
         self.start_up_orig = watson.start_up_orig
-        self.watson_db_path = watson.watson_db_path
-        self.watson_db = simulator.sql.SQL(db_path=self.watson_db_path)
-        self.watson_db.access_db()
+        self.simulation_db = simulator.sql.SQL(db_path=watson.simulation_db_path)
+        self.simulation_db.access_db()
 
     def shutdown_request(self, request):
         pass
@@ -102,9 +101,9 @@ class WatsonOffice(socketserver.StreamRequestHandler):
                 'joined': elapsed_time(self.server.start_up_orig),
                 'num_nodes': num_nodes,
             }
-            sql = self.server.watson_db.insert('clients', insert_clients)
-            logger.debug(f"watson_db.insert({sql})")
-            self.server.watson_db.commit()
+            sql = self.server.simulation_db.insert('clients', insert_clients)
+            logger.debug(f"simulation_db.insert({sql})")
+            self.server.simulation_db.commit()
             logger.debug('{} {}'.format(self, sql))
             logger.debug('{} recved={}'.format(self, insert_clients))
 
@@ -155,13 +154,11 @@ class Watson(threading.Thread):
         self.log_level = log_level
         self.dir_name = dir_name
         self.registered_nodes = 0
-        self.watson_db = None # sql.SQL()
 
         self.start_up_orig = start_up_orig
         self.start_up_time = self.start_up_orig.isoformat()
 
         self.simulation_db_path = os.path.join(self.dir_name, 'simulation.db')
-        self.watson_db_path = os.path.join(self.dir_name, 'watson.db')
         self.schema_path = SCHEMA_PATH
 
         self.timeout_sec = 1
@@ -180,10 +177,15 @@ class Watson(threading.Thread):
 
     def run(self):
         '''simulation 開始'''
-        self.watson_db = simulator.sql.SQL(db_path=self.watson_db_path,
-                                           schema_path=self.schema_path)
-        self.watson_db.create_db()
-        self.watson_db.create_table('clients')
+        self.simulation_db = simulator.sql.SQL(
+                                db_path=self.simulation_db_path,
+                                schema_path=self.schema_path)
+        self.simulation_db.create_db()
+        self.simulation_db.create_table('clients')
+        # この後，WatsonTCPOffice が simulation_db に access する。
+        # sqlite3 では， sqlite3.connect(self.db_path) の返す instance を
+        # 作成した thread と別の thread では使えないので，一度閉じている。
+        self.simulation_db.close()
         logger.debug("watson created clients table.")
 
         watson_open_office = WatsonOpenOffice(self)
@@ -208,12 +210,16 @@ class Watson(threading.Thread):
 
       # self._wait_tcp_clients()
         self._wait_client_db()
+
+        # simulation_db に骨格を作成する。
+        # simulation も終わるってのにねぇ。
+        self.simulation_db.access_db()
         self._merge_db_to_simulation_db()
         self._construct_simulation_table()
-        self.watson_db.close()
+        self.simulation_db.close()
 
     def _construct_simulation_table(self):
-        self.watson_db.create_table('simulation')
+        self.simulation_db.create_table('simulation')
         d_simulation = {}
         d_simulation['watson_office_addr'] = '{}:{}'.format(*self.watson_office_addr)
         d_simulation['simulation_milliseconds'] = \
@@ -223,8 +229,8 @@ class Watson(threading.Thread):
         d_simulation['total_nodes'] = self.total_nodes
         d_simulation['n_clients'] = len(self.watson_tcp_office.clients)
         d_simulation['version'] = '0.0.0'
-        self.watson_db.insert('simulation', d_simulation)
-        self.watson_db.commit()
+        self.simulation_db.insert('simulation', d_simulation)
+        self.simulation_db.commit()
 
     def _wait_client_db(self):
         logger.info('{} は、client.#.dbの回収に乗り出した。'.format(self))
