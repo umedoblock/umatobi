@@ -128,16 +128,16 @@ class Screen(object):
     def _print_fps(self):
         ps = self._passed_time()
         fps = self.frames / ps
-        print('frames =', self.frames)
-        print('passed_seconds = {:.3f}'.format(ps))
-        print('fps = {:.3f}'.format(fps))
+        logger.info('frames =', self.frames)
+        logger.info('passed_seconds = {:.3f}'.format(ps))
+        logger.info('fps = {:.3f}'.format(fps))
 
     def _simulation_info(self):
-        print('\n')
+        logger.info('\n')
         self._print_fps()
       # print(dir(self.label_area.tk_root))
-        print('display =', self.label_area.display)
-        print('display.master =', self.label_area.display.master)
+        logger.info('display =', self.label_area.display)
+        logger.info('display.master =', self.label_area.display.master)
 ####### self.label_area.display.destroy()
 ####### if self.label_area.display.master:
 #######     print('display.master.destroy()')
@@ -161,7 +161,7 @@ class Screen(object):
       # self.label_area.tk_root.master.destroy()
         count = 0
         for th in threading.enumerate():
-            print('count={}, th={}'.format(count, th))
+            logger.info('count={}, th={}'.format(count, th))
             count += 1
 
 #   def click_on(self, *event):
@@ -284,10 +284,10 @@ class Screen(object):
 
         if len(records) >= 1:
             self._squares.clear()
-            print('conditions={}, len(records)={}'.format(conditions, len(records)))
+            logger.info('conditions={}, len(records)={}'.format(conditions, len(records)))
             for record in records:
                 d = pickle.loads(record['pickle'])
-                print('elapsed_time={}, d = {}'.format(record['elapsed_time'], d))
+                logger.info('elapsed_time={}, d = {}'.format(record['elapsed_time'], d))
                 where = {'id': d['id']}
                 self._memory_db.update('nodes', d, where)
                 self._memory_db.commit()
