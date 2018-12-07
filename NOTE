@@ -7,9 +7,9 @@ simulation の末端(=node)から，watson までの道のり。
 node は darkness と _queue_darkness という Queue() を共有。
 darkness は client と client.N.db を共有。
 client は client.N.db を watson へ送信する。
+watson は 今回の simulation 結果を保存する simulation.db を作成する。
 watson は client.N.db を client から受信し保存する。
-watson は client.N.db を統合して simulation.db を作成する。
-watson は watson.db を作成し，今回の simulation に関する情報を保存する。
+watson は client.N.db を統合して simulation.db へ保存する。
 theater は，simulation.db を読み込んで simulation 結果を描画する。
 
 #########################################################################
