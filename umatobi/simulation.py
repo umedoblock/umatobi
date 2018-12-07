@@ -98,7 +98,8 @@ if __name__ == '__main__':
   # を作成する。
     dir_name = os.path.join(simulation_dir, start_up_time)
 
-    if not os.path.isdir(dir_name): os.makedirs(dir_name, exist_ok=True)
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name, exist_ok=True)
 
     # 各 object を作成するなど。
     watson = Watson(watson_office_addr, args.simulation_seconds,
