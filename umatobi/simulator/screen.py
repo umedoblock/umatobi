@@ -252,7 +252,6 @@ class Screen(object):
             # click した箇所の前後 0.02 の範囲内にいる nodes を表示。
             logger.info(f'clicked nodes = {nodes}')
             for node in nodes:
-                #TODO: squares に登録済みのnodeは再追加しない。
                 square = (node['rad'], node['x'], node['y'], 0.02, (0x00, 0xff, 0))
                 self._squares.append(square)
 
@@ -295,6 +294,7 @@ class Screen(object):
       # print('milliseconds = {}, len(records) = {}'. \
       #        format(milliseconds, len(records)))
         if len(records) >= 1:
+            self._squares.clear()
             print('conditions={}, len(records)={}'.format(conditions, len(records)))
             for record in records:
                 d = pickle.loads(record['pickle'])
