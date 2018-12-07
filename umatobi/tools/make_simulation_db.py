@@ -23,7 +23,7 @@ def collect_client_dbs(simulation_db):
         id_, num_nodes_ = (client_row['id'], client_row['num_nodes'])
         logger.debug('id={}, num_nodes_={}'.format(id_, num_nodes_))
         client_db_path = \
-            simulation_db.path.replace(r'simulation.db',
+            simulation_db.simulation_db_path.replace(r'simulation.db',
                                         'client.{}.db'.format(id_))
         client_db = simulator.sql.SQL(db_path=client_db_path)
         client_db.id, client_db.num_nodes = id_, num_nodes_
@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
     simulation_db = simulator.sql.SQL(db_path=simulation_db_path,
                                       schema_path=SCHEMA_PATH)
-    simulation_db.path = simulation_db_path
+    simulation_db.simulation_db_path = simulation_db_path
 
     watson_make_simulation_db(simulation_db)
 

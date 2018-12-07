@@ -8,6 +8,8 @@ from lib import make_logger, make_start_up_orig, tell_shutdown_time
 from lib.args import get_logger_args
 from simulator.client import Client
 from simulator.watson import Watson
+from tools.make_simulation_db import watson_make_simulation_db
+import simulator.sql
 
 def make_client(watson_office_addr, num_nodes):
     client = Client(watson_office_addr, num_nodes)
@@ -131,3 +133,12 @@ if __name__ == '__main__':
     logger.info("simulation end !")
     shutdown_time = tell_shutdown_time()
     logger.info(f"shutdown_time={shutdown_time}")
+
+    logger.info(f"shutdown_time={shutdown_time}")
+
+    logger.info(f"watson_make_simulation_db() start.")
+    simulation_db = simulator.sql.SQL(db_path=watson.simulation_db_path,
+                                      schema_path=watson.schema_path)
+    simulation_db.simulation_db_path = watson.simulation_db_path
+    watson_make_simulation_db(simulation_db)
+    logger.info(f"watson_make_simulation_db() done.")
