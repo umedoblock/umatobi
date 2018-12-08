@@ -257,7 +257,7 @@ class Screen(object):
 
     def _keyboard(self, key, x, y):
         code = ord(key)
-        logger.debug()
+        logger.debug("")
         logger.debug('key={}, x={}, y={}, code={}'.format(key, x, y, code))
         if key.decode() == chr(27):
             logger.debug('ESC')
