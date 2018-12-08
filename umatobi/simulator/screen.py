@@ -57,6 +57,7 @@ class LabelArea(object):
 
 class Screen(object):
     def __init__(self, argv, width=500, height=500):
+        logger.info(f"Screen(argv={argv}, width={width}, height={height})")
         self.frames = 0
         self.s = datetime.datetime.now()
         self._last_select_milliseconds = 0
@@ -104,12 +105,15 @@ class Screen(object):
         logger.info(f'self.simulation_milliseconds={self.simulation_milliseconds}')
 
     def start(self):
+        logger.info(f"{self}.start() start")
         glutMainLoop()
+        logger.info(f"{self}.start() end")
 
     def update_nodes(self, nodes):
         self.nodes = nodes
 
     def _display(self):
+        logger.info(f'{self}._display()')
         glClearColor(0, 0, 0, 0)
         # 以下の一行は重要
         glClear(GL_COLOR_BUFFER_BIT)
@@ -126,6 +130,7 @@ class Screen(object):
         glutSwapBuffers()
 
     def _print_fps(self):
+        logger.info(f'{self}._print_fps()')
         ps = self._passed_time()
         fps = self.frames / ps
         logger.info(f'frames={self.frames}')
@@ -133,11 +138,11 @@ class Screen(object):
         logger.info(f'fps={fps:.3f}')
 
     def _simulation_info(self):
-        logger.info('\n')
+        logger.info(f'{self}._simulation_info()')
         self._print_fps()
       # print(dir(self.label_area.tk_root))
-        logger.info('display={self.label_area.display}')
-        logger.info('display.master={self.label_area.display.master}')
+        logger.info(f'display={self.label_area.display}')
+        logger.info(f'display.master={self.label_area.display.master}')
 ####### self.label_area.display.destroy()
 ####### if self.label_area.display.master:
 #######     print('display.master.destroy()')
@@ -212,12 +217,13 @@ class Screen(object):
         return cos_, sin_, docofo
 
     def click_on_sample(self, button, state, x, y):
-        logger.info(f'button={button}, state={state}, x={x}, y={y} in self.click_on_sample()')
+        logger.info(f"{self}.click_on_sample(button={button}, state={state}, x={x}, y={y}")
         cos_, sin_, docofo = Screen.get_current_cos_sin(x, y)
         logger.info(f'cos_={cos_} sin_={sin_}, x={x}, y={y} in self.click_on_sample()')
         logger.info(f'distance_ofclick_on_from_origin={docofo} in click_on_sample()')
 
     def click_on(self, button, state, x, y):
+        logger.info(f"{self}.click_on(button={button}, state={state}, x={x}, y={y}")
         if state != GLUT_DOWN:
             # mouse button を離した時などは速終了。
             # 参考
@@ -256,6 +262,7 @@ class Screen(object):
                 self._squares.append(square)
 
     def _keyboard(self, key, x, y):
+        logger.info(f"{self}._keyboard(key={key}, x={x}, y={y}")
         code = ord(key)
         logger.debug("")
         logger.debug('key={}, x={}, y={}, code={}'.format(key, x, y, code))
@@ -272,6 +279,7 @@ class Screen(object):
             sys.exit(0)
 
     def display_main(self, passed_seconds):
+        logger.debug(f"{self}.display_main(passed_seconds={passed_seconds}")
         # 0. simulation 開始時刻を 0 秒として，passed_seconds とは，
         #    simulation 経過秒数の事。
         #    現在とは，simulation 経過秒数の事。
