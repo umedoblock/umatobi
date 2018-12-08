@@ -272,7 +272,10 @@ class Screen(object):
             sys.exit(0)
 
     def display_main(self, passed_seconds):
-        # 1. 現在より1秒前と現在の時刻を，各々 s, e に格納。
+        # 0. simulation 開始時刻を 0 秒として，passed_seconds とは，
+        #    simulation 経過秒数の事。
+        #    現在とは，simulation 経過秒数の事。
+        # 1. 現在より1秒前(=s)と現在の時刻(=e)を，各々 s, e に格納。
         s, e = self.get_a_second_ago_and_now(passed_seconds)
 
         # 2. s <= elapsed_time < e を満たす record を
