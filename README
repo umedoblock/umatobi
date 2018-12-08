@@ -5,6 +5,10 @@ multi processing によって、simulation をする事を目的として開発�
 
 しかし、まだ、完成していません。
 OpenGL を動かすことが出来る程度です。
+OpenGL の動作確認をしたければ，
+    OpenGL/circle_with_legs.py
+    OpenGL/circle.py
+を使ってみて下さい。
 
 = algorithm
 自分にとって n 個隣の node に，
