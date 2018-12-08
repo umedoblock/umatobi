@@ -4,12 +4,17 @@ simulation 実行時の
 node, darkness, client, watson, theater 各々の関係，概要。
 
 simulation の末端(=node)から，watson までの道のり。
+
 node は darkness と _queue_darkness という Queue() を共有。
+
 darkness は client と client.N.db を共有。
+
 client は client.N.db を watson へ送信する。
+
 watson は client.N.db を client から受信し保存する。
 watson は client.N.db を統合して，
 今回の simulation 結果を保存する simulation.db を作成する。
+
 theater は，simulation.db を読み込んで，memory_db を作成し，
 memory_db の内容を OpenGL の figure に変換し，
 OpenGL の figure の描写により，simulation 結果を描画する。
@@ -17,56 +22,59 @@ OpenGL の figure の描写により，simulation 結果を描画する。
 #########################################################################
 simulation 実行時の関係詳細
 
-node.py
-umatobi/simulator/node.py Node.run() にて，node に関する
-各情報(id, host, port, key, rad, x, y, status) を dict に詰めて，
-その dict を pickle 化している。
-そして，pickle と elapsed_time(=et) を 1 tuple として，darkness と
-node が共有する _queue_darkness に tuple を put() している。
+===============================================================================
+= node.py
+    umatobi/simulator/node.py Node.run() にて，node に関する
+    各情報(id, host, port, key, rad, x, y, status) を dict に詰めて，
+    その dict を pickle 化している。
+    そして，pickle と elapsed_time(=et) を 1 tuple として，darkness と
+    node が共有する _queue_darkness に tuple を put() している。
 
-darkness.py
-node が _queue_darkness へ put() した tuple(=et, pickle) を，darkness
-は _queue_darkness から get() して， client.N.db 上の growings table に
-elapsed_time,pickle を insert する。
+===============================================================================
+= darkness.py
+    node が _queue_darkness へ put() した tuple(=et, pickle) を，darkness
+    は _queue_darkness から get() して， client.N.db 上の growings table に
+    elapsed_time,pickle を insert する。
 
-client.py
-することなくない？ darkness が client.N.db 操作してるし。。。
-client.py 読んでてビックリしたよ。
-darkness 起動後の 主な仕事は watson とのやり取り。
-darkness 終了させるのが主な任務か。
-そして，client.N.db を watson へ送信するのが重要な任務だ。
+===============================================================================
+= client.py
+    することなくない？ darkness が client.N.db 操作してるし。。。
+    client.py 読んでてビックリしたよ。
+    darkness 起動後の 主な仕事は watson とのやり取り。
+    darkness 終了させるのが主な任務か。
+    そして，client.N.db を watson へ送信するのが重要な任務だ。
 
-watson.py
-client からの client.N.db を受信して，
-client.N.db => simulation.db への統合が任務かな？
-今は，tools/make_simulation_db.py で
-watson_make_simulation_db() を実行して，
-simulation.db を作成しているけど。
+===============================================================================
+= watson.py
+    client からの client.N.db を受信して，
+    client.N.db => simulation.db への統合が任務かな？
+    今は，tools/make_simulation_db.py で
+    watson_make_simulation_db() を実行して，
+    simulation.db を作成しているけど。
 
-theater.py
-watson が作成した simulation.db を読み込んで，
-simulation 結果を表示してくれる。
+===============================================================================
+= theater.py
+    watson が作成した simulation.db を読み込んで，
+    simulation 結果を表示してくれる。
 
-main thread とは別に，3 つの threads を持つ。
-sqlite3_thread, make_figures_thread, drawing_thread
+    main thread とは別に，3 つの threads を持つ。
+    sqlite3_thread, make_figures_thread, drawing_thread
 
-###
-sqlite3_thread in theater.py
-simulation 結果は，simulation.db 上の
-growings table に pickle の形で保存している。
-simulation.db から 1 秒幅で elapsed_time を挟み込んで select() して，
-得た records を memory.db 上の nodes table へ update() する。
-update() の元になるのは，dummy records
-TODO: 効率を考えて，insert() にした方が良いのか考え中。
-      面倒くさそう。id が既にinsertされているか？
-      と判断しないといけないし。数行で済みそうではあるけど。
-###
-make_figures_thread in theater.py
-memory.db 上の nodes table を読み込んで，opengl が描画する figure を
-作成し，drawing_thread と共有する figures に書き込む。
+== sqlite3_thread in theater.py
+    simulation 結果は，simulation.db 上の
+    growings table に pickle の形で保存している。
+    simulation.db から 1 秒幅で elapsed_time を挟み込んで select() して，
+    得た records を memory.db 上の nodes table へ update() する。
+    update() の元になるのは，dummy records
+    TODO: 効率を考えて，insert() にした方が良いのか考え中。
+          面倒くさそう。id が既にinsertされているか？
+          と判断しないといけないし。数行で済みそうではあるけど。
 
-###
-drawing_thread in theater.py
-opengl の処理を担当。
-make_figures_thread が書き込んだ figures を読み込み，
-figures を opengl へ書き込む。
+== make_figures_thread in theater.py
+    memory.db 上の nodes table を読み込んで，opengl が描画する figure を
+    作成し，drawing_thread と共有する figures に書き込む。
+
+== drawing_thread in theater.py
+    opengl の処理を担当。
+    make_figures_thread が書き込んだ figures を読み込み，
+    figures を opengl へ書き込む。
