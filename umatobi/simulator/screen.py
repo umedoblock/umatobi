@@ -288,6 +288,8 @@ class Screen(object):
 
         # 2. s <= elapsed_time < e を満たす record を
         #    memorydb 上の growings table から検索する。
+        #    そして，現在の情報を，
+        #    memorydb 上の nodes table に書き込む。
         conditions = \
             'where elapsed_time >= {} and elapsed_time < {}'. \
              format(self._last_select_milliseconds, e)
@@ -308,6 +310,8 @@ class Screen(object):
                 self._memory_db.update('nodes', d, where)
                 self._memory_db.commit()
 
+        # 3. memorydb 上の nodes table の内容を，
+        #    OpenGL の figures に変換する。
         L = []
         len_body = 0.011
         len_leg = 0.033
@@ -316,10 +320,13 @@ class Screen(object):
             if node['status'] == 'active':
                 _keyID = int(node['key'][:10], 16)
                 r, x, y = formula._key2rxy(_keyID)
+                # node の居場所を記す，白い四角を書き込む。
                 put_on_square(r, x, y, len_body)
                 L.append('id: {}, key: {}'.format(node['id'], node['key']))
         self.label_area.update('\n'.join(L))
 
+        # 4. figures を OpenGL に書き込む。
+        #    現在は，click した箇所付近の node を緑にしているだけ。
         for square in self._squares:
             put_on_square(*square)
 
