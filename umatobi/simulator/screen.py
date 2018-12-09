@@ -304,8 +304,9 @@ class Screen(object):
         logger.info(f'{self}._simulation_info()')
         self._print_fps()
       # print(dir(self.label_area.tk_root))
-        logger.info(f'display={self.label_area.display}')
-        logger.info(f'display.master={self.label_area.display.master}')
+        label_area = self.manipulating_db.label_area
+        logger.info(f'display={label_area.display}')
+        logger.info(f'display.master={label_area.display.master}')
 ####### self.label_area.display.destroy()
 ####### if self.label_area.display.master:
 #######     print('display.master.destroy()')
@@ -454,6 +455,9 @@ class Screen(object):
           # with self.lines_lock:
           #     for line in self._lines:
           #         put_on_line(*line)
+        if passed_seconds * 1000> self.manipulating_db.simulation_milliseconds:
+            self._simulation_info()
+            glutLeaveMainLoop()
 
     def display_main(self, passed_seconds):
         logger.info(f'{self}.display_main(passed_seconds={passed_seconds})')
