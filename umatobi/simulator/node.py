@@ -28,6 +28,7 @@ class Node(p2p.core.Node):
         for attr, value in kwargs.items():
             setattr(self, attr, value)
         self._rad, self._x, self._y = 0.0, 0.0, 0.0
+        self.start_up_orig = isoformat_time_to_datetime(self.start_up_time)
 
     def run(self):
       # print('{} started.'.format(self))
@@ -58,8 +59,7 @@ class Node(p2p.core.Node):
       # print('{} good bye(host={}, port={})'.format(self, self.host, self.port))
 
     def to_darkness(self, obj):
-        start_up_orig = isoformat_time_to_datetime(self.start_up_time)
-        et = elapsed_time(start_up_orig)
+        et = elapsed_time(self.start_up_orig)
         pds = pickle.dumps(obj)
         tup = (et, pds)
         self._queue_darkness.put(tup)
