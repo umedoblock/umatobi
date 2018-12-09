@@ -33,7 +33,7 @@ class Node(p2p.core.Node):
         d['id'] = self.id
         d['host'] = self.host
         d['port'] = self.port
-        while not self.good_bye_with_darkness.wait(timeout=5):
+        while True:
             self.update_key()
             key_hex = self._key_hex()
           # print('{} key_hex = {}'.format(self, key_hex))
@@ -46,6 +46,9 @@ class Node(p2p.core.Node):
             d['y'] = y
             d['status'] = 'active'
             self.to_darkness(d)
+
+            if self.good_bye_with_darkness.wait(timeout=5):
+                break
 
         d['key'] = None
         d['status'] = 'inactive'
