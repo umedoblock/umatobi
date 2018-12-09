@@ -35,6 +35,10 @@ def get_passed_milliseconds(passed_seconds):
     passed_milliseconds = _normalize_milliseconds(passed_seconds)
     return passed_milliseconds
 
+def _passed_time(orig):
+    e = datetime.datetime.now()
+    return (e - orig).total_seconds()
+
 class ManipulatingDB(Polling):
     SQUQRE_BODY = 0.011
     NODE_LEG = 0.033
@@ -51,7 +55,6 @@ class ManipulatingDB(Polling):
         self.leave_there = threading.Event()
         self.stay_there = threading.Event()
         self.squares_lock = threading.Lock()
-        self._squares = []
         self.label_area = LabelArea()
 
         self.node_squares = []
@@ -101,31 +104,28 @@ class ManipulatingDB(Polling):
         )
         logger.debug(f'records={records}, len(records)={len(records)}')
 
-        if not records:
-            return
-        logger.info('conditions={}, len(records)={}'.format(conditions, len(records)))
 
-        if len(records) >= 1:
-            with self.squares_lock:
-                self.node_squares.clear()
-                for record in records:
-                    d = pickle.loads(record['pickle'])
-                    logger.info(f'{self} elapsed_time={record["elapsed_time"]}, d={d}')
-                    where = {'id': d['id']}
-                    self._memory_db.update('nodes', d, where)
-                    self._memory_db.commit()
+        for record in records:
+            d = pickle.loads(record['pickle'])
+            logger.info(f'{self} elapsed_time={record["elapsed_time"]}, d={d}')
+            where = {'id': d['id']}
+            self._memory_db.update('nodes', d, where)
+            self._memory_db.commit()
 
-            # 3. memorydb 上の nodes table の内容を，
-            #    OpenGL の figures に変換する。
-            nodes = self._memory_db.select('nodes')
-            nodes = tuple(nodes)
-            for node in nodes:
-                if node['status'] == 'active':
-                    _keyID = int(node['key'][:10], 16)
-                    r, x, y = formula._key2rxy(_keyID)
-                    # node の居場所を記す，白い四角を書き込む。
-                  # put_on_square(r, x, y, self.SQUQRE_BODY)
-                    self.node_squares.append((r, x, y, self.SQUQRE_BODY))
+        node_squares = []
+        # 3. memorydb 上の nodes table の内容を，
+        #    OpenGL の figures に変換する。
+        nodes = self._memory_db.select('nodes')
+        for node in nodes:
+            if node['status'] == 'active':
+                _keyID = int(node['key'][:10], 16)
+                r, x, y = formula._key2rxy(_keyID)
+                # node の居場所を記す，白い四角を書き込む。
+              # put_on_square(r, x, y, self.SQUQRE_BODY)
+                node_squares.append((r, x, y, self.SQUQRE_BODY))
+                logger.info(f"node_squares.append({(r, x, y, self.SQUQRE_BODY)})")
+        with self.squares_lock:
+            self.node_squares = node_squares
 
         L = []
         for node in nodes:
@@ -168,30 +168,23 @@ class Screen(object):
     def __init__(self, argv, simulation_db_path=None, width=500, height=500):
         logger.info(f"Screen(argv={argv}, width={width}, height={height})")
         self.frames = 0
-        self.s = datetime.datetime.now()
-        self.start_up_orig = self.s
-        self.start_the_movie_time = self.s
-        self._last_select_milliseconds = 0
+        self.start_the_movie_time = datetime.datetime.now()
         self.width = width
         self.height = height
-        self.mode = GLUT_SINGLE | GLUT_RGBA
-        # multi buffering
-        self.mode |= GLUT_DOUBLE
-        self.nodes = []
-        self._squares = []
+        self.mode = GLUT_SINGLE | GLUT_RGBA | GLUT_DOUBLE
         self._debug = False
-        self.opengl_lock = threading.Lock()
-        self.lines_lock = threading.Lock()
-        self.squares_lock = threading.Lock()
 
         self.simulation_db_path = simulation_db_path
         self.manipulating_db = ManipulatingDB(self.simulation_db_path, self.start_the_movie_time)
         self.manipulating_db.screen = self
         self.manipulating_db.start()
 
+        self._glut_init(argv, self.mode, width, height)
+
+    def _glut_init(self, argv, mode, w, h):
         glutInit(argv)
-        glutInitDisplayMode(self.mode)
-        glutInitWindowSize(self.width, self.height)
+        glutInitDisplayMode(mode)
+        glutInitWindowSize(w, h)
         glutInitWindowPosition(0, 0)
         glutCreateWindow(argv[0].encode())
 
@@ -215,11 +208,9 @@ class Screen(object):
         # 以下の一行は重要
         glClear(GL_COLOR_BUFFER_BIT)
 
-        passed_seconds = self._passed_time()
+        passed_seconds = _passed_time(self.start_the_movie_time)
 
         self.display_main_thread(passed_seconds)
-
-        glFlush()
 
         self.frames += 1
 
@@ -228,7 +219,7 @@ class Screen(object):
 
     def _print_fps(self):
         logger.info(f'{self}._print_fps()')
-        ps = self._passed_time()
+        ps = _passed_time(self.start_the_movie_time)
         fps = self.frames / ps
         logger.info(f'frames={self.frames}')
         logger.info(f'passed_seconds={ps:.3f}')
@@ -338,6 +329,14 @@ class Screen(object):
             logger.debug('_keyboard() do sys.exit(0)')
             sys.exit(0)
 
+    def idle(self):
+        # 4. figures を OpenGL に書き込む。
+        #    現在は，click した箇所付近の node を緑にしているだけ。
+        with self.manipulating_db.squares_lock:
+            for node_square in self.manipulating_db.node_squares:
+                put_on_square(*node_square)
+        glutPostRedisplay()
+
     def display_main_thread(self, passed_seconds):
         logger.info(f'{self}.display_main_thread(passed_seconds={passed_seconds})')
         # 4. figures を OpenGL に書き込む。
@@ -345,13 +344,10 @@ class Screen(object):
         with self.manipulating_db.squares_lock:
             for node_square in self.manipulating_db.node_squares:
                 put_on_square(*node_square)
+                logger.info(f"put_on_square(*{node_square}")
         if passed_seconds * 1000 > self.manipulating_db.simulation_milliseconds:
             self._simulation_info()
             glutLeaveMainLoop()
-
-    def _passed_time(self):
-        e = datetime.datetime.now()
-        return (e - self.s).total_seconds()
 
 def display_sample(passed_seconds):
     moving = formula._fmove(passed_seconds)
