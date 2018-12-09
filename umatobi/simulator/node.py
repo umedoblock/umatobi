@@ -11,6 +11,8 @@ class Node(p2p.core.Node):
 
     _output = print
 
+    POLLING_DARKNESS_GOODBYE = 1.0
+
     def __init__(self, **kwargs):
         '''\
         simulator 用 node を初期化する。
@@ -47,7 +49,7 @@ class Node(p2p.core.Node):
             d['status'] = 'active'
             self.to_darkness(d)
 
-            if self.good_bye_with_darkness.wait(timeout=5):
+            if self.good_bye_with_darkness.wait(timeout=self.POLLING_DARKNESS_GOODBYE):
                 break
 
         d['key'] = None

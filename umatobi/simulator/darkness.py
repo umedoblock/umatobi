@@ -41,9 +41,8 @@ class ExhaleQueue(Polling):
         Polling.run() を実行するthreadは同一threadである必要があり、
         run()内で、client_db.create_db()と、Polling.run()を行った。
         '''
-        logger.info('{} run ExhaleQueue()'.format(self.darkness))
+        logger.info(f'{self}.run() ExhaleQueue(client_id={self.darkness.client_id}, darkness_id={self.darkness.id}) wait {self.sleep_secs} secs.')
         logger.debug(f'darkness.id={self.darkness.id}, sleep_secs={self.sleep_secs}, polling_secs={self.polling_secs}, darkness.id={self.darkness.id}, darkness.num_darkness={self.darkness.num_darkness}.')
-        logger.info(f'ExhaleQueue wait {self.sleep_secs} secs.')
 
         self.client_db.create_db()
         logger.info('{} client_db.create_db().'.format(self.darkness))
@@ -90,6 +89,8 @@ class ExhaleQueue(Polling):
 class Darkness(object):
     '''漆黒の闇'''
 
+    POLLING_EXHALEQUEUE = 5.0
+
     def __init__(self, **kwargs):
         '''\
         Darkness process 内で 多数の node thread を作成する。
@@ -120,7 +121,7 @@ class Darkness(object):
 
         self._queue_darkness = queue.Queue()
         self.all_nodes_inactive = threading.Event()
-        self.exhale_queue = ExhaleQueue(1, self)
+        self.exhale_queue = ExhaleQueue(self.POLLING_EXHALEQUEUE, self)
 
         self.good_bye_with_nodes = threading.Event()
 
