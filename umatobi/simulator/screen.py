@@ -279,7 +279,7 @@ class Screen(object):
             sys.exit(0)
 
     def display_main(self, passed_seconds):
-        logger.debug(f"{self}.display_main(passed_seconds={passed_seconds}")
+        logger.info(f'{self}.display_main(passed_seconds={passed_seconds})')
         # 0. simulation 開始時刻を 0 秒として，passed_seconds とは，
         #    simulation 経過秒数の事。
         #    現在とは，simulation 経過秒数の事。
@@ -291,10 +291,12 @@ class Screen(object):
         conditions = \
             'where elapsed_time >= {} and elapsed_time < {}'. \
              format(self._last_select_milliseconds, e)
+        logger.debug(f'conditions={conditions}')
         self._last_select_milliseconds = e
         records = self._memory_db.select('growings', 'elapsed_time,pickle',
             conditions=conditions
         )
+        logger.debug(f'records={records}, len(records)={len(records)}')
 
         if len(records) >= 1:
             self._squares.clear()
@@ -305,7 +307,6 @@ class Screen(object):
                 where = {'id': d['id']}
                 self._memory_db.update('nodes', d, where)
                 self._memory_db.commit()
-            logger.info("")
 
         L = []
         len_body = 0.011
