@@ -31,13 +31,13 @@ except BaseException as e:
 def _normalize_milliseconds(seconds):
     return int(seconds * 1000)
 
-def get_passed_milliseconds(passed_seconds):
-    passed_milliseconds = _normalize_milliseconds(passed_seconds)
-    return passed_milliseconds
-
 def get_passed_seconds(orig):
     e = datetime.datetime.now()
     return (e - orig).total_seconds()
+
+def get_passed_ms(orig):
+    passed_seconds = get_passed_seconds(orig)
+    return _normalize_milliseconds(passed_seconds)
 
 class ManipulatingDB(Polling):
     SQUQRE_BODY = 0.011
@@ -50,7 +50,7 @@ class ManipulatingDB(Polling):
         self._initialized_db = False
 
         self.start_the_movie_time = start_the_movie_time
-        self._old_passed_milliseconds = 0
+        self._old_passed_ms = 0
 
         self.leave_there = threading.Event()
         self.stay_there = threading.Event()
@@ -79,24 +79,24 @@ class ManipulatingDB(Polling):
         if not self._initialized_db:
             self.initialized_db = True
             self._init_maniplate_db()
-        passed_milliseconds = elapsed_time(self.start_the_movie_time)
-        e = self.inhole_pickles_from_simlation_db(passed_milliseconds)
+        passed_ms = get_passed_ms(self.start_the_movie_time)
+        e = self.inhole_pickles_from_simlation_db(passed_ms)
 
-    def inhole_pickles_from_simlation_db(self, passed_milliseconds):
-        # 0. simulation 開始時刻を 0 秒として，passed_milliseconds とは，
+    def inhole_pickles_from_simlation_db(self, passed_ms):
+        # 0. simulation 開始時刻を 0 秒として，passed_ms とは，
         #    simulation 経過秒数の事。
         #    現在とは，
-        # 1. simulation 経過秒数を，passed_milliseconds に保存。
+        # 1. simulation 経過秒数を，passed_ms に保存。
 
-        # 2. s <= elapsed_time < passed_milliseconds を満たす record を
+        # 2. s <= elapsed_time < passed_ms を満たす record を
         #    memorydb 上の growings table から検索する。
         #    そして，現在の情報を，
         #    memorydb 上の nodes table に書き込む。
         conditions = \
             'where elapsed_time >= {} and elapsed_time < {}'. \
-             format(self._old_passed_milliseconds, passed_milliseconds)
+             format(self._old_passed_ms, passed_ms)
         logger.debug(f'conditions={conditions}')
-        self._old_passed_milliseconds = passed_milliseconds
+        self._old_passed_ms = passed_ms
         records = self.simulation_db.select('growings', 'elapsed_time,pickle',
             conditions=conditions
         )
@@ -206,9 +206,9 @@ class Screen(object):
         # 以下の一行は重要
         glClear(GL_COLOR_BUFFER_BIT)
 
-        passed_seconds = get_passed_seconds(self.start_the_movie_time)
+        passed_ms = get_passed_ms(self.start_the_movie_time)
 
-        self.display_main_thread(passed_seconds)
+        self.display_main_thread(passed_ms)
 
         self.frames += 1
 
@@ -335,15 +335,15 @@ class Screen(object):
                 put_on_square(*node_square)
         glutPostRedisplay()
 
-    def display_main_thread(self, passed_seconds):
-        logger.info(f'{self}.display_main_thread(passed_seconds={passed_seconds})')
+    def display_main_thread(self, passed_ms):
+        logger.info(f'{self}.display_main_thread(passed_ms={passed_ms})')
         # 4. figures を OpenGL に書き込む。
         #    現在は，click した箇所付近の node を緑にしているだけ。
         with self.manipulating_db.squares_lock:
             for node_square in self.manipulating_db.node_squares:
                 put_on_square(*node_square)
                 logger.info(f"put_on_square(*{node_square}")
-        if passed_seconds * 1000 > self.manipulating_db.simulation_milliseconds:
+        if passed_ms > self.manipulating_db.simulation_milliseconds:
             self._simulation_info()
             glutLeaveMainLoop()
 
