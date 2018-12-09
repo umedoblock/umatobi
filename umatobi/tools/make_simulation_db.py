@@ -127,6 +127,29 @@ def init_nodes_table(simulation_db):
         simulation_db.insert('nodes', d_node)
     simulation_db.commit()
 
+# theater 内にて update() によって node を更新するので，
+# 更新対象となる node の存在が不可欠である。
+# その更新対象となるnode を dummy としてここで作成する。
+# refs #14
+def init_nodes_table2(db, total_nodes):
+    db.init_table('nodes')
+    logger.debug('created nodes table.')
+
+    d_node = {
+        'id': None,
+        'host': 'dummy host',
+        'port': 0,
+        'keyID': 0x00000000,
+        'key': b'0x dummy',
+        'rad': 0.0,
+        'x': 0.0,
+        'y': 0.0,
+        'status': 'dummy status',
+    }
+    for i in range(total_nodes):
+        db.insert('nodes', d_node)
+    db.commit()
+
 if __name__ == '__main__':
   # print(f"__file__ = {__file__}")
   # print(f"__name__ = {__name__}")

@@ -9,8 +9,10 @@ import tkinter as tk
 from lib.args import args_make_simulation_db
 import simulator.sql
 from lib import formula, make_logger
+from lib import SCHEMA_PATH
+from lib import Polling, elapsed_time
 from lib.squares import put_on_square
-from tools.make_simulation_db import init_nodes_table
+from tools.make_simulation_db import init_nodes_table2
 from lib.args import get_logger_args
 global logger
 logger_args = get_logger_args()
@@ -29,6 +31,150 @@ except BaseException as e:
 
 def _normalize_milliseconds(seconds):
     return int(seconds * 1000)
+
+def get_passed_milliseconds(passed_seconds):
+    passed_milliseconds = _normalize_milliseconds(passed_seconds)
+    return passed_milliseconds
+
+class ManipulatingDB(Polling):
+    SQUQRE_BODY = 0.011
+    NODE_LEG = 0.033
+    POLLING_SIMULATION_DB = 0.2
+
+    def __init__(self, simulation_db_path, start_the_movie_time):
+        Polling.__init__(self, self.POLLING_SIMULATION_DB)
+        self.simulation_db_path = simulation_db_path
+        self._initialized_db = False
+
+        self.start_the_movie_time = start_the_movie_time
+        self._old_passed_milliseconds = 0
+
+        self.leave_there = threading.Event()
+        self.stay_there = threading.Event()
+        self.squares_lock = threading.Lock()
+        self._squares = []
+        self.label_area = LabelArea()
+
+        self.node_squares = []
+
+    def _init_maniplate_db(self):
+        simulation_db = simulator.sql.SQL(db_path=self.simulation_db_path, schema_path=SCHEMA_PATH)
+        self.simulation_db = simulation_db
+        self.simulation_db.access_db()
+        simulation_db.total_nodes = \
+            self.simulation_db.select_one('simulation', 'total_nodes')
+        column_name = 'simulation_milliseconds'
+        self.simulation_milliseconds = \
+            self.simulation_db.select('simulation', \
+                             column_name)[0][column_name]
+        self.the_running_milliseconds = self.simulation_milliseconds
+        logger.info(f'{self}.the_running_milliseconds={self.the_running_milliseconds}')
+
+        self._memory_db = simulator.sql.SQL(':memory:', schema_path=self.simulation_db.schema_path)
+        self._memory_db.create_db()
+        self._memory_db.create_table('simulation')
+        init_nodes_table2(self._memory_db, simulation_db.total_nodes)
+
+    def polling(self):
+        if not self._initialized_db:
+            self.initialized_db = True
+            self._init_maniplate_db()
+        passed_milliseconds = elapsed_time(self.start_the_movie_time)
+        e = self.inhole_pickles_from_simlation_db(passed_milliseconds)
+
+    def inhole_pickles_from_simlation_db(self, passed_milliseconds):
+        # 0. simulation 開始時刻を 0 秒として，passed_milliseconds とは，
+        #    simulation 経過秒数の事。
+        #    現在とは，
+        # 1. simulation 経過秒数を，passed_milliseconds に保存。
+
+        # 2. s <= elapsed_time < passed_milliseconds を満たす record を
+        #    memorydb 上の growings table から検索する。
+        #    そして，現在の情報を，
+        #    memorydb 上の nodes table に書き込む。
+        conditions = \
+            'where elapsed_time >= {} and elapsed_time < {}'. \
+             format(self._old_passed_milliseconds, passed_milliseconds)
+        logger.debug(f'conditions={conditions}')
+        self._old_passed_milliseconds = passed_milliseconds
+        records = self.simulation_db.select('growings', 'elapsed_time,pickle',
+            conditions=conditions
+        )
+        logger.debug(f'records={records}, len(records)={len(records)}')
+
+        if not records:
+            return
+        logger.info('conditions={}, len(records)={}'.format(conditions, len(records)))
+
+        with self.squares_lock:
+            self._squares.clear()
+        for record in records:
+            d = pickle.loads(record['pickle'])
+            logger.info(f'{self} elapsed_time={record["elapsed_time"]}, d={d}')
+            where = {'id': d['id']}
+            self._memory_db.update('nodes', d, where)
+            self._memory_db.commit()
+
+        # 3. memorydb 上の nodes table の内容を，
+        #    OpenGL の figures に変換する。
+        nodes = self._memory_db.select('nodes')
+        nodes = tuple(nodes)
+        with self.squares_lock:
+            self.node_squares.clear()
+            for node in nodes:
+                if node['status'] == 'active':
+                    _keyID = int(node['key'][:10], 16)
+                    r, x, y = formula._key2rxy(_keyID)
+                    # node の居場所を記す，白い四角を書き込む。
+                  # put_on_square(r, x, y, self.SQUQRE_BODY)
+                    self.node_squares.append((r, x, y, self.SQUQRE_BODY))
+
+        L = []
+        for node in nodes:
+            if node['status'] == 'active':
+                L.append('id: {}, key: {}'.format(node['id'], node['key']))
+        self.label_area.update('\n'.join(L))
+
+    def completed_mission(self):
+        self.leave_there.set()
+
+    def is_continue(self):
+        return not self.leave_there.is_set()
+
+class MakingFigures(Polling):
+    POLLING_SIMULATION_DB = 0.2
+
+    def __init__(self, start_the_movie_time):
+        Polling.__init__(self, self.POLLING_SIMULATION_DB)
+        self.leave_there = threading.Event()
+        self.stay_there = threading.Event()
+        self.simulation_db = simulation_db
+        self.start_the_movie_time = start_the_movie_time
+        self.squares_lock = threading.Lock()
+        self.lines_lock = threading.Lock()
+
+    def polling(self):
+        # 4. figures を OpenGL に書き込む。
+        #    現在は，click した箇所付近の node を緑にしているだけ。
+        with self.opengl_lock:
+            with self.squares_lock:
+                for square in self._squares:
+                    put_on_square(*square)
+            with self.lines_lock:
+                for line in self._lines:
+                    put_on_line(*line)
+
+    def completed_mission(self):
+        self.leave_there.set()
+
+    def is_continue(self):
+        return self.stay_there()
+
+    def stay_there_(self):
+        if self.leave_there.is_set():
+            return False
+        else:
+            return True
 
 class LabelArea(object):
 
@@ -56,10 +202,12 @@ class LabelArea(object):
         self.exit(0)
 
 class Screen(object):
-    def __init__(self, argv, width=500, height=500):
+    def __init__(self, argv, simulation_db_path=None, width=500, height=500):
         logger.info(f"Screen(argv={argv}, width={width}, height={height})")
         self.frames = 0
         self.s = datetime.datetime.now()
+        self.start_up_orig = self.s
+        self.start_the_movie_time = self.s
         self._last_select_milliseconds = 0
         self.width = width
         self.height = height
@@ -69,8 +217,21 @@ class Screen(object):
         self.nodes = []
         self._squares = []
         self._debug = False
+        self.opengl_lock = threading.Lock()
+        self.lines_lock = threading.Lock()
+        self.squares_lock = threading.Lock()
 
-        self.label_area = LabelArea()
+        self.simulation_db_path = simulation_db_path
+        self.manipulating_db = ManipulatingDB(self.simulation_db_path, self.start_the_movie_time)
+        self.manipulating_db.screen = self
+       #self.making_figures = MakingFigures(self.start_the_movie_time)
+#       self.making_frame = MakingFrame(self.start_the_movie_time)
+#       self.construct_frame = ConstructFrame(self.start_the_movie_time)
+
+        self.manipulating_db.start()
+       #self.making_figures.start()
+      # self.making_frame.start()
+      # self.construct_frame.start()
 
         glutInit(argv)
         glutInitDisplayMode(self.mode)
@@ -102,6 +263,7 @@ class Screen(object):
         self.simulation_milliseconds = \
             self._memory_db.select('simulation', \
                              column_name)[0][column_name]
+        self.the_running_milliseconds = simulation_milliseconds
         logger.info(f'self.simulation_milliseconds={self.simulation_milliseconds}')
 
     def start(self):
@@ -120,7 +282,8 @@ class Screen(object):
 
         passed_seconds = self._passed_time()
 
-        self.display_main(passed_seconds)
+       #self.display_main(passed_seconds)
+        self.display_main_thread(passed_seconds)
 
         glFlush()
 
@@ -278,6 +441,20 @@ class Screen(object):
             logger.debug('_keyboard() do sys.exit(0)')
             sys.exit(0)
 
+    def display_main_thread(self, passed_seconds):
+        logger.info(f'{self}.display_main_thread(passed_seconds={passed_seconds})')
+        # 4. figures を OpenGL に書き込む。
+        #    現在は，click した箇所付近の node を緑にしているだけ。
+        with self.opengl_lock:
+            with self.manipulating_db.squares_lock:
+                for node_square in self.manipulating_db.node_squares:
+                    put_on_square(*node_square)
+              # for square in self._squares:
+              #     put_on_square(*square)
+          # with self.lines_lock:
+          #     for line in self._lines:
+          #         put_on_line(*line)
+
     def display_main(self, passed_seconds):
         logger.info(f'{self}.display_main(passed_seconds={passed_seconds})')
         # 0. simulation 開始時刻を 0 秒として，passed_seconds とは，
@@ -313,15 +490,13 @@ class Screen(object):
         # 3. memorydb 上の nodes table の内容を，
         #    OpenGL の figures に変換する。
         L = []
-        len_body = 0.011
-        len_leg = 0.033
         nodes = self._memory_db.select('nodes')
         for node in nodes:
             if node['status'] == 'active':
                 _keyID = int(node['key'][:10], 16)
                 r, x, y = formula._key2rxy(_keyID)
                 # node の居場所を記す，白い四角を書き込む。
-                put_on_square(r, x, y, len_body)
+                put_on_square(r, x, y, self.SQUQRE_BODY)
                 L.append('id: {}, key: {}'.format(node['id'], node['key']))
         self.label_area.update('\n'.join(L))
 
