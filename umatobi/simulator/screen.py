@@ -106,21 +106,20 @@ class ManipulatingDB(Polling):
             return
         logger.info('conditions={}, len(records)={}'.format(conditions, len(records)))
 
-        with self.squares_lock:
-            self._squares.clear()
-        for record in records:
-            d = pickle.loads(record['pickle'])
-            logger.info(f'{self} elapsed_time={record["elapsed_time"]}, d={d}')
-            where = {'id': d['id']}
-            self._memory_db.update('nodes', d, where)
-            self._memory_db.commit()
+        if len(records) >= 1:
+            with self.squares_lock:
+                self.node_squares.clear()
+                for record in records:
+                    d = pickle.loads(record['pickle'])
+                    logger.info(f'{self} elapsed_time={record["elapsed_time"]}, d={d}')
+                    where = {'id': d['id']}
+                    self._memory_db.update('nodes', d, where)
+                    self._memory_db.commit()
 
-        # 3. memorydb 上の nodes table の内容を，
-        #    OpenGL の figures に変換する。
-        nodes = self._memory_db.select('nodes')
-        nodes = tuple(nodes)
-        with self.squares_lock:
-            self.node_squares.clear()
+            # 3. memorydb 上の nodes table の内容を，
+            #    OpenGL の figures に変換する。
+            nodes = self._memory_db.select('nodes')
+            nodes = tuple(nodes)
             for node in nodes:
                 if node['status'] == 'active':
                     _keyID = int(node['key'][:10], 16)
@@ -423,7 +422,7 @@ class Screen(object):
             logger.info(f'clicked nodes = {nodes}')
             for node in nodes:
                 square = (node['rad'], node['x'], node['y'], 0.02, (0x00, 0xff, 0))
-                self._squares.append(square)
+                self.node_squares.append(square)
 
     def _keyboard(self, key, x, y):
         logger.info(f"{self}._keyboard(key={key}, x={x}, y={y}")
@@ -446,16 +445,15 @@ class Screen(object):
         logger.info(f'{self}.display_main_thread(passed_seconds={passed_seconds})')
         # 4. figures を OpenGL に書き込む。
         #    現在は，click した箇所付近の node を緑にしているだけ。
-        with self.opengl_lock:
-            with self.manipulating_db.squares_lock:
-                for node_square in self.manipulating_db.node_squares:
-                    put_on_square(*node_square)
-              # for square in self._squares:
-              #     put_on_square(*square)
-          # with self.lines_lock:
-          #     for line in self._lines:
-          #         put_on_line(*line)
-        if passed_seconds * 1000> self.manipulating_db.simulation_milliseconds:
+        with self.manipulating_db.squares_lock:
+            for node_square in self.manipulating_db.node_squares:
+                put_on_square(*node_square)
+          # for square in self._squares:
+          #     put_on_square(*square)
+      # with self.lines_lock:
+      #     for line in self._lines:
+      #         put_on_line(*line)
+        if passed_seconds * 1000 > self.manipulating_db.simulation_milliseconds:
             self._simulation_info()
             glutLeaveMainLoop()
 
