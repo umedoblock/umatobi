@@ -35,7 +35,7 @@ def get_passed_milliseconds(passed_seconds):
     passed_milliseconds = _normalize_milliseconds(passed_seconds)
     return passed_milliseconds
 
-def _passed_time(orig):
+def get_passed_seconds(orig):
     e = datetime.datetime.now()
     return (e - orig).total_seconds()
 
@@ -69,8 +69,6 @@ class ManipulatingDB(Polling):
         self.simulation_milliseconds = \
             self.simulation_db.select('simulation', \
                              column_name)[0][column_name]
-        self.the_running_milliseconds = self.simulation_milliseconds
-        logger.info(f'{self}.the_running_milliseconds={self.the_running_milliseconds}')
 
         self._memory_db = simulator.sql.SQL(':memory:', schema_path=self.simulation_db.schema_path)
         self._memory_db.create_db()
@@ -208,7 +206,7 @@ class Screen(object):
         # 以下の一行は重要
         glClear(GL_COLOR_BUFFER_BIT)
 
-        passed_seconds = _passed_time(self.start_the_movie_time)
+        passed_seconds = get_passed_seconds(self.start_the_movie_time)
 
         self.display_main_thread(passed_seconds)
 
@@ -219,10 +217,10 @@ class Screen(object):
 
     def _print_fps(self):
         logger.info(f'{self}._print_fps()')
-        ps = _passed_time(self.start_the_movie_time)
-        fps = self.frames / ps
+        passed_seconds = get_passed_seconds(self.start_the_movie_time)
+        fps = self.frames / passed_seconds
         logger.info(f'frames={self.frames}')
-        logger.info(f'passed_seconds={ps:.3f}')
+        logger.info(f'passed_seconds={passed_seconds:.3f}')
         logger.info(f'fps={fps:.3f}')
 
     def _simulation_info(self):
