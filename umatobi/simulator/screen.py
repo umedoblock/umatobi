@@ -383,6 +383,7 @@ class Trailer(object):
         self.height = height
         self.mode = GLUT_SINGLE | GLUT_RGBA | GLUT_DOUBLE
         self._debug = False
+        self.start_the_movie_time = datetime.datetime.now()
 
         self.display_main = display
         self._glut_init(argv, self.mode, width, height)
@@ -398,8 +399,8 @@ class Trailer(object):
 
         glutDisplayFunc(self._display)
         glutIdleFunc(glutPostRedisplay)
-        glutKeyboardFunc(Screen._keyboard)
-        glutMouseFunc(Screen.click_on)
+        glutKeyboardFunc(self.keyboard)
+        glutMouseFunc(self.click_on_sample)
 
     def start(self):
         logger.info(f"{self}.start() start")
@@ -420,6 +421,38 @@ class Trailer(object):
 
         # 地味だけど、重要
         glutSwapBuffers()
+
+    def print_fps(self):
+        logger.info(f"{self}.print_fps()")
+        passed_seconds = get_passed_seconds(self.start_the_movie_time)
+        fps = self.frames / passed_seconds
+        logger.info(f"frames={self.frames}")
+        logger.info(f"passed_seconds={passed_seconds:.3f}")
+        logger.info(f"fps={fps:.3f}")
+
+    def simulation_info(self):
+        logger.info(f"{self}.simulation_info()")
+        self.print_fps()
+        count = 0
+        for th in threading.enumerate():
+            logger.debug(f"thread={th}, count={count}")
+            count += 1
+
+    def click_on_sample(self, button, state, x, y):
+        logger.info(f"{self}.click_on_sample(button={button}, state={state}, x={x}, y={y}")
+        cos_, sin_, docofo = get_current_cos_sin(x, y)
+        logger.debug(f"{self}.click_on_sample(), cos_={cos_} sin_={sin_}, docofo={docofo}, x={x}, y={y}")
+
+    def keyboard(self, key, x, y):
+        code = ord(key)
+        logger.info(f"{self}.keyboard(key={key}, x={x}, y={y}), code={code}")
+        if key.decode() == chr(27):
+            logger.debug('ESC')
+        if ord(key) == 27 or ord(key) == 0x17 or ord(key) == 0x03:
+          # ESC              ctr-w               ctr-c
+            self.simulation_info()
+            logger.info(f"{self}.keyboard(), sys.exit(0)")
+            sys.exit(0)
 
 def display_sample(passed_seconds):
     moving = formula._fmove(passed_seconds)
