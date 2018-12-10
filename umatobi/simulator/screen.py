@@ -374,6 +374,53 @@ class LabelArea(object):
         self.display.destroy()
         self.exit(0)
 
+class Trailer(object):
+    def __init__(self, argv, display=None, width=500, height=500):
+        logger.info(f"Screen(self={self}, argv={argv}, display={display}, width={width}, height={height})")
+        self.frames = 0
+        self.open_the_theater = datetime.datetime.now()
+        self.width = width
+        self.height = height
+        self.mode = GLUT_SINGLE | GLUT_RGBA | GLUT_DOUBLE
+        self._debug = False
+
+        self.display_main = display
+        self._glut_init(argv, self.mode, width, height)
+
+    def _glut_init(self, argv, mode, w, h):
+        logger.info(f"{self}._glut_init(argv={argv}, mode={mode}, w={w}, h={h}")
+
+        glutInit(argv)
+        glutInitDisplayMode(mode)
+        glutInitWindowSize(w, h)
+        glutInitWindowPosition(0, 0)
+        glutCreateWindow(argv[0].encode())
+
+        glutDisplayFunc(self._display)
+        glutIdleFunc(glutPostRedisplay)
+        glutKeyboardFunc(Screen._keyboard)
+        glutMouseFunc(Screen.click_on)
+
+    def start(self):
+        logger.info(f"{self}.start() start")
+        glutMainLoop()
+        logger.info(f"{self}.start() end")
+
+    def _display(self):
+        logger.info(f"{self}._display()")
+        glClearColor(0, 0, 0, 0)
+        # 以下の一行は重要
+        glClear(GL_COLOR_BUFFER_BIT)
+
+        passed_seconds = get_passed_seconds(self.open_the_theater)
+        logger.debug(f"{passed_seconds}=get_passed_seconds({self.open_the_theater})")
+        self.display_main(passed_seconds)
+
+        self.frames += 1
+
+        # 地味だけど、重要
+        glutSwapBuffers()
+
 def display_sample(passed_seconds):
     moving = formula._fmove(passed_seconds)
     logger.info(f"moving={moving}, passed_seconds={passed_seconds}")

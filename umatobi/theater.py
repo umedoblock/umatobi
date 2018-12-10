@@ -1,7 +1,7 @@
 import argparse
 import sys, os
 
-from simulator.screen import Screen
+from simulator.screen import Trailer, Screen
 from simulator.screen import display_sample
 from lib.args import args_theater
 from lib.squares import _moving_squares
@@ -18,14 +18,20 @@ if __name__ == '__main__':
     logger.info("theather start !")
     args, db_path = args_theater('theater.')
 
-    if db_path or args.sample or args.moving_squares:
-
-        if db_path:
-            screen = Screen(sys.argv, db_path, display=Screen.display_main_thread)
+    if args.sample or args.moving_squares:
         if args.sample:
-            screen = Screen(sys.argv, display=display_sample)
+            logger.info(f"Trailer(sys.argv={sys.argv}, display=display_sample)")
+            trailer = Trailer(sys.argv, display=display_sample)
         elif args.moving_squares:
-            screen = Screen(sys.argv, display=_moving_squares)
+            logger.info(f"Trailer(sys.argv={sys.argv}, display=_moving_squares)")
+            trailer = Trailer(sys.argv, display=_moving_squares)
+        else:
+            raise("no movie.")
+        logger.info(f"{trailer}.start()")
+        trailer.start()
+    elif db_path:
+        screen = Screen(sys.argv, db_path, display=Screen.display_main_thread)
+        logger.info(f"{screen}.start()")
         screen.start()
     elif args.show_timestamps:
         pass
