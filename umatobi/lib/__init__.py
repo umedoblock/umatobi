@@ -58,21 +58,17 @@ def tell_shutdown_time():
     shutdown_time = datetime.datetime.now()
     return shutdown_time
 
-def isoformat_time(t):
-    "'return time format '2012-11-02T23:22:27.002481'"
-    # milli, micro
-    mmsecs = (t - int(t)) * 10 ** 6
-    mmsecs = int(mmsecs)
-    fmt = "%Y-%m-%dT%H:%M:%S"
-  # datetime.datetime.strptime("2008-09-03T20:56:35.450686", "%Y-%m-%dT%H:%M:%S.%f")
-    return time.strftime(fmt, time.localtime(t)) + '.{:06d}'.format(mmsecs)
+Y15S_FORMAT='%Y-%m-%dT%H%M%S'
+def y15sformat_time(t):
+    "'return time format '2012-11-02T232227'"
+    return t.strftime(Y15S_FORMAT)
 
-def current_isoformat_time():
+def current_y15sformat_time():
     now = time.time()
-    return isoformat_time(now)
+    return y15sformat_time(now)
 
-def isoformat_time_to_datetime(s):
-    return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S.%f")
+def y15sformat_time_to_datetime(s):
+    return datetime.datetime.strptime(s, Y15S_FORMAT)
 
 def get_passed_ms(start_up_orig):
     '''simulation 開始から現在までに経過したmilli秒数。'''

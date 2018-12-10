@@ -32,7 +32,7 @@ def insert_test_table_n_records(db, n_records):
         test['val_real'] = i * 111.111
         test['val_text'] = 't' * (i + 1)
         test['val_blob'] = b'bytes' * (i + 1)
-        test['now'] = lib.current_isoformat_time()
+        test['now'] = lib.current_y15sformat_time()
         e = datetime.datetime.now()
         test['elapsed_time'] = (e - s).total_seconds()
         db.insert('test_table', test)
@@ -68,7 +68,7 @@ class TestSQL(unittest.TestCase):
         d_insert['val_real'] = 10.0
         d_insert['val_text'] = 'text'
         d_insert['val_blob'] = b'bytes'
-        d_insert['now'] = lib.current_isoformat_time()
+        d_insert['now'] = lib.current_y15sformat_time()
         e = datetime.datetime.now()
         d_insert['elapsed_time'] = (e - s).total_seconds()
         sql.insert('test_table', d_insert)
@@ -159,7 +159,7 @@ class TestSQL(unittest.TestCase):
         d_insert['val_real'] = 10.0
         d_insert['val_text'] = 'text'
         d_insert['val_blob'] = b'bytes'
-        d_insert['now'] = lib.current_isoformat_time()
+        d_insert['now'] = lib.current_y15sformat_time()
         e = datetime.datetime.now()
         d_insert['elapsed_time'] = (e - s).total_seconds()
         sql.insert('test_table', d_insert)
@@ -178,7 +178,7 @@ class TestSQL(unittest.TestCase):
         d_update['val_text'] = 'text text'
         d_update['val_blob'] = b'bytes bytes'
         t = time.time() + 1000
-        d_update['now'] = lib.isoformat_time(t)
+        d_update['now'] = lib.y15sformat_time(t)
         e = datetime.datetime.now()
         d_update['elapsed_time'] = (e - s).total_seconds()
 
@@ -213,7 +213,7 @@ class TestSQL(unittest.TestCase):
         d_insert['val_real'] = 10.0
         d_insert['val_text'] = 'text'
         d_insert['val_blob'] = b'bytes'
-        d_insert['now'] = lib.current_isoformat_time()
+        d_insert['now'] = lib.current_y15sformat_time()
         e = datetime.datetime.now()
         d_insert['elapsed_time'] = (e - s).total_seconds()
         sql.insert('test_table', d_insert)
@@ -232,7 +232,7 @@ class TestSQL(unittest.TestCase):
         d_update['val_text'] = 'text text'
         d_update['val_blob'] = b'bytes bytes'
         t = time.time() + 1000
-        d_update['now'] = lib.isoformat_time(t)
+        d_update['now'] = lib.y15sformat_time(t)
         e = datetime.datetime.now()
         d_update['elapsed_time'] = (e - s).total_seconds()
 

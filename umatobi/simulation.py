@@ -60,7 +60,7 @@ def get_host_port(host_port):
 if __name__ == '__main__':
     logger_args = get_logger_args()
     start_up_orig = make_start_up_orig()
-    start_up_time = start_up_orig.isoformat()
+    start_up_time = start_up_orig.y15sformat()
 
     logger = make_logger(log_dir=logger_args.simulation_dir, \
                          name="admin", \
@@ -82,13 +82,13 @@ if __name__ == '__main__':
   #
   #
   # simulation_dir
-  # |-- 20121008T180459 # isoformat(), dirname = simulation_dir + isoformat()
+  # |-- 20121008T180459 # y15sformat(), dirname = simulation_dir + y15sformat()
   # |   |-- simulation.db # client.{0,1,2,...}.dbをmergeし、
   # |   |                 # watson が最後に作成する。
   # |   |-- watson.log  # watson の起動・停止・接続受付について
   # |   |-- client.0.db # client_db node が吐き出す SQL 文を書き込む。
   # |   `-- client.1.db # client_db
-  # `-- 20121008T200822 # isoformat()
+  # `-- 20121008T200822 # y15sformat()
   #     |-- client.0.db # client_db
   #     `-- client.1.db # client_db
 
