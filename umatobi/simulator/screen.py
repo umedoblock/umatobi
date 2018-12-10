@@ -455,12 +455,13 @@ class Trailer(object):
             sys.exit(0)
 
 def display_sample(passed_seconds):
+    n = 100 # 100 個の点
+
     moving = formula._fmove(passed_seconds)
     logger.info(f"moving={moving}, passed_seconds={passed_seconds}")
     length_circle = 2 * math.pi * 1.0
     length_legs = length_circle / (2 * n)
 
-    n = 100 # 100 個の点
     L = [] # 点の配置場所を tuple(rad, ix, iy) として格納
 
     # 点の配置場所を計算
