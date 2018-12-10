@@ -21,13 +21,11 @@ if __name__ == '__main__':
     if db_path or args.sample or args.moving_squares:
 
         if db_path:
-            screen = Screen(sys.argv, db_path)
+            screen = Screen(sys.argv, db_path, display=Screen.display_main_thread)
         if args.sample:
-            screen = Screen(sys.argv)
-            screen.set_display(display_sample)
+            screen = Screen(sys.argv, display=display_sample)
         elif args.moving_squares:
-            screen = Screen(sys.argv)
-            screen.set_display(_moving_squares)
+            screen = Screen(sys.argv, display=_moving_squares)
         screen.start()
     elif args.show_timestamps:
         pass

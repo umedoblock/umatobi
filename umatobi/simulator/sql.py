@@ -141,8 +141,10 @@ class SQL(object):
         # 消すのはもったいないので残す。
         if values:
             rows = self._cur.execute(sql, values)
+            logger.debug(f"{self}._cur(={self._cur}).execute(sql={sql}, values={values}")
         else:
             rows = self._cur.execute(sql)
+            logger.debug(f"{self}._cur(={self._cur}).execute(sql={sql})")
         return rows
 
     def close(self):

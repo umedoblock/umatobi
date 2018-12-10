@@ -46,6 +46,8 @@ class ManipulatingDB(Polling):
 
     def __init__(self, simulation_db_path, start_the_movie_time):
         Polling.__init__(self, self.POLLING_SIMULATION_DB)
+        logger.info(f"ManipulatingDB(self={self}, simulation_db_path={simulation_db_path}, start_the_movie_time={start_the_movie_time}")
+        logger.debug(f"{self}.polling_secs={self.polling_secs}")
         self.simulation_db_path = simulation_db_path
         self._initialized_db = False
 
@@ -60,6 +62,7 @@ class ManipulatingDB(Polling):
         self.node_squares = []
 
     def _init_maniplate_db(self):
+        logger.debug(f"{self}._init_maniplate_db()")
         simulation_db = simulator.sql.SQL(db_path=self.simulation_db_path, schema_path=SCHEMA_PATH)
         self.simulation_db = simulation_db
         self.simulation_db.access_db()
@@ -100,8 +103,7 @@ class ManipulatingDB(Polling):
         records = self.simulation_db.select('growings', 'elapsed_time,pickle',
             conditions=conditions
         )
-        logger.debug(f'records={records}, len(records)={len(records)}')
-
+        logger.info(f'records={records}, len(records)={len(records)}')
 
         for record in records:
             d = pickle.loads(record['pickle'])
@@ -113,8 +115,10 @@ class ManipulatingDB(Polling):
         node_squares = []
         # 3. memorydb 上の nodes table の内容を，
         #    OpenGL の figures に変換する。
-        nodes = self._memory_db.select('nodes')
+        nodes = tuple(self._memory_db.select('nodes'))
+        logger.info(f"self._memory_db.select('nodes')={nodes}")
         for node in nodes:
+            logger.info(f"node={node}, node.keys()={node.keys()}, tuple(node)={tuple(node)}")
             if node['status'] == 'active':
                 _keyID = int(node['key'][:10], 16)
                 r, x, y = formula._key2rxy(_keyID)
@@ -163,7 +167,7 @@ class LabelArea(object):
         self.exit(0)
 
 class Screen(object):
-    def __init__(self, argv, simulation_db_path=None, width=500, height=500):
+    def __init__(self, argv, simulation_db_path=None, display=None, width=500, height=500):
         logger.info(f"Screen(argv={argv}, width={width}, height={height})")
         self.frames = 0
         self.start_the_movie_time = datetime.datetime.now()
@@ -173,10 +177,15 @@ class Screen(object):
         self._debug = False
 
         self.simulation_db_path = simulation_db_path
-        self.manipulating_db = ManipulatingDB(self.simulation_db_path, self.start_the_movie_time)
-        self.manipulating_db.screen = self
-        self.manipulating_db.start()
+        if simulation_db_path:
+            self.manipulating_db = ManipulatingDB(self.simulation_db_path, self.start_the_movie_time)
+            self.manipulating_db.screen = self
+            self.manipulating_db.start()
 
+        if display is None:
+            self.display_main = self.display_main_thread
+        else:
+            self.display_main = display
         self._glut_init(argv, self.mode, width, height)
 
     def _glut_init(self, argv, mode, w, h):
@@ -191,9 +200,8 @@ class Screen(object):
         glutKeyboardFunc(self._keyboard)
         glutMouseFunc(self.click_on)
 
-    def set_display(self, display_main):
-        glutMouseFunc(self.click_on_sample)
-        self.display_main = display_main
+    def set_display(self, display):
+        self.display_main = display
 
     def start(self):
         logger.info(f"{self}.start() start")
@@ -206,9 +214,8 @@ class Screen(object):
         # 以下の一行は重要
         glClear(GL_COLOR_BUFFER_BIT)
 
-        passed_ms = get_passed_ms(self.start_the_movie_time)
-
-        self.display_main_thread(passed_ms)
+        passed_seconds = get_passed_seconds(self.start_the_movie_time)
+        self.display_main(self, passed_seconds)
 
         self.frames += 1
 
@@ -335,20 +342,23 @@ class Screen(object):
                 put_on_square(*node_square)
         glutPostRedisplay()
 
-    def display_main_thread(self, passed_ms):
-        logger.info(f'{self}.display_main_thread(passed_ms={passed_ms})')
+    def display_main_thread(self, passed_seconds):
+        logger.info(f'{self}.display_main_thread(passed_seconds={passed_seconds})')
         # 4. figures を OpenGL に書き込む。
         #    現在は，click した箇所付近の node を緑にしているだけ。
         with self.manipulating_db.squares_lock:
+            logger.info(f"self.manipulating_db.node_squares={self.manipulating_db.node_squares}")
             for node_square in self.manipulating_db.node_squares:
                 put_on_square(*node_square)
                 logger.info(f"put_on_square(*{node_square}")
-        if passed_ms > self.manipulating_db.simulation_milliseconds:
+
+        if get_passed_ms(self.start_the_movie_time) > self.manipulating_db.simulation_milliseconds:
             self._simulation_info()
             glutLeaveMainLoop()
 
 def display_sample(passed_seconds):
     moving = formula._fmove(passed_seconds)
+    logger.info(f"moving={moving}, passed_seconds={passed_seconds}")
 
     n = 100 # 100 個の点
     L = [] # 点の配置場所を tuple(rad, ix, iy) として格納
