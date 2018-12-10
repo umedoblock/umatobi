@@ -81,6 +81,7 @@ class ManipulatingDB(threading.Thread):
         init_nodes_table2(self._memory_db, simulation_db.total_nodes)
 
     def run(self):
+        logger.info(f"{self}.run()")
         self._init_maniplate_db()
         while True:
             passed_ms = get_passed_ms(self.start_the_movie_time)
@@ -97,19 +98,18 @@ class ManipulatingDB(threading.Thread):
         #    memorydb 上の growings table から検索する。
         #    そして，現在の情報を，
         #    memorydb 上の nodes table に書き込む。
-        conditions = \
-            'where elapsed_time >= {} and elapsed_time < {}'. \
-             format(self._old_passed_ms, passed_ms)
-        logger.debug(f'conditions={conditions}')
+        logger.info(f"{self}.inhole_pickles_from_simlation_db(passed_ms={passed_ms})")
+        conditions = f"where elapsed_time >= {self._old_passed_ms} and elapsed_time < {passed_ms}"
+        logger.debug(f"{self}.inhole_pickles_from_simlation_db(), conditions={conditions}")
         self._old_passed_ms = passed_ms
         records = self.simulation_db.select('growings', 'elapsed_time,pickle',
             conditions=conditions
         )
-        logger.info(f'records={records}, len(records)={len(records)}')
+        logger.debug(f"records={records}, len(records)={len(records)}")
 
         for record in records:
             d = pickle.loads(record['pickle'])
-            logger.info(f'{self} elapsed_time={record["elapsed_time"]}, d={d}')
+            logger.debug(f"{self}.inhole_pickles_from_simlation_db(), elapsed_time={record['elapsed_time']}, pickle.loads(record['pickle'])={d}")
             where = {'id': d['id']}
             self._memory_db.update('nodes', d, where)
             self._memory_db.commit()
@@ -118,9 +118,9 @@ class ManipulatingDB(threading.Thread):
         # 3. memorydb 上の nodes table の内容を，
         #    OpenGL の figures に変換する。
         nodes = tuple(self._memory_db.select('nodes'))
-        logger.info(f"self._memory_db.select('nodes')={nodes}")
+        logger.debug(f"{self}.inhole_pickles_from_simlation_db(), self._memory_db.select('nodes')={nodes}")
         for node in nodes:
-            logger.info(f"node={node}, node.keys()={node.keys()}, tuple(node)={tuple(node)}")
+            logger.debug(f"{self}.inhole_pickles_from_simlation_db(), node={node}, node.keys()={node.keys()}, tuple(node)={tuple(node)}")
             if node['status'] == 'active':
                 _keyID = int(node['key'][:10], 16)
                 r, x, y = formula._key2rxy(_keyID)
@@ -129,13 +129,16 @@ class ManipulatingDB(threading.Thread):
                 node_squares.append((r, x, y, self.SQUQRE_BODY))
                 logger.info(f"node_squares.append({(r, x, y, self.SQUQRE_BODY)})")
         with self.squares_lock:
+            logger.debug(f"{self}.inhole_pickles_from_simlation_db(), {self.squares_lock}.acquire()")
             self.node_squares = node_squares
+            logger.debug(f"{self}.inhole_pickles_from_simlation_db(), {self.squares_lock}.release()")
 
         L = []
         for node in nodes:
             if node['status'] == 'active':
-                L.append('id: {}, key: {}'.format(node['id'], node['key']))
+                L.append(f"id: {node['id']}, key: {node['key']}")
         self.label_area.update('\n'.join(L))
+        logger.debug(f"{self}.inhole_pickles_from_simlation_db(), {self.label_area}.update({'/n'.join(L)})")
 
     def completed_mission(self):
         self.leave_there.set()
@@ -146,6 +149,7 @@ class ManipulatingDB(threading.Thread):
 class LabelArea(object):
 
     def run(self):
+        logger.info(f"{self}.run()")
         self._tk_root = tk.Tk()
         self._buf = tk.StringVar()
         self._buf.set('')
@@ -158,12 +162,15 @@ class LabelArea(object):
 
     def __init__(self):
         self._thread = threading.Thread(target=self.run)
+        logger.info(f"LabelArea({self})")
         self._thread.start()
 
     def update(self, message):
+        logger.debug(f"{self}.update()")
         self._buf.set(message)
 
     def done(self):
+        logger.info(f"{self}.done()")
         self.display.master.destroy()
         self.display.destroy()
         self.exit(0)
@@ -191,6 +198,8 @@ class Screen(object):
         self._glut_init(argv, self.mode, width, height)
 
     def _glut_init(self, argv, mode, w, h):
+        logger.info(f"{self}._glut_init(argv={argv}, mode={mode}, w={w}, h={h}")
+
         glutInit(argv)
         glutInitDisplayMode(mode)
         glutInitWindowSize(w, h)
@@ -203,6 +212,7 @@ class Screen(object):
         glutMouseFunc(self.click_on)
 
     def set_display(self, display):
+        logger.debug(f"{self}.set_display({display})")
         self.display_main = display
 
     def start(self):
@@ -211,12 +221,13 @@ class Screen(object):
         logger.info(f"{self}.start() end")
 
     def _display(self):
-        logger.info(f'{self}._display()')
+        logger.info(f"{self}._display()")
         glClearColor(0, 0, 0, 0)
         # 以下の一行は重要
         glClear(GL_COLOR_BUFFER_BIT)
 
         passed_seconds = get_passed_seconds(self.start_the_movie_time)
+        logger.debug(f"{passed_seconds}=get_passed_seconds({self.start_the_movie_time})")
         self.display_main(self, passed_seconds)
 
         self.frames += 1
@@ -225,22 +236,23 @@ class Screen(object):
         glutSwapBuffers()
 
     def _print_fps(self):
-        logger.info(f'{self}._print_fps()')
+        logger.info(f"{self}._print_fps()")
         passed_seconds = get_passed_seconds(self.start_the_movie_time)
         fps = self.frames / passed_seconds
-        logger.info(f'frames={self.frames}')
-        logger.info(f'passed_seconds={passed_seconds:.3f}')
-        logger.info(f'fps={fps:.3f}')
+        logger.info(f"frames={self.frames}")
+        logger.info(f"passed_seconds={passed_seconds:.3f}")
+        logger.info(f"fps={fps:.3f}")
 
     def _simulation_info(self):
-        logger.info(f'{self}._simulation_info()')
+        logger.info(f"{self}._simulation_info()")
         self._print_fps()
         label_area = self.manipulating_db.label_area
-        logger.info(f'display={label_area.display}')
-        logger.info(f'display.master={label_area.display.master}')
+        logger.info(f"label_area={label_area}")
+        logger.info(f"display={label_area.display}")
+        logger.info(f"display.master={label_area.display.master}")
         count = 0
         for th in threading.enumerate():
-            logger.info('count={}, th={}'.format(count, th))
+            logger.debug(f"thread={th}, count={count}")
             count += 1
 
     @staticmethod
@@ -254,7 +266,7 @@ class Screen(object):
         # -wh / 2 <= y <= wh / 2
         mx = x - ww / 2
         my = wh / 2 - y
-        logger.info(f'mx={mx} my={my}, x={x}, y={y} in self.click_on_sample()')
+        logger.debug(f"get_current_cos_sin(x={x}, y={y}), ww={ww} wh={wh}, rate={rate}, mx={mx} my={my}")
 
         # normalize
         norm_ww = ww / 2
@@ -264,7 +276,7 @@ class Screen(object):
         norm_y = int(my * rate)
         norm_d = math.sqrt(norm_x ** 2 + norm_y ** 2)
         if norm_d == 0:
-            logger.debug('norm_d={norm_d} in get_current_cos_sin()')
+            logger.debug("get_current_cos_sin(), norm_d={norm_d}")
             return None, None, 0
         cos_ = norm_x / norm_d
         sin_ = norm_y / norm_d
@@ -274,15 +286,14 @@ class Screen(object):
         distance_ofclick_on_from_origin = norm_d / r
         docofo = distance_ofclick_on_from_origin
 
-        logger.debug('distance_ofclick_on_from_origin={docofo} in get_current_cos_sin()')
+        logger.debug("get_current_cos_sin(), distance_ofclick_on_from_origin={docofo}")
 
         return cos_, sin_, docofo
 
     def click_on_sample(self, button, state, x, y):
         logger.info(f"{self}.click_on_sample(button={button}, state={state}, x={x}, y={y}")
         cos_, sin_, docofo = Screen.get_current_cos_sin(x, y)
-        logger.info(f'cos_={cos_} sin_={sin_}, x={x}, y={y} in self.click_on_sample()')
-        logger.info(f'distance_ofclick_on_from_origin={docofo} in click_on_sample()')
+        logger.debug(f"{self}.click_on_sample(), cos_={cos_} sin_={sin_}, docofo={docofo}, x={x}, y={y}")
 
     def click_on(self, button, state, x, y):
         logger.info(f"{self}.click_on(button={button}, state={state}, x={x}, y={y}")
@@ -297,7 +308,6 @@ class Screen(object):
             return
       # 左click 押した button=0, state=0, x=392, y=251  in self.click_on()
       # 左click 離した button=0, state=1, x=392, y=251  in self.click_on()
-        logger.debug(f'button={button}, state={state}, x={x}, y={y} in self.click_on_sample()')
 
         cos_, sin_, docofo = Screen.get_current_cos_sin(x, y)
 
@@ -308,6 +318,7 @@ class Screen(object):
 
             # click した箇所の，rad を計算。
             clicked_rad = formula.cos_sin_to_norm_rad(cos_, sin_)
+            logger.debug(f"clicked_rad={clicked_rad}, formula.cos_sin_to_norm_rad(cos_={cos_}, sin_={sin_}")
 
             # click した箇所の前後 0.02 の範囲内にいる nodes を調べる。
             min_rad = clicked_rad - 0.02
@@ -316,24 +327,24 @@ class Screen(object):
                 where rad >= {} and rad <= {}
             '''.format(min_rad, max_rad)
             nodes = self._memory_db.select('nodes', conditions=condition)
+            logger.debug("{nodes}={self}._memory_db.select('nodes', conditions={condition}")
 
             # click した箇所の前後 0.02 の範囲内にいる nodes を表示。
-            logger.info(f'clicked nodes = {nodes}')
             for node in nodes:
                 square = (node['rad'], node['x'], node['y'], 0.02, (0x00, 0xff, 0))
                 self.manipulating_db.node_squares.append(square)
+                logger.debug("{self}.manipulating_db.node_squares.append({square}")
+            logger.debug("{self}.manipulating_db.node_squares={self.manipulating_db.node_squares}")
 
     def _keyboard(self, key, x, y):
-        logger.info(f"{self}._keyboard(key={key}, x={x}, y={y}")
         code = ord(key)
-        logger.debug("")
-        logger.debug('key={}, x={}, y={}, code={}'.format(key, x, y, code))
+        logger.info(f"{self}._keyboard(key={key}, x={x}, y={y}), code={code}")
         if key.decode() == chr(27):
             logger.debug('ESC')
         if ord(key) == 27 or ord(key) == 0x17 or ord(key) == 0x03:
           # ESC              ctr-w               ctr-c
             self._simulation_info()
-            logger.debug('_keyboard() do sys.exit(0)')
+            logger.info("{self}._keyboard(), sys.exit(0)")
             sys.exit(0)
 
     def idle(self):
@@ -345,16 +356,19 @@ class Screen(object):
         glutPostRedisplay()
 
     def display_main_thread(self, passed_seconds):
-        logger.info(f'{self}.display_main_thread(passed_seconds={passed_seconds})')
+        logger.debug(f"{self}.display_main_thread(passed_seconds={passed_seconds})")
         # 4. figures を OpenGL に書き込む。
         #    現在は，click した箇所付近の node を緑にしているだけ。
         with self.manipulating_db.squares_lock:
-            logger.info(f"self.manipulating_db.node_squares={self.manipulating_db.node_squares}")
+            logger.debug(f"{self}.manipulating_db.squares_lock.acquire()")
+            logger.debug(f"{self}.manipulating_db.node_squares={self.manipulating_db.node_squares}")
             for node_square in self.manipulating_db.node_squares:
                 put_on_square(*node_square)
-                logger.info(f"put_on_square(*{node_square}")
+                logger.debug(f"put_on_square(*node_square={node_square}")
+            logger.debug(f"{self}.manipulating_db.squares_lock.release()")
 
         if get_passed_ms(self.start_the_movie_time) > self.manipulating_db.simulation_milliseconds:
+            logger.info(f"get_passed_ms({self.start_the_movie_time}) > {self.manipulating_db.simulation_milliseconds}")
             self._simulation_info()
             glutLeaveMainLoop()
 
