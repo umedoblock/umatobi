@@ -1,4 +1,4 @@
-import math
+import math, sys
 
 try:
     from OpenGL.GLUT import *
