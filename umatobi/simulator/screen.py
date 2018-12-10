@@ -39,6 +39,40 @@ def get_passed_ms(orig):
     passed_seconds = get_passed_seconds(orig)
     return _normalize_milliseconds(passed_seconds)
 
+def get_current_cos_sin(x, y):
+    ww = glutGet(GLUT_WINDOW_WIDTH)
+    wh = glutGet(GLUT_WINDOW_HEIGHT)
+    rate = ww / wh
+    # math x, y axis
+    # origin is window center
+    # -ww / 2 <= x <= ww / 2
+    # -wh / 2 <= y <= wh / 2
+    mx = x - ww / 2
+    my = wh / 2 - y
+    logger.debug(f"get_current_cos_sin(x={x}, y={y}), ww={ww} wh={wh}, rate={rate}, mx={mx} my={my}")
+
+    # normalize
+    norm_ww = ww / 2
+    norm_wh = wh / 2 * rate
+    norm_wd = math.sqrt(norm_ww ** 2 + norm_wh ** 2)
+    norm_x = int(mx)
+    norm_y = int(my * rate)
+    norm_d = math.sqrt(norm_x ** 2 + norm_y ** 2)
+    if norm_d == 0:
+        logger.debug("get_current_cos_sin(), norm_d={norm_d}")
+        return None, None, 0
+    cos_ = norm_x / norm_d
+    sin_ = norm_y / norm_d
+
+    r = norm_ww
+    # clickした箇所と原点(=単位円の中心)からの距離
+    distance_ofclick_on_from_origin = norm_d / r
+    docofo = distance_ofclick_on_from_origin
+
+    logger.debug("get_current_cos_sin(), distance_ofclick_on_from_origin={docofo}")
+
+    return cos_, sin_, docofo
+
 class ManipulatingDB(threading.Thread):
     SQUQRE_BODY = 0.011
     NODE_LEG = 0.033
@@ -150,6 +184,11 @@ class ManipulatingDB(threading.Thread):
 
 class LabelArea(object):
 
+    def __init__(self):
+        self._thread = threading.Thread(target=self.run)
+        logger.info(f"LabelArea({self})")
+        self._thread.start()
+
     def run(self):
         logger.info(f"{self}.run()")
         self._tk_root = tk.Tk()
@@ -161,11 +200,6 @@ class LabelArea(object):
                                 bg='white', anchor=tk.W, justify=tk.LEFT)
         self.display.pack(side=tk.LEFT)
         self._tk_root.mainloop()
-
-    def __init__(self):
-        self._thread = threading.Thread(target=self.run)
-        logger.info(f"LabelArea({self})")
-        self._thread.start()
 
     def update(self, message):
         logger.debug(f"{self}.update()")
@@ -237,6 +271,23 @@ class Screen(object):
         # 地味だけど、重要
         glutSwapBuffers()
 
+    def display_main_thread(self, passed_seconds):
+        logger.debug(f"{self}.display_main_thread(passed_seconds={passed_seconds})")
+        # 4. figures を OpenGL に書き込む。
+        #    現在は，click した箇所付近の node を緑にしているだけ。
+        with self.manipulating_db.squares_lock:
+            logger.debug(f"{self}.manipulating_db.squares_lock.acquire()")
+            logger.debug(f"{self}.manipulating_db.node_squares={self.manipulating_db.node_squares}")
+            for node_square in self.manipulating_db.node_squares:
+                put_on_square(*node_square)
+                logger.debug(f"put_on_square(*node_square={node_square}")
+            logger.debug(f"{self}.manipulating_db.squares_lock.release()")
+
+        if get_passed_ms(self.start_the_movie_time) > self.manipulating_db.simulation_milliseconds:
+            logger.info(f"get_passed_ms({self.start_the_movie_time}) > {self.manipulating_db.simulation_milliseconds}")
+            self._simulation_info()
+            glutLeaveMainLoop()
+
     def _print_fps(self):
         logger.info(f"{self}._print_fps()")
         passed_seconds = get_passed_seconds(self.start_the_movie_time)
@@ -257,44 +308,20 @@ class Screen(object):
             logger.debug(f"thread={th}, count={count}")
             count += 1
 
-    @staticmethod
-    def get_current_cos_sin(x, y):
-        ww = glutGet(GLUT_WINDOW_WIDTH)
-        wh = glutGet(GLUT_WINDOW_HEIGHT)
-        rate = ww / wh
-        # math x, y axis
-        # origin is window center
-        # -ww / 2 <= x <= ww / 2
-        # -wh / 2 <= y <= wh / 2
-        mx = x - ww / 2
-        my = wh / 2 - y
-        logger.debug(f"get_current_cos_sin(x={x}, y={y}), ww={ww} wh={wh}, rate={rate}, mx={mx} my={my}")
-
-        # normalize
-        norm_ww = ww / 2
-        norm_wh = wh / 2 * rate
-        norm_wd = math.sqrt(norm_ww ** 2 + norm_wh ** 2)
-        norm_x = int(mx)
-        norm_y = int(my * rate)
-        norm_d = math.sqrt(norm_x ** 2 + norm_y ** 2)
-        if norm_d == 0:
-            logger.debug("get_current_cos_sin(), norm_d={norm_d}")
-            return None, None, 0
-        cos_ = norm_x / norm_d
-        sin_ = norm_y / norm_d
-
-        r = norm_ww
-        # clickした箇所と原点(=単位円の中心)からの距離
-        distance_ofclick_on_from_origin = norm_d / r
-        docofo = distance_ofclick_on_from_origin
-
-        logger.debug("get_current_cos_sin(), distance_ofclick_on_from_origin={docofo}")
-
-        return cos_, sin_, docofo
+    def _keyboard(self, key, x, y):
+        code = ord(key)
+        logger.info(f"{self}._keyboard(key={key}, x={x}, y={y}), code={code}")
+        if key.decode() == chr(27):
+            logger.debug('ESC')
+        if ord(key) == 27 or ord(key) == 0x17 or ord(key) == 0x03:
+          # ESC              ctr-w               ctr-c
+            self._simulation_info()
+            logger.info("{self}._keyboard(), sys.exit(0)")
+            sys.exit(0)
 
     def click_on_sample(self, button, state, x, y):
         logger.info(f"{self}.click_on_sample(button={button}, state={state}, x={x}, y={y}")
-        cos_, sin_, docofo = Screen.get_current_cos_sin(x, y)
+        cos_, sin_, docofo = get_current_cos_sin(x, y)
         logger.debug(f"{self}.click_on_sample(), cos_={cos_} sin_={sin_}, docofo={docofo}, x={x}, y={y}")
 
     def click_on(self, button, state, x, y):
@@ -311,7 +338,7 @@ class Screen(object):
       # 左click 押した button=0, state=0, x=392, y=251  in self.click_on()
       # 左click 離した button=0, state=1, x=392, y=251  in self.click_on()
 
-        cos_, sin_, docofo = Screen.get_current_cos_sin(x, y)
+        cos_, sin_, docofo = get_current_cos_sin(x, y)
 
         band_width = 0.02
       # self._debug = True
@@ -338,41 +365,14 @@ class Screen(object):
                 logger.debug("{self}.manipulating_db.node_squares.append({square}")
             logger.debug("{self}.manipulating_db.node_squares={self.manipulating_db.node_squares}")
 
-    def _keyboard(self, key, x, y):
-        code = ord(key)
-        logger.info(f"{self}._keyboard(key={key}, x={x}, y={y}), code={code}")
-        if key.decode() == chr(27):
-            logger.debug('ESC')
-        if ord(key) == 27 or ord(key) == 0x17 or ord(key) == 0x03:
-          # ESC              ctr-w               ctr-c
-            self._simulation_info()
-            logger.info("{self}._keyboard(), sys.exit(0)")
-            sys.exit(0)
-
     def idle(self):
         # 4. figures を OpenGL に書き込む。
         #    現在は，click した箇所付近の node を緑にしているだけ。
         with self.manipulating_db.squares_lock:
             for node_square in self.manipulating_db.node_squares:
                 put_on_square(*node_square)
+
         glutPostRedisplay()
-
-    def display_main_thread(self, passed_seconds):
-        logger.debug(f"{self}.display_main_thread(passed_seconds={passed_seconds})")
-        # 4. figures を OpenGL に書き込む。
-        #    現在は，click した箇所付近の node を緑にしているだけ。
-        with self.manipulating_db.squares_lock:
-            logger.debug(f"{self}.manipulating_db.squares_lock.acquire()")
-            logger.debug(f"{self}.manipulating_db.node_squares={self.manipulating_db.node_squares}")
-            for node_square in self.manipulating_db.node_squares:
-                put_on_square(*node_square)
-                logger.debug(f"put_on_square(*node_square={node_square}")
-            logger.debug(f"{self}.manipulating_db.squares_lock.release()")
-
-        if get_passed_ms(self.start_the_movie_time) > self.manipulating_db.simulation_milliseconds:
-            logger.info(f"get_passed_ms({self.start_the_movie_time}) > {self.manipulating_db.simulation_milliseconds}")
-            self._simulation_info()
-            glutLeaveMainLoop()
 
 def display_sample(passed_seconds):
     moving = formula._fmove(passed_seconds)
