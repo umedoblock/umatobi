@@ -75,7 +75,9 @@ class ManipulatingDB(threading.Thread):
             self.simulation_db.select('simulation', \
                              column_name)[0][column_name]
 
+        logger.debug(f"{self}.simulation_milliseconds={self.simulation_milliseconds}")
         self._memory_db = simulator.sql.SQL(':memory:', schema_path=self.simulation_db.schema_path)
+        logger.debug(f"{self}._memory_db={self._memory_db}")
         self._memory_db.create_db()
         self._memory_db.create_table('simulation')
         init_nodes_table2(self._memory_db, simulation_db.total_nodes)
@@ -177,7 +179,7 @@ class LabelArea(object):
 
 class Screen(object):
     def __init__(self, argv, simulation_db_path=None, display=None, width=500, height=500):
-        logger.info(f"Screen(argv={argv}, width={width}, height={height})")
+        logger.info(f"Screen(self={self}, argv={argv}, simulation_db_path={simulation_db_path}, display={display}, width={width}, height={height})")
         self.frames = 0
         self.start_the_movie_time = datetime.datetime.now()
         self.width = width
