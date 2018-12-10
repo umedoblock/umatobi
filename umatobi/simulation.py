@@ -5,6 +5,7 @@ import datetime
 import multiprocessing
 
 from lib import make_logger, make_start_up_orig, tell_shutdown_time
+from lib import y15sformat_time
 from lib.args import get_logger_args
 from simulator.client import Client
 from simulator.watson import Watson
@@ -60,7 +61,7 @@ def get_host_port(host_port):
 if __name__ == '__main__':
     logger_args = get_logger_args()
     start_up_orig = make_start_up_orig()
-    start_up_time = start_up_orig.y15sformat()
+    start_up_time = y15sformat_time(start_up_orig)
 
     logger = make_logger(log_dir=logger_args.simulation_dir, \
                          name="admin", \

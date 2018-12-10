@@ -8,7 +8,7 @@ import sqlite3
 
 from lib import make_logger, dict_becomes_jbytes, jtext_becomes_dict
 from lib import make_start_up_orig, elapsed_time
-from lib import SCHEMA_PATH
+from lib import SCHEMA_PATH, y15sformat_time
 import simulator.sql
 
 logger = None
@@ -110,7 +110,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             to_client = {
                 'dir_name': self.server.watson.dir_name,
                 'client_id': client_id,
-                'start_up_time': self.server.start_up_orig.isoformat(),
+                'start_up_time': y15sformat_time(self.server.start_up_orig),
                 'node_index': self.server.watson.total_nodes,
                 'log_level': self.server.watson.log_level,
             }
@@ -156,7 +156,7 @@ class Watson(threading.Thread):
         self.registered_nodes = 0
 
         self.start_up_orig = start_up_orig
-        self.start_up_time = self.start_up_orig.isoformat()
+        self.start_up_time = y15sformat_time(self.start_up_orig)
 
         self.simulation_db_path = os.path.join(self.dir_name, 'simulation.db')
         self.schema_path = SCHEMA_PATH

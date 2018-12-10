@@ -67,7 +67,7 @@ def current_y15sformat_time():
     now = time.time()
     return y15sformat_time(now)
 
-def y15sformat_time_to_datetime(s):
+def y15sformat_parse(s):
     return datetime.datetime.strptime(s, Y15S_FORMAT)
 
 def get_passed_ms(start_up_orig):

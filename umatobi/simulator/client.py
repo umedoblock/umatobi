@@ -10,7 +10,7 @@ import simulator.sql
 from lib import make_logger, jtext_becomes_dict, dict_becomes_jbytes
 from lib import make_logger2
 from lib import remove_logger
-from lib import SCHEMA_PATH, isoformat_time_to_datetime
+from lib import SCHEMA_PATH
 from lib.args import get_logger_args
 
 def make_darkness(d_config):
@@ -220,7 +220,7 @@ class Client(object):
 
     def _init_attrs(self):
         '''\
-        watson に接続し、id, iso_start_up_timeを受信する。
+        watson に接続し、id, start_up_timeを受信する。
         id は client.<id>.log として、log fileを作成するときに使用。
         start_up_time は dir_nameを決定する際に使用する。
         '''
