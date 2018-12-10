@@ -1,4 +1,4 @@
-import datetime
+import datetime, time
 import sys, os
 import math
 import pickle
@@ -39,14 +39,16 @@ def get_passed_ms(orig):
     passed_seconds = get_passed_seconds(orig)
     return _normalize_milliseconds(passed_seconds)
 
-class ManipulatingDB(Polling):
+class ManipulatingDB(threading.Thread):
     SQUQRE_BODY = 0.011
     NODE_LEG = 0.033
     POLLING_SIMULATION_DB = 0.2
 
     def __init__(self, simulation_db_path, start_the_movie_time):
-        Polling.__init__(self, self.POLLING_SIMULATION_DB)
+        threading.Thread.__init__(self)
+
         logger.info(f"ManipulatingDB(self={self}, simulation_db_path={simulation_db_path}, start_the_movie_time={start_the_movie_time}")
+        self.polling_secs = self.POLLING_SIMULATION_DB
         logger.debug(f"{self}.polling_secs={self.polling_secs}")
         self.simulation_db_path = simulation_db_path
         self._initialized_db = False
@@ -78,12 +80,12 @@ class ManipulatingDB(Polling):
         self._memory_db.create_table('simulation')
         init_nodes_table2(self._memory_db, simulation_db.total_nodes)
 
-    def polling(self):
-        if not self._initialized_db:
-            self.initialized_db = True
-            self._init_maniplate_db()
-        passed_ms = get_passed_ms(self.start_the_movie_time)
-        e = self.inhole_pickles_from_simlation_db(passed_ms)
+    def run(self):
+        self._init_maniplate_db()
+        while True:
+            passed_ms = get_passed_ms(self.start_the_movie_time)
+            e = self.inhole_pickles_from_simlation_db(passed_ms)
+            time.sleep(self.polling_secs)
 
     def inhole_pickles_from_simlation_db(self, passed_ms):
         # 0. simulation 開始時刻を 0 秒として，passed_ms とは，
