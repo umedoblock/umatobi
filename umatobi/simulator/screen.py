@@ -424,6 +424,8 @@ class Trailer(object):
 def display_sample(passed_seconds):
     moving = formula._fmove(passed_seconds)
     logger.info(f"moving={moving}, passed_seconds={passed_seconds}")
+    length_circle = 2 * math.pi * 1.0
+    length_legs = length_circle / (2 * n)
 
     n = 100 # 100 個の点
     L = [] # 点の配置場所を tuple(rad, ix, iy) として格納
@@ -447,10 +449,9 @@ def display_sample(passed_seconds):
         rad, ix, iy = rxy
         put_on_square(rad, ix, iy, 0.015)
 
-    len_leg = 0.033
     glBegin(GL_LINES)
     for rxy in L:
-        rx, ry, gx, gy = formula._moving_legs(rxy, moving, leg=len_leg)
+        rx, ry, gx, gy = formula._moving_legs(rxy, moving, leg=length_legs)
         rad, ix, iy = rxy
         # 赤足
         glColor3ub(0xff, 0x00, 0x00)
