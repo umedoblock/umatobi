@@ -144,6 +144,7 @@ def _normalize_db_or_log_path(args):
             print(f"{args.simulation_dir} directory 以下に simulation 結果が存在しませんでした。")
             sys.exit(0)
         timestamps.sort(reverse=True)
+        logger.debug(f"timestamps={timestamps}")
 
     logger.debug(f"args={args}")
     db_or_log_path = ''
@@ -164,7 +165,6 @@ def _normalize_db_or_log_path(args):
         else:
             timestamp = args.timestamp
         logger.debug(f"args.timestamp={args.timestamp}")
-        logger.debug(f"timestamps={timestamps}")
         logger.debug(f"timestamp={timestamp}")
         dir_name = os.path.join(simulation_dir, timestamp)
 
