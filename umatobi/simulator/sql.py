@@ -31,6 +31,7 @@ class SQL(object):
         return sql, values
 
     def __init__(self, db_path=':memory:', schema_path=''):
+        logger.info(f"SQL(db_path={db_path}, schema_path={schema_path}")
         self.db_path = db_path
         self.schema_path = schema_path
         self._conn = None
@@ -42,28 +43,39 @@ class SQL(object):
             self.read_schema()
 
     def read_schema(self):
+        logger.info(f"{self}.read_schema(), schema_path={self.schema_path}")
         self._schema = configparser.ConfigParser()
         with open(self.schema_path) as f:
             self._schema.read_file(f)
 
     def access_db(self):
-        logger.debug(f"self.db_path={self.db_path} in access_db()")
+        logger.info(f"{self}.access_db(), db_path={self.db_path}")
         if not os.path.exists(self.db_path):
-            raise RuntimeError('cannot find "{}"'.format(self.db_path))
+            raise RuntimeError(f"cannot find db_path='{self.db_path}'")
         self.create_db()
 
     def create_db(self):
-        self._conn = sqlite3.connect(self.db_path)
+        logger.info(f"{self}.create_db(), db_path={self.db_path}")
+        try:
+            self._conn = sqlite3.connect(self.db_path)
+        except sqlite3.OperationalError as e:
+            if e.args[0] != 'unable to open database file':
+                raise(e)
+            db_dir_name = os.path.dirname(self.db_path)
+            dir_exists = os.path.exists(db_dir_name)
+            db_exists = os.path.exists(self.db_path)
+            raise ValueError(f"{self}.create_db() cannot open db_path={self.db_path}, db_exists={db_exists}, db_dir_name={db_dir_name}, dir_exists={dir_exists}")
         self._conn.row_factory = sqlite3.Row
         self._cur = self._conn.cursor()
 
     def create_table(self, table_name):
+        logger.info(f"{self}.create_table(table_name={table_name})")
+        # ここまで頑張ったところで力尽きました。
+        # もう，logger を入れるのは辞めます。
         if self._conn is None:
             raise RuntimeError('you must call read_table_schema() before call create_table().')
 
         table_info = self._schema[table_name]
-      # logger.debug('name =', table_info.name)
-      # logger.debug('table_info =', table_info)
 
         columns = []
         for column_name, explain in table_info.items():

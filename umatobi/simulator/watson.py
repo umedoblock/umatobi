@@ -18,15 +18,16 @@ logger = None
 class WatsonOpenOffice(threading.Thread):
     def __init__(self, watson):
         threading.Thread.__init__(self)
+        logger.info(f"WatsonOpenOffice(self={self}, (watson={watson})")
         self.watson = watson
         self.in_serve_forever = threading.Event()
         thread_id = threading.get_ident()
-        logger.debug(f"thread_id={thread_id} in WatsonOpenOffice.__init__()")
 
     def run(self):
         # Create the server, binding to localhost on port ???
-        logger.debug(f"socketserver.TCPServer({self.watson.watson_office_addr}, WatsonOpenOffice)")
+        logger.info(f"{self}.run()")
         with WatsonTCPOffice(self.watson) as watson_tcp_office:
+            logger.info(f"{self}.run(), with WatsonTCPOffice(watson={self.watson})")
             self.watson.watson_tcp_office = watson_tcp_office
             logger.debug("watson_open_office.serve_forever()")
             # WatsonOpenOffice() run on different thread of WatsonTCPOffice.
@@ -37,12 +38,27 @@ class WatsonOpenOffice(threading.Thread):
 # WatsonTCPOffice and WatsonOffice classes are on same thread.
 class WatsonTCPOffice(socketserver.TCPServer):
     def __init__(self, watson):
+        logger.info(f"WatsonTCPOffice(self={self}, watson={watson})")
         thread_id = threading.get_ident()
-        logger.debug(f"thread_id={thread_id} in WatsonTCPOffice.__init__()")
-        ip, port = watson.watson_office_addr
+
+        self.watson = watson
+        self.clients = []
+    #   self.server in WatsonOffice class means WatsonTCPOffice instance.
+        self.start_up_orig = watson.start_up_orig
+        self.simulation_db = simulator.sql.SQL(db_path=watson.simulation_db_path)
+        logger.info(f"{self}.simulation_db.access_db(), db_path={watson.simulation_db_path}")
+        self.simulation_db.access_db()
+
+        self._determine_office_addr()
+
+    def _determine_office_addr(self):
+        logger.info(f"{self}._determine_office_addr(), watson_office_addr={self.watson.watson_office_addr}")
+        ip, port = self.watson.watson_office_addr
         while True:
             addr = (ip, port)
             try:
+                logger.debug(f"super().__init__(addr={addr}, WatsonTCPOffice)")
+                # TCPServer(self, server_address, RequestHandlerClass, bind_and_activate=True):
                 super().__init__(addr, WatsonOffice)
             except OSError as oe:
                 if oe.errno != 98:
@@ -55,15 +71,9 @@ class WatsonTCPOffice(socketserver.TCPServer):
                 continue
             break
 
+        logger.info(f"{self}.watson.watson_office_addr={addr}")
         # watson_office_addr が決定されている。
-        watson.watson_office_addr = addr
-
-        self.watson = watson
-        self.clients = []
-    #   self.server in WatsonOffice class means WatsonTCPOffice instance.
-        self.start_up_orig = watson.start_up_orig
-        self.simulation_db = simulator.sql.SQL(db_path=watson.simulation_db_path)
-        self.simulation_db.access_db()
+        self.watson.watson_office_addr = addr
 
     def shutdown_request(self, request):
         pass
@@ -126,9 +136,11 @@ class WatsonOffice(socketserver.StreamRequestHandler):
         self.wfile.write(reply)
 
     def finish(self):
+        logger.info(f"{self}.finish()")
         pass
 
     def bye_bye(self):
+        logger.info(f"{self}.bye_bye()")
         super().finish()
 
 class Watson(threading.Thread):
@@ -144,17 +156,14 @@ class Watson(threading.Thread):
         global logger
         if not logger:
             logger = make_logger(dir_name, name="watson", level=log_level)
-        thread_id = threading.get_ident()
-        logger.debug("debuging...")
-        logger.info(f"thread_id={thread_id} in Watson.__init__()")
         self.log_level = log_level
+        logger.info(f"Watson(watson_office_addr={watson_office_addr}, simulation_seconds={simulation_seconds}, start_up_orig={start_up_orig}, dir_name={dir_name}, log_level={log_level}))")
 
         self.watson_office_addr = watson_office_addr
         self.watson_office_addr_assigned = threading.Event()
         self.simulation_seconds = simulation_seconds
         self.log_level = log_level
         self.dir_name = dir_name
-        self.registered_nodes = 0
 
         self.start_up_orig = start_up_orig
         self.start_up_time = y15sformat_time(self.start_up_orig)
@@ -170,24 +179,33 @@ class Watson(threading.Thread):
 
     def _make_office(self):
         '''watson が書き出す log 用の directory 作成'''
+        logger.info(f"{self}._make_office()")
         os.makedirs(self.dir_name, exist_ok=True)
 
         logger.info('----- watson office start up. -----')
         message = 'simulation_seconds={}'.format(self.simulation_seconds)
         logger.info(message)
 
+    def relaxing(self):
+        et_ms = elapsed_time(self.start_up_orig)
+        et_secs = et_ms / 1000
+        relaxing_time = self.simulation_seconds - et_secs
+
+        logger.info(f"{self}.relaxing(), relaxing_time={relaxing_time}")
+        logger.debug(f"simulation_seconds={self.simulation_seconds}, start_up_orig={self.start_up_orig}, et_ms={et_ms}, et_secs={et_secs}")
+        time.sleep(relaxing_time)
+
     def run(self):
         '''simulation 開始'''
+        logger.info(f"{self}.run()")
 
-        self.touch_simulation_db()
-
+        self.touch_simulation_db_on_clients()
+        logger.debug(f"self.simulation_db.db_path={self.simulation_db.db_path}")
         self.open_office()
 
-        while elapsed_time(self.start_up_orig) < self.simulation_seconds * 1000:
-            logger.debug("watson time.sleep(1.0)")
-            time.sleep(1.0)
+        self.relaxing()
 
-        self._release_clients()
+        self.release_clients()
 
         # close watson office
         self.watson_tcp_office.shutdown()
@@ -202,10 +220,13 @@ class Watson(threading.Thread):
         self._construct_simulation_table()
         self.simulation_db.close()
 
-    def touch_simulation_db(self):
+    def touch_simulation_db_on_clients(self):
+        logger.info(f"{self}.touch_simulation_db_on_clients()")
+        logger.debug(f"{self}.touch_simulation_db_on_clients(), simulation_db_path={self.simulation_db_path}, schema_path={self.schema_path}")
         self.simulation_db = simulator.sql.SQL(
                                 db_path=self.simulation_db_path,
                                 schema_path=self.schema_path)
+        logger.info(f"{self}.touch_simulation_db_on_clients(), simulation_db={self.simulation_db}")
         self.simulation_db.create_db()
         self.simulation_db.create_table('clients')
         # この後，WatsonTCPOffice が simulation_db に access する。
@@ -215,9 +236,9 @@ class Watson(threading.Thread):
         logger.debug("watson created clients table.")
 
     def open_office(self):
+        logger.info(f"{self}.open_office()")
         watson_open_office = WatsonOpenOffice(self)
         self.watson_open_office = watson_open_office
-        logger.debug("watson_open_office.start()")
         watson_open_office.start()
         # wait a minute
         # to set watson_open_office instance
@@ -225,8 +246,10 @@ class Watson(threading.Thread):
         # in WatsonOpenOffice.run()
         watson_open_office.in_serve_forever.wait()
         # watson.watson_office_addr が決定している。
+        return watson_open_office
 
     def _construct_simulation_table(self):
+        logger.info(f"{self}._construct_simulation_table()")
         self.simulation_db.create_table('simulation')
         d_simulation = {}
         d_simulation['watson_office_addr'] = '{}:{}'.format(*self.watson_office_addr)
@@ -237,40 +260,39 @@ class Watson(threading.Thread):
         d_simulation['total_nodes'] = self.total_nodes
         d_simulation['n_clients'] = len(self.watson_tcp_office.clients)
         d_simulation['version'] = '0.0.0'
+        logger.debug(f"{self}._construct_simulation_table(), d_simulation={d_simulation}")
         self.simulation_db.insert('simulation', d_simulation)
         self.simulation_db.commit()
 
     def _wait_client_db(self):
-        logger.info('{} は、client.#.dbの回収に乗り出した。'.format(self))
-        logger.info('{} なんて言いながら実は待機してるだけ。'.format(self))
-        logger.info('{} client.{}.dbの回収完了。'.format(self, 1))
+        logger.info(f"{self}._wait_client_db()")
+        logger.info(f"{self}, は、client.#.dbの回収に乗り出した。")
+        logger.info(f"{self}, なんて言いながら実は待機してるだけ。")
+        logger.info(f"{self}, client.N.dbの回収完了。")
 
     def _merge_db_to_simulation_db(self):
-        logger.info('{} client.#.db の結合開始。'.format(self))
-        logger.info('{} client.#.db の結合終了。'.format(self))
+        logger.info(f"{self}._merge_db_to_simulation_db()")
+        logger.info(f"{self}, client.N.db の結合開始。")
+        logger.info(f"{self}, client.N.db の結合終了。")
 
     def join(self):
         '''watson threadがjoin'''
+        logger.info(f"{self}.join()")
         threading.Thread.join(self)
         logger.debug('watson thread joined.')
 
-    def _tcp_office_open(self):
-        _wait_tcp_clients()
-
-    def _release_clients(self):
+    def release_clients(self):
         '''\
         watsonが把握しているClientに "break down" を送信し、
         各Clientに終了処理を行わせる。
         Clientは、終了処理中に client.id.db を送信してくる。
         '''
-        logger.debug('watson._release_clients()')
+        logger.info(f"{self}.release_clients(), watson_tcp_office.client={self.watson_tcp_office.clients}")
+        result = b'break down.'
         for watson_office_client in self.watson_tcp_office.clients:
-            result = b'break down.'
-            logger.debug(f"type(watson_office_client)={type(watson_office_client)} in _release_clients()")
-            logger.debug(f"watson_office_client={watson_office_client} in _release_clients()")
-            logger.debug(f"watson_office_client.request={watson_office_client.request} in _release_clients()")
+            logger.info(f"{self}.release_clients(), watson_office_client={watson_office_client}")
             watson_office_client.wfile.write(result)
             watson_office_client.bye_bye()
 
     def __str__(self):
-        return 'Watson({}:{})'.format(*self.watson_office_addr)
+        return f"Watson{self.watson_office_addr}"
