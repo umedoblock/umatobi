@@ -2,7 +2,7 @@ import argparse, re
 import sys
 import os
 
-from lib import make_logger
+from umatobi.lib import make_logger
 
 # for logger ...
 def _parse_logger_setting(parser):

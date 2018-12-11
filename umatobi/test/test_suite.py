@@ -2,8 +2,7 @@ import unittest
 from test.support import run_unittest
 
 from umatobi.test.test_lib import LibTests
-
-# from umatobi.test import test_client
+from umatobi.test.test_client import ClientTests
 # from umatobi.test import test_watson
 
 def test_main():
@@ -12,7 +11,7 @@ def test_main():
     suite.addTest(unittest.makeSuite(LibTests))
     suite.addTest(LibTests('test_y15sformat_time')) # OK
  #  suite.addTest(unittest.MakeSuite(test_watson.WatsonTests))
- #  suite.addTest(unittest.MakeSuite(test_client.ClientTests))
+    suite.addTest(unittest.makeSuite(ClientTests))
     run_unittest(suite)
 
 if __name__ == '__main__':

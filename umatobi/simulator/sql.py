@@ -4,8 +4,8 @@ import os
 import sys
 import logging
 
-from lib import LOGGER_FMT, make_logger
-from lib.args import get_logger_args
+from umatobi.lib import LOGGER_FMT, make_logger
+from umatobi.lib.args import get_logger_args
 
 # print("__name__ =", __name__)
 # __name__ = simulator.sql

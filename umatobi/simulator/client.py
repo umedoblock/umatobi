@@ -5,13 +5,13 @@ import socket
 import multiprocessing
 from logging import StreamHandler
 
-from simulator.darkness import Darkness
-import simulator.sql
-from lib import make_logger, jtext_becomes_dict, dict_becomes_jbytes
-from lib import make_logger2
-from lib import remove_logger
-from lib import SCHEMA_PATH
-from lib.args import get_logger_args
+from umatobi.simulator.darkness import Darkness
+import umatobi.simulator.sql
+from umatobi.lib import make_logger, jtext_becomes_dict, dict_becomes_jbytes
+from umatobi.lib import make_logger2
+from umatobi.lib import remove_logger
+from umatobi.lib import SCHEMA_PATH
+from umatobi.lib.args import get_logger_args
 
 def make_darkness(d_config):
     '''darkness process を作成'''
@@ -64,11 +64,13 @@ class Client(object):
 
         self.timeout_sec = 1
         socket.setdefaulttimeout(self.timeout_sec)
+
+    def consult_watson(self):
         self._tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        logger.info(f"self._tcp_sock.connect(={watson_office_addr})")
+        logger.info(f"self._tcp_sock.connect(={self.watson_office_addr})")
       # remove_logger(name=os.path.basename(__file__), level=logger_args.log_level)
-        self._tcp_sock.connect(watson_office_addr)
+        self._tcp_sock.connect(self.watson_office_addr)
 
         _d_init_attrs = self._init_attrs()
 

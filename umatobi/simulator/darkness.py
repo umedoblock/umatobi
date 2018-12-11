@@ -3,13 +3,13 @@ import threading, time
 import queue
 import pickle
 
-from simulator.node import Node
-import simulator.sql
-from lib import make_logger, validate_kwargs
-from lib import Polling
-from lib import SCHEMA_PATH
+from umatobi.simulator.node import Node
+import umatobi.simulator.sql
+from umatobi.lib import make_logger, validate_kwargs
+from umatobi.lib import Polling
+from umatobi.lib import SCHEMA_PATH
 
-from lib.args import get_logger_args
+from umatobi.lib.args import get_logger_args
 global logger
 logger_args = get_logger_args()
 logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)

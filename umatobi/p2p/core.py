@@ -3,7 +3,7 @@ import socket
 import os
 import sys
 
-from lib import formula
+from umatobi.lib import formula
 
 class Node(threading.Thread):
     '''Node class'''

@@ -14,6 +14,7 @@ import simulator.sql
 
 def make_client(watson_office_addr, num_nodes):
     client = Client(watson_office_addr, num_nodes)
+    client.consult_watson()
     client.start()
     client.join()
 

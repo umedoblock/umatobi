@@ -4,10 +4,10 @@ import math
 import pickle
 import datetime
 
-import p2p.core
-from lib import formula, elapsed_time, validate_kwargs, y15sformat_parse
+import umatobi.p2p.core
+from umatobi.lib import formula, elapsed_time, validate_kwargs, y15sformat_parse
 
-class Node(p2p.core.Node):
+class Node(umatobi.p2p.core.Node):
 
     _output = print
 
