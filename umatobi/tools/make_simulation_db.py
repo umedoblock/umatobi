@@ -8,7 +8,7 @@ from umatobi.constants import *
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib.args import args_make_simulation_db
 from lib.args import get_logger_args
-from lib import SCHEMA_PATH, make_logger
+from lib import make_logger
 import simulator.sql
 
 global logger

@@ -8,7 +8,6 @@ import tkinter as tk
 from lib.args import args_make_simulation_db
 import simulator.sql
 from lib import formula, make_logger
-from lib import SCHEMA_PATH
 from lib import Polling, elapsed_time
 from lib.squares import put_on_square
 from tools.make_simulation_db import init_nodes_table2

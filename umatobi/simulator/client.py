@@ -10,7 +10,6 @@ import umatobi.simulator.sql
 from umatobi.lib import make_logger, jtext_becomes_dict, dict_becomes_jbytes
 from umatobi.lib import make_logger2
 from umatobi.lib import remove_logger
-from umatobi.lib import SCHEMA_PATH
 from umatobi.lib.args import get_logger_args
 
 def make_darkness(d_config):

@@ -7,7 +7,6 @@ from umatobi.simulator.node import Node
 import umatobi.simulator.sql
 from umatobi.lib import make_logger, validate_kwargs
 from umatobi.lib import Polling
-from umatobi.lib import SCHEMA_PATH
 
 from umatobi.lib.args import get_logger_args
 global logger

@@ -9,7 +9,7 @@ import sqlite3
 from umatobi.constants import *
 from umatobi.lib import make_logger, dict_becomes_jbytes, jtext_becomes_dict
 from umatobi.lib import make_start_up_orig, elapsed_time
-from umatobi.lib import SCHEMA_PATH, y15sformat_time
+from umatobi.lib import y15sformat_time
 import umatobi.simulator.sql
 from umatobi import simulator
 

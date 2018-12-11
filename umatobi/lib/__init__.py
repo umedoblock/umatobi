@@ -7,9 +7,6 @@ import os
 import threading
 import sched
 
-_here = os.path.dirname(os.path.abspath(__file__))
-SCHEMA_PATH = os.path.join(_here, '..', 'simulator', 'simulation.schema')
-
 class Polling(threading.Thread):
     def __init__(self, polling_secs):
         threading.Thread.__init__(self)
