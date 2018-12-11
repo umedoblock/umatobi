@@ -3,8 +3,7 @@ import sys, shutil
 import threading
 import unittest
 
-import umatobi.test
-from umatobi import SIMULATION_DIR
+from umatobi.test import *
 from umatobi.simulator.watson import Watson, WatsonOffice
 from umatobi.simulator.watson import WatsonOpenOffice, WatsonTCPOffice
 from umatobi import lib
@@ -39,7 +38,7 @@ class WatsonTests(unittest.TestCase):
         watson = self.watson
 
         expected_dir = os.path.join('.', SIMULATION_DIR, watson.start_up_time)
-        expected_path = os.path.join('.', SIMULATION_DIR, watson.start_up_time, 'simulation.db')
+        expected_path = os.path.join('.', SIMULATION_DIR, watson.start_up_time, SIMULATION_DB)
 
         self.assertEqual(self.watson_office_addr, watson.watson_office_addr)
         self.assertEqual(expected_dir, watson.dir_name)

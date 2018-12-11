@@ -7,7 +7,6 @@ syntax: glob
 *.tags
 core
 *.pickle
-*/relay.*.db
 */simulation.db
 umatobi-simulation/
 kdenlive

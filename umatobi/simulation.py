@@ -4,7 +4,7 @@ import argparse
 import datetime
 import multiprocessing
 
-from umatobi import SIMULATION_DIR
+from umatobi.constants import *
 from lib import make_logger, make_start_up_orig, tell_shutdown_time
 from lib import y15sformat_time
 from lib.args import get_logger_args

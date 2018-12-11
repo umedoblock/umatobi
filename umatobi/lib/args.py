@@ -2,7 +2,7 @@ import argparse, re
 import sys
 import os
 
-from umatobi import SIMULATION_DIR
+from umatobi.constants import *
 from umatobi.lib import make_logger
 
 # for logger ...
@@ -65,7 +65,7 @@ def args_log(description):
     return args, log_path
 
 def _get_simulation_db_path(args):
-    args.db_or_log_file = 'simulation.db'
+    args.db_or_log_file = SIMULATION_DB
     simulation_db_path = _normalize_db_or_log_path(args)
     return simulation_db_path
 
@@ -173,7 +173,7 @@ def _normalize_db_or_log_path(args):
         files = os.listdir(dir_name)
         dbs_or_logs = _gather_db_or_log_files(files, db_or_log)
         if db_or_log == 'db':
-            dbs_or_logs.append('simulation.db')
+            dbs_or_logs.append(SIMULATION_DB)
         if db_or_log_file in dbs_or_logs:
             db_or_log_path = os.path.join(dir_name, db_or_log_file)
         else:

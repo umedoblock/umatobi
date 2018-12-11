@@ -4,6 +4,7 @@ import pickle
 import datetime
 import sqlite3
 
+from umatobi.constants import *
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib.args import args_make_simulation_db
 from lib.args import get_logger_args
@@ -23,7 +24,7 @@ def collect_client_dbs(simulation_db):
         id_, num_nodes_ = (client_row['id'], client_row['num_nodes'])
         logger.debug('id={}, num_nodes_={}'.format(id_, num_nodes_))
         client_db_path = \
-            simulation_db.simulation_db_path.replace(r'simulation.db',
+            simulation_db.simulation_db_path.replace(SIMULATION_DB,
                                         'client.{}.db'.format(id_))
         client_db = simulator.sql.SQL(db_path=client_db_path)
         client_db.id, client_db.num_nodes = id_, num_nodes_

@@ -1,8 +1,8 @@
 import os, sys, datetime, shutil
 import unittest
 
-import umatobi.test
-from umatobi import lib, SIMULATION_DIR
+from umatobi.test import *
+from umatobi import lib
 from umatobi.lib import make_logger
 
 _datetime_datetime = datetime.datetime
