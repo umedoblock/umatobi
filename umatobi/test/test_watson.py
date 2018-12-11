@@ -39,6 +39,7 @@ class WatsonTests(unittest.TestCase):
         self.assertEqual(self.watson_office_addr, watson.watson_office_addr)
         self.assertEqual(expected_dir, watson.dir_name)
         self.assertEqual(expected_path, watson.simulation_db_path)
+        self.assertEqual(0, watson.total_nodes)
 
 if __name__ == '__main__':
     unittest.main()
