@@ -1,8 +1,9 @@
-import sys, datetime
+import os, sys, datetime, shutil
 import unittest
 
 import umatobi.test
 from umatobi import lib, SIMULATION_DIR
+from umatobi.lib import make_logger
 
 _datetime_datetime = datetime.datetime
 _now = datetime.datetime.now
@@ -29,6 +30,36 @@ class LibTests(unittest.TestCase):
 
     def test_SIMULATION_DIR(self):
         self.assertEqual('umatobi-simulation-test', SIMULATION_DIR)
+
+    def test_make_log_dir(self):
+        special_dir = SIMULATION_DIR + "-special"
+        self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='special', id_=None, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+        self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='special', id_=10, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+        special_dir = SIMULATION_DIR + "-special2"
+        self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='', id_=None, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+        self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='', id_=10, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+    def test_log_path(self):
+        tlogger = make_logger(log_dir=SIMULATION_DIR, name='test_logger', id_=None, level="INFO")
+        self.assertEqual('umatobi-simulation-test/test_logger.log', tlogger.log_path)
+
+        tlogger = make_logger(log_dir=SIMULATION_DIR, name='test_logger', id_=888, level="INFO")
+        self.assertEqual('umatobi-simulation-test/test_logger.888.log', tlogger.log_path)
 
     def test_make_start_up_orig(self):
         start_up_orig = lib.make_start_up_orig()

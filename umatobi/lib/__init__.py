@@ -129,6 +129,8 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
     if id_ is not None:
         name = f"{name}.{str(id_)}"
     if log_dir is not None:
+        if not os.path.isdir(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
         base_name = '.'.join([name, "log"])
         log_path = os.path.join(log_dir, base_name)
 
