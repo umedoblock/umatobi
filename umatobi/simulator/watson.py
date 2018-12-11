@@ -10,7 +10,7 @@ from umatobi.lib import make_logger, dict_becomes_jbytes, jtext_becomes_dict
 from umatobi.lib import make_start_up_orig, elapsed_time
 from umatobi.lib import SCHEMA_PATH, y15sformat_time
 import umatobi.simulator.sql
-from umatobi import simulator
+from umatobi import simulator, SIMULATION_DIR
 
 logger = None
 
@@ -225,7 +225,7 @@ class Watson(threading.Thread):
         d_simulation['watson_office_addr'] = '{}:{}'.format(*self.watson_office_addr)
         d_simulation['simulation_milliseconds'] = \
             1000 * self.simulation_seconds
-        d_simulation['title'] = 'umatobi-simulation'
+        d_simulation['title'] = SIMULATION_DIR
         d_simulation['memo'] = 'なにかあれば'
         d_simulation['total_nodes'] = self.total_nodes
         d_simulation['n_clients'] = len(self.watson_tcp_office.clients)

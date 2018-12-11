@@ -4,6 +4,7 @@ import argparse
 import datetime
 import multiprocessing
 
+from umatobi import SIMULATION_DIR
 from lib import make_logger, make_start_up_orig, tell_shutdown_time
 from lib import y15sformat_time
 from lib.args import get_logger_args
@@ -31,7 +32,7 @@ def args_():
                          help='simulation seconds. defalut is 10')
     parser.add_argument('--simulation-dir',
                          metavar='N', dest='simulation_dir',
-                         nargs='?', default='./umatobi-simulation',
+                         nargs='?', default=SIMULATION_DIR,
                          help='simulation directory.')
     parser.add_argument('--num-nodes',
                          metavar='N', dest='num_nodes',

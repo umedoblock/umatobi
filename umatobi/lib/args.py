@@ -2,6 +2,7 @@ import argparse, re
 import sys
 import os
 
+from umatobi import SIMULATION_DIR
 from umatobi.lib import make_logger
 
 # for logger ...
@@ -13,7 +14,7 @@ def _parse_logger_setting(parser):
                          help=f'default INFO, must be in {log_levels}')
     parser.add_argument('--simulation-dir',
                          metavar='N', dest='simulation_dir',
-                         nargs='?', default='./umatobi-simulation',
+                         nargs='?', default=SIMULATION_DIR,
                          help='simulation directory.')
     return parser
 
@@ -97,7 +98,7 @@ def _args_parse_basic(description):
                          help='show index and directory timestamps')
     parser.add_argument('--simulation-dir',
                          metavar='N', dest='simulation_dir',
-                         nargs='?', default='./umatobi-simulation',
+                         nargs='?', default=SIMULATION_DIR,
                          help='simulation directory.')
     parser.add_argument('--index',
                          metavar='N', dest='index',
