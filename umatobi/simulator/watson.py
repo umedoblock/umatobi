@@ -178,27 +178,10 @@ class Watson(threading.Thread):
 
     def run(self):
         '''simulation 開始'''
-        self.simulation_db = simulator.sql.SQL(
-                                db_path=self.simulation_db_path,
-                                schema_path=self.schema_path)
-        self.simulation_db.create_db()
-        self.simulation_db.create_table('clients')
-        # この後，WatsonTCPOffice が simulation_db に access する。
-        # sqlite3 では， sqlite3.connect(self.db_path) の返す instance を
-        # 作成した thread と別の thread では使えないので，一度閉じている。
-        self.simulation_db.close()
-        logger.debug("watson created clients table.")
 
-        watson_open_office = WatsonOpenOffice(self)
-        self.watson_open_office = watson_open_office
-        logger.debug("watson_open_office.start()")
-        watson_open_office.start()
-        # wait a minute
-        # to set watson_open_office instance
-        # to watson instance
-        # in WatsonOpenOffice.run()
-        watson_open_office.in_serve_forever.wait()
-        # watson.watson_office_addr が決定している。
+        self.touch_simulation_db()
+
+        self.open_office()
 
         while elapsed_time(self.start_up_orig) < self.simulation_seconds * 1000:
             logger.debug("watson time.sleep(1.0)")
@@ -218,6 +201,30 @@ class Watson(threading.Thread):
         self._merge_db_to_simulation_db()
         self._construct_simulation_table()
         self.simulation_db.close()
+
+    def touch_simulation_db(self):
+        self.simulation_db = simulator.sql.SQL(
+                                db_path=self.simulation_db_path,
+                                schema_path=self.schema_path)
+        self.simulation_db.create_db()
+        self.simulation_db.create_table('clients')
+        # この後，WatsonTCPOffice が simulation_db に access する。
+        # sqlite3 では， sqlite3.connect(self.db_path) の返す instance を
+        # 作成した thread と別の thread では使えないので，一度閉じている。
+        self.simulation_db.close()
+        logger.debug("watson created clients table.")
+
+    def open_office(self):
+        watson_open_office = WatsonOpenOffice(self)
+        self.watson_open_office = watson_open_office
+        logger.debug("watson_open_office.start()")
+        watson_open_office.start()
+        # wait a minute
+        # to set watson_open_office instance
+        # to watson instance
+        # in WatsonOpenOffice.run()
+        watson_open_office.in_serve_forever.wait()
+        # watson.watson_office_addr が決定している。
 
     def _construct_simulation_table(self):
         self.simulation_db.create_table('simulation')
