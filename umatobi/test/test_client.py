@@ -2,6 +2,7 @@ import os
 import sys, shutil
 import unittest
 
+import umatobi.test
 from umatobi.simulator.client import Client
 from umatobi.simulator.watson import Watson
 from umatobi import lib

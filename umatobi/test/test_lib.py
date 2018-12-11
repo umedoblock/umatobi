@@ -1,6 +1,7 @@
 import sys, datetime
 import unittest
 
+import umatobi.test
 from umatobi import lib
 
 _datetime_datetime = datetime.datetime
