@@ -2,7 +2,7 @@ import sys, datetime
 import unittest
 
 import umatobi.test
-from umatobi import lib
+from umatobi import lib, SIMULATION_DIR
 
 _datetime_datetime = datetime.datetime
 _now = datetime.datetime.now
@@ -26,6 +26,9 @@ class mock_datetime(datetime.datetime):
                        datetime.timedelta(0, 73, 138770)
 
 class LibTests(unittest.TestCase):
+
+    def test_SIMULATION_DIR(self):
+        self.assertEqual('umatobi-simulation-test', SIMULATION_DIR)
 
     def test_make_start_up_orig(self):
         start_up_orig = lib.make_start_up_orig()
