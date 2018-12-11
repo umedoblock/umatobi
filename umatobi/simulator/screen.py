@@ -28,7 +28,7 @@ except BaseException as e:
     logger.error(e)
     sys.exit()
 
-def _normalize_milliseconds(seconds):
+def _normalize_ms(seconds):
     return int(seconds * 1000)
 
 def get_passed_seconds(orig):
@@ -37,7 +37,7 @@ def get_passed_seconds(orig):
 
 def get_passed_ms(orig):
     passed_seconds = get_passed_seconds(orig)
-    return _normalize_milliseconds(passed_seconds)
+    return _normalize_ms(passed_seconds)
 
 def get_current_cos_sin(x, y):
     ww = glutGet(GLUT_WINDOW_WIDTH)
@@ -145,8 +145,8 @@ class Screen(object):
                 logger.debug(f"put_on_square(*node_square={node_square}")
             logger.debug(f"{self}.manipulating_db.squares_lock.release()")
 
-        if get_passed_ms(self.start_the_movie_time) > self.manipulating_db.simulation_milliseconds:
-            logger.info(f"get_passed_ms({self.start_the_movie_time}) > {self.manipulating_db.simulation_milliseconds}")
+        if get_passed_ms(self.start_the_movie_time) > self.manipulating_db.simulation_ms:
+            logger.info(f"get_passed_ms({self.start_the_movie_time}) > {self.manipulating_db.simulation_ms}")
             self._simulation_info()
             glutLeaveMainLoop()
 
@@ -267,12 +267,12 @@ class ManipulatingDB(threading.Thread):
         self.simulation_db.access_db()
         simulation_db.total_nodes = \
             self.simulation_db.select_one('simulation', 'total_nodes')
-        column_name = 'simulation_milliseconds'
-        self.simulation_milliseconds = \
+        column_name = 'simulation_ms'
+        self.simulation_ms = \
             self.simulation_db.select('simulation', \
                              column_name)[0][column_name]
 
-        logger.debug(f"{self}.simulation_milliseconds={self.simulation_milliseconds}")
+        logger.debug(f"{self}.simulation_ms={self.simulation_ms}")
         self._memory_db = simulator.sql.SQL(':memory:', schema_path=self.simulation_db.schema_path)
         logger.debug(f"{self}._memory_db={self._memory_db}")
         self._memory_db.create_db()

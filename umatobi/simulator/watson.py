@@ -253,7 +253,7 @@ class Watson(threading.Thread):
         self.simulation_db.create_table('simulation')
         d_simulation = {}
         d_simulation['watson_office_addr'] = '{}:{}'.format(*self.watson_office_addr)
-        d_simulation['simulation_milliseconds'] = \
+        d_simulation['simulation_ms'] = \
             1000 * self.simulation_seconds
         d_simulation['title'] = SIMULATION_DIR
         d_simulation['memo'] = 'なにかあれば'

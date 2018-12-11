@@ -73,18 +73,18 @@ def y15sformat_parse(s):
 def get_passed_ms(start_up_orig):
     '''simulation 開始から現在までに経過したmilli秒数。'''
     now = datetime.datetime.now()
-    # relativeCreated の時間単位がmillisecondsのため、
-    # elapsed_time()もmilliseconds単位となるようにする。
+    # relativeCreated の時間単位がmsのため、
+    # elapsed_time()もms単位となるようにする。
     return int(((now - start_up_orig) * 1000).total_seconds())
 
 def elapsed_time(start_up_orig):
     '''simulation 開始から現在までに経過したmilli秒数。'''
     now = datetime.datetime.now()
-    # relativeCreated の時間単位がmillisecondsのため、
-    # elapsed_time()もmilliseconds単位となるようにする。
+    # relativeCreated の時間単位がmsのため、
+    # elapsed_time()もms単位となるようにする。
     return int(((now - start_up_orig) * 1000).total_seconds())
 
-#   %(relativeCreated)d Time in milliseconds when the LogRecord was created,
+#   %(relativeCreated)d Time in ms when the LogRecord was created,
 LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(message)s'
 
 def make_logger2(log_dir=None, name='', level="INFO"):

@@ -31,7 +31,7 @@
 # watson.db, client.1.db を一纏めにし作成される。
 [simulation]
 watson_office_addr: text
-simulation_milliseconds: integer
+simulation_ms: integer
 title: text
 memo: text
 version: text
