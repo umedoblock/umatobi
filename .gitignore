@@ -95,6 +95,9 @@ venv.bak/
 OpenGL/tes*
 *.swp
 
+# ctags
+tags
+
 # Spyder project settings
 .spyderproject
 .spyproject
