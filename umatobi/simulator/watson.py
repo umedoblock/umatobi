@@ -113,6 +113,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
                 'port': client_addr[1],
                 'joined': elapsed_time(self.server.start_up_orig),
                 'num_nodes': num_nodes,
+                'log_level': self.server.watson.log_level,
             }
             sql = self.server.simulation_db.insert('clients', insert_clients)
             logger.debug(f"simulation_db.insert({sql})")
