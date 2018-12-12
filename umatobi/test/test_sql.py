@@ -42,7 +42,7 @@ def insert_test_table_n_records(db, n_records):
         inserts[i]['id'] = i + 1
     return inserts
 
-class TestSQL(unittest.TestCase):
+class SQLTests(unittest.TestCase):
     def tearDown(self):
         remove_test_db()
 

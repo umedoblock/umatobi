@@ -4,6 +4,7 @@ from test.support import run_unittest
 from umatobi.test.test_lib import LibTests
 from umatobi.test.test_client import ClientTests
 from umatobi.test.test_watson import WatsonTests
+from umatobi.test.test_sql import SQLTests
 
 def test_main():
     # see: Lib/test/test_math.py
@@ -12,6 +13,7 @@ def test_main():
     suite.addTest(LibTests('test_y15sformat_time')) # OK
     suite.addTest(unittest.makeSuite(WatsonTests))
     suite.addTest(unittest.makeSuite(ClientTests))
+    suite.addTest(unittest.makeSuite(SQLTests))
     run_unittest(suite)
 
 if __name__ == '__main__':
