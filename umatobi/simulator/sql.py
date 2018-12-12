@@ -31,7 +31,7 @@ class SQL(object):
         return sql, values
 
     def __init__(self, db_path=':memory:', schema_path=''):
-        logger.info(f"SQL(db_path={db_path}, schema_path={schema_path}")
+        logger.info(f"SQL(db_path={db_path}, schema_path={schema_path})")
         self.db_path = db_path
         self.schema_path = schema_path
         self._conn = None
