@@ -3,8 +3,9 @@ import threading, time
 import queue
 import pickle
 
+from umatobi.constants import *
 from umatobi.simulator.node import Node
-import umatobi.simulator.sql
+from umatobi import simulator
 from umatobi.lib import make_logger, validate_kwargs
 from umatobi.lib import Polling
 

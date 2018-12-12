@@ -5,8 +5,9 @@ import socket
 import multiprocessing
 from logging import StreamHandler
 
+from umatobi.constants import *
 from umatobi.simulator.darkness import Darkness
-import umatobi.simulator.sql
+from umatobi import simulator
 from umatobi.lib import make_logger, jtext_becomes_dict, dict_becomes_jbytes
 from umatobi.lib import make_logger2
 from umatobi.lib import remove_logger
@@ -32,9 +33,7 @@ class Client(object):
         loggerDict=_logger.manager.loggerDict
         handlers_client=loggerDict['client'].handlers
         logger = _logger
-        logger.info(f"========logger1={id(logger)}")
-        logger.debug(f"__file__ = {__file__}")
-        logger.debug(f"__name__ = {__name__}")
+        logger.info(f"Client(watson_office_addr={watson_office_addr}, num_nodes={num_nodes}")
 
         if isinstance(num_nodes, int) and num_nodes > 0:
             pass
@@ -42,7 +41,6 @@ class Client(object):
             raise RuntimeError('num_nodes must be positive integer.')
 
         self.watson_office_addr = watson_office_addr # (IP, PORT)
-        logger.info(f"self.watson_office_addr={self.watson_office_addr}")
         self.num_nodes = num_nodes
         # Client set positive integer to id in self._init_attrs().
         self.id = -1
@@ -58,17 +56,17 @@ class Client(object):
         self.total_created_nodes = 0
         self.darkness_processes = []
 
-        # darkness に終了を告げる。
         self.leave_there = multiprocessing.Event()
 
         self.timeout_sec = 1
         socket.setdefaulttimeout(self.timeout_sec)
 
     def consult_watson(self):
+        global logger
+        logger.info(f"{self}.consult_watson()")
         self._tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        logger.info(f"self._tcp_sock.connect(={self.watson_office_addr})")
-      # remove_logger(name=os.path.basename(__file__), level=logger_args.log_level)
+        logger.info(f"{self}._tcp_sock.connect(={self.watson_office_addr})")
         self._tcp_sock.connect(self.watson_office_addr)
 
         _d_init_attrs = self._init_attrs()
@@ -76,7 +74,8 @@ class Client(object):
         client_id = self.id
       # _logger.removeHandler(_fh)
       # _logger.removeHandler(_ch)
-        logger.debug(f"handlers_client = {handlers_client}")
+        loggerDict=logger.manager.loggerDict
+        handlers_client=loggerDict['client'].handlers
         doubt_handlers = []
         for handler in handlers_client:
             if isinstance(handler, StreamHandler):
@@ -87,35 +86,40 @@ class Client(object):
             # では，getLogger() に渡す名前が異なるから重複logの出る理由が分からない。
             # logging が bug ってるのかなぁ？って思ってしまう。
             handlers_client.remove(doubt_handler)
-            logger.error(f"handlers_client={handlers_client}")
-            logger.error(f"handlers_client={id(handlers_client)}")
         logger = make_logger(log_dir=self.dir_name, name=os.path.basename(__file__), id_=self.id, level=self.log_level)
-        logger.info(f"========logger2={id(logger)}")
-
-        logger.info('----- {} log start -----'.format(self))
-        logger.info('watson_office_addr = {}'.format(self.watson_office_addr))
-        logger.info('   dir_name = {}'.format(self.dir_name))
-        logger.info('client_db_path = {}'.format(self.client_db_path))
-        logger.info('----- client.{} initilized end -----'.
-                          format(self.id))
-        logger.debug('{} d={}'.format(self, _d_init_attrs))
-        logger.debug('{} node_index={}'.format(self, self.node_index))
-        logger.debug('{} debug log test.'.format(self))
-        logger.info('')
 
     def start(self):
         '''\
         Darknessを、たくさん作成する。
         作成後は、watsonから終了通知("break down")を受信するまで待機する。
         '''
-        logger.info('Client(id={}) started!'.format(self.id))
+        logger.info(f"{self}.start()")
+
+        self.consult_watson()
+
+        self._make_growings_table()
+
+        self._start_darkness()
+
+        self._wait_break_down()
+
+        # Client 終了処理開始。
+        self._release()
+        self._shutdown()
+
+    def _shutdown(self):
+        logger.info(f"{self}._shutdown()")
+        self._tcp_sock.shutdown(socket.SHUT_WR)
+
+    def _make_growings_table(self):
+        logger.info(f"{self}._make_growings_table()")
         self.client_db = simulator.sql.SQL(db_path=self.client_db_path,
                                            schema_path=self.schema_path)
         self.client_db.create_db()
-        logger.info('{} client_db.create_db().'.format(self))
         self.client_db.create_table('growings')
-        logger.info('{} client_db.create_table(\'growings\').'.format(self))
 
+    def _start_darkness(self):
+        logger.info(f"{self}._start_darkness()")
         # Darkness が作成する node の数を設定する。
         nodes_per_darkness = self.nodes_per_darkness
 
@@ -127,7 +131,7 @@ class Client(object):
             if darkness_id == self.num_darkness - 1:
                 # 最後に端数を作成？
                 nodes_per_darkness = self.last_darkness_make_nodes
-            logger.info(f'client_id={self.id}, darkness id={darkness_id}, num_darkness={self.num_darkness}, num_nodes={nodes_per_darkness}, first_node_id={first_node_id}')
+            logger.info(f"client_id={self.id}, darkness id={darkness_id}, num_darkness={self.num_darkness}, num_nodes={nodes_per_darkness}, first_node_id={first_node_id}")
             client_id = self.id
 
             # client と darkness process が DarknessConfig を介して通信する。
@@ -156,10 +160,12 @@ class Client(object):
         for darkness_process in self.darkness_processes:
             darkness_process.start()
 
+    def _wait_break_down(self):
+        logger.info(f"{self}._wait_break_down()")
         # watson から終了通知("break down")が届くまで待機し続ける。
         # TODO: #149 watson からの接続であると確認する。
         while True:
-            logger.debug(f'self._tcp_sock={self._tcp_sock} in Client.start()')
+            logger.debug(f"{self}._wait_break_down(), _tcp_sock={self._tcp_sock}")
             try:
                 recved_msg = self._tcp_sock.recv(1024)
             except socket.timeout:
@@ -167,57 +173,45 @@ class Client(object):
                 continue
 
             if recved_msg == b'break down.':
-                logger.info('Client(id={}) got break down from {}.'.format(self.id, recved_msg))
+                logger.info("{self}._wait_break_down(), {self} got break down from {self.request}.")
                 break
-
-        # Client 終了処理開始。
-        self._release()
-
-        self._tcp_sock.shutdown(socket.SHUT_WR)
 
     def join(self):
         '''threading.Thread を使用していた頃の名残。'''
-        logger.info('Client(id={}) thread joined.'.format(self.id))
+        logger.info("{self}.join()")
 
     def _release(self):
         '''\
         Client 終了処理。leave_thereにsignal を set することで、
         Clientの作成した Darkness達は一斉に終了処理を始める。
         '''
-        logger.info(('Client(id={}) set signal to leave_there '
-                          'for Darknesses.').format(self.id))
+        logger.info("{self}._release()")
         self.leave_there.set()
 
         for darkness_p in self.darkness_processes:
             darkness_p.join()
-            msg = 'Client(id={}), Darkness(id={}) process joined.'. \
-                   format(self.id, darkness_p.d_config['id'])
-            logger.info(msg)
-        logger.info('Client(id={}) thread released.'.format(self.id))
+            logger.info("{self}._release(), {darkness_p} process joind.")
 
+        logger.info("{self.client_db}.close()")
         self.client_db.close()
-        logger.info('{} client_db.close().'.format(self))
       # logger.error('self._sock.getsockname() =', ('127.0.0.1', 20000))
         # ip のみ比較、 compare only ip
         if False and self._tcp_sock.getsockname()[0] != self.watson_office_addr[0]:
             logger.error('TODO: #169 simulation終了後、clientがclient.1.dbをwatsonにTCPにて送信。')
             # _sock=('0.0.0.0', 22343), watson_office_addr=('localhost', 55555)
-            message = '{} _sock={}, watson_office_addr={}'. \
-                       format(self, self._tcp_sock.getsockname(), self.watson_office_addr)
-            logger.info(message)
+            logger.info(f"{self}._release(), {self} got break down from watson(={self.watson}). send client.{client.id}.db to {request}.")
         else:
             # ip が同じ
-            message = ('{} client and watson use same IP. Therefore '
-                       'don\'t send client.db to watson.').format(self)
+            message = (f"{self}._release(), client and watson use same IP. " +
+                       "Therefore " +
+                       "don\'t send client.{self.id}.db to watson.")
             logger.info(message)
 
         for darkness_process in self.darkness_processes:
             self.total_created_nodes += \
                 darkness_process.d_config['made_nodes'].value
 
-        message = 'Client(id={}) created num of nodes {}'. \
-                    format(self.id, self.total_created_nodes)
-        logger.info(message)
+        logger.info(f"{self} created num of nodes {self.total_created_nodes}")
 
     def _init_attrs(self):
         '''\
@@ -225,6 +219,7 @@ class Client(object):
         id は client.<id>.log として、log fileを作成するときに使用。
         start_up_time は dir_nameを決定する際に使用する。
         '''
+        logger.info(f"{self}._hello_watson()")
         d = self._hello_watson()
       # logger.debug(f"_hello_watson() return d={d} in Client._init_attrs()")
         if not d:
@@ -258,16 +253,16 @@ class Client(object):
         sheep['profess'] = 'I am Client.'
         sheep['num_nodes'] = self.num_nodes
         js = dict_becomes_jbytes(sheep)
+        logger.info(f"{self}._hello_watson(), sheep={sheep}, js={js}")
         d = {}
         while tries < 3:
-          # logger.debug(f"js={js}")
             try:
                 self._tcp_sock.sendall(js)
+                logger.info(f"{self}._hello_watson(), {self._tcp_sock}.sendall({js}).")
             except socket.timeout as e:
-          #     logger.debug(f"{str(self)} was timeout by send(), tries={tries}")
+                logger.info(f"{self}._hello_watson(), {self._tcp_sock} timout by sendall({js})")
                 tries += 1
                 continue
-          # logger.debug(f"send js={js} in _hello_watson()")
             break
 
         if tries >= 3:
@@ -276,23 +271,16 @@ class Client(object):
         tries = 0
         while tries < 3:
             try:
+                logger.info(f"{self}._hello_watson(), {self._tcp_sock}.recv(1024)")
                 recved_msg = self._tcp_sock.recv(1024)
             except socket.timeout as e:
-          #     logger.debug(f"{str(self)} was timeout by recv(), tries={tries}")
+                logger.info(f"{self}._hello_watson(), {self._tcp_sock} timout by recv(1024).")
                 tries += 1
                 continue
           # if self.watson == who:
-          # logger.debug(f"recved_msg={recved_msg}")
             jt = recved_msg.decode("utf-8")
+            logger.info(f"{self}._hello_watson(), {jt}=recved_msg.decode('utf-8'), tries={tries}.")
             d = jtext_becomes_dict(jt)
             break
 
-      # print('who =', file=sys.stderr)
-      # print(who, file=sys.stderr)
-      # print('d =', file=sys.stderr)
-      # print(d, file=sys.stderr)
-
         return d
-
-    def __str__(self):
-        return 'Client(id={})'.format(self.id)
