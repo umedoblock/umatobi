@@ -56,6 +56,10 @@ class SQL(object):
 
     def create_db(self):
         logger.info(f"{self}.create_db(), db_path={self.db_path}")
+        db_dir_name = os.path.dirname(self.db_path)
+        if not os.path.isdir(db_dir_name):
+            logger.debug(f"{self}, not os.path.isdir({db_dir_name})")
+            os.makedirs(db_dir_name, exist_ok=True)
         try:
             self._conn = sqlite3.connect(self.db_path)
         except sqlite3.OperationalError as e:
