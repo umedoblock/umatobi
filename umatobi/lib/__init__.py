@@ -83,6 +83,7 @@ def elapsed_time(start_up_orig):
 
 #   %(relativeCreated)d Time in ms when the LogRecord was created,
 LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(message)s'
+LOGGER_SUFFIX = f", process_id=%(process)d, therad_id=%(thread)d"
 
 def make_logger2(log_dir=None, name='', level="INFO"):
     name = name.replace(".py", "")
@@ -97,7 +98,7 @@ def make_logger2(log_dir=None, name='', level="INFO"):
     logger_obj.setLevel(level)
 
     # create formatter and add it to the handlers
-    formatter = logging.Formatter(LOGGER_FMT + f"pid={os.getpid()}, thread_id={threading.get_ident()}")
+    formatter = logging.Formatter(LOGGER_FMT + LOGGER_SUFFIX)
 
     # create file handler which logs even debug messages
     fh = None
@@ -135,7 +136,7 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
     logger_obj.setLevel(level)
 
     # create formatter and add it to the handlers
-    formatter = logging.Formatter(LOGGER_FMT + f", pid={os.getpid()}, thread_id={threading.get_ident()}")
+    formatter = logging.Formatter(LOGGER_FMT + LOGGER_SUFFIX)
 
     # create file handler which logs even debug messages
     fh = None
