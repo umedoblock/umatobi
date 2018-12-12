@@ -1,5 +1,6 @@
 # umatobi project
 umatobi-simulation/
+umatobi-simulation-test/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
