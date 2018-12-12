@@ -5,9 +5,8 @@ import datetime
 import unittest
 import sqlite3
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import simulator.sql
-import lib
+import umatobi.simulator.sql
+import umatobi.lib
 
 here = os.path.dirname(__file__)
 test_schema_path = os.path.join(here, 'test.schema')

@@ -4,13 +4,12 @@ import threading
 import unittest
 import queue
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import p2p.core
-import simulator.node
+import umatobi.p2p.core
+import umatobi.simulator.node
 
 class TestNode(unittest.TestCase):
     def test_p2p_core_node(self):
-        p2p_core_Node = p2p.core.Node('localhost', 10000)
+        p2p_core_Node = umatobi.p2p.core.Node('localhost', 10000)
         node_status = p2p_core_Node.get_status()
         self.assertEqual(dict, type(node_status))
 
@@ -25,7 +24,7 @@ class TestNode(unittest.TestCase):
         good_bye_with_nodes = threading.Event()
         _queue_darkness = queue.Queue()
         node_ = \
-            simulator.node.Node('localhost', 10001, 0, good_bye_with_nodes,
+            umatobi.simulator.node.Node('localhost', 10001, 0, good_bye_with_nodes,
                                  _queue_darkness)
 
         node_status = node_.get_status()

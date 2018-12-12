@@ -1,8 +1,7 @@
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from lib.args import args_log
+from umatobi.lib.args import args_log
 
 if __name__ == '__main__':
     # examples:

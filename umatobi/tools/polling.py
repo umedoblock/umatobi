@@ -3,8 +3,7 @@ import sys
 import time
 import threading
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from lib import Polling
+from umatobi.lib import Polling
 
 class PollingSample(Polling):
     def __init__(self, polling_secs):

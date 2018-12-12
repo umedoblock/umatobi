@@ -2,9 +2,8 @@ import sys
 import os
 import sqlite3
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from lib.args import args_db
-import simulator.sql
+from umatobi.lib.args import args_db
+from umatobi import simulator
 
 if __name__ == '__main__':
     # examples:

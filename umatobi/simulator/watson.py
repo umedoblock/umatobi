@@ -177,8 +177,6 @@ class Watson(threading.Thread):
         self.nodes = []
         self.total_nodes = 0
 
-        self._make_office()
-
     def relaxing(self):
         et_ms = elapsed_time(self.start_up_orig)
         et_secs = et_ms / 1000

@@ -5,11 +5,10 @@ import datetime
 import sqlite3
 
 from umatobi.constants import *
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from lib.args import args_make_simulation_db
-from lib.args import get_logger_args
-from lib import make_logger
-import simulator.sql
+from umatobi.lib.args import args_make_simulation_db
+from umatobi.lib.args import get_logger_args
+from umatobi.lib import make_logger
+from umatobi import simulator
 
 global logger
 logger_args = get_logger_args()

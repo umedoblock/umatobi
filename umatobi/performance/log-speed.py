@@ -16,9 +16,8 @@ import sys
 import threading
 import logging
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from lib.performance import stop_watch
-from lib.performance import log_now
+from umatobi.lib.performance import stop_watch
+from umatobi.lib.performance import log_now
 
 threads_num = 1
 records_num = 1

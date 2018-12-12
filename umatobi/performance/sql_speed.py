@@ -3,10 +3,9 @@ import pickle
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from umatobi.constants import *
-import simulator.sql
-from lib.performance import log_now, stop_watch
+from umatobi import simulator
+from umatobi.lib.performance import log_now, stop_watch
 
 def inserts_many_records(db, records):
     growing = {}

@@ -4,9 +4,8 @@ import queue
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from lib.performance import stop_watch
-from lib.performance import log_now
+from umatobi.lib.performance import stop_watch
+from umatobi.lib.performance import log_now
 
 THREADS_NUM = 5
 TIMES = 10 * 10000
