@@ -6,5 +6,7 @@ SIMULATION_SECONDS = 30
 D_TIMEDELTA = {
     "test_watson_start": \
         datetime.timedelta(0, SIMULATION_SECONDS - 1, 0),
+    "test_elapsed_time": \
+        datetime.timedelta(0, 73, 138770),
 }
 TD_ZERO = datetime.timedelta(0, 0, 0)
