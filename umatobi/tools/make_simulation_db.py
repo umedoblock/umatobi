@@ -50,7 +50,7 @@ def merge_client_dbs(client_dbs):
     records = []
     for client_db in client_dbs:
         _select_client_db(client_db)
-        logger.info(f'client_db.queues={client_db.queues}')
+        logger.info(f"len(client_db.queues)={len(client_db.queues)}")
         records.extend(client_db.queues)
     #158 records の sort をする時に、大量のmemoryが必要になると思われる。
     records.sort(key=lambda x: x['elapsed_time'])
