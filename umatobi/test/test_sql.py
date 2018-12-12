@@ -5,8 +5,8 @@ import datetime
 import unittest
 import sqlite3
 
-import umatobi.simulator.sql
-import umatobi.lib
+from umatobi.simulator.sql import SQL
+from umatobi import lib
 
 here = os.path.dirname(__file__)
 test_schema_path = os.path.join(here, 'test.schema')
@@ -47,14 +47,14 @@ class TestSQL(unittest.TestCase):
         remove_test_db()
 
     def test_create_db_and_table(self):
-        sql = simulator.sql.SQL(db_path=test_db_path,
+        sql = SQL(db_path=test_db_path,
                                 schema_path=test_schema_path)
         sql.create_db()
         sql.create_table('test_table')
 
     def test_insert_and_select(self):
         s = datetime.datetime.now()
-        sql = simulator.sql.SQL(db_path=test_db_path,
+        sql = SQL(db_path=test_db_path,
                                 schema_path=test_schema_path)
         sql.create_db()
         sql.create_table('test_table')
@@ -96,7 +96,7 @@ class TestSQL(unittest.TestCase):
             self.assertEqual(d_insert[column], d_selected[0][index])
 
     def test_take_table(self):
-        db = simulator.sql.SQL(db_path=test_db_path,
+        db = SQL(db_path=test_db_path,
                                schema_path=test_schema_path)
         db.create_db()
         db.create_table('test_table')
@@ -112,7 +112,7 @@ class TestSQL(unittest.TestCase):
 #       print(records)
 #       print('-------------------------------------')
         memory_db = \
-            simulator.sql.SQL(db_path=':memory:', schema_path=test_schema_path)
+            SQL(db_path=':memory:', schema_path=test_schema_path)
         memory_db.create_db()
         memory_db.take_table(db, 'test_table')
 
@@ -145,7 +145,7 @@ class TestSQL(unittest.TestCase):
         d['now'] = 6
         d['elapsed_time'] = 7
 
-        sql = simulator.sql.SQL(db_path=test_db_path,
+        sql = SQL(db_path=test_db_path,
                                 schema_path=test_schema_path)
         sql.create_db()
         sql.create_table('test_table')
@@ -176,7 +176,8 @@ class TestSQL(unittest.TestCase):
         d_update['val_real'] = 100.0
         d_update['val_text'] = 'text text'
         d_update['val_blob'] = b'bytes bytes'
-        t = time.time() + 1000
+        now = datetime.datetime.now()
+        t = now + datetime.timedelta(0, 1000, 0)
         d_update['now'] = lib.y15sformat_time(t)
         e = datetime.datetime.now()
         d_update['elapsed_time'] = (e - s).total_seconds()
@@ -185,7 +186,7 @@ class TestSQL(unittest.TestCase):
         with self.assertRaises(sqlite3.IntegrityError) as raiz:
             sql.insert('test_table', d_update)
         args = raiz.exception.args
-        self.assertEqual(args[0], 'PRIMARY KEY must be unique')
+        self.assertEqual('UNIQUE constraint failed: test_table.id', args[0])
 
     def test_update_and_select(self):
         s = datetime.datetime.now()
@@ -199,7 +200,7 @@ class TestSQL(unittest.TestCase):
         d['now'] = 6
         d['elapsed_time'] = 7
 
-        sql = simulator.sql.SQL(db_path=test_db_path,
+        sql = SQL(db_path=test_db_path,
                                 schema_path=test_schema_path)
         sql.create_db()
         sql.create_table('test_table')
@@ -212,8 +213,10 @@ class TestSQL(unittest.TestCase):
         d_insert['val_real'] = 10.0
         d_insert['val_text'] = 'text'
         d_insert['val_blob'] = b'bytes'
-        d_insert['now'] = lib.current_y15sformat_time()
-        e = datetime.datetime.now()
+        s = datetime.datetime.now()
+        now = s
+        d_insert['now'] = lib.y15sformat_time(now)
+        e = s + datetime.timedelta(0, 100, 0)
         d_insert['elapsed_time'] = (e - s).total_seconds()
         sql.insert('test_table', d_insert)
         sql.commit()
@@ -230,9 +233,8 @@ class TestSQL(unittest.TestCase):
         d_update['val_real'] = 100.0
         d_update['val_text'] = 'text text'
         d_update['val_blob'] = b'bytes bytes'
-        t = time.time() + 1000
-        d_update['now'] = lib.y15sformat_time(t)
-        e = datetime.datetime.now()
+        d_update['now'] = lib.y15sformat_time(now + datetime.timedelta(0, 200))
+        e = s + datetime.timedelta(0, 200, 0)
         d_update['elapsed_time'] = (e - s).total_seconds()
 
         d_where = {'id': 1}
@@ -240,7 +242,6 @@ class TestSQL(unittest.TestCase):
 
         d_selected = sql.select('test_table', conditions='where id = 1')
 
-        print('d_selected =', d_selected)
         self.assertNotEqual(d_update, d_selected)
         for column, index in d.items():
             if column == 'id':
@@ -253,7 +254,7 @@ class TestSQL(unittest.TestCase):
             self.assertNotEqual(d_insert[column], d_selected[0][index])
 
     def test_create_db_and_table_on_memory(self):
-        sql = simulator.sql.SQL(db_path=':memory:',
+        sql = SQL(db_path=':memory:',
                                 schema_path=test_schema_path)
         sql.create_db()
         sql.create_table('test_table')
