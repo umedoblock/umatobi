@@ -83,8 +83,9 @@ class ExhaleQueue(Polling):
         self.client_db.commit()
         growings = self.client_db.select('growings', 'id,pickle',
                                                 conditions='')
-        logger.debug('growings table dumped =\n"{}"'. \
-                           format(growings))
+        logger.debug(f"length of growings is {len(growings)}, queue_size={queue_size}.")
+      # logger.debug('growings table dumped =\n"{}"'. \
+      #                    format(growings))
 
 class Darkness(object):
     '''漆黒の闇'''
