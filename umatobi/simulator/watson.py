@@ -267,7 +267,7 @@ class Watson(threading.Thread):
 
     def _wait_client_db(self):
         logger.info(f"{self}._wait_client_db()")
-        logger.info(f"{self}, は、client.#.dbの回収に乗り出した。")
+        logger.info(f"{self}, は、client.N.dbの回収に乗り出した。")
         logger.info(f"{self}, なんて言いながら実は待機してるだけ。")
         logger.info(f"{self}, client.N.dbの回収完了。")
 
@@ -286,7 +286,7 @@ class Watson(threading.Thread):
         '''\
         watsonが把握しているClientに "break down" を送信し、
         各Clientに終了処理を行わせる。
-        Clientは、終了処理中に client.id.db を送信してくる。
+        Clientは、終了処理中に client.N.db を送信してくる。
         '''
         logger.info(f"{self}.release_clients(), watson_tcp_office.client={self.watson_tcp_office.clients}")
         result = b'break down.'

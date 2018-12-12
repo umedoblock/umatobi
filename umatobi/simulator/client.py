@@ -197,7 +197,7 @@ class Client(object):
       # logger.error('self._sock.getsockname() =', ('127.0.0.1', 20000))
         # ip のみ比較、 compare only ip
         if False and self._tcp_sock.getsockname()[0] != self.watson_office_addr[0]:
-            logger.error('TODO: #169 simulation終了後、clientがclient.1.dbをwatsonにTCPにて送信。')
+            logger.error('TODO: #169 simulation終了後、clientがclient.N.dbをwatsonにTCPにて送信。')
             # _sock=('0.0.0.0', 22343), watson_office_addr=('localhost', 55555)
             logger.info(f"{self}._release(), {self} got break down from watson(={self.watson}). send client.{client.id}.db to {request}.")
         else:
@@ -216,7 +216,7 @@ class Client(object):
     def _init_attrs(self):
         '''\
         watson に接続し、id, start_up_timeを受信する。
-        id は client.<id>.log として、log fileを作成するときに使用。
+        id は client.N.log として、log fileを作成するときに使用。
         start_up_time は dir_nameを決定する際に使用する。
         '''
         logger.info(f"{self}._hello_watson()")
@@ -242,7 +242,7 @@ class Client(object):
         watsonへの接続順位(=id)をTCPで受信する。
         この時、受信するのはjson文字列。
         simulation 結果を格納する dir_name を作成するための情報を得る。
-        dir_name 以下には、client.id.log, client.id.db 等を作成する。
+        dir_name 以下には、client.N.log, client.N.db 等を作成する。
 
         3 回 watson へ "I am Client." と伝えようとしても駄目だった場合、
         空の dictionary を返す。
