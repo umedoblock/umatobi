@@ -44,6 +44,12 @@ class LibTests(unittest.TestCase):
         start_up_orig = lib.make_start_up_orig()
         self.assertIsInstance(start_up_orig, datetime.datetime)
 
+    def test_curren_y15sformat_time(self):
+        # Y15S_FORMAT='%Y-%m-%dT%H%M%S'
+        y15s = lib.current_y15sformat_time()
+        self.assertIsInstance(y15s, str)
+        self.assertRegex(y15s, r"\A\d{4}-\d{2}-\d{2}T\d{6}\Z")
+
     def test_y15sformat_time(self):
         start_up_orig = lib.make_start_up_orig()
         # Y15S_FORMAT='%Y-%m-%dT%H%M%S'

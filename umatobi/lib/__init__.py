@@ -61,7 +61,7 @@ def y15sformat_time(t):
     return t.strftime(Y15S_FORMAT)
 
 def current_y15sformat_time():
-    now = time.time()
+    now = datetime.datetime.now()
     return y15sformat_time(now)
 
 def y15sformat_parse(s):
