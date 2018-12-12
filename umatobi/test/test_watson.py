@@ -1,6 +1,6 @@
 import os, datetime
 import sys, shutil
-import threading
+import threading, io
 import unittest
 
 from umatobi.test import *
@@ -55,6 +55,68 @@ class WatsonTests(unittest.TestCase):
         watson._merge_db_to_simulation_db()
         watson._construct_simulation_table()
         watson.simulation_db.close()
+
+class Req(object):
+    # use self.rfile.readline() in WatsonOffice.handle()
+    def makefile(self, mode, rbufsize):
+        sheep = {}
+        sheep['profess'] = 'I am Client.'
+        sheep['num_nodes'] = 111111
+        self.sheep = sheep
+        js_sheep = lib.dict_becomes_jbytes(sheep)
+        return io.BytesIO(js_sheep)
+
+    def sendall(self, b):
+        pass
+
+class WatsonOfficeTestsHandle(WatsonOffice):
+    def __init__(self, request, client_address, server):
+        super().__init__(request, client_address, server)
+
+class WatsonOfficeTests(unittest.TestCase):
+
+    def setUp(self):
+        self.watson_office_addr = ('localhost', 65530)
+        simulation_dir = os.path.join(".", SIMULATION_DIR)
+        self.log_level = 'INFO'
+        self.log_level = 'DEBUG'
+        self.start_up_orig = lib.make_start_up_orig()
+        start_up_time = lib.y15sformat_time(self.start_up_orig)
+        dir_name = os.path.join(simulation_dir, start_up_time)
+        self.dir_name = dir_name
+
+        td = D_TIMEDELTA.get(self._testMethodName, TD_ZERO)
+        self.watson = Watson(self.watson_office_addr, SIMULATION_SECONDS,
+                        self.start_up_orig - td,
+                        self.dir_name, self.log_level)
+
+    def test_handle(self):
+        watson = self.watson
+        watson.touch_simulation_db_on_clients()
+        watson.simulation_db.access_db()
+        clients = tuple(watson.simulation_db.select('clients'))
+        watson.simulation_db.close()
+        self.assertSequenceEqual([], clients)
+
+        client_address = ('127.0.0.1', 60626)
+        server = WatsonTCPOffice(watson)
+
+        request = Req()
+        watson_office = \
+            WatsonOfficeTestsHandle(request, client_address, server)
+        self.assertEqual(1, len(watson_office.server.clients))
+        self.assertEqual(request.sheep['num_nodes'], watson_office.server.watson.total_nodes)
+
+        clients = tuple(watson_office.server.simulation_db.select('clients'))
+        self.assertEqual(1, len(clients))
+
+        d_client = dict(clients[0])
+        self.assertEqual(1, d_client['id'])
+        self.assertEqual(client_address[0], d_client['host'])
+        self.assertEqual(client_address[1], d_client['port'])
+      # self.assertEqual(12, d_client['joined'])
+        self.assertEqual(watson.log_level, d_client['log_level'])
+        self.assertEqual(request.sheep['num_nodes'], d_client['num_nodes'])
 
 if __name__ == '__main__':
     unittest.main()

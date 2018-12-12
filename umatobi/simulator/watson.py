@@ -86,6 +86,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
         logger.debug("watson_office.handle()")
     #   self.server in WatsonOffice class means WatsonTCPOffice instance.
         logger.debug(f"WatsonOffice(request={self.request}, client_address={self.client_address}, server={self.server}")
+        logger.info(f"{self}.handle(), rfile={self.rfile}")
         text_message = self.rfile.readline().strip()
         logger.debug(f"text_message = {text_message} in watson_office.handle()")
 
@@ -102,7 +103,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
         logger.debug(f"dir(self)={dir(self)}")
         if professed == 'I am Client.':
             client_addr = self.client_address
-            client_id = len(self.server.clients)
+            client_id = len(self.server.clients) + 1 # client.id start one.
             self.server.clients.append(self)
 
             logger.info(f'Client(id={client_id}, ip:port={client_addr}) came here.')
