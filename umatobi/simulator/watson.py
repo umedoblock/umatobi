@@ -165,6 +165,7 @@ class Watson(threading.Thread):
         self.simulation_seconds = simulation_seconds
         self.log_level = log_level
         self.dir_name = dir_name
+        os.makedirs(self.dir_name, exist_ok=True)
 
         self.start_up_orig = start_up_orig
         self.start_up_time = y15sformat_time(self.start_up_orig)
@@ -177,15 +178,6 @@ class Watson(threading.Thread):
         self.total_nodes = 0
 
         self._make_office()
-
-    def _make_office(self):
-        '''watson が書き出す log 用の directory 作成'''
-        logger.info(f"{self}._make_office()")
-        os.makedirs(self.dir_name, exist_ok=True)
-
-        logger.info('----- watson office start up. -----')
-        message = 'simulation_seconds={}'.format(self.simulation_seconds)
-        logger.info(message)
 
     def relaxing(self):
         et_ms = elapsed_time(self.start_up_orig)
