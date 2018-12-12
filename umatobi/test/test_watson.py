@@ -9,12 +9,6 @@ from umatobi.simulator.watson import WatsonOpenOffice, WatsonTCPOffice
 from umatobi import lib
 
 class WatsonTests(unittest.TestCase):
-    SIMULATION_SECONDS = 30
-    D_TIMEDELTA = {
-        "test_watson_start": \
-            datetime.timedelta(0, SIMULATION_SECONDS - 1, 0),
-    }
-
     def setUp(self):
         self.watson_office_addr = ('localhost', 65530)
         simulation_dir = os.path.join(".", SIMULATION_DIR)
@@ -24,9 +18,8 @@ class WatsonTests(unittest.TestCase):
         dir_name = os.path.join(simulation_dir, start_up_time)
         self.dir_name = dir_name
 
-        td_zero = datetime.timedelta(0, 0, 0)
-        td = self.D_TIMEDELTA.get(self._testMethodName, td_zero)
-        self.watson = Watson(self.watson_office_addr, self.SIMULATION_SECONDS,
+        td = D_TIMEDELTA.get(self._testMethodName, TD_ZERO)
+        self.watson = Watson(self.watson_office_addr, SIMULATION_SECONDS,
                         self.start_up_orig - td,
                         self.dir_name, self.log_level)
 

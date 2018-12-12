@@ -1,2 +1,10 @@
+import datetime
+
 from umatobi.constants import *
 SIMULATION_DIR = 'umatobi-simulation-test'
+SIMULATION_SECONDS = 30
+D_TIMEDELTA = {
+    "test_watson_start": \
+        datetime.timedelta(0, SIMULATION_SECONDS - 1, 0),
+}
+TD_ZERO = datetime.timedelta(0, 0, 0)
