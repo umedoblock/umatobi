@@ -5,6 +5,7 @@ import pickle
 import threading
 import tkinter as tk
 
+from umatobi.constants import *
 from lib.args import args_make_simulation_db
 import simulator.sql
 from lib import formula, make_logger
@@ -87,6 +88,7 @@ class Screen(object):
             self.manipulating_db = ManipulatingDB(self.simulation_db_path, self.start_the_movie_time)
             self.manipulating_db.screen = self
             self.manipulating_db.start()
+            self.manipulating_db.manipulated.wait()
 
         if display is None:
             self.display_main = self.display_main_thread
@@ -254,6 +256,7 @@ class ManipulatingDB(threading.Thread):
 
         self.leave_there = threading.Event()
         self.stay_there = threading.Event()
+        self.manipulated = threading.Event()
         self.squares_lock = threading.Lock()
         self.label_area = LabelArea()
 
@@ -277,6 +280,7 @@ class ManipulatingDB(threading.Thread):
         self._memory_db.create_db()
         self._memory_db.create_table('simulation')
         init_nodes_table2(self._memory_db, simulation_db.total_nodes)
+        self.manipulated.set()
 
     def run(self):
         logger.info(f"{self}.run()")
