@@ -8,6 +8,8 @@ from umatobi.test.test_sql import SQLTests
 from umatobi.test.test_simulation import SimulationTests
 from umatobi.test.test_screen import ScreenTests
 from umatobi.test.test_theater import TheaterTests
+from umatobi.test.test_node import NodeTests
+from umatobi.test.test_core_node import CoreNodeTests
 
 def test_main():
     # see: Lib/test/test_math.py
@@ -20,6 +22,8 @@ def test_main():
     suite.addTest(unittest.makeSuite(SimulationTests))
     suite.addTest(unittest.makeSuite(ScreenTests))
     suite.addTest(unittest.makeSuite(TheaterTests))
+#   suite.addTest(unittest.makeSuite(NodeTests))
+    suite.addTest(unittest.makeSuite(CoreNodeTests))
     run_unittest(suite)
 
 if __name__ == '__main__':
