@@ -122,6 +122,12 @@ class Screen(object):
             for node_square in self.manipulating_db.node_squares:
                 put_on_square(*node_square)
                 logger.debug(f"put_on_square(*node_square={node_square}")
+
+            logger.debug(f"{self}.manipulating_db.green_squares={self.manipulating_db.green_squares}")
+            for green_square in self.manipulating_db.green_squares:
+                put_on_square(*green_square)
+                logger.debug(f"put_on_square(*green_square={green_square}")
+
             glBegin(GL_LINES)
             for rxy in self.manipulating_db.node_legs:
                 rx, ry, gx, gy = formula._moving_legs(rxy, moving)
@@ -205,18 +211,11 @@ class Screen(object):
             # click した箇所の前後 0.02 の範囲内にいる nodes を調べる。
             min_rad = clicked_rad - 0.02
             max_rad = clicked_rad + 0.02
-            condition = '''
-                where rad >= {} and rad <= {}
-            '''.format(min_rad, max_rad)
-            nodes = self._memory_db.select('nodes', conditions=condition)
-            logger.debug(f"{nodes}={self}._memory_db.select('nodes', conditions={condition}")
 
-            # click した箇所の前後 0.02 の範囲内にいる nodes を表示。
-            for node in nodes:
-                square = (node['rad'], node['x'], node['y'], 0.02, (0x00, 0xff, 0))
-                self.manipulating_db.node_squares.append(square)
-                logger.debug(f"{self}.manipulating_db.node_squares.append({square}")
-            logger.debug(f"{self}.manipulating_db.node_squares={self.manipulating_db.node_squares}")
+            clicked_rad_range = (min_rad, max_rad)
+            crr = clicked_rad_range
+            with self.manipulating_db.squares_lock:
+                self.manipulating_db.clicked_rad_ranges.append(crr)
 
     def idle(self):
         # 4. figures を OpenGL に書き込む。
@@ -253,7 +252,9 @@ class ManipulatingDB(threading.Thread):
         self.label_area = LabelArea()
 
         self.node_squares = []
+        self.green_squares = []
         self.node_legs = []
+        self.clicked_rad_ranges = []
 
     def _init_maniplate_db(self):
         logger.debug(f"{self}._init_maniplate_db()")
@@ -310,7 +311,12 @@ class ManipulatingDB(threading.Thread):
             self._memory_db.commit()
 
         node_squares = []
+        green_squares = []
         node_legs = []
+
+        with self.squares_lock:
+            clicked_rad_ranges = self.clicked_rad_ranges.copy()
+
         # 3. memorydb 上の nodes table の内容を，
         #    OpenGL の figures に変換する。
         nodes = tuple(self._memory_db.select('nodes'))
@@ -320,6 +326,7 @@ class ManipulatingDB(threading.Thread):
             if node['status'] == 'active':
                 _keyID = int(node['key'][:10], 16)
                 r, x, y = formula._key2rxy(_keyID)
+                r_ = r
                 r = -r + math.pi / 2
                 rxy = (r, x, y)
                 node_legs.append(rxy)
@@ -327,10 +334,19 @@ class ManipulatingDB(threading.Thread):
                 node_squares.append((r, x, y, self.SQUQRE_BODY))
                 logger.debug(f"node_squares.append({(r, x, y, self.SQUQRE_BODY)})")
                 logger.debug(f"node_legs.append({rxy})")
+                # click された箇所付近のnodeであれば，緑の四角を置く。
+                for clicked_rad_range in clicked_rad_ranges:
+                    min_rad, max_rad = clicked_rad_range
+                    if min_rad <= r_ <= max_rad:
+                        logger.info(f"{self}.inhole_pickles_from_simlation_db(), found a node(r={r_}) in range({min_rad}, {max_rad})")
+                        green_square = (r_, x, y, 0.02, (0x00, 0xff, 0))
+                        green_squares.append(green_square)
+                        break
         with self.squares_lock:
             logger.debug(f"""{self}.inhole_pickles_from_simlation_db(),
                              {self.squares_lock}.acquire()""")
             self.node_squares = node_squares
+            self.green_squares = green_squares
             self.node_legs = node_legs
             logger.debug(f"""{self}.inhole_pickles_from_simlation_db(),
                              {self.squares_lock}.release()""")
