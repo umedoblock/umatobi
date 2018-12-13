@@ -31,32 +31,33 @@ class Node(umatobi.p2p.core.Node):
         self.start_up_orig = y15sformat_parse(self.start_up_time)
 
     def run(self):
+        self._init_node()
+        self.good_bye_with_darkness.wait()
+
+        d['key'] = None
+        d['status'] = 'inactive'
+        self.to_darkness(d)
+
+    def _init_node(self):
       # print('{} started.'.format(self))
         d = {}
         d['id'] = self.id
         d['host'] = self.host
         d['port'] = self.port
-        while True:
-            self.update_key()
-            key_hex = self._key_hex()
-          # print('{} key_hex = {}'.format(self, key_hex))
-            _keyID = int(key_hex[:10], 16)
-            rad, x, y = formula._key2rxy(_keyID)
 
-            d['key'] = key_hex
-            d['rad'] = rad
-            d['x'] = x
-            d['y'] = y
-            d['status'] = 'active'
-            self.to_darkness(d)
+        self.update_key()
+        key_hex = self._key_hex()
+      # print('{} key_hex = {}'.format(self, key_hex))
+        _keyID = int(key_hex[:10], 16)
+        rad, x, y = formula._key2rxy(_keyID)
 
-            if self.good_bye_with_darkness.wait(timeout=self.POLLING_DARKNESS_GOODBYE):
-                break
+        d['key'] = key_hex
+        d['rad'] = rad
+        d['x'] = x
+        d['y'] = y
+        d['status'] = 'active'
 
-        d['key'] = None
-        d['status'] = 'inactive'
         self.to_darkness(d)
-      # print('{} good bye(host={}, port={})'.format(self, self.host, self.port))
 
     def to_darkness(self, obj):
         et = elapsed_time(self.start_up_orig)
