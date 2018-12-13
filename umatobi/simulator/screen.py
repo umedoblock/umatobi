@@ -107,6 +107,18 @@ class Screen(object):
             for node_square in self.manipulating_db.node_squares:
                 put_on_square(*node_square)
                 logger.debug(f"put_on_square(*node_square={node_square}")
+            glBegin(GL_LINES)
+            for legs in self.manipulating_db.node_legs:
+                ix, iy, rx, ry, gx, gy = legs
+                # 赤足
+                glColor3ub(0xff, 0x00, 0x00)
+                glVertex2f(ix, iy)
+                glVertex2f(rx, ry)
+                # 緑足
+                glColor3ub(0x00, 0xff, 0x00)
+                glVertex2f(ix, iy)
+                glVertex2f(gx, gy)
+            glEnd()
             logger.debug(f"{self}.manipulating_db.squares_lock.release()")
 
         if get_passed_ms(self.start_the_movie_time) > self.manipulating_db.simulation_ms:
@@ -224,6 +236,7 @@ class ManipulatingDB(threading.Thread):
         self.label_area = LabelArea()
 
         self.node_squares = []
+        self.node_legs = []
 
     def _init_maniplate_db(self):
         logger.debug(f"{self}._init_maniplate_db()")
@@ -279,7 +292,10 @@ class ManipulatingDB(threading.Thread):
             self._memory_db.update('nodes', d, where)
             self._memory_db.commit()
 
+        passed_seconds = passed_ms / 1000
+        moving = formula._fmove(passed_seconds)
         node_squares = []
+        node_legs = []
         # 3. memorydb 上の nodes table の内容を，
         #    OpenGL の figures に変換する。
         nodes = tuple(self._memory_db.select('nodes'))
@@ -289,13 +305,21 @@ class ManipulatingDB(threading.Thread):
             if node['status'] == 'active':
                 _keyID = int(node['key'][:10], 16)
                 r, x, y = formula._key2rxy(_keyID)
+                r = -r + math.pi / 2
+                rxy = (r, x, y)
+                rx, ry, gx, gy = formula._moving_legs(rxy, moving)
+                rad, ix, iy = rxy
+                legs = ix, iy, rx, ry, gx, gy
+                node_legs.append(legs)
                 # node の居場所を記す，白い四角を書き込む。
               # put_on_square(r, x, y, self.SQUQRE_BODY)
                 node_squares.append((r, x, y, self.SQUQRE_BODY))
                 logger.info(f"node_squares.append({(r, x, y, self.SQUQRE_BODY)})")
+                logger.info(f"node_legs.append({legs})")
         with self.squares_lock:
             logger.debug(f"{self}.inhole_pickles_from_simlation_db(), {self.squares_lock}.acquire()")
             self.node_squares = node_squares
+            self.node_legs = node_legs
             logger.debug(f"{self}.inhole_pickles_from_simlation_db(), {self.squares_lock}.release()")
 
         L = []
