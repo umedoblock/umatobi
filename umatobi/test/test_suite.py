@@ -22,7 +22,7 @@ def test_main():
     suite.addTest(unittest.makeSuite(SimulationTests))
     suite.addTest(unittest.makeSuite(ScreenTests))
     suite.addTest(unittest.makeSuite(TheaterTests))
-#   suite.addTest(unittest.makeSuite(NodeTests))
+    suite.addTest(unittest.makeSuite(NodeTests))
     suite.addTest(unittest.makeSuite(CoreNodeTests))
     run_unittest(suite)
 
