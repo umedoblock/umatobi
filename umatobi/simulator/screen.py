@@ -39,7 +39,7 @@ def get_current_cos_sin(x, y):
     cos_, sin_, docofo = get_current_cos_sin_in_window(ww, wh, x, y)
     if (cos_, sin_) == (None, None):
         logger.debug(f"get_current_cos_sin_in_window(), clicked origin.")
-    logger.info(f"get_current_cos_sin_in_window(), cos_{cos_}, sin_{sin_}, docofo={docofo}")
+    logger.info(f"get_current_cos_sin_in_window(), cos_={cos_}, sin_={sin_}, docofo={docofo}")
     return cos_, sin_, docofo
 
 class Screen(object):
