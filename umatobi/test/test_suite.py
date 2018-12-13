@@ -7,6 +7,7 @@ from umatobi.test.test_watson import WatsonTests
 from umatobi.test.test_sql import SQLTests
 from umatobi.test.test_simulation import SimulationTests
 from umatobi.test.test_screen import ScreenTests
+from umatobi.test.test_theater import TheaterTests
 
 def test_main():
     # see: Lib/test/test_math.py
@@ -18,6 +19,7 @@ def test_main():
     suite.addTest(unittest.makeSuite(SQLTests))
     suite.addTest(unittest.makeSuite(SimulationTests))
     suite.addTest(unittest.makeSuite(ScreenTests))
+    suite.addTest(unittest.makeSuite(TheaterTests))
     run_unittest(suite)
 
 if __name__ == '__main__':
