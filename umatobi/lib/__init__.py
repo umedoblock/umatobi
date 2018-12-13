@@ -96,42 +96,6 @@ def get_passed_ms(orig):
 LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(filename)s %(funcName)s() - %(message)s'
 LOGGER_SUFFIX = f" - process_id=%(process)d therad_id=%(thread)d"
 
-def make_logger2(log_dir=None, name='', level="INFO"):
-    name = name.replace(".py", "")
-    base_name = '.'.join([name, "log"])
-
-    log_path = ""
-    if log_dir is not None:
-        log_path = os.path.join(log_dir, base_name)
-
-    print(f"logging.getLogger(name={name}) in make_logger(name={name})")
-    logger_obj = logging.getLogger(name)
-    logger_obj.setLevel(level)
-
-    # create formatter and add it to the handlers
-    formatter = logging.Formatter(LOGGER_FMT + LOGGER_SUFFIX)
-
-    # create file handler which logs even debug messages
-    fh = None
-    if log_path:
-        fh = logging.FileHandler(log_path)
-        fh.setLevel(level)
-        fh.setFormatter(formatter)
-        logger_obj.addHandler(fh)
-        print(f"logger_obj.addHandler(fh={fh}) in make_logger(name={name})")
-        # extra setting.
-        logger_obj.log_path = log_path
-
-    # create console handler with a higher log level
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(level)
-    ch.setFormatter(formatter)
-    print(f"logger_obj.addHandler(ch={ch}) in make_logger(name={name})")
-    logger_obj.addHandler(ch)
-    print(f'logger_obj.manager.loggerDict={logger_obj.manager.loggerDict}')
-
-    return logger_obj, fh, ch
-
 def make_logger(log_dir=None, name='', id_=None, level="INFO"):
     name = name.replace(".py", "")
     log_path = ""
@@ -166,47 +130,3 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
     logger_obj.addHandler(ch)
 
     return logger_obj
-
-def remove_logger(log_dir=None, name='', level="INFO"):
-    name = name.replace(".py", "")
-    print(f"logging.getLogger(name={name}) in remove_logger(name={name})")
-    _logger = logging.getLogger(name)
-    _logger.setLevel(level)
-
-    formatter = logging.Formatter(LOGGER_FMT)
-
-    log_path = ""
-    if log_dir is not None:
-        log_path = os.path.join(log_dir, base_name)
-        fh = logging.FileHandler(log_path)
-        fh.setLevel(level)
-        fh.setFormatter(formatter)
-        print(f"_logger.removeHandler(fh={fh}) in remove_logger(name={name})")
-        _logger.removeHandler(fh)
-
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(level)
-    ch.setFormatter(formatter)
-    print(f"_logger.removeHandler(ch={ch}) in remove_logger(name={name})")
-    _logger.removeHandler(ch)
-
-#   LOGGER_FMT = '%(asctime)s.%(msecs)03d %(levelname)s %(message)s'
-#   LOGGER_DATEFMT = '%Y-%m-%dT%H:%M:%S'
-#   formatter = logging.Formatter(LOGGER_FMT, datefmt=LOGGER_DATEFMT)
-#   2012-11-02T23:01:10.002 INFO ----- watson log -----
-
-#   # 2012-11-02T21:30:33.%f INFO ----- watson log -----
-#   fmt = '%(asctime)s %(levelname)s %(message)s'
-#   formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S.%f')
-
-#   # 1351859998.124940.124 INFO ----- watson log -----
-#   fmt = '%(created)f.%(msecs)d %(levelname)s %(message)s'
-#   formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S.%f')
-
-#   # 1351860066.285001 INFO ----- watson log -----
-#   fmt = '%(created)f %(levelname)s %(message)s'
-#   formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S.%f')
-
-#   # 17 INFO ----- watson log -----
-#   fmt = '%(relativeCreated)d %(levelname)s %(message)s'
-#   formatter = logging.Formatter(fmt, datefmt='%Y-%m-%dT%H:%M:%S.%f')
