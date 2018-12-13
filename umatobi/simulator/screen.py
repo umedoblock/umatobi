@@ -6,13 +6,13 @@ import threading
 import tkinter as tk
 
 from umatobi.constants import *
-from lib.args import args_make_simulation_db
-import simulator.sql
-from lib import formula, make_logger
-from lib import Polling, elapsed_time
-from lib.squares import put_on_square
-from tools.make_simulation_db import init_nodes_table2
-from lib.args import get_logger_args
+from umatobi.lib.args import args_make_simulation_db
+import umatobi.simulator.sql
+from umatobi.lib import formula, make_logger
+from umatobi.lib import Polling, elapsed_time
+from umatobi.lib.squares import put_on_square
+from umatobi.tools.make_simulation_db import init_nodes_table2
+from umatobi.lib.args import get_logger_args
 global logger
 logger_args = get_logger_args()
 logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
