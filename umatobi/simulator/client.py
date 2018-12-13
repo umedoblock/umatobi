@@ -173,33 +173,33 @@ class Client(object):
                 continue
 
             if recved_msg == b'break down.':
-                logger.info("{self}._wait_break_down(), {self} got break down from {self.request}.")
+                logger.info(f"{self}._wait_break_down(), {self} got break down from {self._tcp_sock}.")
                 break
 
     def join(self):
         '''threading.Thread を使用していた頃の名残。'''
-        logger.info("{self}.join()")
+        logger.info(f"{self}.join()")
 
     def _release(self):
         '''\
         Client 終了処理。leave_thereにsignal を set することで、
         Clientの作成した Darkness達は一斉に終了処理を始める。
         '''
-        logger.info("{self}._release()")
+        logger.info(f"{self}._release()")
         self.leave_there.set()
 
         for darkness_p in self.darkness_processes:
             darkness_p.join()
-            logger.info("{self}._release(), {darkness_p} process joind.")
+            logger.info(f"{self}._release(), {darkness_p} process joind.")
 
-        logger.info("{self.client_db}.close()")
+        logger.info(f"{self.client_db}.close()")
         self.client_db.close()
       # logger.error('self._sock.getsockname() =', ('127.0.0.1', 20000))
         # ip のみ比較、 compare only ip
         if False and self._tcp_sock.getsockname()[0] != self.watson_office_addr[0]:
             logger.error('TODO: #169 simulation終了後、clientがclient.N.dbをwatsonにTCPにて送信。')
             # _sock=('0.0.0.0', 22343), watson_office_addr=('localhost', 55555)
-            logger.info(f"{self}._release(), {self} got break down from watson(={self.watson}). send client.{client.id}.db to {request}.")
+            logger.info(f"{self}._release(), {self} got break down from watson(={self.watson}). send client.{client.id}.db to {self._tcp_sock}.")
         else:
             # ip が同じ
             message = (f"{self}._release(), client and watson use same IP. " +

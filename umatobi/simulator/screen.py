@@ -157,7 +157,7 @@ class Screen(object):
         if ord(key) == 27 or ord(key) == 0x17 or ord(key) == 0x03:
           # ESC              ctr-w               ctr-c
             self._simulation_info()
-            logger.info("{self}._keyboard(), sys.exit(0)")
+            logger.info(f"{self}._keyboard(), sys.exit(0)")
             sys.exit(0)
 
     def click_on_sample(self, button, state, x, y):
@@ -197,14 +197,14 @@ class Screen(object):
                 where rad >= {} and rad <= {}
             '''.format(min_rad, max_rad)
             nodes = self._memory_db.select('nodes', conditions=condition)
-            logger.debug("{nodes}={self}._memory_db.select('nodes', conditions={condition}")
+            logger.debug(f"{nodes}={self}._memory_db.select('nodes', conditions={condition}")
 
             # click した箇所の前後 0.02 の範囲内にいる nodes を表示。
             for node in nodes:
                 square = (node['rad'], node['x'], node['y'], 0.02, (0x00, 0xff, 0))
                 self.manipulating_db.node_squares.append(square)
-                logger.debug("{self}.manipulating_db.node_squares.append({square}")
-            logger.debug("{self}.manipulating_db.node_squares={self.manipulating_db.node_squares}")
+                logger.debug(f"{self}.manipulating_db.node_squares.append({square}")
+            logger.debug(f"{self}.manipulating_db.node_squares={self.manipulating_db.node_squares}")
 
     def idle(self):
         # 4. figures を OpenGL に書き込む。
