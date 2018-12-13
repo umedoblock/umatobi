@@ -5,6 +5,7 @@ from umatobi.test.test_lib import LibTests
 from umatobi.test.test_client import ClientTests
 from umatobi.test.test_watson import WatsonTests
 from umatobi.test.test_sql import SQLTests
+from umatobi.test.test_simulation import SimulationTests
 
 def test_main():
     # see: Lib/test/test_math.py
@@ -14,6 +15,7 @@ def test_main():
     suite.addTest(unittest.makeSuite(WatsonTests))
     suite.addTest(unittest.makeSuite(ClientTests))
     suite.addTest(unittest.makeSuite(SQLTests))
+    suite.addTest(unittest.makeSuite(SimulationTests))
     run_unittest(suite)
 
 if __name__ == '__main__':

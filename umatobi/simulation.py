@@ -5,13 +5,13 @@ import datetime
 import multiprocessing
 
 from umatobi.constants import *
-from lib import make_logger, make_start_up_orig, tell_shutdown_time
-from lib import y15sformat_time
-from lib.args import get_logger_args
-from simulator.client import Client
-from simulator.watson import Watson
-from tools.make_simulation_db import watson_make_simulation_db
-import simulator.sql
+from umatobi.lib import make_logger, make_start_up_orig, tell_shutdown_time
+from umatobi.lib import y15sformat_time
+from umatobi.lib.args import get_logger_args
+from umatobi.simulator.client import Client
+from umatobi.simulator.watson import Watson
+from umatobi.tools.make_simulation_db import watson_make_simulation_db
+from umatobi import simulator
 
 def make_client(watson_office_addr, num_nodes):
     client = Client(watson_office_addr, num_nodes)
