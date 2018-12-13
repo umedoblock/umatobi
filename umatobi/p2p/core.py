@@ -20,6 +20,7 @@ class Node(threading.Thread):
         threading.Thread.__init__(self)
         tup = (host, port)
         self.host, self.port = tup
+        self._last_moment = threading.Event()
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
@@ -34,7 +35,6 @@ class Node(threading.Thread):
         self.update_key()
 
     def run(self):
-        self._last_moment = threading.Event()
         self._last_moment.wait()
 
     def appear(self):
