@@ -93,8 +93,8 @@ def get_passed_ms(orig):
     return _normalize_ms(passed_seconds)
 
 #   %(relativeCreated)d Time in ms when the LogRecord was created,
-LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(message)s'
-LOGGER_SUFFIX = f", process_id=%(process)d, therad_id=%(thread)d"
+LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(filename)s %(funcName)s() - %(message)s'
+LOGGER_SUFFIX = f" - process_id=%(process)d therad_id=%(thread)d"
 
 def make_logger2(log_dir=None, name='', level="INFO"):
     name = name.replace(".py", "")
