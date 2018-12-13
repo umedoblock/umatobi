@@ -1,4 +1,4 @@
-import datetime
+import datetime, io
 
 from umatobi.constants import *
 SIMULATION_DIR = 'umatobi-simulation-test'
@@ -10,3 +10,7 @@ D_TIMEDELTA = {
         datetime.timedelta(0, 73, 138770),
 }
 TD_ZERO = datetime.timedelta(0, 0, 0)
+
+class MockIO(io.BytesIO):
+    def recv(self, bufsize, flags=0):
+        return self.read(bufsize)
