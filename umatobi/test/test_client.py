@@ -75,7 +75,7 @@ class ClientTests(unittest.TestCase):
 #       # Client 終了処理開始。
 #       client._release()
 
-        client._shutdown()
+#       client._shutdown()
 
 if __name__ == '__main__':
     unittest.main()
