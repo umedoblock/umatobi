@@ -54,10 +54,10 @@ def get_current_cos_sin_in_window(ww, wh, x, y):
 
     r = norm_ww
     # clickした箇所と原点(=単位円の中心)からの距離
-    distance_ofclick_on_from_origin = norm_d / r
-    docofo = distance_ofclick_on_from_origin
+    distance_of_click_on_from_origin = norm_d / r
+    docofo = distance_of_click_on_from_origin
 
-    logger.debug("get_current_cos_sin_in_window(), distance_ofclick_on_from_origin={docofo}")
+    logger.debug("get_current_cos_sin_in_window(), distance_of_click_on_from_origin={docofo}")
 
     return cos_, sin_, docofo
 
