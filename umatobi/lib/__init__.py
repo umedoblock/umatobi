@@ -81,6 +81,17 @@ def elapsed_time(start_up_orig):
     # elapsed_time()もms単位となるようにする。
     return int(((now - start_up_orig) * 1000).total_seconds())
 
+def _normalize_ms(seconds):
+    return int(seconds * 1000)
+
+def get_passed_seconds(orig):
+    e = datetime.datetime.now()
+    return (e - orig).total_seconds()
+
+def get_passed_ms(orig):
+    passed_seconds = get_passed_seconds(orig)
+    return _normalize_ms(passed_seconds)
+
 #   %(relativeCreated)d Time in ms when the LogRecord was created,
 LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(message)s'
 LOGGER_SUFFIX = f", process_id=%(process)d, therad_id=%(thread)d"

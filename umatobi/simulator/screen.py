@@ -7,10 +7,12 @@ import tkinter as tk
 
 from umatobi.constants import *
 from umatobi.lib.args import args_make_simulation_db
-import umatobi.simulator.sql
+from umatobi.simulator import sql
 from umatobi.lib import formula, make_logger
 from umatobi.lib import Polling, elapsed_time
 from umatobi.lib.squares import put_on_square
+from umatobi.lib.formula import get_current_cos_sin_in_window
+from umatobi.lib import get_passed_seconds, get_passed_ms
 from umatobi.tools.make_simulation_db import init_nodes_table2
 from umatobi.lib.args import get_logger_args
 global logger
@@ -28,50 +30,11 @@ except BaseException as e:
     logger.error(e)
     sys.exit()
 
-def _normalize_ms(seconds):
-    return int(seconds * 1000)
-
-def get_passed_seconds(orig):
-    e = datetime.datetime.now()
-    return (e - orig).total_seconds()
-
-def get_passed_ms(orig):
-    passed_seconds = get_passed_seconds(orig)
-    return _normalize_ms(passed_seconds)
-
 def get_current_cos_sin(x, y):
     ww = glutGet(GLUT_WINDOW_WIDTH)
     wh = glutGet(GLUT_WINDOW_HEIGHT)
-    rate = ww / wh
-    # math x, y axis
-    # origin is window center
-    # -ww / 2 <= x <= ww / 2
-    # -wh / 2 <= y <= wh / 2
-    mx = x - ww / 2
-    my = wh / 2 - y
-    logger.debug(f"get_current_cos_sin(x={x}, y={y}), ww={ww} wh={wh}, rate={rate}, mx={mx} my={my}")
 
-    # normalize
-    norm_ww = ww / 2
-    norm_wh = wh / 2 * rate
-    norm_wd = math.sqrt(norm_ww ** 2 + norm_wh ** 2)
-    norm_x = int(mx)
-    norm_y = int(my * rate)
-    norm_d = math.sqrt(norm_x ** 2 + norm_y ** 2)
-    if norm_d == 0:
-        logger.debug("get_current_cos_sin(), norm_d={norm_d}")
-        return None, None, 0
-    cos_ = norm_x / norm_d
-    sin_ = norm_y / norm_d
-
-    r = norm_ww
-    # clickした箇所と原点(=単位円の中心)からの距離
-    distance_ofclick_on_from_origin = norm_d / r
-    docofo = distance_ofclick_on_from_origin
-
-    logger.debug("get_current_cos_sin(), distance_ofclick_on_from_origin={docofo}")
-
-    return cos_, sin_, docofo
+    return get_current_cos_sin_in_window(ww, wh, x, y)
 
 class Screen(object):
     def __init__(self, argv, simulation_db_path=None, display=None, width=500, height=500):
@@ -264,7 +227,7 @@ class ManipulatingDB(threading.Thread):
 
     def _init_maniplate_db(self):
         logger.debug(f"{self}._init_maniplate_db()")
-        simulation_db = simulator.sql.SQL(db_path=self.simulation_db_path, schema_path=SCHEMA_PATH)
+        simulation_db = sql.SQL(db_path=self.simulation_db_path, schema_path=SCHEMA_PATH)
         self.simulation_db = simulation_db
         self.simulation_db.access_db()
         simulation_db.total_nodes = \
@@ -275,7 +238,7 @@ class ManipulatingDB(threading.Thread):
                              column_name)[0][column_name]
 
         logger.debug(f"{self}.simulation_ms={self.simulation_ms}")
-        self._memory_db = simulator.sql.SQL(':memory:', schema_path=self.simulation_db.schema_path)
+        self._memory_db = sql.SQL(':memory:', schema_path=self.simulation_db.schema_path)
         logger.debug(f"{self}._memory_db={self._memory_db}")
         self._memory_db.create_db()
         self._memory_db.create_table('simulation')
