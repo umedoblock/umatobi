@@ -5,7 +5,8 @@ import pickle
 import datetime
 
 import umatobi.p2p.core
-from umatobi.lib import formula, elapsed_time, validate_kwargs, y15sformat_parse
+from umatobi.lib import formula, validate_kwargs
+from umatobi.lib import y15sformat_parse, elapsed_time
 
 class Node(umatobi.p2p.core.Node):
 
@@ -21,22 +22,22 @@ class Node(umatobi.p2p.core.Node):
             'host', 'port', 'id', 'start_up_time',
             'good_bye_with_darkness', '_queue_darkness'
         ])
+
         validate_kwargs(st_barrier, kwargs)
         super().__init__(kwargs['host'], kwargs['port'])
-        del kwargs['host']
-        del kwargs['port']
         for attr, value in kwargs.items():
             setattr(self, attr, value)
         self._rad, self._x, self._y = 0.0, 0.0, 0.0
-        self.start_up_orig = y15sformat_parse(self.start_up_time)
 
     def run(self):
-        self._init_node()
+        d = self._init_node()
+        et = elapsed_time(y15sformat_parse(self.start_up_time))
+        self.to_darkness(d, et)
+
         self.good_bye_with_darkness.wait()
 
-        d['key'] = None
-        d['status'] = 'inactive'
-        self.to_darkness(d)
+    def _force_shutdown(self):
+        self.disappear()
 
     def _init_node(self):
       # print('{} started.'.format(self))
@@ -57,10 +58,9 @@ class Node(umatobi.p2p.core.Node):
         d['y'] = y
         d['status'] = 'active'
 
-        self.to_darkness(d)
+        return d
 
-    def to_darkness(self, obj):
-        et = elapsed_time(self.start_up_orig)
+    def to_darkness(self, obj, et):
         pds = pickle.dumps(obj)
         tup = (et, pds)
         self._queue_darkness.put(tup)
@@ -69,6 +69,7 @@ class Node(umatobi.p2p.core.Node):
         super().appear()
 
     def disappear(self):
+        self.good_bye_with_darkness.set()
         super().disappear()
 
     def __str__(self):
