@@ -97,7 +97,7 @@ class Screen(object):
         logger.info(f"{self}.start() end")
 
     def _display(self):
-        logger.info(f"{self}._display()")
+      # logger.info(f"{self}._display()") # 多すぎて邪魔
         glClearColor(0, 0, 0, 0)
         # 以下の一行は重要
         glClear(GL_COLOR_BUFFER_BIT)
@@ -294,7 +294,7 @@ class ManipulatingDB(threading.Thread):
         #    memorydb 上の growings table から検索する。
         #    そして，現在の情報を，
         #    memorydb 上の nodes table に書き込む。
-        logger.info(f"{self}.inhole_pickles_from_simlation_db(passed_ms={passed_ms})")
+      # logger.info(f"{self}.inhole_pickles_from_simlation_db(passed_ms={passed_ms})") # 多すぎて邪魔
         conditions = f"where elapsed_time >= {self._old_passed_ms} and elapsed_time < {passed_ms}"
         logger.debug(f"{self}.inhole_pickles_from_simlation_db(), conditions={conditions}")
         self._old_passed_ms = passed_ms
@@ -435,15 +435,15 @@ class Trailer(object):
         logger.info(f"{self}.start() end")
 
     def _display(self):
-        logger.info(f"{self}._display()")
+      # logger.info(f"{self}._display()") # 多すぎて邪魔。
         glClearColor(0, 0, 0, 0)
         # 以下の一行は重要
         glClear(GL_COLOR_BUFFER_BIT)
 
         passed_seconds = get_passed_seconds(self.open_the_theater)
-        logger.debug(f"""{self}._display(),
-                         get_passed_seconds({self.open_the_theater})=
-                         {passed_seconds}""")
+      # logger.debug(f"""{self}._display(),
+      #                  get_passed_seconds({self.open_the_theater})=
+      #                  {passed_seconds}""")
         self.display_main(passed_seconds)
 
         self.frames += 1
