@@ -256,32 +256,32 @@ class Client(object):
         logger.info(f"{self}._hello_watson(), sheep={sheep}, js={js}")
         d = {}
         while tries < 3:
+            logger.info(f"{self}._hello_watson(), {self._tcp_sock}.sendall(js={js}), tries={tries}.")
             try:
-                logger.info(f"{self}._hello_watson(), {self._tcp_sock}.sendall(js={js}).")
                 self._tcp_sock.sendall(js)
+                break
             except socket.timeout as e:
                 logger.info(f"{self}._hello_watson(), {self._tcp_sock} timout by.")
                 tries += 1
                 continue
-            break
 
         if tries >= 3:
             raise RuntimeError(f"cannot send js={js} to addr={self.watson_office_addr}")
 
         tries = 0
         while tries < 3:
+            logger.info(f"{self}._hello_watson(), {self._tcp_sock}.recv(1024), tries={tries}")
             try:
-                logger.info(f"{self}._hello_watson(), {self._tcp_sock}.recv(1024)")
                 recved_msg = self._tcp_sock.recv(1024)
+                break
             except socket.timeout as e:
                 logger.info(f"{self}._hello_watson(), {self._tcp_sock} timout by recv(1024), tries={tries}.")
                 tries += 1
                 continue
-            logger.debug(f"{self}._hello_watson(), recved_msg={recved_msg}, tries={tries}.")
-            jt = recved_msg.decode("utf-8")
-            logger.debug(f"{self}._hello_watson(), recved_msg.decode('utf-8')={jt}, tries={tries}.")
-            d = jtext_becomes_dict(jt)
-            break
+        logger.debug(f"{self}._hello_watson(), recved_msg={recved_msg}, tries={tries}.")
+        jt = recved_msg.decode("utf-8")
+        logger.debug(f"{self}._hello_watson(), recved_msg.decode('utf-8')={jt}, tries={tries}.")
+        d = jtext_becomes_dict(jt)
 
         logger.debug(f"{self}._hello_watson(), d={d}, tries={tries}.")
 
