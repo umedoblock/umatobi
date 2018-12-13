@@ -10,7 +10,6 @@ from umatobi.simulator import watson
 
 class ClientTests(unittest.TestCase):
     def setUp(self):
-        print("{self}.setUp()")
         watson_office_addr = ('localhost', 65530)
         simulation_seconds = 3
         simulation_dir = SIMULATION_DIR
