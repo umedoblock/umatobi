@@ -104,8 +104,16 @@ class WatsonOfficeTests(unittest.TestCase):
         request = Req()
         watson_office = \
             WatsonOfficeTestsHandle(request, client_address, server)
+        self.assertTrue(watson_office.to_client)
         self.assertEqual(1, len(watson_office.server.clients))
         self.assertEqual(request.sheep['num_nodes'], watson_office.server.watson.total_nodes)
+
+        tc = watson_office.to_client
+        self.assertEqual(watson.dir_name, tc['dir_name'])
+        self.assertEqual(1, tc['client_id'])
+        self.assertEqual(watson.start_up_time, tc['start_up_time'])
+        self.assertEqual(1, tc['node_index'])
+        self.assertEqual(watson.log_level, tc['log_level'])
 
         clients = tuple(watson_office.server.simulation_db.select('clients'))
         self.assertEqual(1, len(clients))
@@ -114,6 +122,7 @@ class WatsonOfficeTests(unittest.TestCase):
         self.assertEqual(1, d_client['id'])
         self.assertEqual(client_address[0], d_client['host'])
         self.assertEqual(client_address[1], d_client['port'])
+        self.assertEqual(1, d_client['node_index'])
       # self.assertEqual(12, d_client['joined'])
         self.assertEqual(watson.log_level, d_client['log_level'])
         self.assertEqual(request.sheep['num_nodes'], d_client['num_nodes'])

@@ -113,6 +113,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
                 'port': client_addr[1],
                 'joined': elapsed_time(self.server.start_up_orig),
                 'num_nodes': num_nodes,
+                'node_index': self.server.watson.total_nodes + 1,
                 'log_level': self.server.watson.log_level,
             }
             sql = self.server.simulation_db.insert('clients', insert_clients)
@@ -125,9 +126,10 @@ class WatsonOffice(socketserver.StreamRequestHandler):
                 'dir_name': self.server.watson.dir_name,
                 'client_id': client_id,
                 'start_up_time': y15sformat_time(self.server.start_up_orig),
-                'node_index': self.server.watson.total_nodes,
+                'node_index': self.server.watson.total_nodes + 1,
                 'log_level': self.server.watson.log_level,
             }
+            self.to_client = to_client
             self.server.watson.total_nodes += num_nodes
             logger.info(f'watson.total_nodes={self.server.watson.total_nodes}, Client(id={client_id}).')
             reply = dict_becomes_jbytes(to_client)
