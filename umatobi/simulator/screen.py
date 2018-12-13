@@ -34,11 +34,22 @@ def get_current_cos_sin(x, y):
     ww = glutGet(GLUT_WINDOW_WIDTH)
     wh = glutGet(GLUT_WINDOW_HEIGHT)
 
-    return get_current_cos_sin_in_window(ww, wh, x, y)
+    logger.debug(f"get_current_cos_sin_in_window(ww={ww} wh={wh}, x={x}, y={y})")
+
+    cos_, sin_, docofo = get_current_cos_sin_in_window(ww, wh, x, y)
+    if (cos_, sin_) == (None, None):
+        logger.debug(f"get_current_cos_sin_in_window(), clicked origin.")
+    logger.info(f"get_current_cos_sin_in_window(), cos_{cos_}, sin_{sin_}, docofo={docofo}")
+    return cos_, sin_, docofo
 
 class Screen(object):
     def __init__(self, argv, simulation_db_path=None, display=None, width=500, height=500):
-        logger.info(f"Screen(self={self}, argv={argv}, simulation_db_path={simulation_db_path}, display={display}, width={width}, height={height})")
+        logger.info(f"""Screen(self={self},
+                        argv={argv},
+                        simulation_db_path={simulation_db_path},
+                        display={display},
+                        width={width},
+                        height={height})""")
         self.frames = 0
         self.start_the_movie_time = datetime.datetime.now()
         self.width = width
@@ -60,7 +71,10 @@ class Screen(object):
         self._glut_init(argv, self.mode, width, height)
 
     def _glut_init(self, argv, mode, w, h):
-        logger.info(f"{self}._glut_init(argv={argv}, mode={mode}, w={w}, h={h}")
+        logger.info(f"""{self}._glut_init(argv={argv},
+                        mode={mode},
+                        w={w},
+                        h={h}""")
 
         glutInit(argv)
         glutInitDisplayMode(mode)
@@ -89,7 +103,7 @@ class Screen(object):
         glClear(GL_COLOR_BUFFER_BIT)
 
         passed_seconds = get_passed_seconds(self.start_the_movie_time)
-        logger.debug(f"{passed_seconds}=get_passed_seconds({self.start_the_movie_time})")
+        logger.debug(f"{self}._display(), get_passed_seconds({self.start_the_movie_time}={passed_seconds})")
         self.display_main(self, passed_seconds)
 
         self.frames += 1
@@ -130,24 +144,22 @@ class Screen(object):
             glutLeaveMainLoop()
 
     def _print_fps(self):
-        logger.info(f"{self}._print_fps()")
         passed_seconds = get_passed_seconds(self.start_the_movie_time)
         fps = self.frames / passed_seconds
-        logger.info(f"frames={self.frames}")
-        logger.info(f"passed_seconds={passed_seconds:.3f}")
-        logger.info(f"fps={fps:.3f}")
+        logger.info(f"""{self}._print_fps()
+                      frames={self.frames}
+                      passed_seconds={passed_seconds:.3f}
+                      fps={fps:.3f}""")
 
     def _simulation_info(self):
-        logger.info(f"{self}._simulation_info()")
         self._print_fps()
         label_area = self.manipulating_db.label_area
-        logger.info(f"label_area={label_area}")
-        logger.info(f"display={label_area.display}")
-        logger.info(f"display.master={label_area.display.master}")
-        count = 0
-        for th in threading.enumerate():
-            logger.debug(f"thread={th}, count={count}")
-            count += 1
+        logger.info(f"""{self}._simulation_info()
+                        label_area={label_area}
+                        display={label_area.display}
+                        display.master={label_area.display.master}""")
+        for count, th in enumerate(threading.enumerate()):
+            logger.debug(f"{self}._simulation_info(), thread={th}, count={count}")
 
     def _keyboard(self, key, x, y):
         code = ord(key)
@@ -223,7 +235,9 @@ class ManipulatingDB(threading.Thread):
     def __init__(self, simulation_db_path, start_the_movie_time):
         threading.Thread.__init__(self)
 
-        logger.info(f"ManipulatingDB(self={self}, simulation_db_path={simulation_db_path}, start_the_movie_time={start_the_movie_time}")
+        logger.info(f"""ManipulatingDB(self={self},
+                      simulation_db_path={simulation_db_path},
+                      start_the_movie_time={start_the_movie_time}""")
         self.polling_secs = self.POLLING_SIMULATION_DB
         logger.debug(f"{self}.polling_secs={self.polling_secs}")
         self.simulation_db_path = simulation_db_path
@@ -253,9 +267,9 @@ class ManipulatingDB(threading.Thread):
             self.simulation_db.select('simulation', \
                              column_name)[0][column_name]
 
-        logger.debug(f"{self}.simulation_ms={self.simulation_ms}")
+        logger.debug(f"{self}._init_maniplate_db(), {self}.simulation_ms={self.simulation_ms}")
         self._memory_db = sql.SQL(':memory:', schema_path=self.simulation_db.schema_path)
-        logger.debug(f"{self}._memory_db={self._memory_db}")
+        logger.debug(f"{self}._init_maniplate_db(), {self}._memory_db={self._memory_db}")
         self._memory_db.create_db()
         self._memory_db.create_table('simulation')
         init_nodes_table2(self._memory_db, simulation_db.total_nodes)
@@ -286,7 +300,7 @@ class ManipulatingDB(threading.Thread):
         records = self.simulation_db.select('growings', 'elapsed_time,pickle',
             conditions=conditions
         )
-        logger.debug(f"records={records}, len(records)={len(records)}")
+        logger.debug(f"{self}.inhole_pickles_from_simlation_db(), len(records)={len(records)}, records={records}")
 
         for record in records:
             d = pickle.loads(record['pickle'])
@@ -310,22 +324,24 @@ class ManipulatingDB(threading.Thread):
                 rxy = (r, x, y)
                 node_legs.append(rxy)
                 # node の居場所を記す，白い四角を書き込む。
-              # put_on_square(r, x, y, self.SQUQRE_BODY)
                 node_squares.append((r, x, y, self.SQUQRE_BODY))
-                logger.info(f"node_squares.append({(r, x, y, self.SQUQRE_BODY)})")
-                logger.info(f"node_legs.append({rxy})")
+                logger.debug(f"node_squares.append({(r, x, y, self.SQUQRE_BODY)})")
+                logger.debug(f"node_legs.append({rxy})")
         with self.squares_lock:
-            logger.debug(f"{self}.inhole_pickles_from_simlation_db(), {self.squares_lock}.acquire()")
+            logger.debug(f"""{self}.inhole_pickles_from_simlation_db(),
+                             {self.squares_lock}.acquire()""")
             self.node_squares = node_squares
             self.node_legs = node_legs
-            logger.debug(f"{self}.inhole_pickles_from_simlation_db(), {self.squares_lock}.release()")
+            logger.debug(f"""{self}.inhole_pickles_from_simlation_db(),
+                             {self.squares_lock}.release()""")
 
         L = []
         for node in nodes:
             if node['status'] == 'active':
                 L.append(f"id: {node['id']}, key: {node['key']}")
         self.label_area.update('\n'.join(L))
-        logger.debug(f"{self}.inhole_pickles_from_simlation_db(), {self.label_area}.update({'/n'.join(L)})")
+        logger.debug(f"""{self}.inhole_pickles_from_simlation_db(),
+                         {self.label_area}.update({'/n'.join(L)})""")
 
     def completed_mission(self):
         self.leave_there.set()
@@ -337,7 +353,7 @@ class LabelArea(object):
 
     def __init__(self):
         self._thread = threading.Thread(target=self.run)
-        logger.info(f"LabelArea({self})")
+        logger.info(f"LabelArea(self={self})")
         self._thread.start()
 
     def run(self):
@@ -364,7 +380,11 @@ class LabelArea(object):
 
 class Trailer(object):
     def __init__(self, argv, display=None, width=500, height=500):
-        logger.info(f"Screen(self={self}, argv={argv}, display={display}, width={width}, height={height})")
+        logger.info(f"""Trailer(self={self},
+        argv={argv},
+        display={display},
+        width={width},
+        height={height})""")
         self.frames = 0
         self.open_the_theater = datetime.datetime.now()
         self.width = width
@@ -377,7 +397,10 @@ class Trailer(object):
         self._glut_init(argv, self.mode, width, height)
 
     def _glut_init(self, argv, mode, w, h):
-        logger.info(f"{self}._glut_init(argv={argv}, mode={mode}, w={w}, h={h}")
+        logger.info(f"""{self}._glut_init(argv={argv},
+        mode={mode},
+        w={w},
+        h={h}""")
 
         glutInit(argv)
         glutInitDisplayMode(mode)
@@ -402,7 +425,9 @@ class Trailer(object):
         glClear(GL_COLOR_BUFFER_BIT)
 
         passed_seconds = get_passed_seconds(self.open_the_theater)
-        logger.debug(f"{passed_seconds}=get_passed_seconds({self.open_the_theater})")
+        logger.debug(f"""{self}._display(),
+                         get_passed_seconds({self.open_the_theater})=
+                         {passed_seconds}""")
         self.display_main(passed_seconds)
 
         self.frames += 1
@@ -411,12 +436,12 @@ class Trailer(object):
         glutSwapBuffers()
 
     def print_fps(self):
-        logger.info(f"{self}.print_fps()")
         passed_seconds = get_passed_seconds(self.start_the_movie_time)
         fps = self.frames / passed_seconds
-        logger.info(f"frames={self.frames}")
-        logger.info(f"passed_seconds={passed_seconds:.3f}")
-        logger.info(f"fps={fps:.3f}")
+        logger.info(f"""{self}.print_fps()
+                      frames={self.frames}
+                      passed_seconds={passed_seconds:.3f}
+                      fps={fps:.3f}""")
 
     def simulation_info(self):
         logger.info(f"{self}.simulation_info()")
@@ -427,9 +452,17 @@ class Trailer(object):
             count += 1
 
     def click_on_sample(self, button, state, x, y):
-        logger.info(f"{self}.click_on_sample(button={button}, state={state}, x={x}, y={y}")
+        logger.info(f"""{self}.click_on_sample(button={button},
+                        state={state},
+                        x={x},
+                        y={y}""")
         cos_, sin_, docofo = get_current_cos_sin(x, y)
-        logger.debug(f"{self}.click_on_sample(), cos_={cos_} sin_={sin_}, docofo={docofo}, x={x}, y={y}")
+        logger.debug(f"""{self}.click_on_sample(),
+                         cos_={cos_}
+                         sin_={sin_},
+                         docofo={docofo},
+                         x={x},
+                         y={y}""")
 
     def keyboard(self, key, x, y):
         code = ord(key)
@@ -446,7 +479,8 @@ def display_sample(passed_seconds):
     n = 100 # 100 個の点
 
     moving = formula._fmove(passed_seconds)
-    logger.info(f"moving={moving}, passed_seconds={passed_seconds}")
+    logger.info(f"""display_sample(passed_seconds={passed_seconds}),
+                    moving={moving}""")
     length_circle = 2 * math.pi * 1.0
     length_legs = length_circle / (2 * n)
 

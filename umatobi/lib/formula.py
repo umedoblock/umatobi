@@ -37,7 +37,6 @@ def get_current_cos_sin_in_window(ww, wh, x, y):
     # -wh / 2 <= y <= wh / 2
     mx = x - ww / 2
     my = wh / 2 - y
-    logger.debug(f"get_current_cos_sin_in_window(x={x}, y={y}), ww={ww} wh={wh}, rate={rate}, mx={mx} my={my}")
 
     # normalize
     norm_ww = ww / 2
@@ -47,7 +46,6 @@ def get_current_cos_sin_in_window(ww, wh, x, y):
     norm_y = int(my * rate)
     norm_d = math.sqrt(norm_x ** 2 + norm_y ** 2)
     if norm_d == 0:
-        logger.debug("get_current_cos_sin_in_window(), norm_d={norm_d}")
         return None, None, 0
     cos_ = norm_x / norm_d
     sin_ = norm_y / norm_d
@@ -56,8 +54,6 @@ def get_current_cos_sin_in_window(ww, wh, x, y):
     # clickした箇所と原点(=単位円の中心)からの距離
     distance_of_click_on_from_origin = norm_d / r
     docofo = distance_of_click_on_from_origin
-
-    logger.debug("get_current_cos_sin_in_window(), distance_of_click_on_from_origin={docofo}")
 
     return cos_, sin_, docofo
 
