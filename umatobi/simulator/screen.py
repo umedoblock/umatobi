@@ -208,12 +208,12 @@ class Screen(object):
             clicked_rad = formula.cos_sin_to_norm_rad(cos_, sin_)
             logger.debug(f"clicked_rad={clicked_rad}, formula.cos_sin_to_norm_rad(cos_={cos_}, sin_={sin_}")
 
-            # click した箇所の前後 0.02 の範囲内にいる nodes を調べる。
             min_rad = clicked_rad - 0.02
             max_rad = clicked_rad + 0.02
 
             clicked_rad_range = (min_rad, max_rad)
             crr = clicked_rad_range
+            # click した箇所の前後 0.02 の範囲を記憶。
             with self.manipulating_db.squares_lock:
                 self.manipulating_db.clicked_rad_ranges.append(crr)
 
@@ -330,14 +330,15 @@ class ManipulatingDB(threading.Thread):
                 r = -r + math.pi / 2
                 rxy = (r, x, y)
                 node_legs.append(rxy)
+                logger.debug(f"""{self}.inhole_pickles_from_simlation_db(),
+                                node_legs.append({rxy})""")
                 # node の居場所を記す，白い四角を書き込む。
                 node_squares.append((r, x, y, self.SQUQRE_BODY))
                 logger.debug(f"node_squares.append({(r, x, y, self.SQUQRE_BODY)})")
-                logger.debug(f"node_legs.append({rxy})")
-                # click された箇所付近のnodeであれば，緑の四角を置く。
                 for clicked_rad_range in clicked_rad_ranges:
                     min_rad, max_rad = clicked_rad_range
                     if min_rad <= r_ <= max_rad:
+                        # click 箇所付近のnodeであれば，緑の四角を置く。
                         logger.info(f"{self}.inhole_pickles_from_simlation_db(), found a node(r={r_}) in range({min_rad}, {max_rad})")
                         green_square = (r_, x, y, 0.02, (0x00, 0xff, 0))
                         green_squares.append(green_square)
