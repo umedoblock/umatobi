@@ -99,7 +99,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             client_id = len(self.server.clients) + 1 # client.id start one.
             self.server.clients.append(self)
 
-            logger.info(f"{self}.handle(), client_id={client_id}, client_address={client_addr}) came here.")
+            logger.info(f"{self}.handle(), client_id={client_id}, client_addr={client_addr}) came here.")
             insert_clients = {
                 'id': client_id,
                 'host': client_addr[0],
@@ -126,7 +126,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             self.server.watson.total_nodes += num_nodes
             logger.info(f"{self}.handle(), watson.total_nodes={self.server.watson.total_nodes}.")
             reply = dict_becomes_jbytes(to_client)
-            logger.info(f"{self}.handle(), reply={reply}, client_address={client_address}")
+            logger.info(f"{self}.handle(), reply={reply}, client_addr={client_addr}")
         else:
             logger.error(f"{self}.handle(), unknown professed='{professed}', text_message={text_message}")
             reply = b'Go back home.'
@@ -150,13 +150,13 @@ class Watson(threading.Thread):
         '''
         threading.Thread.__init__(self)
 
+        self.watson_office_addr = watson_office_addr
         global logger
         if not logger:
             logger = make_logger(dir_name, name="watson", level=log_level)
         self.log_level = log_level
         logger.info(f"Watson(self={self}, watson_office_addr={watson_office_addr}, simulation_seconds={simulation_seconds}, start_up_orig={start_up_orig}, dir_name={dir_name}, log_level={log_level}))")
 
-        self.watson_office_addr = watson_office_addr
         self.watson_office_addr_assigned = threading.Event()
         self.simulation_seconds = simulation_seconds
         self.log_level = log_level
@@ -266,9 +266,9 @@ class Watson(threading.Thread):
                       {self}, client.N.dbの回収完了。""")
 
     def _merge_db_to_simulation_db(self):
-        logger.info(f"{self}._merge_db_to_simulation_db(),
+        logger.info(f"""{self}._merge_db_to_simulation_db(),
                               client.N.db の結合開始。
-                              client.N.db の結合終了。")
+                              client.N.db の結合終了。""")
 
     def join(self):
         '''watson threadがjoin'''
