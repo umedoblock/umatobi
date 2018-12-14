@@ -81,11 +81,13 @@ class Client(object):
 
         # Client 終了処理開始。
         self._release()
-        self._shutdown()
+        self.close()
 
-    def _shutdown(self):
-        logger.info(f"{self}._shutdown()")
-        self._tcp_sock.shutdown(socket.SHUT_WR)
+    def close(self):
+        # must be close() not shutdown() about socket.SOCK_STREAM
+        # ResourceWarning: unclosed <socket.socket fd=7, ...
+        logger.info(f"{self}.close()")
+        self._tcp_sock.close()
 
     def _make_growings_table(self):
         logger.info(f"{self}._make_growings_table()")
