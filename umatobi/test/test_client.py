@@ -54,27 +54,32 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(watson_office_addr, client.watson_office_addr)
         self.assertEqual(num_nodes, client.num_nodes)
 
-    def test_client_story(self):
+    def test_client_story_with_watson(self):
         watson = self.watson
         num_nodes = 10
         client = Client(watson.watson_office_addr, num_nodes)
 
         watson.touch_simulation_db_on_clients()
-#       watson.open_office() # <= t76 bug is in
-#       client.consult_watson()
-#       client._release()
-#       client._tcp_sock.shutdown(socket.SHUT_WR)
+        watson.open_office()
 
-#       client._make_growings_table()
+        # emulate client.start()
+        client.consult_watson()
 
-#       client._start_darkness()
+        client._make_growings_table()
 
-#       client._wait_break_down()
+        client._start_darkness()
+
+        watson.release_clients()
+        watson.watson_tcp_office.shutdown()
+        client._wait_break_down()
 
 #       # Client 終了処理開始。
-#       client._release()
+        client._release()
 
-#       client._shutdown()
+        client.close()
+        # emulate client.start() done !
+
+        watson.watson_open_office.join()
 
 if __name__ == '__main__':
     unittest.main()
