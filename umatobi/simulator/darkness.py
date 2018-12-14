@@ -6,7 +6,7 @@ import pickle
 from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.node import Node
-from umatobi import simulator
+from umatobi.simulator import sql
 from umatobi.lib import Polling, validate_kwargs
 
 class ExhaleQueue(Polling):
@@ -110,14 +110,14 @@ class Darkness(object):
         self.client_db_path = os.path.join(self.dir_name,
                                      'client.{}.db'.format(self.client_id))
         self.schema_path = SCHEMA_PATH
-        self.client_db = simulator.sql.SQL(db_path=self.client_db_path,
-                                           schema_path=self.schema_path)
+        self.client_db = sql.SQL(db_path=self.client_db_path,
+                                 schema_path=self.schema_path)
 
         self._queue_darkness = queue.Queue()
         self.all_nodes_inactive = threading.Event()
         self.exhale_queue = ExhaleQueue(self.POLLING_EXHALEQUEUE, self)
 
-        self.good_bye_with_nodes = threading.Event()
+        self.bye_bye_nodes = threading.Event()
 
         self.nodes = []
 
@@ -138,7 +138,7 @@ class Darkness(object):
             d_node = {
                 'host': host, 'port': port, 'id': id,
                 'start_up_time': self.start_up_time,
-                'good_bye_with_darkness': self.good_bye_with_nodes,
+                'bye_bye_nodes': self.bye_bye_nodes,
                 '_queue_darkness': self._queue_darkness
             }
             node_ = Node(**d_node)
@@ -155,8 +155,8 @@ class Darkness(object):
 
         self.leave_there.wait()
         logger.info(('{} got leave_there signal.').format(self))
-        logger.info(('{} set good_bye_with_nodes signal.').format(self))
-        self.good_bye_with_nodes.set()
+        logger.info(('{} set bye_bye_nodes signal.').format(self))
+        self.bye_bye_nodes.set()
 
         for node_ in self.nodes:
             node_.join()
