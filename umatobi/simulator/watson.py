@@ -31,7 +31,7 @@ class WatsonOpenOffice(threading.Thread):
             # WatsonOpenOffice() run on different thread of WatsonTCPOffice.
             self.in_serve_forever.set()
             self.watson.watson_office_addr_assigned.set()
-            logger.info("{self}.run(), watson_tcp_office.serve_forever()")
+            logger.info(f"{self}.run(), watson_tcp_office.serve_forever()")
             watson_tcp_office.serve_forever()
         logger.info(f"{self}.run() end!")
 
