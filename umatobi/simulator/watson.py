@@ -51,7 +51,7 @@ class WatsonTCPOffice(socketserver.TCPServer):
         self._determine_office_addr()
 
     def _determine_office_addr(self):
-        logger.info(f"{self}._determine_office_addr(), watson_office_addr={self.watson.watson_office_addr}")
+        logger.info(f"watson_office_addr={self.watson.watson_office_addr}")
         ip, port = self.watson.watson_office_addr
         ports = list(range(1024, 65536))
         random.shuffle(ports)
@@ -62,8 +62,6 @@ class WatsonTCPOffice(socketserver.TCPServer):
                 raise RuntimeError("every ports are in use.")
             addr = (ip, port)
             try:
-                logger.debug(f"{self}._determine_office_addr(), super().__init__(addr={addr}, WatsonTCPOffice)")
-                # TCPServer(self, server_address, RequestHandlerClass, bind_and_activate=True):
                 super().__init__(addr, WatsonOffice)
             except OSError as oe:
                 if oe.errno != 98:
@@ -71,8 +69,8 @@ class WatsonTCPOffice(socketserver.TCPServer):
                 continue
             break
 
-        logger.info(f"{self}._determine_office_addr(), {self}.watson.watson_office_addr={addr}")
         # watson_office_addr が決定されている。
+        logger.info(f"{self}.watson.watson_office_addr={addr}")
         self.watson.watson_office_addr = addr
 
     def shutdown_request(self, request):
