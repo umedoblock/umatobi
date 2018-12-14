@@ -1,8 +1,7 @@
 import datetime, io
 
 from umatobi.constants import *
-ROOT_DIR = os.path.dirname(__file__)
-SIMULATION_DIR = os.path.join(ROOT_DIR, 'umatobi-simulation')
+SIMULATION_DIR = os.path.join(__name__.split('.')[1], 'umatobi-simulation')
 
 SIMULATION_SECONDS = 30
 D_TIMEDELTA = {

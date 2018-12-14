@@ -8,7 +8,7 @@ from umatobi import lib
 class LibTests(unittest.TestCase):
 
     def test_SIMULATION_DIR(self):
-        self.assertEqual('umatobi-simulation-test', SIMULATION_DIR)
+        self.assertEqual('test/umatobi-simulation', SIMULATION_DIR)
 
     def test_make_log_dir(self):
         special_dir = SIMULATION_DIR + "-special"
@@ -35,10 +35,10 @@ class LibTests(unittest.TestCase):
 
     def test_log_path(self):
         tlogger = make_logger(log_dir=SIMULATION_DIR, name='test_logger', id_=None, level="INFO")
-        self.assertEqual('umatobi-simulation-test/test_logger.log', tlogger.log_path)
+        self.assertEqual('test/umatobi-simulation/test_logger.log', tlogger.log_path)
 
         tlogger = make_logger(log_dir=SIMULATION_DIR, name='test_logger', id_=888, level="INFO")
-        self.assertEqual('umatobi-simulation-test/test_logger.888.log', tlogger.log_path)
+        self.assertEqual('test/umatobi-simulation/test_logger.888.log', tlogger.log_path)
 
     def test_make_start_up_orig(self):
         start_up_orig = lib.make_start_up_orig()
