@@ -10,7 +10,7 @@ from umatobi.test.test_screen import ScreenTests
 from umatobi.test.test_theater import TheaterTests
 from umatobi.test.test_node import NodeTests
 from umatobi.test.test_core_node import CoreNodeTests
-from umatobi.test.test_core_node import DarknessTests
+from umatobi.test.test_darkness import DarknessTests
 
 def test_main():
     # see: Lib/test/test_math.py
