@@ -4,7 +4,7 @@ import sys
 import socketserver
 import datetime, time
 import configparser
-import sqlite3
+import sqlite3, random
 
 from umatobi.log import *
 from umatobi.constants import *
