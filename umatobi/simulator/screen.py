@@ -350,7 +350,9 @@ class ManipulatingDB(threading.Thread):
         L = []
         for node in nodes:
             if node['status'] == 'active':
-                L.append(f"id: {node['id']}, key: {node['key']}")
+                node = dict(node)
+                host, port = node['host'], node['port']
+                L.append(f"id: {node['id']}, key: {node['key']}, hosr:port={host}:{port}")
         self.label_area.update('\n'.join(L))
         logger.debug(f"""{self}.inhole_pickles_from_simlation_db(),
                          {self.label_area}.update({'/n'.join(L)})""")
