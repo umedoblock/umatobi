@@ -2,42 +2,8 @@ import argparse, re
 import sys
 import os
 
+from umatobi.log import *
 from umatobi.constants import *
-from umatobi.lib import make_logger
-
-# for logger ...
-def _parse_logger_setting(parser):
-    log_levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
-    parser.add_argument('--log-level',
-                         metavar='LEVEL', dest='log_level',
-                         choices=log_levels, default='INFO',
-                         help=f'default INFO, must be in {log_levels}')
-    parser.add_argument('--simulation-dir',
-                         metavar='N', dest='simulation_dir',
-                         nargs='?', default=SIMULATION_DIR,
-                         help='simulation directory.')
-    return parser
-
-# for logger ...
-def get_logger_args():
-    parser = argparse.ArgumentParser("logger setting")
-    parser = _parse_logger_setting(parser)
-
-    args, argv = parser.parse_known_args()
-    # argv には，parser.add_argument() で追加していない
-    # arg が格納されている。
-    logger_args = args
-    if logger_args.log_level in ("DEBUG", *range(1, 10 + 1)):
-        # range(1, 10 + 1) means NOTSET < log_level <= logging.DEBUG
-        print(f"argv={argv}", file=sys.stderr)
-
-    return logger_args
-
-global logger
-logger_args = get_logger_args()
-logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
-logger.debug(f"__file__ = {__file__}")
-logger.debug(f"__name__ = {__name__}")
 
 def args_db(description):
     parser = _args_parse_basic(description)

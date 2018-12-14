@@ -6,14 +6,13 @@ import datetime, time
 import configparser
 import sqlite3
 
+from umatobi.log import *
 from umatobi.constants import *
-from umatobi.lib import make_logger, dict_becomes_jbytes, jtext_becomes_dict
+from umatobi.lib import dict_becomes_jbytes, jtext_becomes_dict
 from umatobi.lib import make_start_up_orig, elapsed_time
 from umatobi.lib import y15sformat_time
 import umatobi.simulator.sql
 from umatobi import simulator
-
-logger = None
 
 # WatsonTCPOffice and WatsonOpenOffice classes are on different thread.
 class WatsonOpenOffice(threading.Thread):
@@ -151,9 +150,6 @@ class Watson(threading.Thread):
         threading.Thread.__init__(self)
 
         self.watson_office_addr = watson_office_addr
-        global logger
-        if not logger:
-            logger = make_logger(dir_name, name="watson", level=log_level)
         self.log_level = log_level
         logger.info(f"Watson(self={self}, watson_office_addr={watson_office_addr}, simulation_seconds={simulation_seconds}, start_up_orig={start_up_orig}, dir_name={dir_name}, log_level={log_level}))")
 

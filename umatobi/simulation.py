@@ -4,10 +4,10 @@ import argparse
 import datetime
 import multiprocessing
 
+from umatobi.log import *
 from umatobi.constants import *
-from umatobi.lib import make_logger, make_start_up_orig, tell_shutdown_time
+from umatobi.lib import make_start_up_orig, tell_shutdown_time
 from umatobi.lib import y15sformat_time
-from umatobi.lib.args import get_logger_args
 from umatobi.simulator.client import Client
 from umatobi.simulator.watson import Watson
 from umatobi.tools.make_simulation_db import watson_make_simulation_db
@@ -60,13 +60,9 @@ def get_host_port(host_port):
     return host, port
 
 if __name__ == '__main__':
-    logger_args = get_logger_args()
     start_up_orig = make_start_up_orig()
     start_up_time = y15sformat_time(start_up_orig)
 
-    logger = make_logger(log_dir=logger_args.simulation_dir, \
-                         name="admin", \
-                         level=logger_args.log_level)
     logger.info(f"start_up_time={start_up_time}")
     logger.info("simulation start !")
 

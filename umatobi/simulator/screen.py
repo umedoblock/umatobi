@@ -5,21 +5,16 @@ import pickle
 import threading
 import tkinter as tk
 
+from umatobi.log import *
 from umatobi.constants import *
 from umatobi.lib.args import args_make_simulation_db
 from umatobi.simulator import sql
-from umatobi.lib import formula, make_logger
+from umatobi.lib import formula
 from umatobi.lib import Polling, elapsed_time
 from umatobi.lib.squares import put_on_square
 from umatobi.lib.formula import get_current_cos_sin_in_window
 from umatobi.lib import get_passed_seconds, get_passed_ms
 from umatobi.tools.make_simulation_db import init_nodes_table2
-from umatobi.lib.args import get_logger_args
-global logger
-logger_args = get_logger_args()
-logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
-logger.debug(f"__file__ = {__file__}")
-logger.debug(f"__name__ = {__name__}")
 
 try:
     from OpenGL.GLUT import *

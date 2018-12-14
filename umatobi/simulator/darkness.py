@@ -3,18 +3,11 @@ import threading, time
 import queue
 import pickle
 
+from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.node import Node
 from umatobi import simulator
-from umatobi.lib import make_logger, validate_kwargs
-from umatobi.lib import Polling
-
-from umatobi.lib.args import get_logger_args
-global logger
-logger_args = get_logger_args()
-logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
-logger.debug(f"__file__ = {__file__}")
-logger.debug(f"__name__ = {__name__}")
+from umatobi.lib import Polling, validate_kwargs
 
 class ExhaleQueue(Polling):
     def __init__(self, polling_secs, darkness):

@@ -4,6 +4,7 @@ import math
 import pickle
 import datetime
 
+from umatobi.log import *
 import umatobi.p2p.core
 from umatobi.lib import formula, validate_kwargs
 from umatobi.lib import y15sformat_parse, elapsed_time

@@ -39,10 +39,10 @@ class ClientTests(unittest.TestCase):
         client = Client(watson_office_addr, num_nodes)
 
         client._tcp_sock = MockIO(b'break down.')
-        with self.assertLogs('client', level='INFO') as cm:
+        with self.assertLogs('umatobi', level='INFO') as cm:
             client._wait_break_down()
-        self.assertRegex(cm.output[0], r'^INFO:client:.*\._wait_break_down\(\)')
-        self.assertRegex(cm.output[1], r'^INFO:client:.*\._wait_break_down\(\), .* got break down from \.*')
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._wait_break_down\(\)')
+        self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._wait_break_down\(\), .* got break down from \.*')
 
 
     def test_client_basic(self):

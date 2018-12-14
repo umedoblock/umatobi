@@ -4,17 +4,10 @@ import pickle
 import datetime
 import sqlite3
 
+from umatobi.log import *
 from umatobi.constants import *
 from umatobi.lib.args import args_make_simulation_db
-from umatobi.lib.args import get_logger_args
-from umatobi.lib import make_logger
 from umatobi import simulator
-
-global logger
-logger_args = get_logger_args()
-logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
-logger.debug(f"__file__ = {__file__}")
-logger.debug(f"__name__ = {__name__}")
 
 def collect_client_dbs(simulation_db):
     client_dbs = []

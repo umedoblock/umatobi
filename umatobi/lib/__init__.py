@@ -1,5 +1,4 @@
 import json
-import logging
 import datetime
 import time
 import sys
@@ -91,42 +90,3 @@ def get_passed_seconds(orig):
 def get_passed_ms(orig):
     passed_seconds = get_passed_seconds(orig)
     return _normalize_ms(passed_seconds)
-
-#   %(relativeCreated)d Time in ms when the LogRecord was created,
-LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(filename)s %(funcName)s() - %(message)s'
-LOGGER_SUFFIX = f" - process_id=%(process)d therad_id=%(thread)d"
-
-def make_logger(log_dir=None, name='', id_=None, level="INFO"):
-    name = name.replace(".py", "")
-    log_path = ""
-    if id_ is not None:
-        name = f"{name}.{str(id_)}"
-    if log_dir is not None:
-        if not os.path.isdir(log_dir):
-            os.makedirs(log_dir, exist_ok=True)
-        base_name = '.'.join([name, "log"])
-        log_path = os.path.join(log_dir, base_name)
-
-    logger_obj = logging.getLogger(name)
-    logger_obj.setLevel(level)
-
-    # create formatter and add it to the handlers
-    formatter = logging.Formatter(LOGGER_FMT + LOGGER_SUFFIX)
-
-    # create file handler which logs even debug messages
-    fh = None
-    if log_path:
-        fh = logging.FileHandler(log_path)
-        fh.setLevel(level)
-        fh.setFormatter(formatter)
-        logger_obj.addHandler(fh)
-        # extra setting.
-        logger_obj.log_path = log_path
-
-    # create console handler with a higher log level
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(level)
-    ch.setFormatter(formatter)
-    logger_obj.addHandler(ch)
-
-    return logger_obj

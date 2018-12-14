@@ -2,8 +2,8 @@ import os, sys, datetime, shutil
 import unittest
 
 from umatobi.test import *
+from umatobi.log import logger, make_logger
 from umatobi import lib
-from umatobi.lib import make_logger
 
 class LibTests(unittest.TestCase):
 

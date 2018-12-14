@@ -1,17 +1,11 @@
 import argparse
 import sys, os
 
+from umatobi.log import *
 from umatobi.simulator.screen import Trailer, Screen
 from umatobi.simulator.screen import display_sample
 from umatobi.lib.args import args_theater
 from umatobi.lib.squares import _moving_squares
-from umatobi.lib import make_logger
-from umatobi.lib.args import get_logger_args
-global logger
-logger_args = get_logger_args()
-logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
-logger.debug(f"__file__ = {__file__}")
-logger.debug(f"__name__ = {__name__}")
 
 def are_there_any_seats():
     return "available"

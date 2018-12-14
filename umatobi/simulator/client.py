@@ -5,13 +5,11 @@ import socket
 import multiprocessing
 from logging import StreamHandler
 
+from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.darkness import Darkness
 from umatobi import simulator
-from umatobi.lib import make_logger, jtext_becomes_dict, dict_becomes_jbytes
-from umatobi.lib import make_logger2
-from umatobi.lib import remove_logger
-from umatobi.lib.args import get_logger_args
+from umatobi.lib import jtext_becomes_dict, dict_becomes_jbytes
 
 def make_darkness(d_config):
     '''darkness process を作成'''
@@ -27,12 +25,6 @@ class Client(object):
         dir_name 以下に，Client が作成する一切合財を保存する。
         '''
 
-        global logger
-        logger_args = get_logger_args()
-        _logger = make_logger(name=os.path.basename(__file__), level=logger_args.log_level)
-        loggerDict=_logger.manager.loggerDict
-        handlers_client=loggerDict['client'].handlers
-        logger = _logger
         logger.info(f"Client(self={self}, watson_office_addr={watson_office_addr}, num_nodes={num_nodes})")
 
         if isinstance(num_nodes, int) and num_nodes > 0:
@@ -62,7 +54,6 @@ class Client(object):
         socket.setdefaulttimeout(self.timeout_sec)
 
     def consult_watson(self):
-        global logger
         logger.info(f"{self}.consult_watson()")
         self._tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -72,21 +63,6 @@ class Client(object):
         _d_init_attrs = self._init_attrs()
 
         client_id = self.id
-      # _logger.removeHandler(_fh)
-      # _logger.removeHandler(_ch)
-        loggerDict=logger.manager.loggerDict
-        handlers_client=loggerDict['client'].handlers
-        doubt_handlers = []
-        for handler in handlers_client:
-            if isinstance(handler, StreamHandler):
-                doubt_handlers.append(handler)
-        for doubt_handler in doubt_handlers:
-            # TODO: 以下一行が，log の二重出力対策に決定的に重要。
-            # 上の make_logger(name=client) と下の make_logger(name=client.0)
-            # では，getLogger() に渡す名前が異なるから重複logの出る理由が分からない。
-            # logging が bug ってるのかなぁ？って思ってしまう。
-            handlers_client.remove(doubt_handler)
-        logger = make_logger(log_dir=self.dir_name, name=os.path.basename(__file__), id_=self.id, level=self.log_level)
 
     def start(self):
         '''\
