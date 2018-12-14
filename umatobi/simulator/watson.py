@@ -135,8 +135,8 @@ class WatsonOffice(socketserver.StreamRequestHandler):
     def finish(self):
         logger.info(f"{self}.finish()")
 
-    def bye_bye(self):
-        logger.info(f"{self}.bye_bye()")
+    def byebye(self):
+        logger.info(f"{self}.byebye()")
         super().finish()
 
 class Watson(threading.Thread):
@@ -283,7 +283,7 @@ class Watson(threading.Thread):
         for watson_office_client in self.watson_tcp_office.clients:
             logger.info(f"{self}.release_clients(), watson_office_client={watson_office_client}")
             watson_office_client.wfile.write(result)
-            watson_office_client.bye_bye()
+            watson_office_client.byebye()
 
     def __str__(self):
         return f"Watson{self.watson_office_addr}"

@@ -117,7 +117,7 @@ class Darkness(object):
         self.all_nodes_inactive = threading.Event()
         self.exhale_queue = ExhaleQueue(self.POLLING_EXHALEQUEUE, self)
 
-        self.bye_bye_nodes = threading.Event()
+        self.byebye_nodes = threading.Event()
 
         self.nodes = []
 
@@ -138,7 +138,7 @@ class Darkness(object):
             d_node = {
                 'host': host, 'port': port, 'id': id,
                 'start_up_time': self.start_up_time,
-                'bye_bye_nodes': self.bye_bye_nodes,
+                'byebye_nodes': self.byebye_nodes,
                 '_queue_darkness': self._queue_darkness
             }
             node_ = Node(**d_node)
@@ -155,8 +155,8 @@ class Darkness(object):
 
         self.leave_there.wait()
         logger.info(('{} got leave_there signal.').format(self))
-        logger.info(('{} set bye_bye_nodes signal.').format(self))
-        self.bye_bye_nodes.set()
+        logger.info(('{} set byebye_nodes signal.').format(self))
+        self.byebye_nodes.set()
 
         for node_ in self.nodes:
             logger.info('{} wait thread join.'.format(node_))

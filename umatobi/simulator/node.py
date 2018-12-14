@@ -21,7 +21,7 @@ class Node(umatobi.p2p.core.Node):
         '''
         st_barrier = set([
             'host', 'port', 'id', 'start_up_time',
-            'good_bye_with_darkness', '_queue_darkness'
+            'byebye_nodes', '_queue_darkness'
         ])
 
         validate_kwargs(st_barrier, kwargs)
@@ -35,7 +35,7 @@ class Node(umatobi.p2p.core.Node):
         et = elapsed_time(y15sformat_parse(self.start_up_time))
         self.to_darkness(d, et)
 
-        self.good_bye_with_darkness.wait()
+        self.byebye_nodes.wait()
 
     def _force_shutdown(self):
         self.disappear()
@@ -70,7 +70,7 @@ class Node(umatobi.p2p.core.Node):
         super().appear()
 
     def disappear(self):
-        self.good_bye_with_darkness.set()
+        self.byebye_nodes.set()
         super().disappear()
 
     def __str__(self):

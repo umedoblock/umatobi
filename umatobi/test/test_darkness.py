@@ -6,7 +6,9 @@ import queue
 
 from umatobi.test import *
 from umatobi.simulator.darkness import Darkness
+from umatobi.simulator.client import make_darkness
 from umatobi.lib import current_y15sformat_time
+from umatobi.simulator import sql
 
 class DarknessTests(unittest.TestCase):
     def test_darkess_basic(self):
@@ -21,7 +23,8 @@ class DarknessTests(unittest.TestCase):
         first_node_id = 1
         num_darkness = 8
         # share with client and darknesses
-        made_nodes = multiprocessing.Value('i', 0),
+        made_nodes = multiprocessing.Value('i', 0)
+        print("made_nodes =", made_nodes)
         # share with client and another darknesses
         leave_there =threading.Event()
 
@@ -44,9 +47,25 @@ class DarknessTests(unittest.TestCase):
         for k, v in darkness_d_config.items():
             attr = getattr(darkness, k)
             self.assertEqual(v, attr)
-        self.assertFalse(darkness.bye_bye_nodes.is_set())
+        self.assertFalse(darkness.byebye_nodes.is_set())
         self.assertEqual(darkness.client_db.db_path,
                          os.path.join(dir_name, f"client.{client_id}.db"))
+
+        client_db = sql.SQL(db_path=darkness.client_db_path,
+                            schema_path=SCHEMA_PATH)
+        client_db.create_db()
+        client_db.create_table('growings')
+        darkness.leave_there.set() # for test
+        self.assertFalse(darkness.byebye_nodes.is_set())
+        darkness.start()
+        self.assertTrue(darkness.all_nodes_inactive.is_set())
+
+        self.assertTrue(darkness.byebye_nodes.is_set())
+        darkness.leave_there.set()
+        self.assertTrue(darkness.byebye_nodes.is_set())
+        self.assertTrue(darkness.all_nodes_inactive.is_set())
+
+        darkness.stop()
 
 if __name__ == '__main__':
     unittest.main()
