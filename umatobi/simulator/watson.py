@@ -53,7 +53,13 @@ class WatsonTCPOffice(socketserver.TCPServer):
     def _determine_office_addr(self):
         logger.info(f"{self}._determine_office_addr(), watson_office_addr={self.watson.watson_office_addr}")
         ip, port = self.watson.watson_office_addr
+        ports = list(range(1024, 65536))
+        random.shuffle(ports)
         while True:
+            try:
+                port = ports.pop()
+            except IndexError as e:
+                raise RuntimeError("every ports are in use.")
             addr = (ip, port)
             try:
                 logger.debug(f"{self}._determine_office_addr(), super().__init__(addr={addr}, WatsonTCPOffice)")
@@ -62,11 +68,6 @@ class WatsonTCPOffice(socketserver.TCPServer):
             except OSError as oe:
                 if oe.errno != 98:
                     raise(oe)
-
-              # [Errno 98] Address already in use
-                port += 1
-                if port > 65535:
-                    raise RuntimeError("port number is over 65535")
                 continue
             break
 
