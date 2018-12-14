@@ -159,6 +159,7 @@ class Darkness(object):
         self.bye_bye_nodes.set()
 
         for node_ in self.nodes:
+            logger.info('{} wait thread join.'.format(node_))
             node_.join()
             logger.info('{} thread joined.'.format(node_))
 
@@ -170,6 +171,7 @@ class Darkness(object):
         # ただし、_queue_darkness内のqueueを取りこぼさないために、
         # client_db.close() を確実に実行させるために、
         # ExhaleQueue() 内の sched thread の終了を保証する必要がある。
+        logger.info('{} wait exhale_queue thread join.'.format(node_))
         self.exhale_queue.join()
 
     def stop(self):
