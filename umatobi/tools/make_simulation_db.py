@@ -87,8 +87,6 @@ def watson_make_simulation_db(simulation_db):
     simulation_db.inserts('growings', tuple(growings))
     simulation_db.commit()
 
-    init_nodes_table(simulation_db)
-
     for client_db in reversed(simulation_db.client_dbs):
         client_db.close()
     simulation_db.close()
