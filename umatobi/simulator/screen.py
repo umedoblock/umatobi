@@ -334,7 +334,7 @@ class ManipulatingDB(threading.Thread):
                     min_rad, max_rad = clicked_rad_range
                     if min_rad <= r_ <= max_rad:
                         # click 箇所付近のnodeであれば，緑の四角を置く。
-                        logger.info(f"{self}.inhole_pickles_from_simlation_db(), found a node(r={r_}) in range({min_rad}, {max_rad})")
+                        logger.debug(f"{self}.inhole_pickles_from_simlation_db(), found a node(r={r_}) in range({min_rad}, {max_rad})")
                         green_square = (r_, x, y, 0.02, (0x00, 0xff, 0))
                         green_squares.append(green_square)
                         break
