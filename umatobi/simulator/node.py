@@ -13,8 +13,6 @@ class Node(umatobi.p2p.core.Node):
 
     _output = print
 
-    POLLING_DARKNESS_GOODBYE = 1.0
-
     def __init__(self, **kwargs):
         '''\
         simulator 用 node を初期化する。
