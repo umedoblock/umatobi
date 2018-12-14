@@ -34,7 +34,7 @@ class NodeTests(unittest.TestCase):
         node_status = node_.get_status()
         self.assertEqual(dict, type(node_status))
 
-        node_.byebye_nodes.set() # act client
+        node_.byebye_nodes.set() # act darkness
 
         self.assertFalse(node_.sock._closed)
         self.assertFalse(node_._last_moment.is_set())
@@ -56,7 +56,7 @@ class NodeTests(unittest.TestCase):
         self.assertEqual(2, threading.active_count())
 
         logger.info(f"node_.byebye_nodes.set()")
-        node_.byebye_nodes.set() # act client
+        node_.byebye_nodes.set() # act darkness
         logger.info(f"node_.disappear()")
         node_.disappear()
         for th in threading.enumerate():
