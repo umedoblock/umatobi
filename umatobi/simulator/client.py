@@ -181,8 +181,8 @@ class Client(object):
         else:
             # ip が同じ
             message = (f"{self}._release(), client and watson use same IP. " +
-                       "Therefore " +
-                       "don\'t send client.{self.id}.db to watson.")
+                       f"Therefore " +
+                       f"don\'t send client.{self.id}.db to watson.")
             logger.info(message)
 
         for darkness_process in self.darkness_processes:
