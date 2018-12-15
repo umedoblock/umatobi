@@ -1,13 +1,15 @@
 import os
 import sys, shutil
-import threading
+import threading, socket
 import unittest
 import math, queue, pickle
 
 from umatobi.log import logger
-from umatobi.simulator.node import Node
+from umatobi.simulator.node import Node, NodeOffice
+from umatobi.simulator.node import NodeOpenOffice, NodeUDPOffice
 from umatobi.lib import current_y15sformat_time
 from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
+from umatobi.lib import dict_becomes_jbytes, jtext_becomes_dict
 
 class NodeTests(unittest.TestCase):
     def setUp(self):
@@ -146,6 +148,59 @@ class NodeTests(unittest.TestCase):
         self.assertTrue(node_.sock._closed)
 
         os.remove(node_.master_hand_path)
+
+class NodeOfficeTestsHandle(NodeOffice):
+    def __init__(self, request, client_address, server):
+        super().__init__(request, client_address, server)
+
+class NodeOfficeTests(unittest.TestCase):
+
+    def setUp(self):
+        byebye_nodes = threading.Event()
+        start_up_orig = make_start_up_orig()
+        start_up_time = y15sformat_time(start_up_orig)
+        _queue_darkness = queue.Queue()
+        node = Node(host='localhost', port=20001, id=1, \
+                    byebye_nodes=byebye_nodes, \
+                    start_up_time=start_up_time, \
+                    _queue_darkness=_queue_darkness)
+        self.node = node
+
+    def test_handle(self):
+        node = self.node
+        node._open_office()
+        node._init_node()
+
+        client_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        client_address = ('localhost', 8888)
+        client_sock.bind(client_address)
+        server = NodeUDPOffice(node)
+
+        d = {
+            'profess': 'You are Red.',
+            'hop': 1,
+        }
+        packet = dict_becomes_jbytes(d)
+        request = packet, client_sock
+        print('request =', request)
+        node_office = \
+            NodeOfficeTestsHandle(request, client_address, server)
+        server.server_close()
+
+        node.node_udp_office.shutdown()
+
+        recved = client_sock.recvfrom(1024)
+        packet, client_socket = recved
+
+        print("       recved =", recved)
+        print("       packet =", packet)
+        print("client_socket =", client_socket)
+        d_recved = jtext_becomes_dict(packet)
+        self.assertEqual(d_recved['hop'], d['hop'] * 2)
+        self.assertEqual(d_recved['profess'], 'You are Green.')
+
+        client_sock.close()
+        node.sock.close()
 
 if __name__ == '__main__':
     unittest.main()

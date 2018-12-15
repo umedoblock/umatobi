@@ -10,6 +10,7 @@ import umatobi.p2p.core
 from umatobi.lib import formula, validate_kwargs
 from umatobi.lib import y15sformat_parse, elapsed_time
 from umatobi.lib import get_master_hand_path
+from umatobi.lib import dict_becomes_jbytes, jtext_becomes_dict
 
 # NodeUDPOffice and NodeOpenOffice classes are on different thread.
 class NodeOpenOffice(threading.Thread):
@@ -77,35 +78,49 @@ class NodeOffice(socketserver.DatagramRequestHandler):
         self.request={self.request} # socket.SOCK_DGRAM
         self.client_address={self.client_address} # ('localhost', 11111)
         self.server={self.server} # RequestHandler
+        self.socket={self.socket}
         """)
     #   self.server in NodeOffice class means NodeUDPOffice instance.
         text_message = self.rfile.readline().strip()
-        logger.debug(f"text_message={text_message}")
+        logger.info(f"text_message={text_message}")
+        logger.info(f"type(text_message)={type(text_message)}")
         self.server.clients.append(self)
 
         sheep = jtext_becomes_dict(text_message)
-        logger.debug(f"sheep={sheep}")
+        logger.info(f"sheep={sheep}")
         professed = sheep['profess']
+        logger.info(f"professed={professed}")
 
-        if professed == 'I am Watson.':
+        if professed == 'You are Red.':
             client_addr = self.client_address
 
-            client_id = len(self.server.clients) + 1 # client.id start one.
-
-            nodes = sheep['Nodes']
-            with self.node.office_door:
-                self.node.nodes.extend(nodes)
+            hop = sheep['hop']
+            with self.server.node.office_door:
+                self.server.node.nodes.extend(client_addr)
+            d = {
+                'profess': 'You are Green.',
+                'hop': hop * 2,
+            }
+            reply = dict_becomes_jbytes(d)
         else:
-            logger.error(f"unknown professed='{professed}', text_message={text_message}")
             reply = b'Go back home.'
+            logger.error(f"unknown professed='{professed}', text_message={text_message}")
+        logger.info(f"client_address={self.client_address}, reply={reply}")
         self.wfile.write(reply)
 
  #  def finish(self):
  #      logger.info(f"finish()")
 
-    def byebye(self):
-        logger.info(f"byebye()")
+    def finish(self):
+        logger.info(f"finish()")
         super().finish()
+
+  # echo server
+  # def handle(self):
+  #     got_packet = self.rfile.read()
+  #     self.wfile.write(got_packet.upper())
+  # def finish(self):
+  #     super().finish()
 
 class Node(umatobi.p2p.core.Node):
 
@@ -126,6 +141,7 @@ class Node(umatobi.p2p.core.Node):
             setattr(self, attr, value)
         self._rad, self._x, self._y = 0.0, 0.0, 0.0
         self.node_office_addr = ('localhost', 0)
+        self.nodes = []
         self.office_door = threading.Lock()
         self.node_office_addr_assigned = threading.Event()
         self.master_hand_path = get_master_hand_path(SIMULATION_DIR, self.start_up_time)
