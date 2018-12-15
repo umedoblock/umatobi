@@ -129,11 +129,10 @@ class Node(umatobi.p2p.core.Node):
         self.master_hand_path = get_master_hand_path(SIMULATION_DIR, self.start_up_time)
 
     def run(self):
+        self._open_office()
         d = self._init_node()
         et = elapsed_time(y15sformat_parse(self.start_up_time))
         self.to_darkness(d, et)
-
-        self._open_office() # inc 2 => 3
 
         self._steal_master_palm()
         self.regist()
@@ -160,6 +159,8 @@ class Node(umatobi.p2p.core.Node):
         # in NodeOpenOffice.run()
         logger.info(f"node_open_office.wait()")
         node_open_office.in_serve_forever.wait()
+        self.host, self.port = self.node_office_addr
+        self.node_office_addr_assigned.set()
         logger.info(f"node_open_office={node_open_office}")
         # node.node_office_addr が決定している。
         return node_open_office

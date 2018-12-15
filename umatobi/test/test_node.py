@@ -2,7 +2,7 @@ import os
 import sys, shutil
 import threading
 import unittest
-import queue
+import math, queue, pickle
 
 from umatobi.log import logger
 from umatobi.simulator.node import Node
@@ -107,7 +107,30 @@ class NodeTests(unittest.TestCase):
 
         logger.info(f"node_.appear()")
         node_.appear()
-        self.assertEqual(2, threading.active_count())
+        node_.node_office_addr_assigned.wait()
+        self.assertEqual((node_.host, node_.port), node_.node_office_addr)
+        self.assertEqual(3, threading.active_count())
+
+        tup = node_._queue_darkness.get()
+        et, pickle_dumps = tup
+        d = pickle.loads(pickle_dumps)
+        self.assertEqual(d['id'], 1)
+        self.assertEqual(d['id'], node_.id)
+        self.assertEqual(d['host'], 'localhost')
+        self.assertEqual(d['host'], node_.host)
+        self.assertEqual(d['port'], node_.port)
+        self.assertRegex(d['key'], r'\A0x\w{32}\Z')
+        self.assertNotIn(d['key'], '_')
+        self.assertIsInstance(d['rad'], float)
+        self.assertGreaterEqual(d['rad'], 0.0)
+        self.assertLessEqual(d['rad'], 2 * math.pi)
+        self.assertIsInstance(d['x'], float)
+        self.assertGreaterEqual(d['x'], -1.0)
+        self.assertLessEqual(d['x'], 1.0)
+        self.assertIsInstance(d['y'], float)
+        self.assertGreaterEqual(d['y'], -1.0)
+        self.assertLessEqual(d['y'], 1.0)
+        self.assertEqual(d['status'], 'active')
 
         logger.info(f"node_.byebye_nodes.set()")
         node_.byebye_nodes.set() # act darkness
