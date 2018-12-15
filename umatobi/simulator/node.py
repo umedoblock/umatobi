@@ -135,6 +135,7 @@ class Node(umatobi.p2p.core.Node):
 
         self._open_office() # inc 2 => 3
 
+        self._steal_master_palm()
         self.regist()
 
         logger.info(f"byebye_nodes.wait()")
@@ -172,6 +173,16 @@ class Node(umatobi.p2p.core.Node):
       # recver_addr = ('localhost', 222)
       # self.sock.sendto(msg, recver_addr)
       # recved_msg, who = self.sock.recvfrom(1024)
+
+    def _steal_master_palm(self):
+        if not os.path.isfile(self.master_hand_path):
+            logger.info(f"not found 'master_hand_path={self.master_hand_path}'")
+            return None
+
+        logger.info(f"found 'master_hand_path={self.master_hand_path}'")
+        with open(self.master_hand_path) as master_palm:
+            node_lines = master_palm.read()
+        return node_lines
 
     def _force_shutdown(self):
         self.disappear()

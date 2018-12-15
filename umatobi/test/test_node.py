@@ -19,6 +19,22 @@ class NodeTests(unittest.TestCase):
         self.node = node
         self._story = True
 
+    def test_steal_master_palm(self):
+        self._story = False
+        node = self.node
+        node_addr_line = str(node.node_office_addr) + '\n'
+        self.assertTrue(hasattr(node, 'master_hand_path'))
+
+        os.makedirs(os.path.dirname(node.master_hand_path), exist_ok=True)
+        with open(node.master_hand_path, 'w') as master_palm:
+            test_node_lines = "('localhost', 1223)\n('localhost', 2334)\n"
+            print(test_node_lines, file=master_palm, end='')
+
+        node_lines = node._steal_master_palm()
+        self.assertEqual(node_lines, test_node_lines)
+
+        os.remove(node.master_hand_path)
+
     def test_regist(self):
         self._story = False
         node = self.node
