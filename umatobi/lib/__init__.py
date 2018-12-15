@@ -6,6 +6,8 @@ import os
 import threading
 import sched
 
+from umatobi.constants import *
+
 class Polling(threading.Thread):
     def __init__(self, polling_secs):
         threading.Thread.__init__(self)
@@ -27,6 +29,15 @@ class Polling(threading.Thread):
 
     def run(self):
         self._sche.run()
+
+def get_master_hand(start_up_time):
+    return os.path.join(start_up_time, MASTER_HAND)
+
+def get_master_hand_path(simulation_dir=SIMULATION_DIR, start_up_time='0000-00-00T000000'):
+    return os.path.join(simulation_dir, get_master_hand(start_up_time))
+
+def get_master_hand_path2(start_up_time, simulation_dir=SIMULATION_DIR):
+    return os.path.join(simulation_dir, get_master_hand(start_up_time))
 
 def validate_kwargs(st_barrier, kwargs):
     if st_barrier != kwargs.keys():

@@ -5,9 +5,11 @@ import pickle, socketserver
 import datetime
 
 from umatobi.log import *
+from umatobi.constants import *
 import umatobi.p2p.core
 from umatobi.lib import formula, validate_kwargs
 from umatobi.lib import y15sformat_parse, elapsed_time
+from umatobi.lib import get_master_hand_path
 
 # NodeUDPOffice and NodeOpenOffice classes are on different thread.
 class NodeOpenOffice(threading.Thread):
@@ -124,6 +126,7 @@ class Node(umatobi.p2p.core.Node):
         self.node_office_addr = ('localhost', 0)
         self.office_door = threading.Lock()
         self.node_office_addr_assigned = threading.Event()
+        self.master_hand_path = get_master_hand_path(SIMULATION_DIR, self.start_up_time)
 
     def run(self):
         d = self._init_node()
@@ -131,6 +134,9 @@ class Node(umatobi.p2p.core.Node):
         self.to_darkness(d, et)
 
         self._open_office() # inc 2 => 3
+
+        self.regist()
+
         logger.info(f"byebye_nodes.wait()")
         self.byebye_nodes.wait()
         logger.info(f"release_clients()")
@@ -158,10 +164,14 @@ class Node(umatobi.p2p.core.Node):
         return node_open_office
 
     def regist(self):
-        msg = 'I am Node.'
-        recver_addr = ('localhost', 222)
-        self.sock.sendto(msg, recver_addr)
-        recved_msg, who = self.sock.recvfrom(1024)
+        logger.info(f"regist(), master_hand_path={self.master_hand_path}")
+        os.makedirs(os.path.dirname(self.master_hand_path), exist_ok=True)
+        with open(self.master_hand_path, 'a') as master:
+            print(f"{self.node_office_addr}", file=master)
+      # msg = 'I am Node.'
+      # recver_addr = ('localhost', 222)
+      # self.sock.sendto(msg, recver_addr)
+      # recved_msg, who = self.sock.recvfrom(1024)
 
     def _force_shutdown(self):
         self.disappear()

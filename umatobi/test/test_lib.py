@@ -10,6 +10,14 @@ class LibTests(unittest.TestCase):
     def test_SIMULATION_DIR(self):
         self.assertEqual('test/umatobi-simulation', SIMULATION_DIR)
 
+    def test_master_hand(self):
+        y15s_time = lib.current_y15sformat_time()
+        self.assertEqual(lib.get_master_hand(y15s_time), f"{y15s_time}/{MASTER_HAND}")
+
+    def test_master_hand_path(self):
+        y15s_time = lib.current_y15sformat_time()
+        self.assertEqual(lib.get_master_hand_path(SIMULATION_DIR, y15s_time), f"test/umatobi-simulation/{y15s_time}/{MASTER_HAND}")
+
     def test_make_log_dir(self):
         special_dir = SIMULATION_DIR + "-special"
         self.assertFalse(os.path.isdir(special_dir))
