@@ -38,7 +38,7 @@ class SQL(object):
     def read_schema(self):
         logger.info(f"{self}.read_schema(), schema_path={self.schema_path}")
         self._schema = configparser.ConfigParser()
-        with open(self.schema_path) as f:
+        with open(self.schema_path, encoding='utf-8') as f:
             self._schema.read_file(f)
 
     def access_db(self):
