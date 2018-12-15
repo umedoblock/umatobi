@@ -57,12 +57,12 @@ class ClientTests(unittest.TestCase):
     def test_client_story_with_watson(self):
         watson = self.watson
         num_nodes = 10
-        client = Client(watson.watson_office_addr, num_nodes)
 
         watson.touch_simulation_db_on_clients()
         watson.open_office()
 
         # emulate client.start()
+        client = Client(watson.watson_office_addr, num_nodes)
         client.consult_watson()
 
         client._make_growings_table()
