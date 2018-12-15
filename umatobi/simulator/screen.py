@@ -245,7 +245,8 @@ class ManipulatingDB(threading.Thread):
         self.manipulated = threading.Event()
         self.squares_lock = threading.Lock()
         self.label_area = LabelArea()
-
+        self.label_area.start()
+        self.label_area._initialized.wait()
         self.node_squares = []
         self.green_squares = []
         self.node_legs = []
@@ -363,12 +364,12 @@ class ManipulatingDB(threading.Thread):
     def is_continue(self):
         return not self.leave_there.is_set()
 
-class LabelArea(object):
+class LabelArea(threading.Thread):
 
     def __init__(self):
-        self._thread = threading.Thread(target=self.run)
+        threading.Thread.__init__(self)
         logger.info(f"LabelArea(self={self})")
-        self._thread.start()
+        self._initialized = threading.Event()
 
     def run(self):
         logger.info(f"{self}.run()")
@@ -380,6 +381,7 @@ class LabelArea(object):
         self.display = tk.Label(self._tk_root, textvariable=self._buf, font=ft,
                                 bg='white', anchor=tk.W, justify=tk.LEFT)
         self.display.pack(side=tk.LEFT)
+        self._initialized.set()
         self._tk_root.mainloop()
 
     def update(self, message):
