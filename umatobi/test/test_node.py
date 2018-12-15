@@ -178,24 +178,22 @@ class NodeOfficeTests(unittest.TestCase):
         }
         packet = dict_becomes_jbytes(d)
         request = packet, client_sock
-        print('request =', request)
-        node_office = \
-            NodeOffice(request, client_address, server)
-        server.server_close()
-
+      # print('request =', request)
+        node_office = NodeOffice(request, client_address, server)
         node.node_udp_office.shutdown()
 
         recved = client_sock.recvfrom(1024)
         packet, client_socket = recved
+        client_sock.close()
+      # server.server_close() # あってもなくても正常終了する
 
-        print("       recved =", recved)
-        print("       packet =", packet)
-        print("client_socket =", client_socket)
+      # print("       recved =", recved)
+      # print("       packet =", packet)
+      # print("client_socket =", client_socket)
         d_recved = jtext_becomes_dict(packet)
         self.assertEqual(d_recved['hop'], d['hop'] * 2)
         self.assertEqual(d_recved['profess'], 'You are Green.')
 
-        client_sock.close()
         node.sock.close()
 
 if __name__ == '__main__':
