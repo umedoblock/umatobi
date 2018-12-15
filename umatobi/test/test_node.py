@@ -22,12 +22,13 @@ class NodeTests(unittest.TestCase):
     def test_steal_master_palm(self):
         self._story = False
         node = self.node
-        node_addr_line = str(node.node_office_addr) + '\n'
+        str_addr = (str(x) for x in node.node_office_addr)
+        node_addr_line = f"{':'.join(str_addr)}" + '\n'
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
         os.makedirs(os.path.dirname(node.master_hand_path), exist_ok=True)
         with open(node.master_hand_path, 'w') as master_palm:
-            test_node_lines = "('localhost', 1223)\n('localhost', 2334)\n"
+            test_node_lines = "localhost:1223\nlocalhost:2334\n"
             print(test_node_lines, file=master_palm, end='')
 
         node_lines = node._steal_master_palm()
@@ -38,7 +39,8 @@ class NodeTests(unittest.TestCase):
     def test_regist(self):
         self._story = False
         node = self.node
-        node_addr_line = str(node.node_office_addr) + '\n'
+        str_addr = (str(x) for x in node.node_office_addr)
+        node_addr_line = f"{':'.join(str_addr)}" + '\n'
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
         self.assertFalse(os.path.exists(node.master_hand_path))

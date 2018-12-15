@@ -171,7 +171,9 @@ class Node(umatobi.p2p.core.Node):
         logger.info(f"regist(), master_hand_path={self.master_hand_path}")
         os.makedirs(os.path.dirname(self.master_hand_path), exist_ok=True)
         with open(self.master_hand_path, 'a') as master:
-            print(f"{self.node_office_addr}", file=master)
+            str_addr = (str(x) for x in self.node_office_addr)
+            node_addr_line = f"{':'.join(str_addr)}" + '\n'
+            print(f"{node_addr_line}", end='', file=master)
       # msg = 'I am Node.'
       # recver_addr = ('localhost', 222)
       # self.sock.sendto(msg, recver_addr)
