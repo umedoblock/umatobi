@@ -149,10 +149,6 @@ class NodeTests(unittest.TestCase):
 
         os.remove(node_.master_hand_path)
 
-class NodeOfficeTestsHandle(NodeOffice):
-    def __init__(self, request, client_address, server):
-        super().__init__(request, client_address, server)
-
 class NodeOfficeTests(unittest.TestCase):
 
     def setUp(self):
@@ -184,7 +180,7 @@ class NodeOfficeTests(unittest.TestCase):
         request = packet, client_sock
         print('request =', request)
         node_office = \
-            NodeOfficeTestsHandle(request, client_address, server)
+            NodeOffice(request, client_address, server)
         server.server_close()
 
         node.node_udp_office.shutdown()
