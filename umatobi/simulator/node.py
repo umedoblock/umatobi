@@ -26,8 +26,6 @@ class NodeOpenOffice(threading.Thread):
             logger.info(f"with NodeUDPOffice(node={self.node}, node_udp_office={node_udp_office})")
             self.node.node_udp_office = node_udp_office
             # NodeOpenOffice() run on different thread of NodeUDPOffice.
-            self.in_serve_forever.set()
-            self.node.node_office_addr_assigned.set()
             logger.info("node_udp_office.serve_forever()")
             node_udp_office.serve_forever()
         logger.info(f"{self} end!")
@@ -68,6 +66,10 @@ class NodeUDPOffice(socketserver.UDPServer):
             self.node.addr = addr
 
         logger.info(f"{self}.node.addr={addr}")
+
+    def serve_forever(self):
+        self.node.node_open_office.in_serve_forever.set()
+        super().serve_forever()
 
 class NodeOffice(socketserver.DatagramRequestHandler):
     def handle(self):
