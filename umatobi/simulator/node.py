@@ -63,7 +63,7 @@ class NodeUDPOffice(socketserver.UDPServer):
 
         # node_office_addr が決定されている。
         with self.node.office_door:
-            self.node.addr = addr
+            self.node.node_office_addr = addr
 
         logger.info(f"{self}.node.addr={addr}")
 
