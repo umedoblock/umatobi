@@ -71,6 +71,7 @@ class LibTests(unittest.TestCase):
     def test_key_hex(self):
         key = b'\xfe\xdc\xba\x98\x76\x54\x32\x10' * 4
         self.assertEqual(_key_hex(key), '0x' + 'fedcba9876543210' * 4)
+        self.assertEqual(len(_key_hex(key)), 2 + KEY_OCTETS * 2)
 
     def test_curren_y15sformat_time(self):
         # Y15S_FORMAT='%Y-%m-%dT%H%M%S'
