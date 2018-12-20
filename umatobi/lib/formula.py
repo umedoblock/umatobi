@@ -29,6 +29,9 @@ def _key2rxy(_keyID):
 
     return norm_rad, _x, _y
 
+def keycmp(a, b):
+    return 1
+
 def get_current_cos_sin_in_window(ww, wh, x, y):
     rate = ww / wh
     # math x, y axis
