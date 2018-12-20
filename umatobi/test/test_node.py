@@ -18,45 +18,53 @@ class NodeTests(unittest.TestCase):
         start_up_time = y15sformat_time(start_up_orig)
         _queue_darkness = queue.Queue()
         node = Node(host='localhost', port=20001, id=1, byebye_nodes=byebye_nodes, start_up_time=start_up_time, _queue_darkness=_queue_darkness)
+        key = b'0x' + b'0123456789abcdef' * 4
+        node.update_key(key)
         self.node = node
         self._story = True
+        self.key = key
+
+    def test_update_key(self):
+        node = self.node
+
+        self.assertEqual(node.key, self.key)
+        key = b'0x' + b'fedcba9876543210' * 4
+        node.update_key(key)
+        self.assertEqual(node.key, key)
 
     def test_steal_master_palm(self):
         self._story = False
         node = self.node
-        str_addr = (str(x) for x in node.node_office_addr)
-        node_addr_line = f"{':'.join(str_addr)}" + '\n'
+        node_info_line = f"{node.host}:{node.port}:{str(node.key)}" + '\n'
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
         os.makedirs(os.path.dirname(node.master_hand_path), exist_ok=True)
         with open(node.master_hand_path, 'w') as master_palm:
-            test_node_lines = "localhost:1223\nlocalhost:2334\n"
+            test_node_lines = f"{node.host}:{node.port}:{node.key}" + '\n'
             print(test_node_lines, file=master_palm, end='')
 
         node_lines = node._steal_master_palm()
         self.assertEqual(node_lines, test_node_lines)
-
         os.remove(node.master_hand_path)
 
     def test_regist(self):
         self._story = False
         node = self.node
-        str_addr = (str(x) for x in node.node_office_addr)
-        node_addr_line = f"{':'.join(str_addr)}" + '\n'
+        node_info_line = f"{node.host}:{node.port}:{node.key}" + '\n'
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
         self.assertFalse(os.path.exists(node.master_hand_path))
-        node.regist()
+        node.regist() # once
         self.assertTrue(os.path.isfile(node.master_hand_path))
 
         with open(node.master_hand_path) as master_palm:
             master_hand = master_palm.read()
-            self.assertEqual(master_hand, node_addr_line)
+            self.assertEqual(master_hand, node_info_line)
 
-        node.regist()
+        node.regist() # twice
         with open(node.master_hand_path) as master_palm:
             master_hand = master_palm.read()
-            self.assertEqual(master_hand, node_addr_line * 2)
+            self.assertEqual(master_hand, node_info_line * 2)
 
         os.remove(node.master_hand_path)
 
@@ -150,7 +158,6 @@ class NodeTests(unittest.TestCase):
         os.remove(node_.master_hand_path)
 
 class NodeOfficeTests(unittest.TestCase):
-
     def setUp(self):
         byebye_nodes = threading.Event()
         start_up_orig = make_start_up_orig()
