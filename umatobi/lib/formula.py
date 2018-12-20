@@ -74,10 +74,10 @@ def keycmp(a, b):
     res = -1
     if b[0] <= 0x7f:
         if res1 > 0 and res2 > 0:
-            res =  1
+            res = 1
     else:
         if res1 > 0 or res2 > 0:
-            res =  1
+            res = 1
 
     return res
 
