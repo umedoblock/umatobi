@@ -4,6 +4,7 @@ import unittest
 from umatobi.test import *
 from umatobi.log import logger, make_logger
 from umatobi import lib
+from umatobi.lib.formula import keycmp
 
 class LibTests(unittest.TestCase):
 
@@ -71,6 +72,56 @@ class LibTests(unittest.TestCase):
         start_up_orig = lib.make_start_up_orig()
         et = lib.elapsed_time(start_up_orig - td)
         self.assertEqual(73138, et)
+
+    def test_keycmp_simple(self):
+        # b'\xff' * 16
+        # int.to_bytes(255, 1, 'big')
+        # int.to_bytes(0, 1, 'big')
+        keyffff = b'\xff' * KEY_OCTETS
+        keyfffe = b'\xff' * (KEY_OCTETS-1) + b'\xfe'
+        key7fff = b'\x7f' + b'\xff' * (KEY_OCTETS-1)
+        key7ffe = b'\x7f' + b'\xff' * (KEY_OCTETS-2) + b'\xfe'
+
+        key0000 = b'\x00' * KEY_OCTETS
+        key0001 = b'\x00' * (KEY_OCTETS-1) + b'\x01'
+        key8000 = b'\x80' + b'\x00' * (KEY_OCTETS-1)
+        key8001 = b'\x80' + b'\x00' * (KEY_OCTETS-2) + b'\x01'
+
+        self.assertEqual(KEY_OCTETS, 32)
+        self.assertEqual(len(keyffff), KEY_OCTETS)
+        self.assertEqual(len(keyfffe), KEY_OCTETS)
+        self.assertEqual(len(key7fff), KEY_OCTETS)
+        self.assertEqual(len(key7ffe), KEY_OCTETS)
+        self.assertEqual(len(key0000), KEY_OCTETS)
+        self.assertEqual(len(key0001), KEY_OCTETS)
+        self.assertEqual(len(key8000), KEY_OCTETS)
+        self.assertEqual(len(key8001), KEY_OCTETS)
+
+        # Greater means Red, Less means Green, Eq means White
+
+        self.assertEqual(keycmp(key0000, key0000), 0)   # eq     White
+        self.assertGreater(keycmp(key0001, key0000), 0) # + 1    Red
+        self.assertGreater(keycmp(key7fff, key0000), 0) # + 7fff Red
+        self.assertLess(keycmp(key8000, key0000), 0)    # + 8000 Green
+        self.assertLess(keycmp(keyffff, key0000), 0)    # - 1    Green
+
+        self.assertEqual(keycmp(key7fff, key7fff), 0)   # eq
+        self.assertGreater(keycmp(key8000, key7fff), 0) # + 1
+        self.assertGreater(keycmp(keyfffe, key7fff), 0) # + 7fff
+        self.assertLess(keycmp(keyffff, key7fff), 0)    # + 8000
+        self.assertLess(keycmp(key7ffe, key7fff), 0)    # -1
+
+        self.assertEqual(keycmp(key8000, key8000), 0)   # eq
+        self.assertGreater(keycmp(key8001, key8000), 0) # + 1
+        self.assertGreater(keycmp(keyffff, key8000), 0) # + 7fff
+        self.assertLess(keycmp(key0000, key8000), 0)    # + 8000
+        self.assertLess(keycmp(key7fff, key8000), 0)    # -1
+
+        self.assertEqual(keycmp(keyffff, keyffff), 0)   # eq
+        self.assertGreater(keycmp(key0000, keyffff), 0) # + 1
+        self.assertGreater(keycmp(key7ffe, keyffff), 0) # + 7fff
+        self.assertLess(keycmp(key7fff, keyffff), 0)    # + 8000
+        self.assertLess(keycmp(keyfffe, keyffff), 0)    # -1
 
 if __name__ == '__main__':
     unittest.main()
