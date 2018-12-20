@@ -32,13 +32,13 @@ def _key2rxy(_keyID):
     return norm_rad, _x, _y
 
 def _sign(num):
-    s = 0
-    if num:
-        if num > 0:
-            s = 1
-        else:
-            s = -1
-    return s
+    if not num:
+        return 0
+
+    if num > 0:
+        return 1
+    else:
+        return -1
 
 def _memcmp(a, b, size):
     unpacked_a = struct.unpack(f"{KEY_OCTETS}B", a)
@@ -64,19 +64,20 @@ def keycmp(a, b):
 #       elif unpack_a[i] < unpack_b[i]:
 #           return -1
 
-    res = 0
-    res1 = _sign(_memcmp(a, b, KEY_OCTETS))
-    if res1:
-        # memcpy(b_, b, DHT_KEYSIZE); b_[0] ^= 0x80
-        b_ = int.to_bytes((b[0] ^ 0x80), 1, 'big')  + b[1:]
-        res2 = _sign(_memcmp(b_, a, KEY_OCTETS))
-        res = -1
-        if b[0] <= 0x7f:
-            if res1 > 0 and res2 > 0:
-                res =  1
-        else:
-            if res1 > 0 or res2 > 0:
-                res =  1
+    res1 = _memcmp(a, b, KEY_OCTETS)
+    if not res1:
+        return 0
+
+    # memcpy(b_, b, DHT_KEYSIZE); b_[0] ^= 0x80
+    b_ = int.to_bytes((b[0] ^ 0x80), 1, 'big')  + b[1:]
+    res2 = _memcmp(b_, a, KEY_OCTETS)
+    res = -1
+    if b[0] <= 0x7f:
+        if res1 > 0 and res2 > 0:
+            res =  1
+    else:
+        if res1 > 0 or res2 > 0:
+            res =  1
 
     return res
 
