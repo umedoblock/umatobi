@@ -110,6 +110,7 @@ class LibTests(unittest.TestCase):
         self.assertGreater(keycmp(keyfffe, key7fff), 0) # + 7fff
         self.assertLess(keycmp(keyffff, key7fff), 0)    # + 8000
         self.assertLess(keycmp(key7ffe, key7fff), 0)    # -1
+        self.assertLess(keycmp(key0000, key7fff), 0)    # zero
 
         self.assertEqual(keycmp(key8000, key8000), 0)   # eq
         self.assertGreater(keycmp(key8001, key8000), 0) # + 1
