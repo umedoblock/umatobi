@@ -8,7 +8,7 @@ import sqlite3, random
 
 from umatobi.log import *
 from umatobi.constants import *
-from umatobi.lib import dict_becomes_jbytes, jtext_becomes_dict
+from umatobi.lib import dict2json, json2dict
 from umatobi.lib import make_start_up_orig, elapsed_time
 from umatobi.lib import y15sformat_time
 import umatobi.simulator.sql
@@ -84,11 +84,12 @@ class WatsonOffice(socketserver.StreamRequestHandler):
         self.server={self.server} # RequestHandler
         """)
     #   self.server in WatsonOffice class means WatsonTCPOffice instance.
-        text_message = self.rfile.readline().strip()
+        _read = self.rfile.read()
+        text_message = _read.decode().strip()
         logger.debug(f"{self}.handle(), text_message={text_message}")
 
-        sheep = jtext_becomes_dict(text_message)
-        logger.debug(f"{self}.handle(), sheep={sheep}")
+        sheep = json2dict(text_message)
+        logger.info(f"{self}.handle(), sheep={sheep}")
         professed = sheep['profess']
         num_nodes = sheep['num_nodes']
 
@@ -123,7 +124,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             logger.debug(f"{self}.handle(), to_client={to_client}")
             self.server.watson.total_nodes += num_nodes
             logger.info(f"{self}.handle(), watson.total_nodes={self.server.watson.total_nodes}.")
-            reply = dict_becomes_jbytes(to_client)
+            reply = dict2json(to_client).encode()
             logger.info(f"{self}.handle(), reply={reply}, client_addr={client_addr}")
         else:
             logger.error(f"{self}.handle(), unknown professed='{professed}', text_message={text_message}")

@@ -9,7 +9,7 @@ from umatobi.simulator.node import Node, NodeOffice
 from umatobi.simulator.node import NodeOpenOffice, NodeUDPOffice
 from umatobi.lib import current_y15sformat_time
 from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
-from umatobi.lib import dict_becomes_jbytes, jtext_becomes_dict
+from umatobi.lib import dict2json, json2dict
 
 class NodeTests(unittest.TestCase):
     def setUp(self):
@@ -18,7 +18,7 @@ class NodeTests(unittest.TestCase):
         start_up_time = y15sformat_time(start_up_orig)
         _queue_darkness = queue.Queue()
         node = Node(host='localhost', port=20001, id=1, byebye_nodes=byebye_nodes, start_up_time=start_up_time, _queue_darkness=_queue_darkness)
-        key = b'0x' + b'0123456789abcdef' * 4
+        key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
         node.update_key(key)
         self.node = node
         self._story = True
@@ -28,19 +28,19 @@ class NodeTests(unittest.TestCase):
         node = self.node
 
         self.assertEqual(node.key, self.key)
-        key = b'0x' + b'fedcba9876543210' * 4
+        key = b'\xfe\xdc\xba\x98\x76\x54\x32\x10' * 4
         node.update_key(key)
         self.assertEqual(node.key, key)
 
     def test_steal_master_palm(self):
         self._story = False
         node = self.node
-        node_info_line = f"{node.host}:{node.port}:{str(node.key)}" + '\n'
+        node_info_line = f"{node.host}:{node.port}:{str(node.key_hex)}" + '\n'
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
         os.makedirs(os.path.dirname(node.master_hand_path), exist_ok=True)
         with open(node.master_hand_path, 'w') as master_palm:
-            test_node_lines = f"{node.host}:{node.port}:{node.key}" + '\n'
+            test_node_lines = f"{node.host}:{node.port}:{node.key_hex}" + '\n'
             print(test_node_lines, file=master_palm, end='')
 
         node_lines = node._steal_master_palm()
@@ -50,7 +50,7 @@ class NodeTests(unittest.TestCase):
     def test_regist(self):
         self._story = False
         node = self.node
-        node_info_line = f"{node.host}:{node.port}:{node.key}" + '\n'
+        node_info_line = f"{node.host}:{node.port}:{node.key_hex}" + '\n'
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
         self.assertFalse(os.path.exists(node.master_hand_path))
@@ -105,8 +105,8 @@ class NodeTests(unittest.TestCase):
         self.assertEqual(d['host'], 'localhost')
         self.assertEqual(d['host'], node_.host)
         self.assertEqual(d['port'], node_.port)
-        self.assertRegex(d['key'], r'\A0x\w{32}\Z')
-        self.assertNotIn(d['key'], '_')
+        self.assertRegex(d['key_hex'], r'\A0x\w{64}\Z')
+        self.assertNotIn(d['key_hex'], '_')
         self.assertIsInstance(d['rad'], float)
         self.assertGreaterEqual(d['rad'], 0.0)
         self.assertLessEqual(d['rad'], 2 * math.pi)
@@ -183,8 +183,8 @@ class NodeOfficeTests(unittest.TestCase):
             'profess': 'You are Red.',
             'hop': 1,
         }
-        packet = dict_becomes_jbytes(d)
-        request = packet, client_sock
+        packet = dict2json(d)
+        request = packet.encode('utf-8'), client_sock
       # print('request =', request)
         node_office = NodeOffice(request, client_address, server)
         node.node_udp_office.shutdown()
@@ -197,7 +197,7 @@ class NodeOfficeTests(unittest.TestCase):
       # print("       recved =", recved)
       # print("       packet =", packet)
       # print("client_socket =", client_socket)
-        d_recved = jtext_becomes_dict(packet)
+        d_recved = json2dict(packet.decode())
         self.assertEqual(d_recved['hop'], d['hop'] * 2)
         self.assertEqual(d_recved['profess'], 'You are Green.')
 

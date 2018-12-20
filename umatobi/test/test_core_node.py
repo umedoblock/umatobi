@@ -31,7 +31,7 @@ class CoreNodeTests(unittest.TestCase):
         node.update_key()
         self.assertNotEqual(node.key, key0)
 
-        key_rand = os.urandom(16)
+        key_rand = os.urandom(32)
         node.update_key(key_rand)
         self.assertEqual(node.key, key_rand)
 

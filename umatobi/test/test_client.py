@@ -10,7 +10,7 @@ from umatobi.simulator import watson
 
 class ClientTests(unittest.TestCase):
     def setUp(self):
-        watson_office_addr = ('localhost', 65530)
+        watson_office_addr = ('localhost', 0)
         simulation_seconds = 3
         simulation_dir = SIMULATION_DIR
         log_level = 'DEBUG'
@@ -33,7 +33,7 @@ class ClientTests(unittest.TestCase):
         shutil.rmtree(self.watson.dir_name, ignore_errors=True)
 
     def test_client_break_down(self):
-        watson_office_addr = ('localhost', 65530)
+        watson_office_addr = ('localhost', 0)
         num_nodes = 10
 
         client = Client(watson_office_addr, num_nodes)
@@ -46,7 +46,7 @@ class ClientTests(unittest.TestCase):
 
 
     def test_client_basic(self):
-        watson_office_addr = ('localhost', 65530)
+        watson_office_addr = ('localhost', 0)
         num_nodes = 10
 
         client = Client(watson_office_addr, num_nodes)

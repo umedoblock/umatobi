@@ -3,6 +3,7 @@ import socket
 import os
 import sys
 
+from umatobi.constants import *
 from umatobi.lib import formula
 
 class Node(threading.Thread):
@@ -48,8 +49,12 @@ class Node(threading.Thread):
         self.join()
 
     def update_key(self, k=b''):
-        if not k:
-            k = os.urandom(16)
+        if not isinstance(k, bytes):
+            raise ValueError('key must be bytes object.')
+        if len(k) == 0:
+            k = os.urandom(KEY_OCTETS)
+        elif len(k) != KEY_OCTETS:
+            raise ValueError(f"key length is {len(k)}, it must be {KEY_OCTETS}.")
         self.key = k
 
     def get_status(self, type_='dict'):

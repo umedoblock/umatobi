@@ -8,9 +8,10 @@ from umatobi.log import *
 from umatobi.constants import *
 import umatobi.p2p.core
 from umatobi.lib import formula, validate_kwargs
+from umatobi.lib.formula import _key_hex
 from umatobi.lib import y15sformat_parse, elapsed_time
 from umatobi.lib import get_master_hand_path
-from umatobi.lib import dict_becomes_jbytes, jtext_becomes_dict
+from umatobi.lib import dict2json, json2dict
 
 # NodeUDPOffice and NodeOpenOffice classes are on different thread.
 class NodeOpenOffice(threading.Thread):
@@ -81,12 +82,12 @@ class NodeOffice(socketserver.DatagramRequestHandler):
         self.socket={self.socket}
         """)
     #   self.server in NodeOffice class means NodeUDPOffice instance.
-        text_message = self.rfile.readline().strip()
+        text_message = self.rfile.readline().decode().strip()
         logger.info(f"text_message={text_message}")
         logger.info(f"type(text_message)={type(text_message)}")
         self.server.clients.append(self)
 
-        sheep = jtext_becomes_dict(text_message)
+        sheep = json2dict(text_message)
         logger.info(f"sheep={sheep}")
         professed = sheep['profess']
         logger.info(f"professed={professed}")
@@ -101,7 +102,7 @@ class NodeOffice(socketserver.DatagramRequestHandler):
                 'profess': 'You are Green.',
                 'hop': hop * 2,
             }
-            reply = dict_becomes_jbytes(d)
+            reply = dict2json(d).encode('utf-8')
         else:
             reply = b'Go back home.'
             logger.error(f"unknown professed='{professed}', text_message={text_message}")
@@ -187,7 +188,7 @@ class Node(umatobi.p2p.core.Node):
         logger.info(f"regist(), master_hand_path={self.master_hand_path}")
         os.makedirs(os.path.dirname(self.master_hand_path), exist_ok=True)
         with open(self.master_hand_path, 'a') as master:
-            node_info = f"{self.host}:{self.port}:{self.key}" + '\n'
+            node_info = f"{self.host}:{self.port}:{self.key_hex}" + '\n'
             print(node_info, end='', file=master)
       # msg = 'I am Node.'
       # recver_addr = ('localhost', 222)
@@ -220,7 +221,7 @@ class Node(umatobi.p2p.core.Node):
         _keyID = int(key_hex[:10], 16)
         rad, x, y = formula._key2rxy(_keyID)
 
-        d['key'] = key_hex
+        d['key_hex'] = key_hex
         d['rad'] = rad
         d['x'] = x
         d['y'] = y
@@ -261,6 +262,7 @@ class Node(umatobi.p2p.core.Node):
         '''
         super().update_key(k=k)
 
+        self.key_hex = _key_hex(self.key)
         self._keyID = struct.unpack('>I', self.key[:4])[0]
         r, x, y = formula._key2rxy(self._keyID)
         self._rad, self._x, self._y = r, x, y

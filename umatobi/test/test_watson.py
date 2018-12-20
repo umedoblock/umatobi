@@ -63,8 +63,8 @@ class Req(object):
         sheep['profess'] = 'I am Client.'
         sheep['num_nodes'] = 111111
         self.sheep = sheep
-        js_sheep = lib.dict_becomes_jbytes(sheep)
-        return io.BytesIO(js_sheep)
+        js_sheep = lib.dict2json(sheep)
+        return io.BytesIO(js_sheep.encode('utf-8'))
 
     def sendall(self, b):
         pass

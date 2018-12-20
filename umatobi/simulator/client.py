@@ -9,7 +9,7 @@ from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.darkness import Darkness
 from umatobi import simulator
-from umatobi.lib import jtext_becomes_dict, dict_becomes_jbytes
+from umatobi.lib import json2dict, dict2json
 
 def make_darkness(d_config):
     '''darkness process を作成'''
@@ -230,13 +230,13 @@ class Client(object):
         sheep = {}
         sheep['profess'] = 'I am Client.'
         sheep['num_nodes'] = self.num_nodes
-        js = dict_becomes_jbytes(sheep)
-        logger.info(f"{self}._hello_watson(), sheep={sheep}, js={js}")
+        j = dict2json(sheep)
+        logger.info(f"{self}._hello_watson(), sheep={sheep}, j={j}")
         d = {}
         while tries < 3:
-            logger.info(f"{self}._hello_watson(), {self._tcp_sock}.sendall(js={js}), tries={tries}.")
+            logger.info(f"{self}._hello_watson(), {self._tcp_sock}.sendall(j={j}), tries={tries}.")
             try:
-                self._tcp_sock.sendall(js)
+                self._tcp_sock.sendall(j.encode())
                 break
             except socket.timeout as e:
                 logger.info(f"{self}._hello_watson(), {self._tcp_sock} timout by.")
@@ -244,9 +244,11 @@ class Client(object):
                 continue
 
         if tries >= 3:
-            raise RuntimeError(f"cannot send js={js} to addr={self.watson_office_addr}")
+            raise RuntimeError(f"cannot send j={j} to addr={self.watson_office_addr}")
+        self._tcp_sock.shutdown(socket.SHUT_WR) # クソぉぉぉぉーっ！
 
         tries = 0
+        recved_msg = b'<empty>'
         while tries < 3:
             logger.info(f"{self}._hello_watson(), {self._tcp_sock}.recv(1024), tries={tries}")
             try:
@@ -257,9 +259,11 @@ class Client(object):
                 tries += 1
                 continue
         logger.debug(f"{self}._hello_watson(), recved_msg={recved_msg}, tries={tries}.")
-        jt = recved_msg.decode("utf-8")
-        logger.debug(f"{self}._hello_watson(), recved_msg.decode('utf-8')={jt}, tries={tries}.")
-        d = jtext_becomes_dict(jt)
+        print("recved_msg =")
+        print(recved_msg)
+        text = recved_msg.decode()
+        logger.debug(f"{self}._hello_watson(), recved_msg.decode('utf-8')={text}, tries={tries}.")
+        d = json2dict(text)
 
         logger.debug(f"{self}._hello_watson(), d={d}, tries={tries}.")
 
