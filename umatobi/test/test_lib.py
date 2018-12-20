@@ -4,7 +4,7 @@ import unittest
 from umatobi.test import *
 from umatobi.log import logger, make_logger
 from umatobi import lib
-from umatobi.lib.formula import keycmp
+from umatobi.lib.formula import keycmp, _key_hex
 
 class LibTests(unittest.TestCase):
 
@@ -67,6 +67,10 @@ class LibTests(unittest.TestCase):
     def test_make_start_up_orig(self):
         start_up_orig = lib.make_start_up_orig()
         self.assertIsInstance(start_up_orig, datetime.datetime)
+
+    def test_key_hex(self):
+        key = b'\xfe\xdc\xba\x98\x76\x54\x32\x10' * 4
+        self.assertEqual(_key_hex(key), '0x' + 'fedcba9876543210' * 4)
 
     def test_curren_y15sformat_time(self):
         # Y15S_FORMAT='%Y-%m-%dT%H%M%S'
