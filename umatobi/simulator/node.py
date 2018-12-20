@@ -42,7 +42,7 @@ class NodeUDPOffice(socketserver.UDPServer):
 
     def _determine_office_addr(self):
         logger.info(f"node_office_addr={self.node.node_office_addr}")
-        ip, port = self.node.node_office_addr
+        host, port = self.node.node_office_addr
 
         ports = list(range(1024, 65536))
         random.shuffle(ports)
@@ -51,7 +51,7 @@ class NodeUDPOffice(socketserver.UDPServer):
                 port = ports.pop()
             except IndexError as e:
                 raise RuntimeError("every ports are in use.")
-            addr = (ip, port)
+            addr = (host, port)
 
             try:
                 super().__init__(addr, NodeOffice)

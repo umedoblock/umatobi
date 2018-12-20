@@ -52,7 +52,7 @@ class WatsonTCPOffice(socketserver.TCPServer):
 
     def _determine_office_addr(self):
         logger.info(f"watson_office_addr={self.watson.watson_office_addr}")
-        ip, port = self.watson.watson_office_addr
+        host, port = self.watson.watson_office_addr
         ports = list(range(1024, 65536))
         random.shuffle(ports)
         while True:
@@ -60,7 +60,7 @@ class WatsonTCPOffice(socketserver.TCPServer):
                 port = ports.pop()
             except IndexError as e:
                 raise RuntimeError("every ports are in use.")
-            addr = (ip, port)
+            addr = (host, port)
             try:
                 super().__init__(addr, WatsonOffice)
             except OSError as oe:
