@@ -48,13 +48,12 @@ def validate_kwargs(st_barrier, kwargs):
                    'must keys are {}').format(st_unknown, st_must)
         raise RuntimeError(message)
 
-def dict_becomes_jbytes(d):
-    js = json.dumps(d) + "\n"
-    jb = js.encode()
-    return jb
+def dict2json(d):
+    j = json.dumps(d)
+    return j
 
-def jtext_becomes_dict(jt):
-    d = json.loads(jt)
+def json2dict(j):
+    d = json.loads(j)
     return d
 
 def make_start_up_orig():

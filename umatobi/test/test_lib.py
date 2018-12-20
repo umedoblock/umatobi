@@ -8,6 +8,21 @@ from umatobi.lib.formula import keycmp
 
 class LibTests(unittest.TestCase):
 
+    def test_dict2json_and_json2dict(self):
+        d = {
+            'port': 1000,
+            'host': 'localhost',
+            'key': '0x' + '1234567890abcedf' * 4,
+        }
+
+        self.assertIsInstance(d, dict)
+        j = lib.dict2json(d)
+        self.assertIsInstance(j, str)
+        d2 = lib.json2dict(j)
+        self.assertIsInstance(d2, dict)
+        self.assertNotEqual(id(d2), id(d))
+        self.assertEqual(d2, d)
+
     def test_SIMULATION_DIR(self):
         self.assertEqual('test/umatobi-simulation', SIMULATION_DIR)
 
