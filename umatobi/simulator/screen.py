@@ -52,6 +52,11 @@ class Screen(object):
         self.mode = GLUT_SINGLE | GLUT_RGBA | GLUT_DOUBLE
         self._debug = False
 
+        self.screen_lock = threading.Lock()
+        self.node_squares = []
+        self.green_squares = []
+        self.node_legs = []
+
         self.simulation_db_path = simulation_db_path
         if simulation_db_path:
             self.manipulating_db = ManipulatingDB(self.simulation_db_path, self.start_the_movie_time)
@@ -111,20 +116,20 @@ class Screen(object):
         # 4. figures を OpenGL に書き込む。
         #    現在は，click した箇所付近の node を緑にしているだけ。
         moving = formula._fmove(passed_seconds)
-        with self.manipulating_db.squares_lock:
-            logger.debug(f"{self}.manipulating_db.squares_lock.acquire()")
-            logger.debug(f"{self}.manipulating_db.node_squares={self.manipulating_db.node_squares}")
-            for node_square in self.manipulating_db.node_squares:
+        with self.screen_lock:
+            logger.debug(f"{self}.screen_lock.acquire()")
+            logger.debug(f"{self}.node_squares={self.node_squares}")
+            for node_square in self.node_squares:
                 put_on_square(*node_square)
                 logger.debug(f"put_on_square(*node_square={node_square}")
 
-            logger.debug(f"{self}.manipulating_db.green_squares={self.manipulating_db.green_squares}")
-            for green_square in self.manipulating_db.green_squares:
+            logger.debug(f"{self}.green_squares={self.green_squares}")
+            for green_square in self.green_squares:
                 put_on_square(*green_square)
                 logger.debug(f"put_on_square(*green_square={green_square}")
 
             glBegin(GL_LINES)
-            for rxy in self.manipulating_db.node_legs:
+            for rxy in self.node_legs:
                 rx, ry, gx, gy = formula._moving_legs(rxy, moving)
                 rad, ix, iy = rxy
                 legs = ix, iy, rx, ry, gx, gy
@@ -137,7 +142,7 @@ class Screen(object):
                 glVertex2f(ix, iy)
                 glVertex2f(gx, gy)
             glEnd()
-            logger.debug(f"{self}.manipulating_db.squares_lock.release()")
+            logger.debug(f"{self}.screen_lock.release()")
 
         if get_passed_ms(self.start_the_movie_time) > self.manipulating_db.simulation_ms:
             logger.info(f"get_passed_ms({self.start_the_movie_time}) > {self.manipulating_db.simulation_ms}")
@@ -209,14 +214,14 @@ class Screen(object):
             clicked_rad_range = (min_rad, max_rad)
             crr = clicked_rad_range
             # click した箇所の前後 0.02 の範囲を記憶。
-            with self.manipulating_db.squares_lock:
+            with self.screen_lock:
                 self.manipulating_db.clicked_rad_ranges.append(crr)
 
     def idle(self):
         # 4. figures を OpenGL に書き込む。
         #    現在は，click した箇所付近の node を緑にしているだけ。
-        with self.manipulating_db.squares_lock:
-            for node_square in self.manipulating_db.node_squares:
+        with self.screen_lock:
+            for node_square in self.node_squares:
                 put_on_square(*node_square)
 
         glutPostRedisplay()
@@ -243,13 +248,9 @@ class ManipulatingDB(threading.Thread):
         self.leave_there = threading.Event()
         self.stay_there = threading.Event()
         self.manipulated = threading.Event()
-        self.squares_lock = threading.Lock()
         self.label_area = LabelArea()
         self.label_area.start()
         self.label_area._initialized.wait()
-        self.node_squares = []
-        self.green_squares = []
-        self.node_legs = []
         self.clicked_rad_ranges = []
 
     def _init_maniplate_db(self):
@@ -310,7 +311,7 @@ class ManipulatingDB(threading.Thread):
         green_squares = []
         node_legs = []
 
-        with self.squares_lock:
+        with self.screen.screen_lock:
             clicked_rad_ranges = self.clicked_rad_ranges.copy()
 
         # 3. memorydb 上の nodes table の内容を，
@@ -339,14 +340,14 @@ class ManipulatingDB(threading.Thread):
                         green_square = (r_, x, y, 0.02, (0x00, 0xff, 0))
                         green_squares.append(green_square)
                         break
-        with self.squares_lock:
+        with self.screen.screen_lock:
             logger.debug(f"""{self}.inhole_pickles_from_simlation_db(),
-                             {self.squares_lock}.acquire()""")
-            self.node_squares = node_squares
-            self.green_squares = green_squares
-            self.node_legs = node_legs
+                             {self.screen.screen_lock}.acquire()""")
+            self.screen.node_squares = node_squares
+            self.screen.green_squares = green_squares
+            self.screen.node_legs = node_legs
             logger.debug(f"""{self}.inhole_pickles_from_simlation_db(),
-                             {self.squares_lock}.release()""")
+                             {self.screen.screen_lock}.release()""")
 
         L = []
         for node in nodes:
