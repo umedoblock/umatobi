@@ -23,6 +23,21 @@ class LibTests(unittest.TestCase):
         self.assertNotEqual(id(d2), id(d))
         self.assertEqual(d2, d)
 
+    def test_dict2bytes_and_bytes2dict(self):
+        d = {
+            'port': 1000,
+            'host': 'localhost',
+            'key': '0x' + '1234567890abcedf' * 4,
+        }
+
+        self.assertIsInstance(d, dict)
+        b = lib.dict2bytes(d)
+        self.assertIsInstance(b, bytes)
+        d2 = lib.bytes2dict(b)
+        self.assertIsInstance(d2, dict)
+        self.assertNotEqual(id(d2), id(d))
+        self.assertEqual(d2, d)
+
     def test_SIMULATION_DIR(self):
         self.assertEqual('test/umatobi-simulation', SIMULATION_DIR)
 

@@ -48,9 +48,17 @@ def validate_kwargs(st_barrier, kwargs):
                    'must keys are {}').format(st_unknown, st_must)
         raise RuntimeError(message)
 
+def bytes2dict(b):
+    j = b.decode('utf-8')
+    return json2dict(j)
+
+def dict2bytes(d):
+    j = dict2json(d)
+    return j.encode('utf-8')
+
 def dict2json(d):
     j = json.dumps(d)
-    return j
+    return j + '\n'
 
 def json2dict(j):
     d = json.loads(j)

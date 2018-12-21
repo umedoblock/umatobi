@@ -9,7 +9,7 @@ from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.darkness import Darkness
 from umatobi import simulator
-from umatobi.lib import json2dict, dict2json
+from umatobi.lib import json2dict, dict2json, dict2bytes, bytes2dict
 
 def make_darkness(d_config):
     '''darkness process を作成'''
@@ -231,12 +231,13 @@ class Client(object):
         sheep['profess'] = 'I am Client.'
         sheep['num_nodes'] = self.num_nodes
         j = dict2json(sheep)
+        b = dict2bytes(sheep)
         logger.info(f"{self}._hello_watson(), sheep={sheep}, j={j}")
         d = {}
         while tries < 3:
             logger.info(f"{self}._hello_watson(), {self._tcp_sock}.sendall(j={j}), tries={tries}.")
             try:
-                self._tcp_sock.sendall(j.encode())
+                self._tcp_sock.sendall(b)
                 break
             except socket.timeout as e:
                 logger.info(f"{self}._hello_watson(), {self._tcp_sock} timout by.")
@@ -245,7 +246,7 @@ class Client(object):
 
         if tries >= 3:
             raise RuntimeError(f"cannot send j={j} to addr={self.watson_office_addr}")
-        self._tcp_sock.shutdown(socket.SHUT_WR) # クソぉぉぉぉーっ！
+      # self._tcp_sock.shutdown(socket.SHUT_WR)
 
         tries = 0
         recved_msg = b'<empty>'
@@ -259,11 +260,12 @@ class Client(object):
                 tries += 1
                 continue
         logger.debug(f"{self}._hello_watson(), recved_msg={recved_msg}, tries={tries}.")
-        print("recved_msg =")
-        print(recved_msg)
-        text = recved_msg.decode()
-        logger.debug(f"{self}._hello_watson(), recved_msg.decode('utf-8')={text}, tries={tries}.")
-        d = json2dict(text)
+        d = bytes2dict(recved_msg)
+      # print("recved_msg =")
+      # print(recved_msg)
+      # text = recved_msg.decode()
+      # logger.debug(f"{self}._hello_watson(), recved_msg.decode('utf-8')={text}, tries={tries}.")
+      # d = json2dict(text)
 
         logger.debug(f"{self}._hello_watson(), d={d}, tries={tries}.")
 
