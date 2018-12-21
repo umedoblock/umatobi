@@ -11,7 +11,7 @@ from umatobi.lib import formula, validate_kwargs
 from umatobi.lib.formula import _key_hex
 from umatobi.lib import y15sformat_parse, elapsed_time
 from umatobi.lib import get_master_hand_path
-from umatobi.lib import dict2json, json2dict
+from umatobi.lib import dict2bytes, bytes2dict
 
 # NodeUDPOffice and NodeOpenOffice classes are on different thread.
 class NodeOpenOffice(threading.Thread):
@@ -82,12 +82,9 @@ class NodeOffice(socketserver.DatagramRequestHandler):
         self.socket={self.socket}
         """)
     #   self.server in NodeOffice class means NodeUDPOffice instance.
-        text_message = self.rfile.readline().decode().strip()
-        logger.info(f"text_message={text_message}")
-        logger.info(f"type(text_message)={type(text_message)}")
+        sheep = bytes2dict(self.rfile.readline())
         self.server.clients.append(self)
 
-        sheep = json2dict(text_message)
         logger.info(f"sheep={sheep}")
         professed = sheep['profess']
         logger.info(f"professed={professed}")
@@ -102,10 +99,10 @@ class NodeOffice(socketserver.DatagramRequestHandler):
                 'profess': 'You are Green.',
                 'hop': hop * 2,
             }
-            reply = dict2json(d).encode('utf-8')
+            reply = dict2bytes(d)
         else:
             reply = b'Go back home.'
-            logger.error(f"unknown professed='{professed}', text_message={text_message}")
+            logger.error(f"unknown professed='{professed}', sheep={sheep}")
         logger.info(f"client_address={self.client_address}, reply={reply}")
         self.wfile.write(reply)
 

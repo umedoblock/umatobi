@@ -8,7 +8,7 @@ import sqlite3, random
 
 from umatobi.log import *
 from umatobi.constants import *
-from umatobi.lib import dict2json, json2dict, bytes2dict, dict2bytes
+from umatobi.lib import bytes2dict, dict2bytes
 from umatobi.lib import make_start_up_orig, elapsed_time
 from umatobi.lib import y15sformat_time
 import umatobi.simulator.sql
