@@ -172,7 +172,7 @@ class NodeOfficeTests(unittest.TestCase):
     def test_handle(self):
         node = self.node
         node._open_office()
-        node._init_node()
+        node._scrape_attrs()
 
         client_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         client_address = ('localhost', 8888)

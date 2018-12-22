@@ -146,7 +146,7 @@ class Node(umatobi.p2p.core.Node):
 
     def run(self):
         self._open_office()
-        d = self._init_node()
+        d = self._scrape_attrs()
         et = elapsed_time(y15sformat_parse(self.start_up_time))
         self.to_darkness(d, et)
 
@@ -205,7 +205,7 @@ class Node(umatobi.p2p.core.Node):
     def _force_shutdown(self):
         self.disappear()
 
-    def _init_node(self):
+    def _scrape_attrs(self):
       # print('{} started.'.format(self))
         d = {}
         d['id'] = self.id
