@@ -123,9 +123,6 @@ class NodeTests(unittest.TestCase):
         self.assertLessEqual(d['y'], 1.0)
         self.assertEqual(d['status'], 'active')
 
-        node_status = node_.get_status()
-        self.assertEqual(dict, type(node_status))
-
         node_.byebye_nodes.set() # act darkness
 
         self.assertFalse(node_.sock._closed)

@@ -138,7 +138,6 @@ class Node(umatobi.p2p.core.Node):
         super().__init__(kwargs['host'], kwargs['port'])
         for attr, value in kwargs.items():
             setattr(self, attr, value)
-        self._rad, self._x, self._y = 0.0, 0.0, 0.0
 
         self.update_key()
         key_hex = self._key_hex()
@@ -278,18 +277,3 @@ class Node(umatobi.p2p.core.Node):
         self.key_hex = _key_hex(self.key)
         self._keyID = struct.unpack('>I', self.key[:4])[0]
         r, x, y = formula._key2rxy(self._keyID)
-        self._rad, self._x, self._y = r, x, y
-
-    def get_status(self, type_='dict'):
-        'node の各種情報を表示。'
-        super().get_status(type_)
-        self._status['_keyID'] = self._keyID
-
-      # self._status['_rad.float'] = '{:.3f} * PAI'.format(self._rad / math.pi)
-        key_rate = (self._keyID / (1 << 32))
-        hour, mod = divmod(key_rate, 1 / 12)
-        self._status['_rad.hour'] = '({} / 12 + {:.3f}) * 2 * PAI'.format(int(hour), mod)
-        self._status['_x'] = self._x
-        self._status['_y'] = self._y
-
-        return self._status
