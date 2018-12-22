@@ -39,11 +39,11 @@ class NodeUDPOffice(socketserver.UDPServer):
         self.node = node
         self.clients = []
     #   self.server in NodeOffice class means NodeUDPOffice instance.
-        self._determine_office_addr()
+        self._determine_node_office_addr()
 
-    def _determine_office_addr(self):
-        logger.info(f"node_office_addr={self.node.node_office_addr}")
-        host, port = self.node.node_office_addr
+    def _determine_node_office_addr(self):
+        logger.info(f"host={self.node.host}")
+        host = self.node.host
 
         ports = list(range(1024, 65536))
         random.shuffle(ports)
@@ -66,6 +66,7 @@ class NodeUDPOffice(socketserver.UDPServer):
         # node_office_addr が決定されている。
         with self.node.office_door:
             self.node.node_office_addr = addr
+            self.node.port = port
 
         logger.info(f"{self}.node.addr={addr}")
 
@@ -129,16 +130,17 @@ class Node(umatobi.p2p.core.Node):
         '''\
         simulator 用 node を初期化する。
         '''
+        threading.Thread.__init__(self)
+
         st_barrier = set([
-            'host', 'port', 'id', 'start_up_time',
+            'host', 'id', 'start_up_time',
             'byebye_nodes', '_queue_darkness'
         ])
-
         validate_kwargs(st_barrier, kwargs)
-        super().__init__(kwargs['host'], kwargs['port'])
         for attr, value in kwargs.items():
             setattr(self, attr, value)
 
+        self.node_office_addr = None
         self.update_key()
         key_hex = self._key_hex()
       # print('{} key_hex = {}'.format(self, key_hex))
@@ -151,7 +153,6 @@ class Node(umatobi.p2p.core.Node):
         self.y = y
         self.status = 'active'
 
-        self.node_office_addr = ('localhost', 0)
         self.nodes = []
         self.office_door = threading.Lock()
         self.node_office_addr_assigned = threading.Event()

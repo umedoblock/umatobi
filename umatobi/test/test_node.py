@@ -17,7 +17,7 @@ class NodeTests(unittest.TestCase):
         start_up_orig = make_start_up_orig()
         start_up_time = y15sformat_time(start_up_orig)
         _queue_darkness = queue.Queue()
-        node = Node(host='localhost', port=20001, id=1, byebye_nodes=byebye_nodes, start_up_time=start_up_time, _queue_darkness=_queue_darkness)
+        node = Node(host='localhost', id=1, byebye_nodes=byebye_nodes, start_up_time=start_up_time, _queue_darkness=_queue_darkness)
         key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
         node.update_key(key)
         self.node = node
@@ -35,6 +35,7 @@ class NodeTests(unittest.TestCase):
     def test_steal_master_palm(self):
         self._story = False
         node = self.node
+        node.port = 65535
         node_info_line = f"{node.host}:{node.port}:{str(node.key_hex)}" + '\n'
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
@@ -50,6 +51,7 @@ class NodeTests(unittest.TestCase):
     def test_regist(self):
         self._story = False
         node = self.node
+        node.port = 65535
         node_info_line = f"{node.host}:{node.port}:{node.key_hex}" + '\n'
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
@@ -69,7 +71,6 @@ class NodeTests(unittest.TestCase):
         os.remove(node.master_hand_path)
 
     def tearDown(self):
-        self.node.sock.close()
         if self._story:
             return
       # self.node.join()
@@ -79,24 +80,20 @@ class NodeTests(unittest.TestCase):
         start_up_orig = make_start_up_orig()
         start_up_time = y15sformat_time(start_up_orig)
         _queue_darkness = queue.Queue()
-        node_ = Node(host='localhost',
-                     port=10001,
-                     id=1,
+        node_ = Node(host='localhost', id=1,
                      byebye_nodes=byebye_nodes,
                      start_up_time=start_up_time,
                      _queue_darkness=_queue_darkness)
 
-        attrs = ('host', 'port', 'id', 'start_up_time', \
+        attrs = ('id', 'start_up_time', \
                  'byebye_nodes', '_queue_darkness')
         for attr in attrs:
             self.assertTrue(hasattr(node_, attr), attr)
 
-        self.assertFalse(node_._last_moment.is_set())
         node_.appear()
 
         node_.node_office_addr_assigned.wait()
         self.assertEqual((node_.host, node_.port), node_.node_office_addr)
-        self.assertFalse(node_._last_moment.is_set())
         office_addr = node_._get_office_addr()
         self.assertEqual(office_addr['host'], node_.host)
         self.assertEqual(office_addr['port'], node_.port)
@@ -125,16 +122,13 @@ class NodeTests(unittest.TestCase):
 
         node_.byebye_nodes.set() # act darkness
 
-        self.assertFalse(node_.sock._closed)
-        self.assertFalse(node_._last_moment.is_set())
         node_.disappear()
-        self.assertTrue(node_._last_moment.is_set())
-        self.assertTrue(node_.sock._closed)
 
         os.remove(node_.master_hand_path)
 
     def test_get_office_addr(self):
         node = self.node
+        node.port = 65535
         office_addr = node._get_office_addr()
         self.assertEqual(office_addr['host'], node.host)
         self.assertEqual(office_addr['port'], node.port)
@@ -147,7 +141,7 @@ class NodeTests(unittest.TestCase):
         start_up_orig = make_start_up_orig()
         start_up_time = y15sformat_time(start_up_orig)
 
-        node_ = Node(host='localhost', port=10001, id=1, byebye_nodes=byebye_nodes, start_up_time=start_up_time, _queue_darkness=_queue_darkness)
+        node_ = Node(host='localhost', id=1, byebye_nodes=byebye_nodes, start_up_time=start_up_time, _queue_darkness=_queue_darkness)
 
         logger.info(f"node_.appear()")
         node_.appear()
@@ -162,7 +156,6 @@ class NodeTests(unittest.TestCase):
         for th in threading.enumerate():
             print(f"th={th}")
         self.assertEqual(1, threading.active_count())
-        self.assertTrue(node_.sock._closed)
 
         os.remove(node_.master_hand_path)
 
@@ -172,7 +165,7 @@ class NodeOfficeTests(unittest.TestCase):
         start_up_orig = make_start_up_orig()
         start_up_time = y15sformat_time(start_up_orig)
         _queue_darkness = queue.Queue()
-        node = Node(host='localhost', port=20001, id=1, \
+        node = Node(host='localhost', id=1, \
                     byebye_nodes=byebye_nodes, \
                     start_up_time=start_up_time, \
                     _queue_darkness=_queue_darkness)
@@ -209,8 +202,6 @@ class NodeOfficeTests(unittest.TestCase):
         d_recved = json2dict(packet.decode())
         self.assertEqual(d_recved['hop'], d['hop'] * 2)
         self.assertEqual(d_recved['profess'], 'You are Green.')
-
-        node.sock.close()
 
 if __name__ == '__main__':
     unittest.main()
