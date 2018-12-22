@@ -122,6 +122,7 @@ class NodeOffice(socketserver.DatagramRequestHandler):
 
 class Node(umatobi.p2p.core.Node):
 
+    ATTRS = ('id', 'host', 'port', 'key_hex', 'rad', 'x', 'y', 'status')
     _output = print
 
     def __init__(self, **kwargs):
@@ -138,6 +139,19 @@ class Node(umatobi.p2p.core.Node):
         for attr, value in kwargs.items():
             setattr(self, attr, value)
         self._rad, self._x, self._y = 0.0, 0.0, 0.0
+
+        self.update_key()
+        key_hex = self._key_hex()
+      # print('{} key_hex = {}'.format(self, key_hex))
+        _keyID = int(key_hex[:10], 16)
+        rad, x, y = formula._key2rxy(_keyID)
+
+        self.key_hex = key_hex
+        self.rad = rad
+        self.x = x
+        self.y = y
+        self.status = 'active'
+
         self.node_office_addr = ('localhost', 0)
         self.nodes = []
         self.office_door = threading.Lock()
@@ -146,9 +160,11 @@ class Node(umatobi.p2p.core.Node):
 
     def run(self):
         self._open_office()
-        d = self._scrape_attrs()
+        d_addr = self._get_office_addr()
+        self.set_attrs(d_addr)
         et = elapsed_time(y15sformat_parse(self.start_up_time))
-        self.to_darkness(d, et)
+        d_attrs = self.get_attrs()
+        self.to_darkness(d_attrs, et)
 
         self._steal_master_palm()
         self.regist()
@@ -205,25 +221,25 @@ class Node(umatobi.p2p.core.Node):
     def _force_shutdown(self):
         self.disappear()
 
-    def _scrape_attrs(self):
+    def _get_office_addr(self):
       # print('{} started.'.format(self))
         d = {}
-        d['id'] = self.id
         d['host'] = self.host
         d['port'] = self.port
 
-        self.update_key()
-        key_hex = self._key_hex()
-      # print('{} key_hex = {}'.format(self, key_hex))
-        _keyID = int(key_hex[:10], 16)
-        rad, x, y = formula._key2rxy(_keyID)
+        return d
 
-        d['key_hex'] = key_hex
-        d['rad'] = rad
-        d['x'] = x
-        d['y'] = y
-        d['status'] = 'active'
+    def set_attrs(self, d={}):
+        attrs = d
+        for attr, value in attrs.items():
+            setattr(self, attr, value)
 
+    def get_attrs(self, keys=()):
+        if not keys:
+            keys = self.ATTRS
+        d = {}
+        for key in keys:
+            d[key] = getattr(self, key)
         return d
 
     def to_darkness(self, obj, et):

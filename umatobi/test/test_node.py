@@ -93,9 +93,14 @@ class NodeTests(unittest.TestCase):
 
         self.assertFalse(node_._last_moment.is_set())
         node_.appear()
+
         node_.node_office_addr_assigned.wait()
         self.assertEqual((node_.host, node_.port), node_.node_office_addr)
         self.assertFalse(node_._last_moment.is_set())
+        office_addr = node_._get_office_addr()
+        self.assertEqual(office_addr['host'], node_.host)
+        self.assertEqual(office_addr['port'], node_.port)
+        self.assertEqual(len(office_addr), 2)
 
         tup = node_._queue_darkness.get()
         et, pickle_dumps = tup
@@ -130,6 +135,13 @@ class NodeTests(unittest.TestCase):
         self.assertTrue(node_.sock._closed)
 
         os.remove(node_.master_hand_path)
+
+    def test_get_office_addr(self):
+        node = self.node
+        office_addr = node._get_office_addr()
+        self.assertEqual(office_addr['host'], node.host)
+        self.assertEqual(office_addr['port'], node.port)
+        self.assertEqual(len(office_addr), 2)
 
     def test_node_thread(self):
         logger.info(f"")
@@ -172,7 +184,7 @@ class NodeOfficeTests(unittest.TestCase):
     def test_handle(self):
         node = self.node
         node._open_office()
-        node._scrape_attrs()
+        node._get_office_addr()
 
         client_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         client_address = ('localhost', 8888)
