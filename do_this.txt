@@ -1,0 +1,1 @@
+cd ~/github.com/umatobi && virtualenv umatobi && cd umatobi && source ./bin/activate && cd .. && pip3 install -e && cd ~/github.com/umatobi
