@@ -1,2 +1,11 @@
 $ sudo apt-get install freeglut3-dev
 $ pip3 install PyOpenGL matplotlib
+$ pip3 install virtualenv
+
+###############################
+# MAC
+###############################
+$ sudo port install py37-opengl
+$ sudo port select --set cython cython37
+$ sudo port install sqlite3-tcl
+$ pip3 install pyopengl
