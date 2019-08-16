@@ -39,7 +39,7 @@ class LibTests(unittest.TestCase):
         self.assertEqual(d2, d)
 
     def test_SIMULATION_DIR(self):
-        self.assertEqual('test/umatobi-simulation', SIMULATION_DIR)
+        self.assertEqual('tests/umatobi-simulation', SIMULATION_DIR)
 
     def test_master_hand(self):
         y15s_time = lib.current_y15sformat_time()
@@ -47,7 +47,7 @@ class LibTests(unittest.TestCase):
 
     def test_master_hand_path(self):
         y15s_time = lib.current_y15sformat_time()
-        self.assertEqual(lib.get_master_hand_path(SIMULATION_DIR, y15s_time), f"test/umatobi-simulation/{y15s_time}/{MASTER_HAND}")
+        self.assertEqual(lib.get_master_hand_path(SIMULATION_DIR, y15s_time), f"tests/umatobi-simulation/{y15s_time}/{MASTER_HAND}")
 
     def test_make_log_dir(self):
         special_dir = SIMULATION_DIR + "-special"
@@ -74,10 +74,10 @@ class LibTests(unittest.TestCase):
 
     def test_log_path(self):
         tlogger = make_logger(log_dir=SIMULATION_DIR, name='test_logger', id_=None, level="INFO")
-        self.assertEqual('test/umatobi-simulation/test_logger.log', tlogger.log_path)
+        self.assertEqual('tests/umatobi-simulation/test_logger.log', tlogger.log_path)
 
         tlogger = make_logger(log_dir=SIMULATION_DIR, name='test_logger', id_=888, level="INFO")
-        self.assertEqual('test/umatobi-simulation/test_logger.888.log', tlogger.log_path)
+        self.assertEqual('tests/umatobi-simulation/test_logger.888.log', tlogger.log_path)
 
     def test_make_start_up_orig(self):
         start_up_orig = lib.make_start_up_orig()
