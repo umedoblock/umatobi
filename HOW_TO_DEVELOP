@@ -3,11 +3,7 @@ cd ~/github.com/umatobi && \
     cd umatobi && \
         source ./bin/activate && \
         cd .. && \
-    pip3 install -e && \
-    cd ~/github.com/umatobi
-    come back here!
-
-    can change "cd .. &&" to "cd ~/github.com/umatobi"
+    pip3 install -e
 
 $ python3 -m unittest umatobi.test.test_suite
 $ python3 ./umatobi/test/test_suite.py
