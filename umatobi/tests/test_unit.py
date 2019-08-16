@@ -8,10 +8,12 @@ from umatobi.tests.unit.test_watson import WatsonTests
 from umatobi.tests.unit.test_client import ClientTests
 from umatobi.tests.unit.test_simulation import SimulationTests
 from umatobi.tests.unit.test_theater import TheaterTests
+from umatobi.tests.unit.test_screen import ScreenTests
 
 def test_main():
     # see: Lib/test/test_math.py
     unit_suite = unittest.TestSuite()
+
     unit_suite.addTest(unittest.makeSuite(LibTests))
     unit_suite.addTest(unittest.makeSuite(SQLTests))
     unit_suite.addTest(unittest.makeSuite(CoreNodeTests))
@@ -19,6 +21,8 @@ def test_main():
     unit_suite.addTest(unittest.makeSuite(ClientTests))
     unit_suite.addTest(unittest.makeSuite(SimulationTests))
     unit_suite.addTest(unittest.makeSuite(TheaterTests))
+    unit_suite.addTest(unittest.makeSuite(ScreenTests))
+
     run_unittest(unit_suite)
 
 # python3 -m unittest umatobi/tests/unit/test_unit.py

@@ -3,7 +3,6 @@ from test.support import run_unittest
 
 from umatobi.tests.integration.test_client_with_watson import ClientStoryTests
 
-from umatobi.tests.test_screen import ScreenTests
 from umatobi.tests.test_node import NodeTests, NodeOfficeTests
 from umatobi.tests.test_darkness import DarknessTests
 
@@ -14,7 +13,6 @@ def test_main():
     # failed
     suite.addTest(unittest.makeSuite(ClientStoryTests))
 
-    suite.addTest(unittest.makeSuite(ScreenTests))
     suite.addTest(unittest.makeSuite(NodeTests))
     suite.addTest(unittest.makeSuite(NodeOfficeTests))
     suite.addTest(unittest.makeSuite(DarknessTests))

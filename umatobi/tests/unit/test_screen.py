@@ -8,6 +8,3 @@ class ScreenTests(unittest.TestCase):
     def test_screen_instance(self):
         screen = Screen(sys.argv)
         self.assertIsInstance(screen, Screen)
-
-if __name__ == '__main__':
-    unittest.main()
