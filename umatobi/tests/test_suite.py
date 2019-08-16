@@ -2,7 +2,6 @@ import unittest
 from test.support import run_unittest
 
 from umatobi.tests.test_client import ClientTests
-from umatobi.tests.test_watson import WatsonTests
 from umatobi.tests.test_simulation import SimulationTests
 from umatobi.tests.test_screen import ScreenTests
 from umatobi.tests.test_theater import TheaterTests
@@ -13,7 +12,6 @@ def test_main():
     # see: Lib/test/test_math.py
     suite = unittest.TestSuite()
     # suite.addTests(tests)
-    suite.addTest(unittest.makeSuite(WatsonTests))
     suite.addTest(unittest.makeSuite(ClientTests))
     suite.addTest(unittest.makeSuite(SimulationTests))
     suite.addTest(unittest.makeSuite(ScreenTests))

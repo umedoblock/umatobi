@@ -4,6 +4,7 @@ from test.support import run_unittest
 from umatobi.tests.unit.test_lib import LibTests
 from umatobi.tests.unit.test_sql import SQLTests
 from umatobi.tests.unit.test_core_node import CoreNodeTests
+from umatobi.tests.unit.test_watson import WatsonTests
 
 def test_main():
     # see: Lib/test/test_math.py
@@ -11,6 +12,7 @@ def test_main():
     unit_suite.addTest(unittest.makeSuite(LibTests))
     unit_suite.addTest(unittest.makeSuite(SQLTests))
     unit_suite.addTest(unittest.makeSuite(CoreNodeTests))
+    unit_suite.addTest(unittest.makeSuite(WatsonTests))
     run_unittest(unit_suite)
 
 # python3 -m unittest umatobi/tests/unit/test_unit.py
