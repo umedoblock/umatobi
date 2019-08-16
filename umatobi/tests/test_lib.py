@@ -1,7 +1,7 @@
 import os, sys, datetime, shutil
 import unittest
 
-from umatobi.test import *
+from umatobi.tests import *
 from umatobi.log import logger, make_logger
 from umatobi import lib
 from umatobi.lib.formula import keycmp, _key_hex

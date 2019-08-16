@@ -1,16 +1,16 @@
 import unittest
 from test.support import run_unittest
 
-from umatobi.test.test_lib import LibTests
-from umatobi.test.test_client import ClientTests
-from umatobi.test.test_watson import WatsonTests
-from umatobi.test.test_sql import SQLTests
-from umatobi.test.test_simulation import SimulationTests
-from umatobi.test.test_screen import ScreenTests
-from umatobi.test.test_theater import TheaterTests
-from umatobi.test.test_node import NodeTests, NodeOfficeTests
-from umatobi.test.test_core_node import CoreNodeTests
-from umatobi.test.test_darkness import DarknessTests
+from umatobi.tests.test_lib import LibTests
+from umatobi.tests.test_client import ClientTests
+from umatobi.tests.test_watson import WatsonTests
+from umatobi.tests.test_sql import SQLTests
+from umatobi.tests.test_simulation import SimulationTests
+from umatobi.tests.test_screen import ScreenTests
+from umatobi.tests.test_theater import TheaterTests
+from umatobi.tests.test_node import NodeTests, NodeOfficeTests
+from umatobi.tests.test_core_node import CoreNodeTests
+from umatobi.tests.test_darkness import DarknessTests
 
 def test_main():
     # see: Lib/test/test_math.py

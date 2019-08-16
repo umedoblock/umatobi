@@ -3,7 +3,7 @@ import sys, shutil
 import threading, io
 import unittest
 
-from umatobi.test import *
+from umatobi.tests import *
 from umatobi.simulator.watson import Watson, WatsonOffice
 from umatobi.simulator.watson import WatsonOpenOffice, WatsonTCPOffice
 from umatobi import lib

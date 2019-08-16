@@ -2,7 +2,7 @@ import re, os, io
 import sys, shutil
 import unittest
 
-from umatobi.test import *
+from umatobi.tests import *
 from umatobi.simulator.client import Client
 from umatobi.simulator.watson import Watson
 from umatobi import lib

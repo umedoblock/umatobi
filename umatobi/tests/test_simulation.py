@@ -1,7 +1,7 @@
 import os, sys, datetime, shutil
 import unittest
 
-from umatobi.test import *
+from umatobi.tests import *
 from umatobi.simulation import get_host_port
 
 class SimulationTests(unittest.TestCase):

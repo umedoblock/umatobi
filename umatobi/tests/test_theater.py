@@ -1,7 +1,7 @@
 import os, sys, datetime, shutil
 import unittest
 
-from umatobi.test import *
+from umatobi.tests import *
 from umatobi.theater import are_there_any_seats
 
 class TheaterTests(unittest.TestCase):
