@@ -1,4 +1,4 @@
-import datetime, io
+import datetime, io, os
 
 from umatobi.constants import *
 SIMULATION_DIR = os.path.join(__name__.split('.')[1], 'umatobi-simulation')
