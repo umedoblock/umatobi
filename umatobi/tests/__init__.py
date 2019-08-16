@@ -2,6 +2,7 @@ import datetime, io, os
 
 from umatobi.constants import *
 SIMULATION_DIR = os.path.join(__name__.split('.')[1], 'umatobi-simulation')
+FIXTURES_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
 
 SIMULATION_SECONDS = 30
 D_TIMEDELTA = {

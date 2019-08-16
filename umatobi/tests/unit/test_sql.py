@@ -5,12 +5,12 @@ import datetime
 import unittest
 import sqlite3
 
+from umatobi.tests import *
 from umatobi.simulator.sql import SQL
 from umatobi import lib
 
-here = os.path.dirname(__file__)
-test_schema_path = os.path.join(here, 'test.schema')
-test_db_path = os.path.join(here, 'test.db')
+test_schema_path = os.path.join(FIXTURES_DIR, 'test.schema')
+test_db_path = os.path.join(FIXTURES_DIR, 'test.db')
 
 def remove_test_db():
     try:

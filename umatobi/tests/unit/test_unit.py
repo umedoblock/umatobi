@@ -2,12 +2,13 @@ import unittest
 from test.support import run_unittest
 
 from umatobi.tests.unit.test_lib import LibTests
+from umatobi.tests.unit.test_sql import SQLTests
 
 def test_main():
     # see: Lib/test/test_math.py
     unit_suite = unittest.TestSuite()
-    unit_suite.addTests(unittest.makeSuite(LibTests))
-    suite.addTest(unittest.makeSuite(LibTests))
+    unit_suite.addTest(unittest.makeSuite(LibTests))
+    unit_suite.addTest(unittest.makeSuite(SQLTests))
     run_unittest(unit_suite)
 
 # python3 -m unittest umatobi/tests/unit/test_unit.py
