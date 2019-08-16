@@ -15,6 +15,7 @@ from umatobi.test.test_darkness import DarknessTests
 def test_main():
     # see: Lib/test/test_math.py
     suite = unittest.TestSuite()
+    # suite.addTests(tests)
     suite.addTest(unittest.makeSuite(LibTests))
     suite.addTest(LibTests('test_y15sformat_time')) # OK
     suite.addTest(unittest.makeSuite(WatsonTests))
@@ -33,6 +34,15 @@ def test_main():
 # <module 'posixpath' from
 #'/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/posixpath.py'
 # >
+
+# https://docs.python.org/3/library/unittest.html
+# @unittest.skip("demonstrating skipping")
+# @unittest.skipIf(mylib.__version__ < (1, 3),
+#                  "not supported in this library version")
+# @unittest.skipUnless(sys.platform.startswith("win"), "requires Windows")
+# self.skipTest("...")
+# with self.subTest(i=i):
+#     self.assertEqual(i % 2, 0)
 
 if __name__ == '__main__':
     test_main()
