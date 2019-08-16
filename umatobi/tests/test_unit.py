@@ -7,6 +7,7 @@ from umatobi.tests.unit.test_core_node import CoreNodeTests
 from umatobi.tests.unit.test_watson import WatsonTests
 from umatobi.tests.unit.test_client import ClientTests
 from umatobi.tests.unit.test_simulation import SimulationTests
+from umatobi.tests.unit.test_theater import TheaterTests
 
 def test_main():
     # see: Lib/test/test_math.py
@@ -17,6 +18,7 @@ def test_main():
     unit_suite.addTest(unittest.makeSuite(WatsonTests))
     unit_suite.addTest(unittest.makeSuite(ClientTests))
     unit_suite.addTest(unittest.makeSuite(SimulationTests))
+    unit_suite.addTest(unittest.makeSuite(TheaterTests))
     run_unittest(unit_suite)
 
 # python3 -m unittest umatobi/tests/unit/test_unit.py
