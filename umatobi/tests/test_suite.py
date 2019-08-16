@@ -7,7 +7,6 @@ from umatobi.tests.test_simulation import SimulationTests
 from umatobi.tests.test_screen import ScreenTests
 from umatobi.tests.test_theater import TheaterTests
 from umatobi.tests.test_node import NodeTests, NodeOfficeTests
-from umatobi.tests.test_core_node import CoreNodeTests
 from umatobi.tests.test_darkness import DarknessTests
 
 def test_main():
@@ -21,7 +20,6 @@ def test_main():
     suite.addTest(unittest.makeSuite(TheaterTests))
     suite.addTest(unittest.makeSuite(NodeTests))
     suite.addTest(unittest.makeSuite(NodeOfficeTests))
-    suite.addTest(unittest.makeSuite(CoreNodeTests))
     suite.addTest(unittest.makeSuite(DarknessTests))
     run_unittest(suite)
 

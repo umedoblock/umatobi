@@ -3,12 +3,14 @@ from test.support import run_unittest
 
 from umatobi.tests.unit.test_lib import LibTests
 from umatobi.tests.unit.test_sql import SQLTests
+from umatobi.tests.unit.test_core_node import CoreNodeTests
 
 def test_main():
     # see: Lib/test/test_math.py
     unit_suite = unittest.TestSuite()
     unit_suite.addTest(unittest.makeSuite(LibTests))
     unit_suite.addTest(unittest.makeSuite(SQLTests))
+    unit_suite.addTest(unittest.makeSuite(CoreNodeTests))
     run_unittest(unit_suite)
 
 # python3 -m unittest umatobi/tests/unit/test_unit.py
