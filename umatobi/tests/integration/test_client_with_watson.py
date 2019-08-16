@@ -1,20 +1,17 @@
-import re, os, io
-import sys, shutil
 import unittest
 
 from umatobi.tests import *
 from umatobi.simulator.client import Client
 from umatobi.simulator.watson import Watson
 from umatobi import lib
-from umatobi.simulator import watson
 
-class ClientTests(unittest.TestCase):
+class ClientStoryTests(unittest.TestCase):
     def setUp(self):
         watson_office_addr = ('localhost', 0)
         simulation_seconds = 3
-        simulation_dir = SIMULATION_DIR
         log_level = 'DEBUG'
 
+        simulation_dir = SIMULATION_DIR
         start_up_orig = lib.make_start_up_orig()
         start_up_time = lib.y15sformat_time(start_up_orig)
 
@@ -31,28 +28,6 @@ class ClientTests(unittest.TestCase):
     def tearDown(self):
         # delete dbs, logs...
         shutil.rmtree(self.watson.dir_name, ignore_errors=True)
-
-    def test_client_break_down(self):
-        watson_office_addr = ('localhost', 0)
-        num_nodes = 10
-
-        client = Client(watson_office_addr, num_nodes)
-
-        client._tcp_sock = MockIO(b'break down.')
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            client._wait_break_down()
-        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._wait_break_down\(\)')
-        self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._wait_break_down\(\), .* got break down from \.*')
-
-
-    def test_client_basic(self):
-        watson_office_addr = ('localhost', 0)
-        num_nodes = 10
-
-        client = Client(watson_office_addr, num_nodes)
-
-        self.assertEqual(watson_office_addr, client.watson_office_addr)
-        self.assertEqual(num_nodes, client.num_nodes)
 
     def test_client_story_with_watson(self):
         watson = self.watson
@@ -80,6 +55,3 @@ class ClientTests(unittest.TestCase):
         # emulate client.start() done !
 
         watson.watson_open_office.join()
-
-if __name__ == '__main__':
-    unittest.main()
