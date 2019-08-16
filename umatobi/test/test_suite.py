@@ -29,5 +29,10 @@ def test_main():
     suite.addTest(unittest.makeSuite(DarknessTests))
     run_unittest(suite)
 
+# >>> os.path
+# <module 'posixpath' from
+#'/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/posixpath.py'
+# >
+
 if __name__ == '__main__':
     test_main()
