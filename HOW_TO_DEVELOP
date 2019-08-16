@@ -5,5 +5,5 @@ cd ~/github.com/umatobi && \
         cd .. && \
     pip3 install -e
 
-$ python3 -m unittest umatobi.test.test_suite
-$ python3 ./umatobi/test/test_suite.py
+$ python3 -m unittest umatobi.tests.test_suite
+$ python3 -m unittest umatobi/tests/test_unit.py
