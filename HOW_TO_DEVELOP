@@ -3,7 +3,8 @@ cd ~/github.com/umatobi && \
     cd umatobi && \
         source ./bin/activate && \
         cd .. && \
-    pip3 install -e
+    pip3 install -e .
+#   read ./setup.py
 
 $ python3 -m unittest umatobi.tests.test_suite
 $ python3 -m unittest umatobi/tests/test_unit.py
