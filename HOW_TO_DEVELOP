@@ -1,10 +1,21 @@
+= preparation
+
+The key is in setup.py and "pip install -e ."
+
 cd ~/github.com/umatobi && \
     virtualenv umatobi && \
     cd umatobi && \
         source ./bin/activate && \
         cd .. && \
     pip3 install -e .
-#   read ./setup.py
 
-$ python3 -m unittest umatobi.tests.test_suite
-$ python3 -m unittest umatobi/tests/test_unit.py
+= There are various for starting test.
+
+$ python3 umatobi/tests/test_all.py
+$ python3 umatobi/tests/test_unit.py
+$ python3 umatobi/tests/test_integration.py
+
+$ python3 -m unittest umatobi.tests.test_unit
+$ python3 -m unittest umatobi.tests.test_integration
+$ python3 -m unittest umatobi.tests.unit.test_lib
+$ python3 -m unittest umatobi.tests.integration.test_client_with_watson
