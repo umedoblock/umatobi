@@ -9,6 +9,11 @@ cd ~/github.com/umatobi && \
         cd .. && \
     pip3 install -e .
 
+= play samples
+
+$ python3 umatobi/theater.py --sample
+$ python3 umatobi/theater.py --moving-squares
+
 = There are various for starting test.
 
 $ python3 umatobi/tests/test_all.py
@@ -22,3 +27,7 @@ $ python3 -m unittest umatobi.tests.test_unit
 $ python3 -m unittest umatobi.tests.test_integration
 $ python3 -m unittest umatobi.tests.unit.test_lib
 $ python3 -m unittest umatobi.tests.integration.test_client_with_watson
+
+= enjoy development !
+
+Edit some files.
