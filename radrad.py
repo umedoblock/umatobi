@@ -1,12 +1,12 @@
 import math
 
+from umatobi.lib import formula
+
 # norm means normalize, not normal.
-# 消すには惜しいので残すことにした。
-# けどやっぱり消して、testに移住させる。
+# 消すには惜しいので残す。
+# 残すと、 umatobi.lib の使い方を説明する格好にもなる。
 
 if __name__ == '__main__':
-    import formula
-
     half_pi = math.pi / 2
     for i in range(4):
         n_half_pi = half_pi * i
@@ -28,7 +28,7 @@ if __name__ == '__main__':
         cs = math.cos(math_rad)
         sn = math.sin(math_rad)
         norm_rad = formula.cos_sin_to_norm_rad(cs, sn)
-        _math_rad = _norm_rad_to_math_rad(norm_rad)
+        _math_rad = formula._norm_rad_to_math_rad(norm_rad)
         d_rad = math.fabs(math_rad - _math_rad)
         if math_rad != _math_rad and d_rad >= 0.000001:
             tup = ('', 'math_rad={} not equal to ',
