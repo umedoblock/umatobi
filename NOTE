@@ -1,4 +1,4 @@
-Copyright (c) 2012-2018 梅濁酒(umedoblock)
+Copyright (c) 2012-2019 梅濁酒(umedoblock)
 #########################################################################
 
 umatobi simulattor を使用すると、multi processes / threads の
@@ -11,21 +11,85 @@ umatobi simulation では、以下の通り大きく分けて二つの段階が�
 
 各段階では、
 
-    node, darkness, client, watson, theater
+    node, darkness, client, watson, theater, screen
 
 が互いに関係し、各々の任務を全うします。
 
-= node, darkness, client, watson, theater 各々の関係，概要。
+= node, darkness, client, watson, theater, screen 各々の役割・関係，の概要。
 
 == 1. simulation 実行時
 
-    simulation の末端(=node)から，watson までの道のり。
+      simulation の末端(=node)から，watson までの道のりを図で解説。
+
+==============================================================================
+Fig A.
+        node: thread
+    darkness: process
+      client: process
+      watson: process
+
+    A: queue object
+    B: sqlite3 database
+    C: TCP/IP connection
+
+                                                        simulation.db
+                                                             ^
+                                                             |
+                                                             |
+    <node> --+--A--> [darkness] --+--B--> [client] --C--> [watson]
+             |                    |                        ^ ^ ^
+    <node> --+                    |                        | | |
+             |                    |                        | | |
+    <node> --+                    |                        | | |
+             |                    |                        | | |
+    ...      ~                    |                        | | |
+                                  |                        | | |
+    <node> --+--A--> [darkness] --+                        | | |
+             |                    |                        | | |
+    <node> --+                    |                        | | |
+             |                    |                        | | |
+    <node> --+                    |                        | | |
+             |                    |                        | | |
+    ...      ~                    ~                        | | |
+                                                           | | |
+    <node> --+--A--> [darkness] --+--B--> [client] --C-----+ | |
+             |                    |                          | |
+    ...      ~                    ~                          | |
+                                                             | |
+    <node> --+--A--> [darkness] --+--B--> [client] --C-------+ |
+             |                    |                            |
+    ...      ~                    ~                            ~
+
+==============================================================================
+Text B.
+        node belongs a queue   object.
+    darkness has     a queue   object.
+      client has     a sqlite3 database.
+      watson has  many TCP/IP  connections.
+      watson makes   a sqlite3 database as simulation.db.
+
+    darkness share a queue object with some nodes.
+    client share a sqlite3 database with some darknesses.
+    watson share a TCP/IP connection with per client.
+
+==============================================================================
+
+    watson は、simulation 時に、ただ一つのみ存在する。
+    simulation に参加する端末毎に、一つの client を持つ。
+    client は、複数の darkness processes を生成する。
+    darkness は、複数の node threads を生成する。
+    node は、simulation 時に、実際に simulation を実行する。
 
     node は darkness と _queue_darkness という Queue() を共有。
+    node の状態が変化したら、_queue_darkness() に書き込む。
 
     darkness は client と client.N.db を共有。
+    darkness が、_queue_darkness() の内容を client.N.db に書き込む。
 
     client は client.N.db を watson へ送信する。
+    そう、client って必要なくない？darkness に送信の役割も任せてしまって
+    良くない？
+    いえ、client は必要なのです。
 
     watson は client.N.db を client から受信し保存する。
     watson は client.N.db を統合して，
@@ -33,9 +97,13 @@ umatobi simulation では、以下の通り大きく分けて二つの段階が�
 
 == 2. simulation 結果描画時
 
-    theater は，simulation.db を読み込んで，memory_db を作成し，
-    memory_db の内容を OpenGL の figure に変換し，
-    OpenGL の figure を描写し、simulation 結果を描画する。
+      theater.py 内での、simulation.db から，simulation 結果描画までの道のり。
+
+      詳細は、 screen.py の説明を参照されたし。それなりに複雑です。
+
+      簡単には、screen.py は，simulation.db を読み込んで，memory_db を作成し，
+    memory_db の内容を OpenGL figure に変換し，OpenGL figure を描写し、
+    simulation 結果を描画する。
 
 = simulation 実行時の役割・関係詳細
 
@@ -59,34 +127,41 @@ umatobi simulation では、以下の通り大きく分けて二つの段階が�
     そして，client.N.db を watson へ送信するのが重要な任務だ。
 
 == watson.py
-    client からの client.N.db を受信して，
+      client からの client.N.db を受信して，
     client.N.db => simulation.db への統合が任務かな？
     今は，tools/make_simulation_db.py で
     watson_make_simulation_db() を実行して，
     simulation.db を作成しているけど。
 
 == theater.py
-    watson が作成した simulation.db を読み込んで，
-    simulation 結果を表示してくれる。
+      どの simulation を表示するかを受け取る。
+    そして、screen.py にどの simulation.db を描画するか伝える。
 
-    main thread とは別に，3 つの threads を持つ。
-    sqlite3_thread, make_figures_thread, drawing_thread
+      Trailer もあるよ。
 
-=== sqlite3_thread
-    simulation 結果は，simulation.db 上の
-    growings table に pickle の形で保存している。
-    simulation.db から 1 秒幅で elapsed_time を挟み込んで select() して，
-    得た records を memory.db 上の nodes table へ update() する。
-    update() の元になるのは，dummy records
-    TODO: 効率を考えて，insert() にした方が良いのか考え中。
-          面倒くさそう。id が既にinsertされているか？
-          と判断しないといけないし。数行で済みそうではあるけど。
+== screen.py
+      theater.py の指定する simulation.db を読み込んで、simulation 結果を描画す
+    る。
 
-=== make_figures_thread
-    memory.db 上の nodes table を読み込んで，opengl が描画する figure を
-    作成し，drawing_thread と共有する figures に書き込む。
+=== display_main_thread
+      display_main_thread は、simulation 結果を描画する役割を担う。
+      その役割は、ManipulatingDB thred と共有する、node_squares, green_squares,
+    node_legs object から OpenGL figure を読み込み、glut の buffer に
+    OpenGL figure を書き込む事によって、果たされる。
+      また、display_main_thread は、ManipulatingDB thread を持つ。
 
-=== drawing_thread
-    opengl の処理を担当。
-    make_figures_thread が書き込んだ figures を読み込み，
-    figures を opengl へ書き込む。
+=== ManipulatingDB thread
+      ManipulatingDB thread は、simulation 開始から現在までの経過秒数を計る。
+    そして、前回の検索から現在までに状態が変化した node のみの records を
+    simulation.db から検索し、records を得る。
+      その records に関する、node の状態を ":memory:" db に書き込み、状態の変化
+    した node に限り、現在の状態を更新する。この更新により、":memory:" db 上の
+    node の状態は、常に最新に保たれる。
+      そして、":memory:" db 上の全ての node の状態を records として取得し、
+    OpenGL figure を計算する。そして、その計算した OpenGL figure を、
+    display_main_thread と共有する、node_squares, green_squares, node_legs
+    に書き込む。
+      また、ManipulatingDB thread は、LabelArea Thread を持つ。
+
+=== LabelArea thread
+    LabelArea Thread は、simulation を文字列で表示する役割を担う。
