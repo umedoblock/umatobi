@@ -132,11 +132,7 @@ class Node(umatobi.p2p.core.Node):
         '''
         threading.Thread.__init__(self)
 
-        st_barrier = set([
-            'host', 'id', 'start_up_time',
-            'byebye_nodes', '_queue_darkness'
-        ])
-        validate_kwargs(st_barrier, kwargs)
+        validate_kwargs(CONSTRAINED_NODE, kwargs)
         for attr, value in kwargs.items():
             setattr(self, attr, value)
 
