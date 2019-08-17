@@ -16,6 +16,7 @@ def test_main():
     # see: Lib/test/test_math.py
     unit_suite = unittest.TestSuite()
 
+    # success
     unit_suite.addTest(unittest.makeSuite(LibTests))
     unit_suite.addTest(unittest.makeSuite(SQLTests))
     unit_suite.addTest(unittest.makeSuite(CoreNodeTests))

@@ -8,6 +8,8 @@ from umatobi.tests.test_darkness import DarknessTests
 def test_main():
     # see: Lib/test/test_math.py
     suite = unittest.TestSuite()
+    # success
+
     # suite.addTests(tests)
     # failed
     suite.addTest(unittest.makeSuite(ClientStoryTests))
