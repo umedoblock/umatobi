@@ -12,10 +12,13 @@ cd ~/github.com/umatobi && \
 = There are various for starting test.
 
 $ python3 umatobi/tests/test_all.py
+# __name__ means "__main__".
 $ python3 umatobi/tests/test_unit.py
 $ python3 umatobi/tests/test_integration.py
 
 $ python3 -m unittest umatobi.tests.test_unit
+# __name__ means "umatobi.tests.test_unit".
+# "from umatobi.tests.unit.xxx import XXX" launch test suite.
 $ python3 -m unittest umatobi.tests.test_integration
 $ python3 -m unittest umatobi.tests.unit.test_lib
 $ python3 -m unittest umatobi.tests.integration.test_client_with_watson
