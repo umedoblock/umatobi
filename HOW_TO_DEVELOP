@@ -16,6 +16,7 @@ $ python3 umatobi/theater.py --moving-squares
 
 = There are various for starting test.
 
+# see: https://realpython.com/python-testing/
 $ python3 umatobi/tests/test_all.py
 # __name__ means "__main__".
 $ python3 umatobi/tests/test_unit.py
@@ -27,6 +28,10 @@ $ python3 -m unittest umatobi.tests.test_unit
 $ python3 -m unittest umatobi.tests.test_integration
 $ python3 -m unittest umatobi.tests.unit.test_lib
 $ python3 -m unittest umatobi.tests.integration.test_client_with_watson
+
+$ python3 -m unittest discover -s umatobi/tests
+$ python3 -m unittest discover -t umatobi/tests -s unit
+$ python3 -m unittest discover -t umatobi/tests -s integration
 
 = enjoy development !
 
