@@ -38,6 +38,5 @@ def test_main():
 # python3 -m unittest umatobi.tests.unit.test_unit
 # __name__ = umatobi.tests.unit.test_unit
 
-# ... maybe no need test_main() ...
 if __name__ == '__main__':
     test_main()
