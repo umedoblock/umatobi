@@ -6,7 +6,6 @@ import queue
 
 from umatobi.tests import *
 from umatobi.simulator.darkness import Darkness
-from umatobi.simulator.client import make_darkness
 from umatobi.lib import current_y15sformat_time
 from umatobi.simulator import sql
 
