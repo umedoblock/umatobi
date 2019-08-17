@@ -18,11 +18,11 @@ $ python3 umatobi/theater.py --moving-squares
 
 # see: https://realpython.com/python-testing/
 
-$ python3 umatobi/tests/test_unit.py
-$ python3 umatobi/tests/test_integration.py
+$ python3 umatobi/tests/unit_test.py
+$ python3 umatobi/tests/integration_test.py
 
-$ python3 -m unittest umatobi.tests.test_unit
-$ python3 -m unittest umatobi.tests.test_integration
+$ python3 -m unittest umatobi.tests.unit_test
+$ python3 -m unittest umatobi.tests.integration_test
 
 $ python3 -m unittest discover -t umatobi/tests -s unit
 $ python3 -m unittest discover -t umatobi/tests -s integration
