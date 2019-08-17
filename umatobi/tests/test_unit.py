@@ -11,6 +11,7 @@ from umatobi.tests.unit.test_theater import TheaterTests
 from umatobi.tests.unit.test_screen import ScreenTests
 # failed
 from umatobi.tests.unit.test_node import NodeTests, NodeOfficeTests
+from umatobi.tests.unit.test_darkness import DarknessTests
 
 def test_main():
     # see: Lib/test/test_math.py
@@ -28,6 +29,7 @@ def test_main():
     #failed
     unit_suite.addTest(unittest.makeSuite(NodeTests))
     unit_suite.addTest(unittest.makeSuite(NodeOfficeTests))
+    unit_suite.addTest(unittest.makeSuite(DarknessTests))
 
     run_unittest(unit_suite)
 
