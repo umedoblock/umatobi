@@ -21,7 +21,6 @@ class NodeTests(unittest.TestCase):
         key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
         node.update_key(key)
         self.node = node
-        self._story = True
         self.key = key
 
     def test_update_key(self):
@@ -33,7 +32,6 @@ class NodeTests(unittest.TestCase):
         self.assertEqual(node.key, key)
 
     def test_steal_master_palm(self):
-        self._story = False
         node = self.node
         node.port = 65535
         node_info_line = f"{node.host}:{node.port}:{str(node.key_hex)}" + '\n'
@@ -49,7 +47,6 @@ class NodeTests(unittest.TestCase):
         os.remove(node.master_hand_path)
 
     def test_regist(self):
-        self._story = False
         node = self.node
         os.remove(node.master_hand_path)
 
@@ -74,8 +71,7 @@ class NodeTests(unittest.TestCase):
         os.remove(node.master_hand_path)
 
     def tearDown(self):
-        if self._story:
-            return
+        pass
       # self.node.join()
 
     def test_node_basic(self):
