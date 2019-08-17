@@ -1,66 +1,78 @@
 Copyright (c) 2012-2018 梅濁酒(umedoblock)
 #########################################################################
-simulation 実行時の
-node, darkness, client, watson, theater 各々の関係，概要。
 
-simulation の末端(=node)から，watson までの道のり。
+umatobi simulattor を使用すると、multi processes / threads の
+動作環境を容易に構築できます。
 
-node は darkness と _queue_darkness という Queue() を共有。
+umatobi simulation では、以下の通り大きく分けて二つの段階があります。
 
-darkness は client と client.N.db を共有。
+    1. simulation を実行し、実行結果を SQL として、simulation.db に残す段階
+    2. simulation.db を元に、simulation 結果をOpenGLにて描画する段階
 
-client は client.N.db を watson へ送信する。
+各段階では、
 
-watson は client.N.db を client から受信し保存する。
-watson は client.N.db を統合して，
-今回の simulation 結果を保存する simulation.db を作成する。
+    node, darkness, client, watson, theater
 
-theater は，simulation.db を読み込んで，memory_db を作成し，
-memory_db の内容を OpenGL の figure に変換し，
-OpenGL の figure の描写により，simulation 結果を描画する。
+が互いに関係し、各々の任務を全うします。
 
-#########################################################################
-simulation 実行時の関係詳細
+= node, darkness, client, watson, theater 各々の関係，概要。
 
-===============================================================================
-= node.py
-    umatobi/simulator/node.py Node.run() にて，node に関する
-    各情報(id, host, port, key, rad, x, y, status) を dict に詰めて，
-    その dict を pickle 化している。
-    そして，pickle と elapsed_time(=et) を 1 tuple として，darkness と
-    node が共有する _queue_darkness に tuple を put() している。
+== 1. simulation 実行時
 
-===============================================================================
-= darkness.py
-    node が _queue_darkness へ put() した tuple(=et, pickle) を，darkness
+    simulation の末端(=node)から，watson までの道のり。
+
+    node は darkness と _queue_darkness という Queue() を共有。
+
+    darkness は client と client.N.db を共有。
+
+    client は client.N.db を watson へ送信する。
+
+    watson は client.N.db を client から受信し保存する。
+    watson は client.N.db を統合して，
+    今回の simulation 結果を保存する simulation.db を作成する。
+
+== 2. simulation 結果描画時
+
+    theater は，simulation.db を読み込んで，memory_db を作成し，
+    memory_db の内容を OpenGL の figure に変換し，
+    OpenGL の figure を描写し、simulation 結果を描画する。
+
+= simulation 実行時の役割・関係詳細
+
+== node.py
+      umatobi/simulator/node.py Node.run() にて，node に関する各情報(id, host,
+    port, key, rad, x, y, status) を dict に詰めて，その dict を pickle 化し
+    ている。
+      そして，pickle と elapsed_time(=et) を 1 tuple として，node が darkness
+    と共有する _queue_darkness に tuple を put() している。
+
+== darkness.py
+      node が _queue_darkness へ put() した tuple(=et, pickle) を，darkness
     は _queue_darkness から get() して， client.N.db 上の growings table に
     elapsed_time,pickle を insert する。
 
-===============================================================================
-= client.py
+== client.py
     することなくない？ darkness が client.N.db 操作してるし。。。
     client.py 読んでてビックリしたよ。
     darkness 起動後の 主な仕事は watson とのやり取り。
     darkness 終了させるのが主な任務か。
     そして，client.N.db を watson へ送信するのが重要な任務だ。
 
-===============================================================================
-= watson.py
+== watson.py
     client からの client.N.db を受信して，
     client.N.db => simulation.db への統合が任務かな？
     今は，tools/make_simulation_db.py で
     watson_make_simulation_db() を実行して，
     simulation.db を作成しているけど。
 
-===============================================================================
-= theater.py
+== theater.py
     watson が作成した simulation.db を読み込んで，
     simulation 結果を表示してくれる。
 
     main thread とは別に，3 つの threads を持つ。
     sqlite3_thread, make_figures_thread, drawing_thread
 
-== sqlite3_thread in theater.py
+=== sqlite3_thread
     simulation 結果は，simulation.db 上の
     growings table に pickle の形で保存している。
     simulation.db から 1 秒幅で elapsed_time を挟み込んで select() して，
@@ -70,11 +82,11 @@ simulation 実行時の関係詳細
           面倒くさそう。id が既にinsertされているか？
           と判断しないといけないし。数行で済みそうではあるけど。
 
-== make_figures_thread in theater.py
+=== make_figures_thread
     memory.db 上の nodes table を読み込んで，opengl が描画する figure を
     作成し，drawing_thread と共有する figures に書き込む。
 
-== drawing_thread in theater.py
+=== drawing_thread
     opengl の処理を担当。
     make_figures_thread が書き込んだ figures を読み込み，
     figures を opengl へ書き込む。

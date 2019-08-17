@@ -3,6 +3,11 @@ umatobi DHT simulator
 
 multi processing によって、simulation をする事を目的として開発を進めました。
 
+umatobi simulattor を使用すると、multi processes / threads の
+動作環境を容易に構築できます。
+
+see NOTE.
+
 しかし、まだ、完成していません。
 OpenGL を動かすことが出来る程度です。
 OpenGL の動作確認をしたければ，
