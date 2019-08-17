@@ -5,14 +5,14 @@ from umatobi.tests.integration.test_client_with_watson import ClientStoryTests
 
 def test_main():
     # see: Lib/test/test_math.py
-    suite = unittest.TestSuite()
+    integration_suite = unittest.TestSuite()
     # success
 
     # suite.addTests(tests)
     # failed
-    suite.addTest(unittest.makeSuite(ClientStoryTests))
+    integration_suite.addTest(unittest.makeSuite(ClientStoryTests))
 
-    run_unittest(suite)
+    run_unittest(integration_suite)
 
 # >>> os.path
 # <module 'posixpath' from
