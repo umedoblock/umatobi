@@ -51,12 +51,15 @@ class NodeTests(unittest.TestCase):
     def test_regist(self):
         self._story = False
         node = self.node
+        os.remove(node.master_hand_path)
+
         node.port = 65535
         node_info_line = f"{node.host}:{node.port}:{node.key_hex}" + '\n'
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
         self.assertFalse(os.path.exists(node.master_hand_path))
         node.regist() # once
+        self.assertTrue(os.path.isdir(os.path.dirname(node.master_hand_path)))
         self.assertTrue(os.path.isfile(node.master_hand_path))
 
         with open(node.master_hand_path) as master_palm:
