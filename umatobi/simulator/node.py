@@ -132,7 +132,6 @@ class Node(umatobi.p2p.core.Node):
         '''
         threading.Thread.__init__(self)
 
-        validate_kwargs(CONSTRAINED_NODE, kwargs)
         for attr, value in kwargs.items():
             setattr(self, attr, value)
 
