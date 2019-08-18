@@ -42,8 +42,8 @@ class NodeUDPOffice(socketserver.UDPServer):
         self._determine_node_office_addr()
 
     def _determine_node_office_addr(self):
-        logger.info(f"host={self.node.host}")
-        host = self.node.host
+        logger.info(f"START {self}.node.office_addr={self.node.office_addr}")
+        host = self.node.office_addr[0]
 
         ports = list(range(1024, 65536))
         random.shuffle(ports)
@@ -55,6 +55,8 @@ class NodeUDPOffice(socketserver.UDPServer):
             addr = (host, port)
 
             try:
+                # 以下で、bind() して帰ってくるので、
+                # self.server_close() を忘れずに。
                 super().__init__(addr, NodeOffice)
             except OSError as oe:
               # [Errno 98] Address already in use
@@ -63,12 +65,11 @@ class NodeUDPOffice(socketserver.UDPServer):
                 continue
             break
 
-        # node_office_addr が決定されている。
+        # office_addr が決定されている。
         with self.node.office_door:
-            self.node.node_office_addr = addr
-            self.node.port = port
+            self.node.office_addr = addr
 
-        logger.info(f"{self}.node.addr={addr}")
+        logger.info(f" DONE {self}.node.office_addr={self.node.office_addr}")
 
     def serve_forever(self):
         self.node.node_open_office.in_serve_forever.set()
@@ -123,19 +124,22 @@ class NodeOffice(socketserver.DatagramRequestHandler):
 
 class Node(umatobi.p2p.core.Node):
 
-    ATTRS = ('id', 'host', 'port', 'key_hex', 'rad', 'x', 'y', 'status')
+    ATTRS = ('id', 'office_addr', 'key_hex', 'rad', 'x', 'y', 'status')
     _output = print
 
     def __init__(self, **kwargs):
         '''\
         simulator 用 node を初期化する。
         '''
-        threading.Thread.__init__(self)
+
+        self.office_addr = (kwargs.get('host', None), kwargs.get('port', None))
+        super().__init__(*self.office_addr)
 
         for attr, value in kwargs.items():
+            if attr in ('host', 'port'):
+                continue
             setattr(self, attr, value)
 
-        self.node_office_addr = None
         self.update_key()
         key_hex = self._key_hex()
       # print('{} key_hex = {}'.format(self, key_hex))
@@ -150,13 +154,11 @@ class Node(umatobi.p2p.core.Node):
 
         self.nodes = []
         self.office_door = threading.Lock()
-        self.node_office_addr_assigned = threading.Event()
+        self.office_addr_assigned = threading.Event()
         self.master_hand_path = get_master_hand_path(SIMULATION_DIR, self.start_up_time)
 
     def run(self):
         self._open_office()
-        d_addr = self._get_office_addr()
-        self.set_attrs(d_addr)
         et = elapsed_time(y15sformat_parse(self.start_up_time))
         d_attrs = self.get_attrs()
         self.to_darkness(d_attrs, et)
@@ -186,18 +188,19 @@ class Node(umatobi.p2p.core.Node):
         # in NodeOpenOffice.run()
         logger.info(f"node_open_office.wait()")
         node_open_office.in_serve_forever.wait()
-        self.host, self.port = self.node_office_addr
-        self.node_office_addr_assigned.set()
+        self.office_addr_assigned.set()
         logger.info(f"node_open_office={node_open_office}")
-        # node.node_office_addr が決定している。
+        # node.office_addr が決定している。
         return node_open_office
+
+    def get_info(self):
+        return f"{':'.join(map(str, self.office_addr))}:{self.key_hex}" + '\n'
 
     def regist(self):
         logger.info(f"regist(), master_hand_path={self.master_hand_path}")
         os.makedirs(os.path.dirname(self.master_hand_path), exist_ok=True)
         with open(self.master_hand_path, 'a') as master:
-            node_info = f"{self.host}:{self.port}:{self.key_hex}" + '\n'
-            print(node_info, end='', file=master)
+            print(self.get_info(), end='', file=master)
       # msg = 'I am Node.'
       # recver_addr = ('localhost', 222)
       # self.sock.sendto(msg, recver_addr)
@@ -215,14 +218,6 @@ class Node(umatobi.p2p.core.Node):
 
     def _force_shutdown(self):
         self.disappear()
-
-    def _get_office_addr(self):
-      # print('{} started.'.format(self))
-        d = {}
-        d['host'] = self.host
-        d['port'] = self.port
-
-        return d
 
     def set_attrs(self, d={}):
         attrs = d
@@ -254,7 +249,7 @@ class Node(umatobi.p2p.core.Node):
             node_office_client.byebye()
 
     def __str__(self):
-        return 'Node(id={})'.format(self.id)
+        return 'Node(id={}, addr={})'.format(self.id, self.udp_ip)
 
     def update_key(self, k=b''):
         '''\

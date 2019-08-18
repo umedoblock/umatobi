@@ -10,6 +10,7 @@ from umatobi.simulator.node import NodeOpenOffice, NodeUDPOffice
 from umatobi.lib import current_y15sformat_time
 from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
 from umatobi.lib import dict2json, json2dict
+from umatobi.tests.lib import escape_ResourceWarning
 
 class NodeTests(unittest.TestCase):
     def setUp(self):
@@ -23,6 +24,9 @@ class NodeTests(unittest.TestCase):
         self.node = node
         self.key = key
 
+    def tearDown(self):
+        self.node.release()
+
     def test_update_key(self):
         node = self.node
 
@@ -31,27 +35,35 @@ class NodeTests(unittest.TestCase):
         node.update_key(key)
         self.assertEqual(node.key, key)
 
+    def test_node_get_info(self):
+        node = self.node
+        node_info_line = f"{node.office_addr[0]}:{node.office_addr[1]}:{str(node.key_hex)}" + '\n'
+        self.assertEqual(node.get_info(), node_info_line)
+
     def test_steal_master_palm(self):
         node = self.node
-        node.port = 65535
-        node_info_line = f"{node.host}:{node.port}:{str(node.key_hex)}" + '\n'
+        node2 = Node(host='localhost', port=11112, start_up_time=node.start_up_time)
+        node3 = Node(host='localhost', port=11113, start_up_time=node.start_up_time)
         self.assertTrue(hasattr(node, 'master_hand_path'))
+
+        master_palm_on = node2.get_info() + node3.get_info()
 
         os.makedirs(os.path.dirname(node.master_hand_path), exist_ok=True)
         with open(node.master_hand_path, 'w') as master_palm:
-            test_node_lines = f"{node.host}:{node.port}:{node.key_hex}" + '\n'
-            print(test_node_lines, file=master_palm, end='')
+            print(node2.get_info(), file=master_palm, end='')
+            print(node3.get_info(), file=master_palm, end='')
 
         node_lines = node._steal_master_palm()
-        self.assertEqual(node_lines, test_node_lines)
+        self.assertEqual(node_lines, master_palm_on)
         os.remove(node.master_hand_path)
+
+        escape_ResourceWarning(node2.udp_sock)
+        escape_ResourceWarning(node3.udp_sock)
 
     def test_regist(self):
         node = self.node
-        os.remove(node.master_hand_path)
 
-        node.port = 65535
-        node_info_line = f"{node.host}:{node.port}:{node.key_hex}" + '\n'
+        node.port = 63333
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
         self.assertFalse(os.path.exists(node.master_hand_path))
@@ -60,19 +72,15 @@ class NodeTests(unittest.TestCase):
         self.assertTrue(os.path.isfile(node.master_hand_path))
 
         with open(node.master_hand_path) as master_palm:
-            master_hand = master_palm.read()
-            self.assertEqual(master_hand, node_info_line)
+            master_hand_on = master_palm.read()
+            self.assertEqual(master_hand_on, node.get_info())
 
         node.regist() # twice
         with open(node.master_hand_path) as master_palm:
-            master_hand = master_palm.read()
-            self.assertEqual(master_hand, node_info_line * 2)
+            master_hand_on2 = master_palm.read()
+            self.assertEqual(master_hand_on2, node.get_info() * 2)
 
         os.remove(node.master_hand_path)
-
-    def tearDown(self):
-        pass
-      # self.node.join()
 
     def test_node_basic(self):
         byebye_nodes = threading.Event()
@@ -91,21 +99,24 @@ class NodeTests(unittest.TestCase):
 
         node_.appear()
 
-        node_.node_office_addr_assigned.wait()
-        self.assertEqual((node_.host, node_.port), node_.node_office_addr)
-        office_addr = node_._get_office_addr()
-        self.assertEqual(office_addr['host'], node_.host)
-        self.assertEqual(office_addr['port'], node_.port)
-        self.assertEqual(len(office_addr), 2)
+        node_.office_addr_assigned.wait()
+        self.assertIsInstance(node_.office_addr, tuple)
+        self.assertEqual(node_.office_addr[0], 'localhost')
+        self.assertIsInstance(node_.office_addr[1], int)
+        self.assertGreaterEqual(node_.office_addr[1], 1024)
+        self.assertLessEqual(node_.office_addr[1], 65535)
 
         tup = node_._queue_darkness.get()
         et, pickle_dumps = tup
         d = pickle.loads(pickle_dumps)
         self.assertEqual(d['id'], 1)
         self.assertEqual(d['id'], node_.id)
-        self.assertEqual(d['host'], 'localhost')
-        self.assertEqual(d['host'], node_.host)
-        self.assertEqual(d['port'], node_.port)
+
+        self.assertEqual(d['office_addr'][0], 'localhost')
+        self.assertIsInstance(d['office_addr'][1], int)
+        self.assertGreaterEqual(d['office_addr'][1], 1024)
+        self.assertLessEqual(d['office_addr'][1], 65535)
+
         self.assertRegex(d['key_hex'], r'\A0x\w{64}\Z')
         self.assertNotIn(d['key_hex'], '_')
         self.assertIsInstance(d['rad'], float)
@@ -125,14 +136,6 @@ class NodeTests(unittest.TestCase):
 
         os.remove(node_.master_hand_path)
 
-    def test_get_office_addr(self):
-        node = self.node
-        node.port = 65535
-        office_addr = node._get_office_addr()
-        self.assertEqual(office_addr['host'], node.host)
-        self.assertEqual(office_addr['port'], node.port)
-        self.assertEqual(len(office_addr), 2)
-
     def test_node_thread(self):
         logger.info(f"")
         byebye_nodes = threading.Event()
@@ -144,8 +147,8 @@ class NodeTests(unittest.TestCase):
 
         logger.info(f"node_.appear()")
         node_.appear()
-        node_.node_office_addr_assigned.wait()
-        self.assertEqual((node_.host, node_.port), node_.node_office_addr)
+        node_.office_addr_assigned.wait()
+        self.assertEqual(node_.office_addr, node_.office_addr)
         self.assertEqual(3, threading.active_count())
 
         logger.info(f"node_.byebye_nodes.set()")
@@ -164,7 +167,7 @@ class NodeOfficeTests(unittest.TestCase):
         start_up_orig = make_start_up_orig()
         start_up_time = y15sformat_time(start_up_orig)
         _queue_darkness = queue.Queue()
-        node = Node(host='localhost', id=1, \
+        node = Node(id=1, host='localhost', \
                     byebye_nodes=byebye_nodes, \
                     start_up_time=start_up_time, \
                     _queue_darkness=_queue_darkness)
@@ -173,7 +176,6 @@ class NodeOfficeTests(unittest.TestCase):
     def test_handle(self):
         node = self.node
         node._open_office()
-        node._get_office_addr()
 
         client_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         client_address = ('localhost', 8888)
@@ -194,6 +196,13 @@ class NodeOfficeTests(unittest.TestCase):
         packet, client_socket = recved
         client_sock.close()
       # server.server_close() # あってもなくても正常終了する
+        # 正常終了自体は、本当ですが、
+        # ResourceWarning: unclosed <socket.socket fd=8, ...
+        # ResourceWarning: Enable tracemalloc to get the object allocation traceback
+        # と、うるさいので、server.server_close()を忘れずに実行しましょう。
+        server.server_close()
+        # ずっと苦労していた bug 取りでしたが、過去にきちんと書いてたんだ。。。
+        # 勝手に消してしまったばかりに。。。苦労したよ。。。
 
       # print("       recved =", recved)
       # print("       packet =", packet)
