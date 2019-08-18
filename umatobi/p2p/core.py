@@ -13,6 +13,9 @@ class Node(threading.Thread):
 
     _output = print
 
+    # Node()        <=> node.release()
+    # node.appear() <=> node.disappear()
+
     def __init__(self, host=None, port=None):
         '''\
         node を初期化する。
@@ -26,6 +29,14 @@ class Node(threading.Thread):
 
         self._status = {}
         self.update_key()
+
+    def release(self):
+        if self.udp_sock:
+            self.udp_sock.close()
+          # self.udp_sock = None
+          # ここで、close() する、udp_sock は、
+          # bind() に成功し、有効に利用されていたudp_sockなのだから、
+          # udp_sock に None を代入しない。
 
     def make_udpip(self, host=None, port=None):
         if not hasattr(self, 'udp_ip'):
@@ -69,9 +80,9 @@ class Node(threading.Thread):
 
     def disappear(self):
         '''別れ, envoi'''
+        self.release()
         if hasattr(self, '_last_moment'):
             self._last_moment.set()
-        self.udp_sock.close()
         self.join()
 
     def update_key(self, k=b''):

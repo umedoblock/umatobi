@@ -103,16 +103,55 @@ class CoreNodeTests(unittest.TestCase):
             # except OverflowError で、範囲外と理解しているので、
             # invalid_port が設定されていても OK.
 
-    def test_core_node(self):
-        node.appear()
+    def test_core_node_release(self):
+        node = Node('localhost', 55555)
+        self.assertEqual(node.udp_ip, ('localhost', 55555))
+
+        self.assertIsInstance(node.udp_sock, socket.socket)
+        self.assertFalse(node.udp_sock._closed)
+        node.release()
+        self.assertTrue(node.udp_sock._closed)
+        self.assertIsInstance(node.udp_sock, socket.socket)
+
+        # no need to do escape_ResourceWarning()
+        # Because node.release() close node.udp_sock in itself.
+
+    def test_core_node_turn_on_off(self):
+        self.assertEqual(1, threading.active_count())
+        node = Node('localhost', 55555)
+        self.assertEqual(node.udp_ip, ('localhost', 55555))
+        self.assertEqual(1, threading.active_count())
         self.assertFalse(node._last_moment.is_set())
 
+        node.appear()
+        self.assertFalse(node._last_moment.is_set())
+        self.assertEqual(2, threading.active_count())
+
+        self.assertFalse(node.udp_sock._closed)
         node.disappear()
+        self.assertTrue(node.udp_sock._closed)
+        self.assertEqual(1, threading.active_count())
         self.assertTrue(node._last_moment.is_set())
-        self.assertTrue(node.sock._closed)
+
+        # no need to do escape_ResourceWarning()
+        # Because node.release() where is in node.disappear()
+        # close node.udp_sock.
+
+    def test_core_node_status(self):
+        node = Node('localhost', 55555)
+        self.assertIsInstance(node.udp_sock, socket.socket)
+        self.assertEqual(node.udp_ip, ('localhost', 55555))
+        self.assertIsInstance(node.key, bytes)
+
+        status = node.get_status()
+        self.assertEqual(status['host'], 'localhost')
+        self.assertEqual(status['port'], 55555)
+        self.assertEqual(status['key'], node.key)
+
+        escape_ResourceWarning(node.udp_sock)
 
     def test_core_node_key(self):
-        node = Node('localhost', 10000)
+        node = Node()
         self.assertTrue(hasattr(node, 'key'))
         self.assertIsInstance(node.key, bytes)
 
@@ -124,29 +163,12 @@ class CoreNodeTests(unittest.TestCase):
         node.update_key(key_rand)
         self.assertEqual(node.key, key_rand)
 
-        node.udp_sock.close()
-
     def test_core_keyhex(self):
-        node = Node('localhost', 10000)
+        node = Node()
 
         node.update_key()
         self.assertEqual(int(node._key_hex(), 16),
                          int.from_bytes(node.key, 'big'))
-
-        node.udp_sock.close()
-
-    def test_core_node_thread(self):
-        node = Node('localhost', 10000)
-
-        node_status = node.get_status()
-        self.assertEqual(dict, type(node_status))
-        self.assertEqual(1, threading.active_count())
-
-        node.appear()
-        self.assertEqual(2, threading.active_count())
-
-        node.disappear()
-        self.assertEqual(1, threading.active_count())
 
 if __name__ == '__main__':
     unittest.main()
