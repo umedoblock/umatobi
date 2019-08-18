@@ -125,7 +125,6 @@ class NodeOffice(socketserver.DatagramRequestHandler):
 class Node(umatobi.p2p.core.Node):
 
     ATTRS = ('id', 'office_addr', 'key_hex', 'rad', 'x', 'y', 'status')
-    _output = print
 
     def __init__(self, **kwargs):
         '''\

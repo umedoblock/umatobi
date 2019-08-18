@@ -5,13 +5,12 @@ import sys
 
 from umatobi.constants import *
 from umatobi.lib import formula
+from umatobi.log import *
 
 class Node(threading.Thread):
     '''Node class'''
 
     PACKET_SIZE = 2048
-
-    _output = print
 
     # Node()        <=> node.release()
     # node.appear() <=> node.disappear()
@@ -57,11 +56,11 @@ class Node(threading.Thread):
         except socket.error as raiz:
             self.udp_sock.close()
             self.udp_sock = None
-            self._output('cannot bind({}). reason={}'.format(self.udp_ip, raiz.args))
+            logger.error('cannot bind({}). reason={}'.format(self.udp_ip, raiz.args))
 
           # print('raiz.args =', raiz.args)
             if raiz.args == (98, 'Address already in use'):
-                self._output('指定した host(={}), port(={}) は使用済みでした。'.
+                logger.error('指定した host(={}), port(={}) は使用済みでした。'.
                         format(*self.udp_ip))
             elif raiz.args == (13, 'Permission denied'):
                 pass
@@ -70,7 +69,7 @@ class Node(threading.Thread):
             print('raiz.args =', raiz.args)
             self.udp_sock.close()
             self.udp_sock = None
-            self._output('cannot bind({}). reason={}'.format(self.udp_ip, raiz.args))
+            logger.error('cannot bind({}). reason={}'.format(self.udp_ip, raiz.args))
 
     def run(self):
         self._last_moment.wait()
