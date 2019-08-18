@@ -3,8 +3,8 @@
 The key is in setup.py and "pip install -e ."
 
 cd ~/github.com/umatobi && \
-    virtualenv local && \
-    cd local && \
+    virtualenv .local && \
+    cd .local && \
         source ./bin/activate && \
         cd .. && \
     pip3 install -e .

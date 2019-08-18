@@ -3,7 +3,7 @@ umatobi-simulation/
 umatobi-simulation-test/
 
 # virtual env
-local/
+.local/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
