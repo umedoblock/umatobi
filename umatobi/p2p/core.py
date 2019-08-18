@@ -13,27 +13,53 @@ class Node(threading.Thread):
 
     _output = print
 
-    def __init__(self, host, port):
+    def __init__(self, host=None, port=None):
         '''\
         node を初期化する。
         '''
-        self._status = {}
         threading.Thread.__init__(self)
-        tup = (host, port)
-        self.host, self.port = tup
         self._last_moment = threading.Event()
 
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.udp_sock = None
+        self.udp_ip = (host, port)
+        self.make_udpip()
+
+        self._status = {}
+        self.update_key()
+
+    def make_udpip(self, host=None, port=None):
+        if not hasattr(self, 'udp_ip'):
+           self.udp_ip = (None, None)
+
+        if host is not None:
+            self.udp_ip = (host, self.udp_ip[1])
+        if port is not None:
+            self.udp_ip = (self.udp_ip[0], port)
+
+        if not all(self.udp_ip):
+            return
+
+        self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
         try:
-            self.sock.bind(tup)
+            self.udp_sock.bind(self.udp_ip)
         except socket.error as raiz:
+            self.udp_sock.close()
+            self.udp_sock = None
+            self._output('cannot bind({}). reason={}'.format(self.udp_ip, raiz.args))
+
           # print('raiz.args =', raiz.args)
             if raiz.args == (98, 'Address already in use'):
                 self._output('指定した host(={}), port(={}) は使用済みでした。'.
-                        format(*tup))
-            raise raiz
-
-        self.update_key()
+                        format(*self.udp_ip))
+            elif raiz.args == (13, 'Permission denied'):
+                pass
+        except OverflowError as raiz:
+          # getsockaddrarg: port must be 0-65535.
+            print('raiz.args =', raiz.args)
+            self.udp_sock.close()
+            self.udp_sock = None
+            self._output('cannot bind({}). reason={}'.format(self.udp_ip, raiz.args))
 
     def run(self):
         self._last_moment.wait()
@@ -45,7 +71,7 @@ class Node(threading.Thread):
         '''別れ, envoi'''
         if hasattr(self, '_last_moment'):
             self._last_moment.set()
-        self.sock.close()
+        self.udp_sock.close()
         self.join()
 
     def update_key(self, k=b''):
@@ -59,8 +85,8 @@ class Node(threading.Thread):
 
     def get_status(self, type_='dict'):
         'node の各種情報を表示。'
-        self._status['host'] = self.host
-        self._status['port'] = self.port
+        self._status['host'] = self.udp_ip[0]
+        self._status['port'] = self.udp_ip[1]
         self._status['key'] = self.key
         return self._status
 

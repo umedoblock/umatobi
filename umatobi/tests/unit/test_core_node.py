@@ -1,6 +1,6 @@
 import os
 import sys
-import threading
+import threading, socket
 import unittest
 import queue
 
@@ -8,13 +8,102 @@ from umatobi.p2p.core import Node
 from umatobi.lib import current_y15sformat_time
 from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
 
-class CoreNodeTests(unittest.TestCase):
-    def test_core_node_init(self):
-        node = Node('localhost', 10000)
-        self.assertEqual(node.host, 'localhost')
-        self.assertEqual(node.port, 10000)
-        self.assertTrue(hasattr(node, 'key'))
+def escape_ResourceWarning(sock):
+    # excape WARNING
+    # ResourceWarning: Enable tracemalloc to get the object allocation traceback
+    # ResourceWarning: unclosed <socket.socket fd=3, ...
+    sock.close()
 
+class CoreNodeTests(unittest.TestCase):
+    def test_core_node_init_success(self):
+        node = Node('localhost', 10000)
+        self.assertEqual(node.udp_ip, ('localhost', 10000))
+        self.assertIsInstance(node._last_moment, threading.Event)
+        self.assertIsInstance(node._status, dict)
+        self.assertIsInstance(node.udp_sock, socket.socket)
+        self.assertIsInstance(node.key, bytes)
+
+        escape_ResourceWarning(node.udp_sock)
+
+    def test_core_node_init_fail(self):
+        pairs_of_host_port = [('', 10000), ('localhost', None)]
+        for host, port in pairs_of_host_port:
+            node = Node(host, port)
+            self.assertEqual(node.udp_ip, (host, port))
+            self.assertIsInstance(node._last_moment, threading.Event)
+            self.assertIsInstance(node._status, dict)
+            self.assertIsNone(node.udp_sock)
+            self.assertIsInstance(node.key, bytes)
+
+    def test_make_udpip_success(self):
+        node = Node()
+        self.assertIsNone(node.udp_sock)
+        self.assertEqual(node.udp_ip, (None, None))
+        node.make_udpip('localhost', 4444)
+        self.assertIsInstance(node.udp_sock, socket.socket)
+        self.assertEqual(node.udp_ip, ('localhost', 4444))
+
+        escape_ResourceWarning(node.udp_sock)
+
+    def test_make_udpip_doesnt_make_udpip(self):
+        pairs_of_host_port = [(None, 4444), ('localhost', None), (None, None)]
+
+        for host, port in pairs_of_host_port:
+            node = Node()
+            self.assertIsNone(node.udp_sock)
+            self.assertEqual(node.udp_ip, (None, None))
+            node.make_udpip(host, port)
+            self.assertIsNone(node.udp_sock)
+            self.assertEqual(node.udp_ip, (host, port))
+
+    def test_make_udpip_got_on_the_boundary_port(self):
+        for on_the_boundary_port in (1024, 65535):
+            node = Node()
+            self.assertIsNone(node.udp_sock)
+            self.assertEqual(node.udp_ip, (None, None))
+            node.make_udpip('localhost', on_the_boundary_port)
+            self.assertIsInstance(node.udp_sock, socket.socket)
+            self.assertEqual(node.udp_ip, ('localhost', on_the_boundary_port))
+
+            escape_ResourceWarning(node.udp_sock)
+
+    def test_make_udpip_got_a_sensitive_port(self):
+        # Can you bind system ports ?
+        for sensitive_port in (0, 1, 1023):
+            node = Node()
+            self.assertIsNone(node.udp_sock)
+            self.assertEqual(node.udp_ip, (None, None))
+            with self.subTest(sensitive_port=sensitive_port):
+                node.make_udpip('localhost', sensitive_port)
+                if node.udp_sock:
+                    # Really !!! You can bind a sensitive port.
+                    # Are you root ?
+                    # You must study security.
+                    # You must open many security holes.
+                    self.assertIsInstance(node.udp_sock, socket.socket)
+                    self.assertEqual(node.udp_ip, ('localhost', sensitive_port))
+
+                    escape_ResourceWarning(node.udp_sock)
+                else:
+                    # You cannot bind a sensitive port.
+                    # You have a good security policy.
+                    self.assertIsNone(node.udp_sock)
+                    # However port must be set. for debug.
+                    self.assertEqual(node.udp_ip, ('localhost', sensitive_port))
+
+    def test_make_udpip_got_out_of_range_port(self):
+      # OverflowError: getsockaddrarg: port must be 0-65535.
+        for invalid_port in (-1, 65535 + 1):
+            node = Node()
+            self.assertIsNone(node.udp_sock)
+            self.assertEqual(node.udp_ip, (None, None))
+            node.make_udpip('localhost', invalid_port)
+            self.assertIsNone(node.udp_sock)
+            self.assertEqual(node.udp_ip, ('localhost', invalid_port))
+            # except OverflowError で、範囲外と理解しているので、
+            # invalid_port が設定されていても OK.
+
+    def test_core_node(self):
         node.appear()
         self.assertFalse(node._last_moment.is_set())
 
@@ -35,7 +124,7 @@ class CoreNodeTests(unittest.TestCase):
         node.update_key(key_rand)
         self.assertEqual(node.key, key_rand)
 
-        node.sock.close()
+        node.udp_sock.close()
 
     def test_core_keyhex(self):
         node = Node('localhost', 10000)
@@ -44,7 +133,7 @@ class CoreNodeTests(unittest.TestCase):
         self.assertEqual(int(node._key_hex(), 16),
                          int.from_bytes(node.key, 'big'))
 
-        node.sock.close()
+        node.udp_sock.close()
 
     def test_core_node_thread(self):
         node = Node('localhost', 10000)
