@@ -7,7 +7,7 @@ import sqlite3
 from umatobi.log import *
 from umatobi.constants import *
 from umatobi.lib.args import args_make_simulation_db
-from umatobi import simulator
+from umatobi.simulator.sql import SQL
 
 def collect_client_dbs(simulation_db):
     client_dbs = []
@@ -17,7 +17,7 @@ def collect_client_dbs(simulation_db):
         logger.debug('id={}, num_nodes_={}'.format(id_, num_nodes_))
         simulation_db_dir = os.path.dirname(simulation_db.simulation_db_path)
         client_db_path = os.path.join(simulation_db_dir, f"client.{id_}.db")
-        client_db = simulator.sql.SQL(db_path=client_db_path)
+        client_db = SQL(db_path=client_db_path)
         client_db.id, client_db.num_nodes = id_, num_nodes_
         logger.debug(f'client_db={client_db}')
         client_db.access_db()
@@ -53,7 +53,16 @@ def watson_make_simulation_db(simulation_db):
     logger.debug(f'simulation_db={simulation_db}')
 
     simulation_db.access_db()
-    simulation_db.create_table('growings')
+    logger.info('create growings table.')
+    try:
+        simulation_db.create_table('growings')
+    except sqlite3.OperationalError as err:
+        if err.args == ('table growings already exists',):
+            logger.debug('table growings already exists')
+            simulation_db.drop_table('growings')
+            simulation_db.create_table('growings')
+        else:
+            raise err
 
     simulation_db.client_dbs = collect_client_dbs(simulation_db)
     simulation_db.total_nodes = \
@@ -147,7 +156,7 @@ if __name__ == '__main__':
     if not simulation_db_path:
         raise RuntimeError('simulation_db_path is empty.')
 
-    simulation_db = simulator.sql.SQL(db_path=simulation_db_path,
+    simulation_db = SQL(db_path=simulation_db_path,
                                       schema_path=SCHEMA_PATH)
     simulation_db.simulation_db_path = simulation_db_path
 
