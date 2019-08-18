@@ -1,4 +1,5 @@
 import unittest
+import shutil
 
 from umatobi.tests import *
 from umatobi.simulator.client import Client
