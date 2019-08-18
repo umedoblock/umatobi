@@ -7,12 +7,7 @@ import queue
 from umatobi.p2p.core import Node
 from umatobi.lib import current_y15sformat_time
 from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
-
-def escape_ResourceWarning(sock):
-    # excape WARNING
-    # ResourceWarning: Enable tracemalloc to get the object allocation traceback
-    # ResourceWarning: unclosed <socket.socket fd=3, ...
-    sock.close()
+from umatobi.tests.lib import escape_ResourceWarning
 
 class CoreNodeTests(unittest.TestCase):
     def test_core_node_init_success(self):
