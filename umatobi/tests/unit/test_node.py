@@ -4,6 +4,7 @@ import threading, socket
 import unittest
 import math, queue, pickle
 
+from umatobi.tests import *
 from umatobi.log import logger
 from umatobi.simulator.node import Node, NodeOffice
 from umatobi.simulator.node import NodeOpenOffice, NodeUDPOffice
@@ -26,6 +27,17 @@ class NodeTests(unittest.TestCase):
 
     def tearDown(self):
         self.node.release()
+
+    def test_to_darkness(self):
+#       db['nodes']
+#       db['clients']
+#       db['nodes']
+       #node = self.node
+       #node.to_darkness(d)
+
+       #et = elapsed_time(y15sformat_parse(node.start_up_time))
+       #d_attrs = self.get_attrs()
+       #self.to_darkness(d_attrs, et)
 
     def test_update_key(self):
         node = self.node

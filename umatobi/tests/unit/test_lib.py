@@ -8,6 +8,29 @@ from umatobi.lib.formula import keycmp, _key_hex
 
 class LibTests(unittest.TestCase):
 
+    def test_get_table_columns(self):
+        expected_items = {
+            'simulation': (
+                'watson_office_addr', 'simulation_ms', 'title',
+                'memo', 'version', 'n_clients', 'total_nodes'
+            ),
+            'nodes': (
+                'id', 'office_addr', 'keyid', 'key', 'rad', 'x', 'y', 'status'
+            ),
+            'clients': (
+                'id', 'host', 'port', 'joined', 'log_level',
+                'num_nodes', 'node_index'
+            ),
+            'growings': ( 'id', 'elapsed_time', 'pickle')
+
+        }
+
+        db = lib.get_db_from_schema()
+        self.assertSequenceEqual(db.sections(), tuple(expected_items.keys()))
+
+        for section in db.sections():
+            self.assertSequenceEqual(tuple(db[section].keys()), tuple(expected_items[section]))
+
     def test_dict2json_and_json2dict(self):
         d = {
             'port': 1000,

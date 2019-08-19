@@ -27,6 +27,15 @@
 # you can let the sqlite3 module convert SQLite types to different Python types
 # via converters.
 
+################################################################################
+# Note also that keys in sections are case-insensitive and stored in lowercase 1.
+
+################################################################################
+# By default, all keys in sections are accessible in a case-insensitive manner
+# 1. E.g. for option in parser["section"] yields only optionxform’ed option key
+# names. This means lowercased keys by default. At the same time, for a section
+# that holds the key 'a', both expressions return True:
+
 # simulation.db ###############################################################
 # watson.db, client.1.db を一纏めにし作成される。
 [simulation]
@@ -43,10 +52,11 @@ total_nodes: integer
 [nodes]
 # idはwatson, clientが管理する値であるから、autoincrement 付けない。
 id: integer primary key unique not null
-host: text not null
+office_addr: text not null
+# host: text not null
 # 複数clientの時、host or ip が異なり、port番号は同じという場合があるから、
-port: integer not null # unique は付けない。
-keyID: integer # ?
+# port: integer not null # unique は付けない。
+keyid: integer # ?
 key: blob
 rad: float
 x: float

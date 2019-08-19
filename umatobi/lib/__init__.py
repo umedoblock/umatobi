@@ -4,7 +4,7 @@ import time
 import sys
 import os
 import threading
-import sched
+import sched, configparser
 
 from umatobi.constants import *
 
@@ -29,6 +29,19 @@ class Polling(threading.Thread):
 
     def run(self):
         self._sche.run()
+
+def get_db_from_schema():
+    db = configparser.ConfigParser()
+    with open(SCHEMA_PATH, encoding='utf-8') as schema:
+        db.read_file(schema)
+  # print('db =', db)
+  # print('db.sections =', db.sections)
+  # print('tuple(db.sections()) =', tuple(db.sections()))
+  # db.keys() = ('DEFAULT', 'simulation', 'nodes', 'clients', 'growings')
+    return db
+
+def get_table_columns(table_name):
+    return get_db_from_schema()[table_name]
 
 def get_master_hand(start_up_time):
     return os.path.join(start_up_time, MASTER_HAND)
