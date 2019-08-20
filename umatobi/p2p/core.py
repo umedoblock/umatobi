@@ -4,6 +4,7 @@ import os
 import sys
 
 from umatobi.constants import *
+from umatobi.simulator import Key
 from umatobi.lib import formula
 from umatobi.log import *
 
@@ -27,7 +28,7 @@ class Node(threading.Thread):
         self.make_udpip()
 
         self._status = {}
-        self.update_key()
+        self.key = Key()
 
     def release(self):
         if self.udp_sock:
@@ -84,21 +85,9 @@ class Node(threading.Thread):
             self._last_moment.set()
         self.join()
 
-    def update_key(self, k=b''):
-        if not isinstance(k, bytes):
-            raise ValueError('key must be bytes object.')
-        if len(k) == 0:
-            k = os.urandom(KEY_OCTETS)
-        elif len(k) != KEY_OCTETS:
-            raise ValueError(f"key length is {len(k)}, it must be {KEY_OCTETS}.")
-        self.key = k
-
     def get_status(self, type_='dict'):
         'node の各種情報を表示。'
         self._status['host'] = self.udp_ip[0]
         self._status['port'] = self.udp_ip[1]
-        self._status['key'] = self.key
+        self._status['key'] = self.key.value()
         return self._status
-
-    def _key_hex(self):
-        return formula._key_hex(self.key)
