@@ -124,7 +124,7 @@ class NodeOffice(socketserver.DatagramRequestHandler):
 
 class Node(umatobi.p2p.core.Node):
 
-    ATTRS = ('id', 'office_addr', 'key_hex', 'rad', 'x', 'y', 'status')
+    ATTRS = ('id', 'office_addr', 'key', 'rad', 'x', 'y', 'status')
 
     def __init__(self, **kwargs):
         '''\
@@ -265,5 +265,14 @@ class Node(umatobi.p2p.core.Node):
         super().update_key(k=k)
 
         self.key_hex = _key_hex(self.key)
-        self._keyID = struct.unpack('>I', self.key[:4])[0]
-        r, x, y = formula._key2rxy(self._keyID)
+        self._keyid = struct.unpack('>I', self.key[:4])[0]
+        r, x, y = formula._key2rxy(self._keyid)
+
+      # print('{} key_hex = {}'.format(self, key_hex))
+        _keyID = int(key_hex[:10], 16)
+        rad, x, y = formula._key2rxy(_keyID)
+
+        self.key_hex = key_hex
+        self.rad = rad
+        self.x = x
+        self.y = y
