@@ -4,7 +4,7 @@ import os
 import sys
 
 from umatobi.constants import *
-from umatobi.simulator import Key
+from umatobi.p2p import Key
 from umatobi.lib import formula
 from umatobi.log import *
 
