@@ -4,7 +4,7 @@ import threading, socket
 import unittest
 import queue
 
-from umatobi.p2p.core import Node
+from umatobi.simulator.core.node import Node
 from umatobi.lib import current_y15sformat_time
 from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
 from umatobi.tests.lib import escape_ResourceWarning

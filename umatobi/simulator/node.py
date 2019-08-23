@@ -6,7 +6,7 @@ import datetime
 
 from umatobi.log import *
 from umatobi.constants import *
-import umatobi.p2p.core
+from umatobi.simulator.core import node
 from umatobi.lib import formula, validate_kwargs
 from umatobi.lib.formula import _key_hex
 from umatobi.lib import y15sformat_parse, elapsed_time
@@ -122,7 +122,7 @@ class NodeOffice(socketserver.DatagramRequestHandler):
   # def finish(self):
   #     super().finish()
 
-class Node(umatobi.p2p.core.Node):
+class Node(node.Node):
 
     ATTRS = ('id', 'office_addr', 'key', 'rad', 'x', 'y', 'status')
 

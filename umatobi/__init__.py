@@ -1,4 +1,4 @@
-__all__ = ['simulator', 'screen', 'p2p']
+__all__ = ['simulator', 'screen']
 
 __version__ = '0.0'     # See also below and setup.py
 __revision__ = "$Id$"

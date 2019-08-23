@@ -29,6 +29,7 @@ class NodeTests(unittest.TestCase):
         self.node.release()
 
     def test_to_darkness(self):
+        pass
 #       db['nodes']
 #       db['clients']
 #       db['nodes']
