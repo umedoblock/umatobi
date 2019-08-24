@@ -6,22 +6,23 @@ import math, queue, pickle
 
 from umatobi.tests import *
 from umatobi.log import logger
+from umatobi.simulator.core.key import Key
 from umatobi.simulator.node import Node, NodeOffice
 from umatobi.simulator.node import NodeOpenOffice, NodeUDPOffice
 from umatobi.lib import current_y15sformat_time
-from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
 from umatobi.lib import dict2json, json2dict
 from umatobi.tests.lib import escape_ResourceWarning
 
 class NodeTests(unittest.TestCase):
+    def assertIsPort(self, port):
+        self.assertGreaterEqual(port, 1024)
+        self.assertLessEqual(port, 65535)
+
     def setUp(self):
-        byebye_nodes = threading.Event()
-        start_up_orig = make_start_up_orig()
-        start_up_time = y15sformat_time(start_up_orig)
-        _queue_darkness = queue.Queue()
-        node = Node(host='localhost', id=1, byebye_nodes=byebye_nodes, start_up_time=start_up_time, _queue_darkness=_queue_darkness)
+        node_assets = Node.make_node_assets()
+        node = Node(host='localhost', id=1, **node_assets)
         key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
-        node.update_key(key)
+        node.key.update(key)
         self.node = node
         self.key = key
 
@@ -43,15 +44,20 @@ class NodeTests(unittest.TestCase):
     def test_update_key(self):
         node = self.node
 
-        self.assertEqual(node.key, self.key)
+        self.assertEqual(node.key.key, self.key)
         key = b'\xfe\xdc\xba\x98\x76\x54\x32\x10' * 4
-        node.update_key(key)
-        self.assertEqual(node.key, key)
+        node.key.update(key)
+        self.assertEqual(node.key.key, key)
 
     def test_node_get_info(self):
-        node = self.node
-        node_info_line = f"{node.office_addr[0]}:{node.office_addr[1]}:{str(node.key_hex)}" + '\n'
+        node_assets = Node.make_node_assets()
+        node = Node(host='localhost', port=55555, **node_assets)
+        node_info_line = f"{node.office_addr[0]}:{node.office_addr[1]}:{str(node.key)}" + '\n'
+        self.assertEqual(node.office_addr[0], 'localhost')
+        self.assertEqual(node.office_addr[1], 55555)
         self.assertEqual(node.get_info(), node_info_line)
+
+        escape_ResourceWarning(node.udp_sock)
 
     def test_steal_master_palm(self):
         node = self.node
@@ -96,14 +102,8 @@ class NodeTests(unittest.TestCase):
         os.remove(node.master_hand_path)
 
     def test_node_basic(self):
-        byebye_nodes = threading.Event()
-        start_up_orig = make_start_up_orig()
-        start_up_time = y15sformat_time(start_up_orig)
-        _queue_darkness = queue.Queue()
-        node_ = Node(host='localhost', id=1,
-                     byebye_nodes=byebye_nodes,
-                     start_up_time=start_up_time,
-                     _queue_darkness=_queue_darkness)
+        node_assets = Node.make_node_assets()
+        node_ = Node(host='localhost', id=1, **node_assets)
 
         attrs = ('id', 'start_up_time', \
                  'byebye_nodes', '_queue_darkness')
@@ -115,9 +115,7 @@ class NodeTests(unittest.TestCase):
         node_.office_addr_assigned.wait()
         self.assertIsInstance(node_.office_addr, tuple)
         self.assertEqual(node_.office_addr[0], 'localhost')
-        self.assertIsInstance(node_.office_addr[1], int)
-        self.assertGreaterEqual(node_.office_addr[1], 1024)
-        self.assertLessEqual(node_.office_addr[1], 65535)
+        self.assertIsPort(node_.office_addr[1])
 
         tup = node_._queue_darkness.get()
         et, pickle_dumps = tup
@@ -126,21 +124,9 @@ class NodeTests(unittest.TestCase):
         self.assertEqual(d['id'], node_.id)
 
         self.assertEqual(d['office_addr'][0], 'localhost')
-        self.assertIsInstance(d['office_addr'][1], int)
-        self.assertGreaterEqual(d['office_addr'][1], 1024)
-        self.assertLessEqual(d['office_addr'][1], 65535)
+        self.assertIsPort(d['office_addr'][1])
 
-        self.assertRegex(d['key_hex'], r'\A0x\w{64}\Z')
-        self.assertNotIn(d['key_hex'], '_')
-        self.assertIsInstance(d['rad'], float)
-        self.assertGreaterEqual(d['rad'], 0.0)
-        self.assertLessEqual(d['rad'], 2 * math.pi)
-        self.assertIsInstance(d['x'], float)
-        self.assertGreaterEqual(d['x'], -1.0)
-        self.assertLessEqual(d['x'], 1.0)
-        self.assertIsInstance(d['y'], float)
-        self.assertGreaterEqual(d['y'], -1.0)
-        self.assertLessEqual(d['y'], 1.0)
+        self.assertIsInstance(d['key'], Key)
         self.assertEqual(d['status'], 'active')
 
         node_.byebye_nodes.set() # act darkness
@@ -151,12 +137,8 @@ class NodeTests(unittest.TestCase):
 
     def test_node_thread(self):
         logger.info(f"")
-        byebye_nodes = threading.Event()
-        _queue_darkness = queue.Queue()
-        start_up_orig = make_start_up_orig()
-        start_up_time = y15sformat_time(start_up_orig)
-
-        node_ = Node(host='localhost', id=1, byebye_nodes=byebye_nodes, start_up_time=start_up_time, _queue_darkness=_queue_darkness)
+        node_assets = Node.make_node_assets()
+        node_ = Node(host='localhost', id=1, **node_assets)
 
         logger.info(f"node_.appear()")
         node_.appear()
@@ -176,14 +158,8 @@ class NodeTests(unittest.TestCase):
 
 class NodeOfficeTests(unittest.TestCase):
     def setUp(self):
-        byebye_nodes = threading.Event()
-        start_up_orig = make_start_up_orig()
-        start_up_time = y15sformat_time(start_up_orig)
-        _queue_darkness = queue.Queue()
-        node = Node(id=1, host='localhost', \
-                    byebye_nodes=byebye_nodes, \
-                    start_up_time=start_up_time, \
-                    _queue_darkness=_queue_darkness)
+        node_assets = Node.make_node_assets()
+        node = Node(id=1, host='localhost', **node_assets)
         self.node = node
 
     def test_handle(self):

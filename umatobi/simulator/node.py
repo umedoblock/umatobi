@@ -1,6 +1,6 @@
 import sys, os, threading
 import struct
-import math, random
+import math, random, queue
 import pickle, socketserver
 import datetime
 
@@ -8,11 +8,11 @@ from umatobi.simulator.core.key import Key
 from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.core import node
-from umatobi.lib import formula, validate_kwargs
-from umatobi.lib.formula import _key_hex
+from umatobi.lib import validate_kwargs
 from umatobi.lib import y15sformat_parse, elapsed_time
 from umatobi.lib import get_master_hand_path
 from umatobi.lib import dict2bytes, bytes2dict
+from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
 
 # NodeUDPOffice and NodeOpenOffice classes are on different thread.
 class NodeOpenOffice(threading.Thread):
@@ -125,7 +125,22 @@ class NodeOffice(socketserver.DatagramRequestHandler):
 
 class Node(node.Node):
 
-    ATTRS = ('id', 'office_addr', 'key', 'rad', 'x', 'y', 'status')
+    ATTRS = ('id', 'office_addr', 'key', 'status')
+
+    @classmethod
+    def make_node_assets(cls):
+        byebye_nodes = threading.Event()
+        start_up_orig = make_start_up_orig()
+        start_up_time = y15sformat_time(start_up_orig)
+        _queue_darkness = queue.Queue()
+
+        d = {
+            'byebye_nodes': byebye_nodes,
+            'start_up_time': start_up_time,
+            '_queue_darkness': _queue_darkness,
+        }
+
+        return d
 
     def __init__(self, **kwargs):
         '''\
@@ -140,16 +155,7 @@ class Node(node.Node):
                 continue
             setattr(self, attr, value)
 
-        self.update_key()
-        key_hex = self._key_hex()
-      # print('{} key_hex = {}'.format(self, key_hex))
-        _keyID = int(key_hex[:10], 16)
-        rad, x, y = formula._key2rxy(_keyID)
-
-        self.key_hex = key_hex
-        self.rad = rad
-        self.x = x
-        self.y = y
+        self.key = Key()
         self.status = 'active'
 
         self.nodes = []
@@ -194,7 +200,7 @@ class Node(node.Node):
         return node_open_office
 
     def get_info(self):
-        return f"{':'.join(map(str, self.office_addr))}:{self.key_hex}" + '\n'
+        return f"{':'.join(map(str, self.office_addr))}:{self.key}" + '\n'
 
     def regist(self):
         logger.info(f"regist(), master_hand_path={self.master_hand_path}")
@@ -251,29 +257,5 @@ class Node(node.Node):
     def __str__(self):
         return 'Node(id={}, addr={})'.format(self.id, self.udp_ip)
 
-    def update_key(self, k=b''):
-        '''\
-        how to mapping ? key to circle.
-        key は '0' * 16 から 'f' * 16 までの範囲の値です。
-        key は 0 時をゼロとして時計回り順で増加していきます。
-        つまり、時計の時間と Key の値の関係は以下の通りです。
-         0 時: 0000000000000000
-         3 時: 4000000000000000
-         6 時: 8000000000000000
-         9 時: c000000000000000
-        12 時: ffffffffffffffff
-        '''
-        super().update_key(k=k)
-
-        self.key_hex = _key_hex(self.key)
-        self._keyid = struct.unpack('>I', self.key[:4])[0]
-        r, x, y = formula._key2rxy(self._keyid)
-
-      # print('{} key_hex = {}'.format(self, key_hex))
-        _keyID = int(key_hex[:10], 16)
-        rad, x, y = formula._key2rxy(_keyID)
-
-        self.key_hex = key_hex
-        self.rad = rad
-        self.x = x
-        self.y = y
+    def update(self, k=b''):
+        self.key.update(k)
