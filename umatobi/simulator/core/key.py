@@ -24,15 +24,27 @@ class Key(object):
             plain_key += byte
         return plain_key
 
-    @classmethod
-    def key_to_norm_rad(cls, self):
-        rate = int(self) / (1 << cls.KEY_BITS)
-        norm_rad = (2 * math.pi) * rate
-        return norm_rad
+    #    oclock:   at 00:00 =>  at 03:00 =>       at 06:00
+    #       key:     0x0000 =>    0x4000 =>         0x8000
+    #  math_rad: 1 / 2 * pi =>       0.0 =>     3 / 2 * pi
+    #  cos, sin:   0.0, 1.0 =>  1.0, 0.0 =>      0.0, -1.0
+    # scale_rad:   0.0 * pi =>  0.5 * pi =>       1.0 * pi
+
+    #    oclock:   at 06:00 =>  at 09:00 =>       at 11:59
+    #       key:     0x8000 =>    0xc000 =>         0xffff
+    #  math_rad: 3 / 2 * pi =>        pi => 0.999 / 2 * pi
+    #  cos, sin:  0.0, -1.0 => -1.0, 0.0 =>      -0.9, 0.9
+    # scale_rad:   1.0 * pi =>  1.5 * pi =>     1.999 * pi
 
     @classmethod
-    def norm_rad_to_math_rad(cls, norm_rad):
-        math_rad = -norm_rad + math.pi / 2.0
+    def key_to_scale_rad(cls, self):
+        rate = int(self) / (1 << cls.KEY_BITS)
+        scale_rad = (2 * math.pi) * rate
+        return scale_rad
+
+    @classmethod
+    def scale_rad_to_math_rad(cls, scale_rad):
+        math_rad = -scale_rad + math.pi / 2.0
         if math_rad < 0:
             math_rad += 2 * math.pi
         if math_rad > 2 * math.pi:
@@ -54,8 +66,8 @@ class Key(object):
         です。
         '''
 
-        norm_rad = cls.key_to_norm_rad(self)
-        math_rad = cls.norm_rad_to_math_rad(norm_rad)
+        scale_rad = cls.key_to_scale_rad(self)
+        math_rad = cls.scale_rad_to_math_rad(scale_rad)
         cs = math.cos(math_rad)
         sn = math.sin(math_rad)
 
@@ -63,7 +75,7 @@ class Key(object):
         x = cs * m
         y = sn * m
 
-        return norm_rad, x, y
+        return scale_rad, x, y
 
     def __init__(self, plain_key=b''):
         self.update(plain_key)
