@@ -12,8 +12,8 @@ class Key(object):
 #   >>> int.from_bytes(b1, 'big')
 #   1
 
-    def __init__(self, k=b''):
-        self.update(k)
+    def __init__(self, plain_key=b''):
+        self.update(plain_key)
 
     def __str__(self):
         return '0x' + self.key.hex()
@@ -24,11 +24,11 @@ class Key(object):
     def value(self):
         return self.key
 
-    def update(self, k=b''):
-        if not isinstance(k, bytes):
+    def update(self, plain_key=b''):
+        if not isinstance(plain_key, bytes):
             raise ValueError('key must be bytes object.')
-        if len(k) == 0:
-            k = os.urandom(Key.KEY_OCTETS)
-        elif len(k) != Key.KEY_OCTETS:
-            raise ValueError(f"key length is {len(k)}, it must be {Key.KEY_OCTETS}.")
-        self.key = k
+        if len(plain_key) == 0:
+            plain_key = os.urandom(Key.KEY_OCTETS)
+        elif len(plain_key) != Key.KEY_OCTETS:
+            raise ValueError(f"key length is {len(plain_key)}, it must be {Key.KEY_OCTETS}.")
+        self.key = plain_key
