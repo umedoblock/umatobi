@@ -1,4 +1,4 @@
-import re, math
+import re, math, struct
 
 from umatobi.constants import *
 
@@ -80,6 +80,85 @@ class Key(object):
     @classmethod
     def key_to_int(cls, key):
         return int.from_bytes(key, 'big')
+
+    @classmethod
+    def memcmp(cls, a, b, size):
+        unpacked_a = struct.unpack(f"{Key.KEY_OCTETS}B", a)
+        unpacked_b = struct.unpack(f"{Key.KEY_OCTETS}B", b)
+
+        for i in range(size):
+            if unpacked_a[i] > unpacked_b[i]:
+                return 1
+            elif unpacked_a[i] < unpacked_b[i]:
+                return -1
+        return 0
+
+    # copy keycmp() from
+    # omoide/umatobi/trunk/sim/rgb/rgblib.c
+    @classmethod
+    def keycmp(cls, a, b):
+        # 'Q' # unsigned long long 8 octets
+    #   unpack_a = struct.unpack('4Q', a)
+    #   unpack_b = struct.unpack('4Q', b)
+
+    #   for i in range(Key.KEY_OCTETS // 8):
+    #       if unpack_a[i] > unpack_b[i]:
+    #           return 1
+    #       elif unpack_a[i] < unpack_b[i]:
+    #           return -1
+
+        res1 = Key.memcmp(a, b, Key.KEY_OCTETS)
+        if res1 == 0:
+            return 0
+
+        # memcpy(b_, b, DHT_KEYSIZE); b_[0] ^= 0x80
+        b_ = int.to_bytes((b[0] ^ 0x80), 1, 'big')  + b[1:]
+        res2 = Key.memcmp(b_, a, Key.KEY_OCTETS)
+        res = -1
+        if b[0] <= 0x7f:
+            if res1 > 0 and res2 > 0:
+                res = 1
+        else:
+            if res1 > 0 or res2 > 0:
+                res = 1
+
+        return res
+
+    def __eq__(self, other):
+        """object.__eq__() の help を読んで。"""
+        result = Key.keycmp(self.key, other.key)
+        if result == 0:
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        """object.__ne__() の help を読んで。"""
+        return not self == other
+
+    def __gt__(self, other):
+        """object.__gt__() の help を読んで。"""
+        result = Key.keycmp(self.key, other.key)
+        if result > 0:
+            return True
+        else:
+            return False
+
+    def __ge__(self, other):
+        """object.__ge__() の help を読んで。"""
+        return self > other or self == other
+
+    def __lt__(self, other):
+        """object.__lt__() の help を読んで。"""
+        result = Key.keycmp(self.key, other.key)
+        if result < 0:
+            return True
+        else:
+            return False
+
+    def __le__(self, other):
+        """object.__le__() の help を読んで。"""
+        return self < other or self == other
 
     def __init__(self, plain_key=b''):
         self.update(plain_key)

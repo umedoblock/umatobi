@@ -18,6 +18,18 @@ class CoreKeyTests(unittest.TestCase):
         plain_key = Key.plain_hex_to_plain_key(plain_hex)
         self.assertEqual(plain_key, expected)
 
+    #    oclock:   at 00:00 =>  at 03:00 =>       at 06:00
+    #       key:     0x0000 =>    0x4000 =>         0x8000
+    #  math_rad: 1 / 2 * pi =>       0.0 =>     3 / 2 * pi
+    #  cos, sin:   0.0, 1.0 =>  1.0, 0.0 =>      0.0, -1.0
+    # scale_rad:   0.0 * pi =>  0.5 * pi =>       1.0 * pi
+
+    #    oclock:   at 06:00 =>  at 09:00 =>       at 11:59
+    #       key:     0x8000 =>    0xc000 =>         0xffff
+    #  math_rad: 3 / 2 * pi =>        pi => 1.001 / 2 * pi
+    #  cos, sin:  0.0, -1.0 => -1.0, 0.0 =>  -0.001, 0.999
+    # scale_rad:   1.0 * pi =>  1.5 * pi =>     1.999 * pi
+
     def test_core_key_key_to_scale_rad(self):
         plain_hex = b'\x00' + b'\x00' * (Key.KEY_OCTETS - 1)
         scale_rad = Key.key_to_scale_rad(plain_hex)
@@ -49,6 +61,18 @@ class CoreKeyTests(unittest.TestCase):
         for scale_rad, expected_rad in zip(scale_rads, expected_rads):
             rad = Key.scale_rad_to_math_rad(scale_rad)
             self.assertAlmostEqual(rad, expected_rad, 2)
+
+    #    oclock:   at 00:00 =>  at 03:00 =>       at 06:00
+    #       key:     0x0000 =>    0x4000 =>         0x8000
+    #  math_rad: 1 / 2 * pi =>       0.0 =>     3 / 2 * pi
+    #  cos, sin:   0.0, 1.0 =>  1.0, 0.0 =>      0.0, -1.0
+    # scale_rad:   0.0 * pi =>  0.5 * pi =>       1.0 * pi
+
+    #    oclock:   at 06:00 =>  at 09:00 =>       at 11:59
+    #       key:     0x8000 =>    0xc000 =>         0xffff
+    #  math_rad: 3 / 2 * pi =>        pi => 1.001 / 2 * pi
+    #  cos, sin:  0.0, -1.0 => -1.0, 0.0 =>  -0.001, 0.999
+    # scale_rad:   1.0 * pi =>  1.5 * pi =>     1.999 * pi
 
     AROUND_THE_CLOCK = {
         #  name,  int                       , (rxy)=(radius, cos, sin)
@@ -107,7 +131,7 @@ class CoreKeyTests(unittest.TestCase):
         CoreKeyTests.assert_key_initance(self, k)
 
     def test_core_key_get_rxy(self):
-        # key increases from 0x000...000 to 0xfff...fff.
+        # key increases from 0x000..000 to 0xfff..fff.
         #
         # oclock turns clock wise.
         # key is on oclock.
@@ -192,6 +216,219 @@ class CoreKeyTests(unittest.TestCase):
             Key(32 * Key.KEY_OCTETS)
         the_exception = cm.exception
         self.assertEqual(the_exception.args[0], "plain_key must be bytes object but it is <class 'int'> object")
+
+    def test_core_key_keycmp_simple(self):
+        # b'\xff' * 16
+        # int.to_bytes(255, 1, 'big')
+        # int.to_bytes(0, 1, 'big')
+        keyffff = b'\xff' * Key.KEY_OCTETS
+        keyfffe = b'\xff' * (Key.KEY_OCTETS-1) + b'\xfe'
+        key7fff = b'\x7f' + b'\xff' * (Key.KEY_OCTETS-1)
+        key7ffe = b'\x7f' + b'\xff' * (Key.KEY_OCTETS-2) + b'\xfe'
+
+        key0000 = b'\x00' * Key.KEY_OCTETS
+        key0001 = b'\x00' * (Key.KEY_OCTETS-1) + b'\x01'
+        key8000 = b'\x80' + b'\x00' * (Key.KEY_OCTETS-1)
+        key8001 = b'\x80' + b'\x00' * (Key.KEY_OCTETS-2) + b'\x01'
+
+        self.assertEqual(Key.KEY_OCTETS, 32)
+        self.assertEqual(len(keyffff), Key.KEY_OCTETS)
+        self.assertEqual(len(keyfffe), Key.KEY_OCTETS)
+        self.assertEqual(len(key7fff), Key.KEY_OCTETS)
+        self.assertEqual(len(key7ffe), Key.KEY_OCTETS)
+        self.assertEqual(len(key0000), Key.KEY_OCTETS)
+        self.assertEqual(len(key0001), Key.KEY_OCTETS)
+        self.assertEqual(len(key8000), Key.KEY_OCTETS)
+        self.assertEqual(len(key8001), Key.KEY_OCTETS)
+
+        # Greater means Red, Less means Green, Eq means White
+
+        self.assertEqual(Key.keycmp(key0000, key0000), 0)   # eq     White
+        self.assertGreater(Key.keycmp(key0001, key0000), 0) # + 1    Red
+        self.assertGreater(Key.keycmp(key7fff, key0000), 0) # + 7fff Red
+        self.assertLess(Key.keycmp(key8000, key0000), 0)    # + 8000 Green
+        self.assertLess(Key.keycmp(keyffff, key0000), 0)    # - 1    Green
+
+        self.assertEqual(Key.keycmp(key7fff, key7fff), 0)   # eq
+        self.assertGreater(Key.keycmp(key8000, key7fff), 0) # + 1
+        self.assertGreater(Key.keycmp(keyfffe, key7fff), 0) # + 7fff
+        self.assertLess(Key.keycmp(keyffff, key7fff), 0)    # + 8000
+        self.assertLess(Key.keycmp(key7ffe, key7fff), 0)    # -1
+        self.assertLess(Key.keycmp(key0000, key7fff), 0)    # zero
+
+        self.assertEqual(Key.keycmp(key8000, key8000), 0)   # eq
+        self.assertGreater(Key.keycmp(key8001, key8000), 0) # + 1
+        self.assertGreater(Key.keycmp(keyffff, key8000), 0) # + 7fff
+        self.assertLess(Key.keycmp(key0000, key8000), 0)    # + 8000
+        self.assertLess(Key.keycmp(key7fff, key8000), 0)    # -1
+
+        self.assertEqual(Key.keycmp(keyffff, keyffff), 0)   # eq
+        self.assertGreater(Key.keycmp(key0000, keyffff), 0) # + 1
+        self.assertGreater(Key.keycmp(key7ffe, keyffff), 0) # + 7fff
+        self.assertLess(Key.keycmp(key7fff, keyffff), 0)    # + 8000
+        self.assertLess(Key.keycmp(keyfffe, keyffff), 0)    # -1
+
+    def test_core_key_keycmp_boundary(self):
+        key0000 = b'\x00' * Key.KEY_OCTETS
+        keyffff = b'\xff' * Key.KEY_OCTETS
+
+        key1fff = b'\x1f' + b'\xff' * (Key.KEY_OCTETS-1)
+        key2000 = b'\x20' + b'\x00' * (Key.KEY_OCTETS-1)
+        key2001 = b'\x20' + b'\x00' * (Key.KEY_OCTETS-2) + b'\x01'
+
+        key5fff = b'\x5f' + b'\xff' * (Key.KEY_OCTETS-1)
+        key6000 = b'\x60' + b'\x00' * (Key.KEY_OCTETS-1)
+        key6001 = b'\x60' + b'\x00' * (Key.KEY_OCTETS-2) + b'\x01'
+
+        key9fff = b'\x9f' + b'\xff' * (Key.KEY_OCTETS-1)
+        keya000 = b'\xa0' + b'\x00' * (Key.KEY_OCTETS-1)
+        keya001 = b'\xa0' + b'\x00' * (Key.KEY_OCTETS-2) + b'\x01'
+
+        keydfff = b'\xdf' + b'\xff' * (Key.KEY_OCTETS-1)
+        keye000 = b'\xe0' + b'\x00' * (Key.KEY_OCTETS-1)
+        keye001 = b'\xe0' + b'\x00' * (Key.KEY_OCTETS-2) + b'\x01'
+
+        self.assertEqual(Key.KEY_OCTETS, 32)
+        self.assertEqual(len(key0000), Key.KEY_OCTETS)
+        self.assertEqual(len(keyffff), Key.KEY_OCTETS)
+        self.assertEqual(len(key1fff), Key.KEY_OCTETS)
+        self.assertEqual(len(key2000), Key.KEY_OCTETS)
+        self.assertEqual(len(key2001), Key.KEY_OCTETS)
+        self.assertEqual(len(key5fff), Key.KEY_OCTETS)
+        self.assertEqual(len(key6000), Key.KEY_OCTETS)
+        self.assertEqual(len(key6001), Key.KEY_OCTETS)
+        self.assertEqual(len(key9fff), Key.KEY_OCTETS)
+        self.assertEqual(len(keya000), Key.KEY_OCTETS)
+        self.assertEqual(len(keya001), Key.KEY_OCTETS)
+        self.assertEqual(len(keydfff), Key.KEY_OCTETS)
+        self.assertEqual(len(keye000), Key.KEY_OCTETS)
+        self.assertEqual(len(keye001), Key.KEY_OCTETS)
+
+        # Greater means Red, Less means Green, Eq means White
+
+        self.assertEqual(Key.keycmp(key2000, key2000), 0)   # eq     White
+        self.assertGreater(Key.keycmp(key2001, key2000), 0) # + 1    Red
+        self.assertGreater(Key.keycmp(key9fff, key2000), 0) # + 7fff Red
+        self.assertLess(Key.keycmp(keya000, key2000), 0)    # + 8000 Green
+        self.assertLess(Key.keycmp(key1fff, key2000), 0)    # - 1    Green
+        self.assertLess(Key.keycmp(keyffff, key2000), 0)    # end    Green
+        self.assertLess(Key.keycmp(key0000, key2000), 0)    # zero   Green
+
+        self.assertEqual(Key.keycmp(key6000, key6000), 0)   # eq     White
+        self.assertGreater(Key.keycmp(key6001, key6000), 0) # + 1    Red
+        self.assertGreater(Key.keycmp(keydfff, key6000), 0) # + 7fff Red
+        self.assertLess(Key.keycmp(keye000, key6000), 0)    # + 8000 Green
+        self.assertLess(Key.keycmp(key5fff, key6000), 0)    # - 1    Green
+        self.assertLess(Key.keycmp(keyffff, key6000), 0)    # end    Green
+        self.assertLess(Key.keycmp(key0000, key6000), 0)    # zero   Green
+
+        self.assertEqual(Key.keycmp(keya000, keya000), 0)   # eq     White
+        self.assertGreater(Key.keycmp(keya001, keya000), 0) # + 1    Red
+        self.assertGreater(Key.keycmp(key1fff, keya000), 0) # + 7fff Red
+        self.assertLess(Key.keycmp(key2000, keya000), 0)    # + 8000 Green
+        self.assertLess(Key.keycmp(key9fff, keya000), 0)    # - 1    Green
+        self.assertGreater(Key.keycmp(keyffff, keya000), 0) # end    Red
+        self.assertGreater(Key.keycmp(key0000, keya000), 0) # zero   Red
+
+        self.assertEqual(Key.keycmp(keye000, keye000), 0)   # eq     White
+        self.assertGreater(Key.keycmp(keye001, keye000), 0) # + 1    Red
+        self.assertGreater(Key.keycmp(key5fff, keye000), 0) # + 7fff Red
+        self.assertLess(Key.keycmp(key6000, keye000), 0)    # + 8000 Green
+        self.assertLess(Key.keycmp(keydfff, keye000), 0)    # - 1    Green
+        self.assertGreater(Key.keycmp(keyffff, keye000), 0) # end    Red
+        self.assertGreater(Key.keycmp(key0000, keye000), 0) # zero   Red
+
+    def test_core_key_richcmp_simple(self):
+        keyffff = Key(b'\xff' * Key.KEY_OCTETS)
+        keyfffe = Key(b'\xff' * (Key.KEY_OCTETS-1) + b'\xfe')
+        key7fff = Key(b'\x7f' + b'\xff' * (Key.KEY_OCTETS-1))
+        key7ffe = Key(b'\x7f' + b'\xff' * (Key.KEY_OCTETS-2) + b'\xfe')
+
+        key0000 = Key(b'\x00' * Key.KEY_OCTETS)
+        key0001 = Key(b'\x00' * (Key.KEY_OCTETS-1) + b'\x01')
+        key8000 = Key(b'\x80' + b'\x00' * (Key.KEY_OCTETS-1))
+        key8001 = Key(b'\x80' + b'\x00' * (Key.KEY_OCTETS-2) + b'\x01')
+
+        # Greater means Red, Less means Green, Eq means White
+
+        self.assertEqual(key0000, key0000)   # eq     White
+        self.assertGreater(key0001, key0000) # + 1    Red
+        self.assertGreater(key7fff, key0000) # + 7fff Red
+        self.assertLess(key8000, key0000)    # + 8000 Green
+        self.assertLess(keyffff, key0000)    # - 1    Green
+
+        self.assertEqual(key7fff, key7fff)   # eq
+        self.assertGreater(key8000, key7fff) # + 1
+        self.assertGreater(keyfffe, key7fff) # + 7fff
+        self.assertLess(keyffff, key7fff)    # + 8000
+        self.assertLess(key7ffe, key7fff)    # -1
+        self.assertLess(key0000, key7fff)    # zero
+
+        self.assertEqual(key8000, key8000)   # eq
+        self.assertGreater(key8001, key8000) # + 1
+        self.assertGreater(keyffff, key8000) # + 7fff
+        self.assertLess(key0000, key8000)    # + 8000
+        self.assertLess(key7fff, key8000)    # -1
+
+        self.assertEqual(keyffff, keyffff)   # eq
+        self.assertGreater(key0000, keyffff) # + 1
+        self.assertGreater(key7ffe, keyffff) # + 7fff
+        self.assertLess(key7fff, keyffff)    # + 8000
+        self.assertLess(keyfffe, keyffff)    # -1
+
+    def test_core_key_richcmp_boundary(self):
+        key0000 = Key(b'\x00' * Key.KEY_OCTETS)
+        keyffff = Key(b'\xff' * Key.KEY_OCTETS)
+
+        key1fff = Key(b'\x1f' + b'\xff' * (Key.KEY_OCTETS-1))
+        key2000 = Key(b'\x20' + b'\x00' * (Key.KEY_OCTETS-1))
+        key2001 = Key(b'\x20' + b'\x00' * (Key.KEY_OCTETS-2) + b'\x01')
+
+        key5fff = Key(b'\x5f' + b'\xff' * (Key.KEY_OCTETS-1))
+        key6000 = Key(b'\x60' + b'\x00' * (Key.KEY_OCTETS-1))
+        key6001 = Key(b'\x60' + b'\x00' * (Key.KEY_OCTETS-2) + b'\x01')
+
+        key9fff = Key(b'\x9f' + b'\xff' * (Key.KEY_OCTETS-1))
+        keya000 = Key(b'\xa0' + b'\x00' * (Key.KEY_OCTETS-1))
+        keya001 = Key(b'\xa0' + b'\x00' * (Key.KEY_OCTETS-2) + b'\x01')
+
+        keydfff = Key(b'\xdf' + b'\xff' * (Key.KEY_OCTETS-1))
+        keye000 = Key(b'\xe0' + b'\x00' * (Key.KEY_OCTETS-1))
+        keye001 = Key(b'\xe0' + b'\x00' * (Key.KEY_OCTETS-2) + b'\x01')
+
+        # Greater means Red, Less means Green, Eq means White
+
+        self.assertEqual(key2000, key2000)   # eq     White
+        self.assertGreater(key2001, key2000) # + 1    Red
+        self.assertGreater(key9fff, key2000) # + 7fff Red
+        self.assertLess(keya000, key2000)    # + 8000 Green
+        self.assertLess(key1fff, key2000)    # - 1    Green
+        self.assertLess(keyffff, key2000)    # end    Green
+        self.assertLess(key0000, key2000)    # zero   Green
+
+        self.assertEqual(key6000, key6000)   # eq     White
+        self.assertGreater(key6001, key6000) # + 1    Red
+        self.assertGreater(keydfff, key6000) # + 7fff Red
+        self.assertLess(keye000, key6000)    # + 8000 Green
+        self.assertLess(key5fff, key6000)    # - 1    Green
+        self.assertLess(keyffff, key6000)    # end    Green
+        self.assertLess(key0000, key6000)    # zero   Green
+
+        self.assertEqual(keya000, keya000)   # eq     White
+        self.assertGreater(keya001, keya000) # + 1    Red
+        self.assertGreater(key1fff, keya000) # + 7fff Red
+        self.assertLess(key2000, keya000)    # + 8000 Green
+        self.assertLess(key9fff, keya000)    # - 1    Green
+        self.assertGreater(keyffff, keya000) # end    Red
+        self.assertGreater(key0000, keya000) # zero   Red
+
+        self.assertEqual(keye000, keye000)   # eq     White
+        self.assertGreater(keye001, keye000) # + 1    Red
+        self.assertGreater(key5fff, keye000) # + 7fff Red
+        self.assertLess(key6000, keye000)    # + 8000 Green
+        self.assertLess(keydfff, keye000)    # - 1    Green
+        self.assertGreater(keyffff, keye000) # end    Red
+        self.assertGreater(key0000, keye000) # zero   Red
 
 if __name__ == '__main__':
     unittest.main()

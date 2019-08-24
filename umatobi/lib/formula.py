@@ -15,47 +15,6 @@ def _sign(num):
     else:
         return -1
 
-def _memcmp(a, b, size):
-    unpacked_a = struct.unpack(f"{KEY_OCTETS}B", a)
-    unpacked_b = struct.unpack(f"{KEY_OCTETS}B", b)
-
-    for i in range(size):
-        if unpacked_a[i] > unpacked_b[i]:
-            return 1
-        elif unpacked_a[i] < unpacked_b[i]:
-            return -1
-    return 0
-
-# copy keycmp() from
-# omoide/umatobi/trunk/sim/rgb/rgblib.c
-def keycmp(a, b):
-    # 'Q' # unsigned long long 8 octets
-#   unpack_a = struct.unpack('4Q', a)
-#   unpack_b = struct.unpack('4Q', b)
-
-#   for i in range(KEY_OCTETS // 8):
-#       if unpack_a[i] > unpack_b[i]:
-#           return 1
-#       elif unpack_a[i] < unpack_b[i]:
-#           return -1
-
-    res1 = _memcmp(a, b, KEY_OCTETS)
-    if not res1:
-        return 0
-
-    # memcpy(b_, b, DHT_KEYSIZE); b_[0] ^= 0x80
-    b_ = int.to_bytes((b[0] ^ 0x80), 1, 'big')  + b[1:]
-    res2 = _memcmp(b_, a, KEY_OCTETS)
-    res = -1
-    if b[0] <= 0x7f:
-        if res1 > 0 and res2 > 0:
-            res = 1
-    else:
-        if res1 > 0 or res2 > 0:
-            res = 1
-
-    return res
-
 def get_current_cos_sin_in_window(ww, wh, x, y):
     rate = ww / wh
     # math x, y axis
