@@ -167,7 +167,6 @@ class CoreKeyTests(unittest.TestCase):
             CoreKeyTests.assert_key_initance(self, ko)
 
             self.assertEqual(int(ko), expected_int)
-            tup = tuple(zip(ko.get_rxy(), expected_rxy))
             for rxy, expected_value in zip(ko.get_rxy(), expected_rxy):
                 self.assertAlmostEqual(rxy, expected_value, 3)
 
