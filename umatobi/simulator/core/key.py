@@ -37,8 +37,8 @@ class Key(object):
     # scale_rad:   1.0 * pi =>  1.5 * pi =>     1.999 * pi
 
     @classmethod
-    def key_to_scale_rad(cls, self):
-        rate = int(self) / (1 << cls.KEY_BITS)
+    def key_to_scale_rad(cls, key):
+        rate = cls.key_to_int(key) / (1 << cls.KEY_BITS)
         scale_rad = (2 * math.pi) * rate
         return scale_rad
 
@@ -52,7 +52,7 @@ class Key(object):
         return math_rad
 
     @classmethod
-    def key2rxy(cls, self):
+    def key_to_rxy(cls, key):
         '''\
         時計を単位円として考えてください。
         時計の9時から3時の方向にx軸を引き、
@@ -66,7 +66,7 @@ class Key(object):
         です。
         '''
 
-        scale_rad = cls.key_to_scale_rad(self)
+        scale_rad = cls.key_to_scale_rad(key)
         math_rad = cls.scale_rad_to_math_rad(scale_rad)
         cs = math.cos(math_rad)
         sn = math.sin(math_rad)
@@ -77,6 +77,10 @@ class Key(object):
 
         return scale_rad, x, y
 
+    @classmethod
+    def key_to_int(cls, key):
+        return int.from_bytes(key, 'big')
+
     def __init__(self, plain_key=b''):
         self.update(plain_key)
 
@@ -84,13 +88,13 @@ class Key(object):
         return '0x' + self.key.hex()
 
     def __int__(self):
-        return int.from_bytes(self.key, 'big')
+        return Key.key_to_int(self.key)
 
     def value(self):
         return self.key
 
     def get_rxy(self):
-        rxy = Key.key2rxy(self)
+        rxy = Key.key_to_rxy(self.key)
         return rxy
 
     def update(self, plain_key=b''):
