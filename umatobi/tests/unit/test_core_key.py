@@ -19,6 +19,15 @@ class CoreKeyTests(unittest.TestCase):
         k = Key()
         CoreKeyTests.assert_key_initance(self, k)
 
+    def test_core_key_convert(self):
+        octets = b''
+        for i in range(32):
+            octets += int.to_bytes(i * 8, 1, 'big')
+        ko = Key(octets)
+
+        self.assertEqual(int(ko),  0x0008101820283038404850586068707880889098a0a8b0b8c0c8d0d8e0e8f0f8)
+        self.assertEqual(str(ko), '0x0008101820283038404850586068707880889098a0a8b0b8c0c8d0d8e0e8f0f8')
+
     def test_core_key_update(self):
         k = Key()
         CoreKeyTests.assert_key_initance(self, k)

@@ -16,7 +16,7 @@ class Key(object):
         self.update(k)
 
     def __str__(self):
-        return self.key.kex()
+        return '0x' + self.key.hex()
 
     def __int__(self):
         return int.from_bytes(self.key, 'big')
