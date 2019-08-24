@@ -16,7 +16,7 @@ class Key(object):
 #   1
 
     @classmethod
-    def plain_hex2plain_key(cls, plain_hex):
+    def plain_hex_to_plain_key(cls, plain_hex):
         plain_key = b''
         for hh in re.findall('..', plain_hex):
             octet = int(hh, 16)
@@ -32,8 +32,8 @@ class Key(object):
 
     #    oclock:   at 06:00 =>  at 09:00 =>       at 11:59
     #       key:     0x8000 =>    0xc000 =>         0xffff
-    #  math_rad: 3 / 2 * pi =>        pi => 0.999 / 2 * pi
-    #  cos, sin:  0.0, -1.0 => -1.0, 0.0 =>      -0.9, 0.9
+    #  math_rad: 3 / 2 * pi =>        pi => 1.001 / 2 * pi
+    #  cos, sin:  0.0, -1.0 => -1.0, 0.0 =>  -0.001, 0.999
     # scale_rad:   1.0 * pi =>  1.5 * pi =>     1.999 * pi
 
     @classmethod

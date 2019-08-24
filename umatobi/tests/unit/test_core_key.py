@@ -11,11 +11,11 @@ class CoreKeyTests(unittest.TestCase):
         self.assertIsInstance(k.key, bytes)
         self.assertEqual(len(k.key), Key.KEY_OCTETS)
 
-    def test_core_key_plain_hex2plain_key(self):
+    def test_core_key_plain_hex_to_plain_key(self):
         plain_hex = '31' * Key.KEY_OCTETS
         expected = b'\x31' * Key.KEY_OCTETS
 
-        plain_key = Key.plain_hex2plain_key(plain_hex)
+        plain_key = Key.plain_hex_to_plain_key(plain_hex)
         self.assertEqual(plain_key, expected)
 
     def test_core_key_key_to_scale_rad(self):
@@ -40,10 +40,10 @@ class CoreKeyTests(unittest.TestCase):
         self.assertAlmostEqual(scale_rad, 1.999 * pi, 2)
 
     def test_core_key_scale_rad_to_math_rad(self):
-        math_rads  = (1 / 2 * pi,      0.0,     3 / 2 * pi,
-                      3 / 2 * pi,       pi, 0.999 / 2 * pi)
         scale_rads = (  0.0 * pi, 0.5 * pi,       1.0 * pi,
-                        1.0 * pi, 1.5 * pi,     1.999 * pi)
+                        1.0 * pi, 1.5 * pi,     1.999 * pi, 2.0 * pi)
+        math_rads  = (1 / 2 * pi,      0.0,     3 / 2 * pi,
+                      3 / 2 * pi,       pi, 1.001 / 2 * pi, 0.5 * pi)
         expected_rads = math_rads
 
         for scale_rad, expected_rad in zip(scale_rads, expected_rads):
