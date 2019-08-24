@@ -38,6 +38,9 @@ class Node(threading.Thread):
           # bind() に成功し、有効に利用されていたudp_sockなのだから、
           # udp_sock に None を代入しない。
 
+    def not_ready(self):
+        return not all(self.udp_ip)
+
     def make_udpip(self, host=None, port=None):
         if not hasattr(self, 'udp_ip'):
            self.udp_ip = (None, None)
@@ -47,7 +50,7 @@ class Node(threading.Thread):
         if port is not None:
             self.udp_ip = (self.udp_ip[0], port)
 
-        if not all(self.udp_ip):
+        if self.not_ready():
             return
 
         self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

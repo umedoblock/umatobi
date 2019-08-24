@@ -10,25 +10,29 @@ from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
 from umatobi.tests.lib import escape_ResourceWarning
 
 class CoreNodeTests(unittest.TestCase):
+
     def test_core_node_init_success(self):
         node = Node('localhost', 10000)
         self.assertEqual(node.udp_ip, ('localhost', 10000))
         self.assertIsInstance(node._last_moment, threading.Event)
         self.assertIsInstance(node._status, dict)
         self.assertIsInstance(node.udp_sock, socket.socket)
-        self.assertIsInstance(node.key, bytes)
 
         escape_ResourceWarning(node.udp_sock)
+
+    def test_core_node_not_ready(self):
+        node = Node()
+        self.assertTrue(node.not_ready())
 
     def test_core_node_init_fail(self):
         pairs_of_host_port = [('', 10000), ('localhost', None)]
         for host, port in pairs_of_host_port:
             node = Node(host, port)
+            self.assertTrue(node.not_ready())
             self.assertEqual(node.udp_ip, (host, port))
             self.assertIsInstance(node._last_moment, threading.Event)
             self.assertIsInstance(node._status, dict)
             self.assertIsNone(node.udp_sock)
-            self.assertIsInstance(node.key, bytes)
 
     def test_make_udpip_success(self):
         node = Node()
@@ -136,34 +140,12 @@ class CoreNodeTests(unittest.TestCase):
         node = Node('localhost', 55555)
         self.assertIsInstance(node.udp_sock, socket.socket)
         self.assertEqual(node.udp_ip, ('localhost', 55555))
-        self.assertIsInstance(node.key, bytes)
 
         status = node.get_status()
         self.assertEqual(status['host'], 'localhost')
         self.assertEqual(status['port'], 55555)
-        self.assertEqual(status['key'], node.key)
 
         escape_ResourceWarning(node.udp_sock)
-
-    def test_core_node_key(self):
-        node = Node()
-        self.assertTrue(hasattr(node, 'key'))
-        self.assertIsInstance(node.key, bytes)
-
-        key0 = node.key
-        node.update_key()
-        self.assertNotEqual(node.key, key0)
-
-        key_rand = os.urandom(32)
-        node.update_key(key_rand)
-        self.assertEqual(node.key, key_rand)
-
-    def test_core_keyhex(self):
-        node = Node()
-
-        node.update_key()
-        self.assertEqual(int(node._key_hex(), 16),
-                         int.from_bytes(node.key, 'big'))
 
 if __name__ == '__main__':
     unittest.main()
