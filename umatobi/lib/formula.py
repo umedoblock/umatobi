@@ -6,7 +6,7 @@ from umatobi.constants import *
 
 # norm means normalize, not normal.
 
-def _key2rxy(_keyID):
+def _key2rxy(_key):
     '''\
     時計を単位円として考えてください。
     時計の9時から3時の方向にx軸を引き、
@@ -20,7 +20,7 @@ def _key2rxy(_keyID):
     です。
     '''
 
-    norm_rad = keyID_to_norm_rad(_keyID)
+    norm_rad = key_to_norm_rad(_key)
     math_rad = _norm_rad_to_math_rad(norm_rad)
     cs = math.cos(math_rad)
     sn = math.sin(math_rad)
@@ -117,15 +117,15 @@ def cos_sin_to_norm_rad(cs, sn):
     norm_rad = _math_rad_to_norm_rad(math_rad)
     return norm_rad
 
-def keyID_to_norm_rad(keyID):
-    rate = keyID / (1 << 32)
+def key_to_norm_rad(key):
+    rate = key / (1 << 32)
     norm_rad = (2 * math.pi) * rate
     return norm_rad
 
-def norm_rad_to_keyID(norm_rad):
+def norm_rad_to_key(norm_rad):
     rate = norm_rad / (2 * math.pi)
-    keyID = int((1 << 32) * rate)
-    return keyID
+    key = int((1 << 32) * rate)
+    return key
 
 def _math_rad_to_norm_rad(math_rad):
     norm_rad = -math_rad + math.pi / 2.0
@@ -183,30 +183,30 @@ def _fmove(passed_seconds):
 
 if __name__ == '__main__':
     expected = '''\
-        keyID=0x00000000, rxy=(0.000,0.000,1.000)
-        keyID=0x10000000, rxy=(0.393,0.383,0.924)
-        keyID=0x20000000, rxy=(0.785,0.707,0.707)
-        keyID=0x30000000, rxy=(1.178,0.924,0.383)
-        keyID=0x40000000, rxy=(1.571,1.000,0.000)
-        keyID=0x50000000, rxy=(1.963,0.924,-0.383)
-        keyID=0x60000000, rxy=(2.356,0.707,-0.707)
-        keyID=0x70000000, rxy=(2.749,0.383,-0.924)
-        keyID=0x80000000, rxy=(3.142,-0.000,-1.000)
-        keyID=0x90000000, rxy=(3.534,-0.383,-0.924)
-        keyID=0xa0000000, rxy=(3.927,-0.707,-0.707)
-        keyID=0xb0000000, rxy=(4.320,-0.924,-0.383)
-        keyID=0xc0000000, rxy=(4.712,-1.000,0.000)
-        keyID=0xd0000000, rxy=(5.105,-0.924,0.383)
-        keyID=0xe0000000, rxy=(5.498,-0.707,0.707)
-        keyID=0xf0000000, rxy=(5.890,-0.383,0.924)'''
+        key=0x00000000, rxy=(0.000,0.000,1.000)
+        key=0x10000000, rxy=(0.393,0.383,0.924)
+        key=0x20000000, rxy=(0.785,0.707,0.707)
+        key=0x30000000, rxy=(1.178,0.924,0.383)
+        key=0x40000000, rxy=(1.571,1.000,0.000)
+        key=0x50000000, rxy=(1.963,0.924,-0.383)
+        key=0x60000000, rxy=(2.356,0.707,-0.707)
+        key=0x70000000, rxy=(2.749,0.383,-0.924)
+        key=0x80000000, rxy=(3.142,-0.000,-1.000)
+        key=0x90000000, rxy=(3.534,-0.383,-0.924)
+        key=0xa0000000, rxy=(3.927,-0.707,-0.707)
+        key=0xb0000000, rxy=(4.320,-0.924,-0.383)
+        key=0xc0000000, rxy=(4.712,-1.000,0.000)
+        key=0xd0000000, rxy=(5.105,-0.924,0.383)
+        key=0xe0000000, rxy=(5.498,-0.707,0.707)
+        key=0xf0000000, rxy=(5.890,-0.383,0.924)'''
     expects = [s.strip() for s in expected.split('\n')]
 
     fail = False
     i = 0
-    for keyID in range(0, 1 << 32, 0x10000000):
-        rxy = _key2rxy(keyID)
+    for key in range(0, 1 << 32, 0x10000000):
+        rxy = _key2rxy(key)
         rxy_s = '({})'.format(','.join(['{:.3f}'.format(xx) for xx in rxy]))
-        message = 'keyID=0x{:08x}, rxy={}'.format(keyID, rxy_s)
+        message = 'key=0x{:08x}, rxy={}'.format(key, rxy_s)
         if expects[i] != message:
             print('expectes =', expects[i])
             print(' message =', message)
