@@ -24,6 +24,7 @@ class CoreKeyTests(unittest.TestCase):
         for i in range(32):
             octets += int.to_bytes(i * 8, 1, 'big')
         ko = Key(octets)
+        CoreKeyTests.assert_key_initance(self, ko)
 
         self.assertEqual(int(ko),  0x0008101820283038404850586068707880889098a0a8b0b8c0c8d0d8e0e8f0f8)
         self.assertEqual(str(ko), '0x0008101820283038404850586068707880889098a0a8b0b8c0c8d0d8e0e8f0f8')
