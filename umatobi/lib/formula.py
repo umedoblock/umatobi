@@ -6,31 +6,6 @@ from umatobi.constants import *
 
 # norm means normalize, not normal.
 
-def _key2rxy(_key):
-    '''\
-    時計を単位円として考えてください。
-    時計の9時から3時の方向にx軸を引き、
-    時計の6時から12時の方向にy軸を引いてください。
-    key の値は0時をゼロとし、時計回り順で、
-    12時(最大値:fff...fff)まで増加することを思い出してください。
-
-    radの意味を理解しにくいかもしれません。
-    理解しなくて良いですが、簡単には、
-    rad = 2 * PAI  * (今何時？ / 12.0)
-    です。
-    '''
-
-    norm_rad = key_to_norm_rad(_key)
-    math_rad = _norm_rad_to_math_rad(norm_rad)
-    cs = math.cos(math_rad)
-    sn = math.sin(math_rad)
-
-    m = 1.00
-    _x = cs * m
-    _y = sn * m
-
-    return norm_rad, _x, _y
-
 def _sign(num):
     if not num:
         return 0
@@ -117,11 +92,6 @@ def cos_sin_to_norm_rad(cs, sn):
     norm_rad = _math_rad_to_norm_rad(math_rad)
     return norm_rad
 
-def key_to_norm_rad(key):
-    rate = key / (1 << 32)
-    norm_rad = (2 * math.pi) * rate
-    return norm_rad
-
 def norm_rad_to_key(norm_rad):
     rate = norm_rad / (2 * math.pi)
     key = int((1 << 32) * rate)
@@ -134,14 +104,6 @@ def _math_rad_to_norm_rad(math_rad):
     if norm_rad > 2 * math.pi:
         norm_rad -= 2 * math.pi
     return norm_rad
-
-def _norm_rad_to_math_rad(norm_rad):
-    math_rad = -norm_rad + math.pi / 2.0
-    if math_rad < 0:
-        math_rad += 2 * math.pi
-    if math_rad > 2 * math.pi:
-        math_rad -= 2 * math.pi
-    return math_rad
 
 def _key_hex(key):
     'key を16進で表現する。'
