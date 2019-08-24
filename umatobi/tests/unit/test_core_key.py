@@ -42,7 +42,7 @@ class CoreKeyTests(unittest.TestCase):
         CoreKeyTests.assert_key_initance(self, k)
         self.assertEqual(k.key, key_rand)
 
-    def test_core_key_fail_by_uncorrect_length(self):
+    def test_core_key_fail_by_incorrect_length(self):
         with self.assertRaises(ValueError) as cm:
             Key(b'+' * (Key.KEY_OCTETS + 1))
         the_exception = cm.exception
