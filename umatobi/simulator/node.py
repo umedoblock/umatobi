@@ -4,6 +4,7 @@ import math, random
 import pickle, socketserver
 import datetime
 
+from umatobi.simulator.core.key import Key
 from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.core import node
@@ -160,7 +161,7 @@ class Node(node.Node):
         self._open_office()
         et = elapsed_time(y15sformat_parse(self.start_up_time))
         d_attrs = self.get_attrs()
-        self.to_darkness(d_attrs, et)
+        self.put_on_darkness(d_attrs, et)
 
         self._steal_master_palm()
         self.regist()
@@ -231,7 +232,7 @@ class Node(node.Node):
             d[key] = getattr(self, key)
         return d
 
-    def to_darkness(self, obj, et):
+    def put_on_darkness(self, obj, et):
         pds = pickle.dumps(obj)
         tup = (et, pds)
         self._queue_darkness.put(tup)

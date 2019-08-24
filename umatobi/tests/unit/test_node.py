@@ -28,17 +28,17 @@ class NodeTests(unittest.TestCase):
     def tearDown(self):
         self.node.release()
 
-    def test_to_darkness(self):
+    def test_put_on_darkness(self):
         pass
 #       db['nodes']
 #       db['clients']
 #       db['nodes']
        #node = self.node
-       #node.to_darkness(d)
+       #node.put_on_darkness(d)
 
        #et = elapsed_time(y15sformat_parse(node.start_up_time))
        #d_attrs = self.get_attrs()
-       #self.to_darkness(d_attrs, et)
+       #self.put_on_darkness(d_attrs, et)
 
     def test_update_key(self):
         node = self.node
