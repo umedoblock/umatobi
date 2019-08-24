@@ -16,6 +16,15 @@ class Key(object):
 #   1
 
     @classmethod
+    def plain_hex2plain_key(cls, plain_hex):
+        plain_key = b''
+        for hh in re.findall('..', plain_hex):
+            octet = int(hh, 16)
+            byte = int.to_bytes(octet, 1, 'big')
+            plain_key += byte
+        return plain_key
+
+    @classmethod
     def key_to_norm_rad(cls, self):
         rate = int(self) / (1 << cls.KEY_BITS)
         norm_rad = (2 * math.pi) * rate

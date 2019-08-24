@@ -10,6 +10,13 @@ class CoreKeyTests(unittest.TestCase):
         self.assertIsInstance(k.key, bytes)
         self.assertEqual(len(k.key), Key.KEY_OCTETS)
 
+    def test_core_key_plain_hex2plain_key(self):
+        plain_hex = '31' * Key.KEY_OCTETS
+        expected = b'\x31' * Key.KEY_OCTETS
+
+        plain_key = Key.plain_hex2plain_key(plain_hex)
+        self.assertEqual(plain_key, expected)
+
     def test_core_key_init_by_regular(self):
         k = Key(b'o' * Key.KEY_OCTETS)
         CoreKeyTests.assert_key_initance(self, k)
@@ -62,8 +69,11 @@ class CoreKeyTests(unittest.TestCase):
 
             an_hex = name.replace('key0x', '')
             plain_hex = an_hex + '0' * (Key.KEY_HEXES - 1)
-            octets = [int.to_bytes(int(hh, 16), 1, 'big') for hh in re.findall('..', plain_hex)]
-            plain_key = b''.join(octets)
+            plain_key = b''
+            for hh in re.findall('..', plain_hex):
+                octet = int(hh, 16)
+                byte = int.to_bytes(octet, 1, 'big')
+                plain_key += byte
 
           # print('plain_key =', plain_key)
           # print('len(plain_key) =', len(plain_key))
