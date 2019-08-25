@@ -9,7 +9,7 @@ import module
 manipulated_datetime = datetime.datetime(2011, 11, 11, 11, 11, 11, 111111)
 
 @contextmanager
-def time_machine(time_tunnel):
+def time_machine(the_era):
     # in Nobita's hikidashi.
     with patch('module.Foo') as mocked_Foo:
         test_foo('= 2 ride on the time machine.')
@@ -20,7 +20,7 @@ def time_machine(time_tunnel):
         mocked_foo.method.return_value = 'the mocked result'
         test_foo('= 4 works it !')
 
-        mocked_foo.now.return_value = time_tunnel
+        mocked_foo.now.return_value = the_era
         test_foo('= 5 set time travel era.')
 
         try:
