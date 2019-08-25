@@ -1,23 +1,31 @@
 # https://docs.python.org/3/library/unittest.mock-examples.html
+import datetime
 from unittest.mock import patch
 
 import module
 
-def some_function():
-    instance = module.Foo()
-    return instance.method()
+manipulated_datetime = datetime.datetime(2011, 11, 11, 11, 11, 11, 111111)
 
-if __name__ == "__main__":
-    result = some_function()
-    print('first try')
-    print('result =', result)
+def test_foo(msg=''):
+    print(msg)
+    foo = module.Foo()
+    print('foo.method() =', foo.method())
+    print('foo.now() =', foo.now())
     print()
 
-    with patch('module.Foo') as mock:
-        instance = mock.return_value
-        instance.method.return_value = 'the result'
+if __name__ == "__main__":
+    test_foo('= 1 __main__')
 
-        result = some_function()
-        print('second try')
-        print('result =', result)
-        assert result == 'the result'
+    with patch('module.Foo') as mocked_Foo:
+        test_foo('= 2 with patch(\'module.Foo\') as mocked_Foo:')
+
+        mocked_foo = mocked_Foo.return_value
+        test_foo('= 3 mocked_foo = mocked_Foo.return_value')
+
+        mocked_foo.method.return_value = 'the mocked result'
+        test_foo('= 4 \'mocked_foo.method.return_value = \'the mocked result\'')
+
+        mocked_foo.now.return_value = manipulated_datetime
+        test_foo('= 5 mocked_foo.now.return_value = manipulated_datetime')
+
+    test_foo('= 6 without patch(\'module.Foo\') as mocked_Foo:')
