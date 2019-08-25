@@ -1,7 +1,7 @@
 import os
 import sys, shutil
 import threading, socket
-import unittest
+import unittest, time
 import math, queue, pickle
 
 from umatobi.tests import *
@@ -9,7 +9,8 @@ from umatobi.log import logger
 from umatobi.simulator.core.key import Key
 from umatobi.simulator.node import Node, NodeOffice
 from umatobi.simulator.node import NodeOpenOffice, NodeUDPOffice
-from umatobi.lib import current_y15sformat_time
+from umatobi import lib
+from umatobi.lib import current_y15sformat_time, make_start_up_orig
 from umatobi.lib import dict2json, json2dict
 
 class NodeTests(unittest.TestCase):
@@ -18,7 +19,9 @@ class NodeTests(unittest.TestCase):
         self.assertLessEqual(port, 65535)
 
     def setUp(self):
-        node_assets = Node.make_node_assets()
+        self.the_moment = lib.make_start_up_orig()
+        with time_machine(self.the_moment):
+            node_assets = Node.make_node_assets()
         node = Node(host='localhost', id=1, **node_assets)
         key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
         node.key.update(key)
@@ -28,17 +31,27 @@ class NodeTests(unittest.TestCase):
     def tearDown(self):
         self.node.release()
 
-    def test_put_on_darkness(self):
-        pass
-#       db['nodes']
-#       db['clients']
-#       db['nodes']
-       #node = self.node
-       #node.put_on_darkness(d)
+    def test_get_attrs(self):
+        node = self.node
 
-       #et = elapsed_time(y15sformat_parse(node.start_up_time))
-       #d_attrs = self.get_attrs()
-       #self.put_on_darkness(d_attrs, et)
+        attrs = node.get_attrs()
+        self.assertSetEqual(set(attrs.keys()), set(Node.ATTRS))
+
+    def test_put_on_darkness(self):
+        node = self.node
+
+        et = node.get_elapsed_time()
+        attrs = node.get_attrs()
+
+        self.assertEqual(node._queue_darkness.qsize(), 0)
+        node.put_on_darkness(attrs, et)
+        self.assertEqual(node._queue_darkness.qsize(), 1)
+
+        got_et, got_pickled = node._queue_darkness.get()
+        self.assertEqual(node._queue_darkness.qsize(), 0)
+        got_d_attrs = pickle.loads(got_pickled)
+        self.assertEqual(got_et, et)
+        self.assertEqual(got_d_attrs, attrs)
 
     def test_update_key(self):
         node = self.node

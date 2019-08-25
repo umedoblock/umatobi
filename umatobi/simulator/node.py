@@ -9,10 +9,10 @@ from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.core import node
 from umatobi.lib import validate_kwargs
-from umatobi.lib import y15sformat_parse, elapsed_time
+from umatobi.lib import elapsed_time
 from umatobi.lib import get_master_hand_path
 from umatobi.lib import dict2bytes, bytes2dict
-from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
+from umatobi.lib import y15sformat_parse, make_start_up_time
 
 # NodeUDPOffice and NodeOpenOffice classes are on different thread.
 class NodeOpenOffice(threading.Thread):
@@ -130,8 +130,7 @@ class Node(node.Node):
     @classmethod
     def make_node_assets(cls):
         byebye_nodes = threading.Event()
-        start_up_orig = make_start_up_orig()
-        start_up_time = y15sformat_time(start_up_orig)
+        start_up_time = make_start_up_time()
         _queue_darkness = queue.Queue()
 
         d = {
@@ -165,7 +164,7 @@ class Node(node.Node):
 
     def run(self):
         self._open_office()
-        et = elapsed_time(y15sformat_parse(self.start_up_time))
+        et = self.get_elapsed_time()
         d_attrs = self.get_attrs()
         self.put_on_darkness(d_attrs, et)
 
@@ -242,6 +241,13 @@ class Node(node.Node):
         pds = pickle.dumps(obj)
         tup = (et, pds)
         self._queue_darkness.put(tup)
+
+    def get_elapsed_time(self, start_up_time=None):
+        if not start_up_time:
+            start_up_time = self.start_up_time
+
+        et = elapsed_time(y15sformat_parse(start_up_time))
+        return et
 
     def appear(self):
         super().appear()
