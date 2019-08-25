@@ -111,9 +111,6 @@ class CoreNodeTests(unittest.TestCase):
         self.assertTrue(node.udp_sock._closed)
         self.assertIsInstance(node.udp_sock, socket.socket)
 
-        # no need to do escape_ResourceWarning()
-        # Because node.release() close node.udp_sock in itself.
-
     def test_core_node_turn_on_off(self):
         self.assertEqual(1, threading.active_count())
         node = Node('localhost', 55555)
@@ -131,7 +128,7 @@ class CoreNodeTests(unittest.TestCase):
         self.assertEqual(1, threading.active_count())
         self.assertTrue(node._last_moment.is_set())
 
-        # no need to do escape_ResourceWarning()
+        # no need to do node.release()
         # Because node.release() where is in node.disappear()
         # close node.udp_sock.
 
