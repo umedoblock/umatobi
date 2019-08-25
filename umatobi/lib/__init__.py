@@ -85,7 +85,7 @@ def datetime_now():
     return datetime.datetime.now()
 
 def make_start_up_orig():
-    start_up_orig = datetime.datetime.now()
+    start_up_orig = datetime_now()
     return start_up_orig
 
 def make_start_up_time():

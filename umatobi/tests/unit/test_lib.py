@@ -105,6 +105,23 @@ class LibTests(unittest.TestCase):
         start_up_orig = lib.make_start_up_orig()
         self.assertIsInstance(start_up_orig, datetime.datetime)
 
+    def test_make_start_up_orig_with_time_machine(self):
+        start_up_orig = lib.make_start_up_orig()
+        years_1000 = datetime.timedelta(days=1000*365)
+
+        past = start_up_orig - years_1000
+        current = start_up_orig
+        future = start_up_orig + years_1000
+
+        with time_machine(past):
+            self.assertEqual(lib.make_start_up_orig(), past)
+
+        with time_machine(current):
+            self.assertEqual(lib.make_start_up_orig(), current)
+
+        with time_machine(future):
+            self.assertEqual(lib.make_start_up_orig(), future)
+
     def test_curren_y15sformat_time(self):
         # Y15S_FORMAT='%Y-%m-%dT%H%M%S'
         y15s = lib.current_y15sformat_time()
