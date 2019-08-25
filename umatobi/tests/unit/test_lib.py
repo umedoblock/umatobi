@@ -1,9 +1,21 @@
 import os, sys, datetime, shutil
 import unittest
+from contextlib import contextmanager
+from unittest.mock import patch
 
 from umatobi.tests import *
 from umatobi.log import logger, make_logger
 from umatobi import lib
+
+@contextmanager
+def time_machine(the_era):
+    with patch('umatobi.lib.datetime_now') as mocked_Foo:
+        mocked_Foo.return_value = the_era
+
+        try:
+            yield
+        finally:
+            pass
 
 class LibTests(unittest.TestCase):
 
@@ -124,6 +136,17 @@ class LibTests(unittest.TestCase):
         start_up_orig = lib.make_start_up_orig()
         et = lib.elapsed_time(start_up_orig - td)
         self.assertEqual(73138, et)
+
+    def mocked_datetime_now(mocked_datetime=None):
+        if not mocked_datetime:
+            return mocked_datetime
+        else:
+            return datetime.datetime.now()
+
+    def test_mock_datetime_now(self):
+        manipulated_datetime = datetime.datetime(2011, 11, 11, 11, 11, 11, 111111)
+        with time_machine(manipulated_datetime):
+            self.assertEqual(lib.datetime_now(), manipulated_datetime)
 
 if __name__ == '__main__':
     unittest.main()

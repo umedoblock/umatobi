@@ -81,6 +81,9 @@ def tell_shutdown_time():
     shutdown_time = datetime.datetime.now()
     return shutdown_time
 
+def datetime_now():
+    return datetime.datetime.now()
+
 def make_start_up_orig():
     start_up_orig = datetime.datetime.now()
     return start_up_orig
