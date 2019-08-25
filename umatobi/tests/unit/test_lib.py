@@ -1,21 +1,9 @@
 import os, sys, datetime, shutil
 import unittest
-from contextlib import contextmanager
-from unittest.mock import patch
 
 from umatobi.tests import *
 from umatobi.log import logger, make_logger
 from umatobi import lib
-
-@contextmanager
-def time_machine(the_era):
-    with patch('umatobi.lib.datetime_now') as mocked_Foo:
-        mocked_Foo.return_value = the_era
-
-        try:
-            yield
-        finally:
-            pass
 
 class LibTests(unittest.TestCase):
 
