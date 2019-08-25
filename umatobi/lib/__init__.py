@@ -77,13 +77,18 @@ def json2dict(j):
     d = json.loads(j)
     return d
 
+def tell_shutdown_time():
+    shutdown_time = datetime.datetime.now()
+    return shutdown_time
+
 def make_start_up_orig():
     start_up_orig = datetime.datetime.now()
     return start_up_orig
 
-def tell_shutdown_time():
-    shutdown_time = datetime.datetime.now()
-    return shutdown_time
+def make_start_up_time():
+    start_up_orig = make_start_up_orig()
+    start_up_time = y15sformat_time(start_up_orig)
+    return start_up_time
 
 Y15S_FORMAT='%Y-%m-%dT%H%M%S'
 def y15sformat_time(t):
