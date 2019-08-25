@@ -4,7 +4,6 @@ import unittest
 from umatobi.tests import *
 from umatobi.log import logger, make_logger
 from umatobi import lib
-from umatobi.lib.formula import keycmp, _key_hex
 
 class LibTests(unittest.TestCase):
 
