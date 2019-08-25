@@ -11,7 +11,6 @@ from umatobi.simulator.node import Node, NodeOffice
 from umatobi.simulator.node import NodeOpenOffice, NodeUDPOffice
 from umatobi.lib import current_y15sformat_time
 from umatobi.lib import dict2json, json2dict
-from umatobi.tests.lib import escape_ResourceWarning
 
 class NodeTests(unittest.TestCase):
     def assertIsPort(self, port):
@@ -57,7 +56,7 @@ class NodeTests(unittest.TestCase):
         self.assertEqual(node.office_addr[1], 55555)
         self.assertEqual(node.get_info(), node_info_line)
 
-        escape_ResourceWarning(node.udp_sock)
+        node.release()
 
     def test_steal_master_palm(self):
         node = self.node
@@ -76,8 +75,8 @@ class NodeTests(unittest.TestCase):
         self.assertEqual(node_lines, master_palm_on)
         os.remove(node.master_hand_path)
 
-        escape_ResourceWarning(node2.udp_sock)
-        escape_ResourceWarning(node3.udp_sock)
+        node2.release()
+        node3.release()
 
     def test_regist(self):
         node = self.node

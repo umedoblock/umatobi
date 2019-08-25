@@ -7,7 +7,6 @@ import queue
 from umatobi.simulator.core.node import Node
 from umatobi.lib import current_y15sformat_time
 from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
-from umatobi.tests.lib import escape_ResourceWarning
 
 class CoreNodeTests(unittest.TestCase):
 
@@ -18,7 +17,7 @@ class CoreNodeTests(unittest.TestCase):
         self.assertIsInstance(node._status, dict)
         self.assertIsInstance(node.udp_sock, socket.socket)
 
-        escape_ResourceWarning(node.udp_sock)
+        node.release()
 
     def test_core_node_not_ready(self):
         node = Node()
@@ -42,7 +41,7 @@ class CoreNodeTests(unittest.TestCase):
         self.assertIsInstance(node.udp_sock, socket.socket)
         self.assertEqual(node.udp_ip, ('localhost', 4444))
 
-        escape_ResourceWarning(node.udp_sock)
+        node.release()
 
     def test_make_udpip_doesnt_make_udpip(self):
         pairs_of_host_port = [(None, 4444), ('localhost', None), (None, None)]
@@ -64,7 +63,7 @@ class CoreNodeTests(unittest.TestCase):
             self.assertIsInstance(node.udp_sock, socket.socket)
             self.assertEqual(node.udp_ip, ('localhost', on_the_boundary_port))
 
-            escape_ResourceWarning(node.udp_sock)
+            node.release()
 
     def test_make_udpip_got_a_sensitive_port(self):
         # Can you bind system ports ?
@@ -82,7 +81,7 @@ class CoreNodeTests(unittest.TestCase):
                     self.assertIsInstance(node.udp_sock, socket.socket)
                     self.assertEqual(node.udp_ip, ('localhost', sensitive_port))
 
-                    escape_ResourceWarning(node.udp_sock)
+                    node.release()
                 else:
                     # You cannot bind a sensitive port.
                     # You have a good security policy.
@@ -145,7 +144,7 @@ class CoreNodeTests(unittest.TestCase):
         self.assertEqual(status['host'], 'localhost')
         self.assertEqual(status['port'], 55555)
 
-        escape_ResourceWarning(node.udp_sock)
+        node.release()
 
 if __name__ == '__main__':
     unittest.main()
