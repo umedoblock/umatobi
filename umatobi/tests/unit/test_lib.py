@@ -64,12 +64,14 @@ class LibTests(unittest.TestCase):
         self.assertEqual('tests/umatobi-simulation', SIMULATION_DIR)
 
     def test_master_hand(self):
-        y15s_time = lib.current_y15sformat_time()
-        self.assertEqual(lib.get_master_hand(y15s_time), f"{y15s_time}/{MASTER_HAND}")
+        start_up_orig = lib.make_start_up_orig()
+        start_up_time = lib.make_start_up_time(start_up_orig)
+        self.assertEqual(lib.get_master_hand(start_up_orig), f"{start_up_time}/{MASTER_HAND}")
 
     def test_master_hand_path(self):
-        y15s_time = lib.current_y15sformat_time()
-        self.assertEqual(lib.get_master_hand_path(SIMULATION_DIR, y15s_time), f"tests/umatobi-simulation/{y15s_time}/{MASTER_HAND}")
+        start_up_orig = lib.make_start_up_orig()
+        start_up_time = lib.make_start_up_time(start_up_orig)
+        self.assertEqual(lib.get_master_hand_path(SIMULATION_DIR, start_up_orig), f"tests/umatobi-simulation/{start_up_time}/{MASTER_HAND}")
 
     def test_make_log_dir(self):
         special_dir = SIMULATION_DIR + "-special"
@@ -147,6 +149,14 @@ class LibTests(unittest.TestCase):
             return mocked_datetime
         else:
             return datetime.datetime.now()
+
+    def test_from_isoformat_to_start_up_orig(self):
+        isoformat = '2011-11-11T11:11:11.111111'
+        self.assertEqual(lib.from_isoformat_to_start_up_orig(isoformat), datetime.datetime(2011, 11, 11, 11, 11, 11, 111111))
+
+    def test_start_up_orig_to_isoformat(self):
+        start_up_orig = datetime.datetime(2011, 11, 11, 11, 11, 11, 111111)
+        self.assertEqual(lib.start_up_orig_to_isoformat(start_up_orig), '2011-11-11T11:11:11.111111')
 
     def test_mock_datetime_now(self):
         manipulated_datetime = datetime.datetime(2011, 11, 11, 11, 11, 11, 111111)

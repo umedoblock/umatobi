@@ -92,6 +92,16 @@ def make_start_up_time(start_up_orig=None):
     start_up_time = y15sformat_time(start_up_orig)
     return start_up_time
 
+def start_up_orig_to_isoformat(start_up_orig):
+  # >>> datetime.datetime.isoformat(now)
+  # '2019-08-27T02:43:20.708976'
+    return datetime.datetime.isoformat(start_up_orig)
+
+def from_isoformat_to_start_up_orig(isoformat):
+  # >>> datetime.datetime.fromisoformat('2019-08-27T02:43:20.708976')
+  # datetime.datetime(2019, 8, 27, 2, 43, 20, 708976)
+    return datetime.datetime.fromisoformat(isoformat)
+
 Y15S_FORMAT='%Y-%m-%dT%H%M%S'
 def y15sformat_time(t):
     "'return time format '2012-11-02T232227'"
