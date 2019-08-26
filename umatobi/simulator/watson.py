@@ -11,6 +11,7 @@ from umatobi.constants import *
 from umatobi.lib import bytes2dict, dict2bytes
 from umatobi.lib import make_start_up_orig, elapsed_time
 from umatobi.lib import y15sformat_time
+from umatobi.lib import start_up_orig_to_isoformat
 import umatobi.simulator.sql
 from umatobi import simulator
 
@@ -118,7 +119,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             to_client = {
                 'dir_name': self.server.watson.dir_name,
                 'client_id': client_id,
-                'start_up_time': y15sformat_time(self.server.start_up_orig),
+                'start_up_orig': start_up_orig_to_isoformat(self.server.start_up_orig),
                 'node_index': self.server.watson.total_nodes + 1,
                 'log_level': self.server.watson.log_level,
             }

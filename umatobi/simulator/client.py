@@ -9,7 +9,7 @@ from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.darkness import Darkness
 from umatobi import simulator
-from umatobi.lib import dict2bytes, bytes2dict
+from umatobi.lib import dict2bytes, bytes2dict, isoformat_to_start_up_orig
 
 def make_darkness(d_config):
     '''darkness process を作成'''
@@ -116,7 +116,7 @@ class Client(object):
             darkness_d_config = {
                 'id':  darkness_id,
                 'client_id':  client_id,
-                'start_up_time':  self.start_up_time,
+                'start_up_orig':  self.start_up_orig,
                 'dir_name':  self.dir_name,
                 'log_level':  self.log_level,
                 'num_nodes':  nodes_per_darkness,
@@ -193,9 +193,9 @@ class Client(object):
 
     def _init_attrs(self):
         '''\
-        watson に接続し、id, start_up_timeを受信する。
+        watson に接続し、id, start_up_origを受信する。
         id は client.N.log として、log fileを作成するときに使用。
-        start_up_time は dir_nameを決定する際に使用する。
+        start_up_orig は dir_nameを決定する際に使用する。
         '''
         logger.info(f"{self}._hello_watson()")
         d = self._hello_watson()
@@ -205,7 +205,7 @@ class Client(object):
             raise RuntimeError('client cannot say "I am Client." to watson where is {}'.format(self.watson_office_addr))
 
         self.id = d['client_id']
-        self.start_up_time = d['start_up_time']
+        self.start_up_orig = isoformat_to_start_up_orig(d['start_up_orig'])
         self.dir_name = d['dir_name']
         self.client_db_path = os.path.join(self.dir_name,
                                      'client.{}.db'.format(self.id))
@@ -216,7 +216,7 @@ class Client(object):
 
     def _hello_watson(self):
         '''\
-        watsonに "I am Client." をTCPで送信し、watson起動時刻(start_up_time)、
+        watsonに "I am Client." をTCPで送信し、watson起動時刻(start_up_orig)、
         watsonへの接続順位(=id)をTCPで受信する。
         この時、受信するのはjson文字列。
         simulation 結果を格納する dir_name を作成するための情報を得る。
