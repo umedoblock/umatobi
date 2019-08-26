@@ -158,6 +158,7 @@ class Node(node.Node):
         self.status = 'active'
 
         self.nodes = []
+        self.im_ready = threading.Event()
         self.office_door = threading.Lock()
         self.office_addr_assigned = threading.Event()
         self.master_hand_path = get_master_hand_path(SIMULATION_DIR, self.start_up_orig)
@@ -210,6 +211,7 @@ class Node(node.Node):
       # recver_addr = ('localhost', 222)
       # self.sock.sendto(msg, recver_addr)
       # recved_msg, who = self.sock.recvfrom(1024)
+        self.im_ready.set()
 
     def _steal_master_palm(self):
         if not os.path.isfile(self.master_hand_path):

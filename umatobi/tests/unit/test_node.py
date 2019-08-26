@@ -98,7 +98,9 @@ class NodeTests(unittest.TestCase):
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
         self.assertFalse(os.path.exists(node.master_hand_path))
+        self.assertFalse(node.im_ready.is_set())
         node.regist() # once
+        self.assertTrue(node.im_ready.is_set())
         self.assertTrue(os.path.isdir(os.path.dirname(node.master_hand_path)))
         self.assertTrue(os.path.isfile(node.master_hand_path))
 
@@ -116,13 +118,17 @@ class NodeTests(unittest.TestCase):
     def test_node_basic(self):
         node_assets = Node.make_node_assets()
         node_ = Node(host='localhost', id=1, **node_assets)
+        self.assertFalse(node_.im_ready.is_set())
 
         attrs = ('id', 'start_up_orig', \
                  'byebye_nodes', '_queue_darkness')
         for attr in attrs:
             self.assertTrue(hasattr(node_, attr), attr)
 
+      # node.start()
         node_.appear()
+        node_.regist() # node_.im_ready.set()
+        self.assertTrue(node_.im_ready.is_set())
 
         node_.office_addr_assigned.wait()
         self.assertIsInstance(node_.office_addr, tuple)
