@@ -121,17 +121,7 @@ class Darkness(object):
 
         self.nodes = []
 
-    def start(self):
-        '''\
-        simulation 開始。
-        simulation に必要な node thread を多数作成する。
-        node thread 作成後、Client が leave_there を
-        signal 状態にするまで待機し続ける。
-        node が吐き出したqueueを、clientと共有するdbにcommitする。
-        '''
-        # create db in ExhaleQueue()
-        self.exhale_queue.start()
-
+    def _spawn_nodes(self):
         for i in range(self.num_nodes):
             id = self.first_node_id + i
             host, port = 'localhost', 10000 + id
@@ -148,12 +138,33 @@ class Darkness(object):
 
         self.made_nodes.value = len(self.nodes)
         if self.made_nodes.value == 1:
-            msg = '{} made a node.'.format(self)
+            msg = '{} spawns a node.'.format(self)
         else:
-            msg = '{} made {} nodes.'.format(self, self.made_nodes.value)
+            msg = '{} spawns {} nodes.'.format(self, self.made_nodes.value)
         logger.info(msg)
 
+        for node_ in self.nodes:
+            node_.im_ready.wait()
+        logger.info('All nodes that {} spawns are ready.'.format(self))
+
+    def start(self):
+        '''\
+        simulation 開始。
+        simulation に必要な node thread を多数作成する。
+        node thread 作成後、Client が leave_there を
+        signal 状態にするまで待機し続ける。
+        node が吐き出したqueueを、clientと共有するdbにcommitする。
+        '''
+        # create db in ExhaleQueue()
+        self.exhale_queue.start()
+
+        self._spawn_nodes()
+
+    def sleeping(self):
+        logger.info(('{} is sleeping now....').format(self))
         self.leave_there.wait()
+
+    def leave_here(self):
         logger.info(('{} got leave_there signal.').format(self))
         logger.info(('{} set byebye_nodes signal.').format(self))
         self.byebye_nodes.set()

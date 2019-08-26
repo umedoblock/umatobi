@@ -49,20 +49,36 @@ class DarknessTests(unittest.TestCase):
         self.assertFalse(darkness.byebye_nodes.is_set())
         self.assertEqual(darkness.client_db.db_path,
                          os.path.join(dir_name, f"client.{client_id}.db"))
+        self.assertListEqual(darkness.nodes, [])
+        self.assertEqual(darkness._queue_darkness.qsize(), 0)
+        self.assertFalse(darkness.all_nodes_inactive.is_set())
 
         client_db = sql.SQL(db_path=darkness.client_db_path,
                             schema_path=SCHEMA_PATH)
         client_db.create_db()
         client_db.create_table('growings')
-        darkness.leave_there.set() # for test
-        self.assertFalse(darkness.byebye_nodes.is_set())
-        darkness.start()
-        self.assertTrue(darkness.all_nodes_inactive.is_set())
 
-        self.assertTrue(darkness.byebye_nodes.is_set())
-        darkness.leave_there.set()
-        self.assertTrue(darkness.byebye_nodes.is_set())
+        self.assertEqual(threading.active_count(), 1)
+        # "1" means of course a main thread.
+        darkness.start()
+        incremented_threads = 1 + 2 * darkness.num_nodes
+        # increment incremented_threads 1 for Polling
+        # increment incremented_threads num_nodes for node threads
+        # increment incremented_threads num_nodes for open_office_node threads
+        # Because each node has an open_office_node thread
+        self.assertEqual(threading.active_count(), 1 + incremented_threads)
+        self.assertEqual(darkness.made_nodes.value, darkness.num_nodes)
+
+        self.assertFalse(darkness.byebye_nodes.is_set())
+        darkness.leave_there.set() # for test
+        darkness.sleeping()
+
+        self.assertFalse(darkness.byebye_nodes.is_set())
+        self.assertFalse(darkness.all_nodes_inactive.is_set())
+        darkness.leave_here()
         self.assertTrue(darkness.all_nodes_inactive.is_set())
+        self.assertTrue(darkness.byebye_nodes.is_set())
+        self.assertEqual(threading.active_count(), 1)
 
         darkness.stop()
 
