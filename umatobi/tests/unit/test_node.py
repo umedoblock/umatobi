@@ -73,8 +73,8 @@ class NodeTests(unittest.TestCase):
 
     def test_steal_master_palm(self):
         node = self.node
-        node2 = Node(host='localhost', port=11112, start_up_time=node.start_up_time)
-        node3 = Node(host='localhost', port=11113, start_up_time=node.start_up_time)
+        node2 = Node(host='localhost', port=11112, start_up_orig=node.start_up_orig)
+        node3 = Node(host='localhost', port=11113, start_up_orig=node.start_up_orig)
         self.assertTrue(hasattr(node, 'master_hand_path'))
 
         master_palm_on = node2.get_info() + node3.get_info()
@@ -117,7 +117,7 @@ class NodeTests(unittest.TestCase):
         node_assets = Node.make_node_assets()
         node_ = Node(host='localhost', id=1, **node_assets)
 
-        attrs = ('id', 'start_up_time', \
+        attrs = ('id', 'start_up_orig', \
                  'byebye_nodes', '_queue_darkness')
         for attr in attrs:
             self.assertTrue(hasattr(node_, attr), attr)

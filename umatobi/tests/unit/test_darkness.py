@@ -6,7 +6,7 @@ import queue
 
 from umatobi.tests import *
 from umatobi.simulator.darkness import Darkness
-from umatobi.lib import current_y15sformat_time
+from umatobi.lib import make_start_up_orig, make_start_up_time
 from umatobi.simulator import sql
 
 class DarknessTests(unittest.TestCase):
@@ -15,8 +15,8 @@ class DarknessTests(unittest.TestCase):
 
         darkness_id = 1
         client_id = 1
-        start_up_time = current_y15sformat_time()
-        dir_name = os.path.join(simulation_dir, start_up_time)
+        start_up_orig = make_start_up_orig()
+        dir_name = os.path.join(simulation_dir, make_start_up_time(start_up_orig))
         log_level = 'INFO'
         nodes_per_darkness = 5
         first_node_id = 1
@@ -30,7 +30,7 @@ class DarknessTests(unittest.TestCase):
         darkness_d_config = {
             'id':  darkness_id,
             'client_id':  client_id,
-            'start_up_time':  start_up_time,
+            'start_up_orig':  start_up_orig,
             'dir_name':  dir_name,
             'log_level':  log_level,
             'num_nodes':  nodes_per_darkness,

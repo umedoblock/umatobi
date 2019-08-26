@@ -92,7 +92,7 @@ class Darkness(object):
         '''
         st_barrier = set([
             'id', 'client_id', 'first_node_id',
-            'dir_name', 'num_nodes', 'log_level', 'start_up_time',
+            'dir_name', 'num_nodes', 'log_level', 'start_up_orig',
             'made_nodes', # share with client and darknesses
             'leave_there', # share with client and another darknesses
             'num_darkness',
@@ -137,7 +137,7 @@ class Darkness(object):
             host, port = 'localhost', 10000 + id
             d_node = {
                 'host': host, 'port': port, 'id': id,
-                'start_up_time': self.start_up_time,
+                'start_up_orig': self.start_up_orig,
                 'byebye_nodes': self.byebye_nodes,
                 '_queue_darkness': self._queue_darkness
             }

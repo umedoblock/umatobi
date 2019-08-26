@@ -43,14 +43,12 @@ def get_db_from_schema():
 def get_table_columns(table_name):
     return get_db_from_schema()[table_name]
 
-def get_master_hand(start_up_time):
+def get_master_hand(start_up_orig):
+    start_up_time = make_start_up_time(start_up_orig)
     return os.path.join(start_up_time, MASTER_HAND)
 
-def get_master_hand_path(simulation_dir=SIMULATION_DIR, start_up_time='0000-00-00T000000'):
-    return os.path.join(simulation_dir, get_master_hand(start_up_time))
-
-def get_master_hand_path2(start_up_time, simulation_dir=SIMULATION_DIR):
-    return os.path.join(simulation_dir, get_master_hand(start_up_time))
+def get_master_hand_path(simulation_dir, start_up_orig):
+    return os.path.join(simulation_dir, get_master_hand(start_up_orig))
 
 def validate_kwargs(st_barrier, kwargs):
     if st_barrier != kwargs.keys():
@@ -88,8 +86,9 @@ def make_start_up_orig():
     start_up_orig = datetime_now()
     return start_up_orig
 
-def make_start_up_time():
-    start_up_orig = make_start_up_orig()
+def make_start_up_time(start_up_orig=None):
+    if not start_up_orig:
+        start_up_orig = make_start_up_orig()
     start_up_time = y15sformat_time(start_up_orig)
     return start_up_time
 
@@ -112,9 +111,10 @@ def get_passed_ms(start_up_orig):
     # elapsed_time()もms単位となるようにする。
     return int(((now - start_up_orig) * 1000).total_seconds())
 
-def elapsed_time(start_up_orig):
+def elapsed_time(start_up_orig, now=None):
     '''simulation 開始から現在までに経過したmilli秒数。'''
-    now = datetime.datetime.now()
+    if not None:
+        now = datetime.datetime.now()
     # relativeCreated の時間単位がmsのため、
     # elapsed_time()もms単位となるようにする。
     return int(((now - start_up_orig) * 1000).total_seconds())
