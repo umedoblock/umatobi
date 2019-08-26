@@ -152,7 +152,7 @@ class LibTests(unittest.TestCase):
 
     def test_from_isoformat_to_start_up_orig(self):
         isoformat = '2011-11-11T11:11:11.111111'
-        self.assertEqual(lib.from_isoformat_to_start_up_orig(isoformat), datetime.datetime(2011, 11, 11, 11, 11, 11, 111111))
+        self.assertEqual(lib.isoformat_to_start_up_orig(isoformat), datetime.datetime(2011, 11, 11, 11, 11, 11, 111111))
 
     def test_start_up_orig_to_isoformat(self):
         start_up_orig = datetime.datetime(2011, 11, 11, 11, 11, 11, 111111)

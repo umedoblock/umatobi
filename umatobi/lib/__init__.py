@@ -97,7 +97,7 @@ def start_up_orig_to_isoformat(start_up_orig):
   # '2019-08-27T02:43:20.708976'
     return datetime.datetime.isoformat(start_up_orig)
 
-def from_isoformat_to_start_up_orig(isoformat):
+def isoformat_to_start_up_orig(isoformat):
   # >>> datetime.datetime.fromisoformat('2019-08-27T02:43:20.708976')
   # datetime.datetime(2019, 8, 27, 2, 43, 20, 708976)
     return datetime.datetime.fromisoformat(isoformat)
