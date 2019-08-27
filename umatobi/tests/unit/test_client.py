@@ -25,7 +25,7 @@ class ClientTests(unittest.TestCase):
         client = Client(watson_office_addr, num_nodes)
 
         self.assertEqual(watson_office_addr, client.watson_office_addr)
+        self.assertEqual(num_nodes, client.num_nodes)
 
 if __name__ == '__main__':
     unittest.main()
-        self.assertEqual(num_nodes, client.num_nodes)
