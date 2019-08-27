@@ -1,17 +1,12 @@
-import threading
-import os
-import argparse
-import datetime
-import multiprocessing
+import threading, os, argparse, datetime, multiprocessing
 
 from umatobi.log import *
 from umatobi.constants import *
-from umatobi.lib import make_start_up_orig, tell_shutdown_time
-from umatobi.lib import y15sformat_time
+from umatobi.lib import *
 from umatobi.simulator.client import Client
 from umatobi.simulator.watson import Watson
 from umatobi.tools.make_simulation_db import watson_make_simulation_db
-from umatobi import simulator
+from umatobi.simulator import sql
 
 def make_client(watson_office_addr, num_nodes):
     client = Client(watson_office_addr, num_nodes)
@@ -53,12 +48,6 @@ def args_():
         raise argparse.ArgumentTypeError(message)
     return args
 
-def get_host_port(host_port):
-    sp = host_port.split(':')
-    host = sp[0]
-    port = int(sp[1])
-    return host, port
-
 if __name__ == '__main__':
     start_up_orig = make_start_up_orig()
     start_up_time = y15sformat_time(start_up_orig)
@@ -69,7 +58,7 @@ if __name__ == '__main__':
     # 引数の解析
     args = args_()
 
-    watson_office_addr = get_host_port(args.watson_office_addr)
+    watson_office_addr = lib.get_host_port(args.watson_office_addr)
 
   # t = datetime.datetime.now()
   # >>> t
@@ -135,8 +124,8 @@ if __name__ == '__main__':
     logger.info(f"shutdown_time={shutdown_time}")
 
     logger.info(f"watson_make_simulation_db() start.")
-    simulation_db = simulator.sql.SQL(db_path=watson.simulation_db_path,
-                                      schema_path=watson.schema_path)
+    simulation_db = sql.SQL(db_path=watson.simulation_db_path,
+                            schema_path=watson.schema_path)
     simulation_db.simulation_db_path = watson.simulation_db_path
     watson_make_simulation_db(simulation_db)
     logger.info(f"watson_make_simulation_db() done.")

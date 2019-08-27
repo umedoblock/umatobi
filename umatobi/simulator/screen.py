@@ -1,19 +1,13 @@
-import datetime, time
-import sys, os
-import math
-import pickle
-import threading
+import datetime, time, sys, os, math, pickle, threading
 import tkinter as tk
 
 from umatobi.log import *
 from umatobi.constants import *
-from umatobi.lib.args import args_make_simulation_db
 from umatobi.simulator import sql
-from umatobi.lib import formula
-from umatobi.lib import Polling, elapsed_time
+from umatobi.lib import *
+from umatobi.lib.args import args_make_simulation_db
 from umatobi.lib.squares import put_on_square
 from umatobi.lib.formula import get_current_cos_sin_in_window
-from umatobi.lib import get_passed_seconds, get_passed_ms
 from umatobi.tools.make_simulation_db import init_nodes_table2
 
 try:

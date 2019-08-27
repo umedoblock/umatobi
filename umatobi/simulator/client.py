@@ -1,14 +1,10 @@
-import sys, os
-import threading
-import sqlite3
-import socket
-import multiprocessing
+import sys, os ,threading ,sqlite3 ,socket, multiprocessing
 
 from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.darkness import Darkness
-from umatobi import simulator
-from umatobi.lib import dict2bytes, bytes2dict, isoformat_to_start_up_orig
+from umatobi.simulator import sql
+from umatobi.lib import *
 
 def make_darkness(d_config):
     '''darkness process を作成'''
@@ -90,8 +86,8 @@ class Client(object):
 
     def _make_growings_table(self):
         logger.info(f"{self}._make_growings_table()")
-        self.client_db = simulator.sql.SQL(db_path=self.client_db_path,
-                                           schema_path=self.schema_path)
+        self.client_db = sql.SQL(db_path=self.client_db_path,
+                                 schema_path=self.schema_path)
         self.client_db.create_db()
         self.client_db.create_table('growings')
 

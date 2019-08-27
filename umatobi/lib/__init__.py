@@ -1,10 +1,4 @@
-import json
-import datetime
-import time
-import sys
-import os
-import threading
-import sched, configparser
+import json, datetime, time, os, threading, sched, configparser
 
 from umatobi.constants import *
 
@@ -29,6 +23,12 @@ class Polling(threading.Thread):
 
     def run(self):
         self._sche.run()
+
+def get_host_port(host_port):
+    sp = host_port.split(':')
+    host = sp[0]
+    port = int(sp[1])
+    return host, port
 
 def get_db_from_schema():
     db = configparser.ConfigParser()

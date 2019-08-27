@@ -1,8 +1,4 @@
-import sqlite3
-import configparser
-import os
-import sys
-import logging
+import sqlite3, configparser, os, sys, logging
 
 from umatobi.log import *
 
