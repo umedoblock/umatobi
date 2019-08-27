@@ -11,12 +11,10 @@ from umatobi.simulator import sql
 
 class DarknessTests(unittest.TestCase):
     def test_darkess_basic(self):
-        simulation_dir = os.path.join(".", SIMULATION_DIR)
-
         darkness_id = 1
         client_id = 1
         start_up_orig = make_start_up_orig()
-        dir_name = os.path.join(simulation_dir, make_start_up_time(start_up_orig))
+        dir_name = os.path.join(SIMULATION_DIR, make_start_up_time(start_up_orig))
         log_level = 'INFO'
         nodes_per_darkness = 5
         first_node_id = 1
