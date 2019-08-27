@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from umatobi import constants
 
-constants.SIMULATION_DIR = os.path.join(__name__.split('.')[1], 'umatobi-simulation')
+constants.SIMULATION_DIR = os.path.join(os.path.dirname(__file__), 'umatobi-simulation')
 constants.FIXTURES_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
 constants.LOGGER_STREAM = open('/tmp/stdout_test.log', 'w')
 

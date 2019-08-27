@@ -7,6 +7,9 @@ from umatobi import lib
 
 class LibTests(unittest.TestCase):
 
+    def setUp(self):
+        self.tests_simulation_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'umatobi-simulation').replace('/unit/', '/')
+
     def test_get_table_columns(self):
         expected_items = {
             'simulation': (
@@ -61,7 +64,7 @@ class LibTests(unittest.TestCase):
         self.assertEqual(d2, d)
 
     def test_SIMULATION_DIR(self):
-        self.assertEqual('tests/umatobi-simulation', SIMULATION_DIR)
+        self.assertEqual(SIMULATION_DIR, self.tests_simulation_dir)
 
     def test_master_hand(self):
         start_up_orig = lib.make_start_up_orig()
@@ -71,7 +74,7 @@ class LibTests(unittest.TestCase):
     def test_master_hand_path(self):
         start_up_orig = lib.make_start_up_orig()
         start_up_time = lib.make_start_up_time(start_up_orig)
-        self.assertEqual(lib.get_master_hand_path(SIMULATION_DIR, start_up_orig), f"tests/umatobi-simulation/{start_up_time}/{MASTER_HAND}")
+        self.assertEqual(lib.get_master_hand_path(SIMULATION_DIR, start_up_orig), os.path.join(self.tests_simulation_dir, f"{start_up_time}/{MASTER_HAND}"))
 
     def test_make_log_dir(self):
         special_dir = SIMULATION_DIR + "-special"
@@ -98,10 +101,10 @@ class LibTests(unittest.TestCase):
 
     def test_log_path(self):
         tlogger = make_logger(log_dir=SIMULATION_DIR, name='test_logger', id_=None, level="INFO")
-        self.assertEqual('tests/umatobi-simulation/test_logger.log', tlogger.log_path)
+        self.assertEqual(tlogger.log_path, os.path.join(self.tests_simulation_dir, 'test_logger.log', ))
 
         tlogger = make_logger(log_dir=SIMULATION_DIR, name='test_logger', id_=888, level="INFO")
-        self.assertEqual('tests/umatobi-simulation/test_logger.888.log', tlogger.log_path)
+        self.assertEqual(tlogger.log_path, os.path.join(self.tests_simulation_dir, 'test_logger.888.log', ))
 
     def test_make_start_up_orig(self):
         start_up_orig = lib.make_start_up_orig()
