@@ -56,3 +56,6 @@ class ClientStoryTests(unittest.TestCase):
         # emulate client.start() done !
 
         watson.watson_open_office.join()
+
+if __name__ == '__main__':
+    unittest.main()
