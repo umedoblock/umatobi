@@ -76,7 +76,7 @@ def json2dict(j):
     return d
 
 def tell_shutdown_time():
-    shutdown_time = datetime.datetime.now()
+    shutdown_time = datetime_now()
     return shutdown_time
 
 def datetime_now():
@@ -108,7 +108,7 @@ def y15sformat_time(t):
     return t.strftime(Y15S_FORMAT)
 
 def current_y15sformat_time():
-    now = datetime.datetime.now()
+    now = datetime_now()
     return y15sformat_time(now)
 
 def y15sformat_parse(s):
@@ -116,7 +116,7 @@ def y15sformat_parse(s):
 
 def get_passed_ms(start_up_orig):
     '''simulation 開始から現在までに経過したmilli秒数。'''
-    now = datetime.datetime.now()
+    now = datetime_now()
     # relativeCreated の時間単位がmsのため、
     # elapsed_time()もms単位となるようにする。
     return int(((now - start_up_orig) * 1000).total_seconds())
@@ -124,7 +124,7 @@ def get_passed_ms(start_up_orig):
 def elapsed_time(start_up_orig, now=None):
     '''simulation 開始から現在までに経過したmilli秒数。'''
     if not None:
-        now = datetime.datetime.now()
+        now = datetime_now()
     # relativeCreated の時間単位がmsのため、
     # elapsed_time()もms単位となるようにする。
     return int(((now - start_up_orig) * 1000).total_seconds())
@@ -133,7 +133,7 @@ def _normalize_ms(seconds):
     return int(seconds * 1000)
 
 def get_passed_seconds(orig):
-    e = datetime.datetime.now()
+    e = datetime_now()
     return (e - orig).total_seconds()
 
 def get_passed_ms(orig):
