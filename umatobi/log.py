@@ -4,10 +4,6 @@ from umatobi.constants import *
 
 __all__ = ['logger']
 
-#   %(relativeCreated)d Time in ms when the LogRecord was created,
-LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(filename)s %(funcName)s() - %(message)s'
-LOGGER_SUFFIX = f" - process_id=%(process)d therad_id=%(thread)d"
-
 def make_logger(log_dir=None, name='', id_=None, level="INFO"):
     name = name.replace(".py", "")
     log_path = ""
@@ -36,7 +32,7 @@ def make_logger(log_dir=None, name='', id_=None, level="INFO"):
         logger_obj.log_path = log_path
 
     # create console handler with a higher log level
-    ch = logging.StreamHandler(sys.stdout)
+    ch = logging.StreamHandler(LOGGER_STREAM)
     ch.setLevel(level)
     ch.setFormatter(formatter)
     logger_obj.addHandler(ch)

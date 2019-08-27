@@ -3,7 +3,6 @@ import threading
 import sqlite3
 import socket
 import multiprocessing
-from logging import StreamHandler
 
 from umatobi.log import *
 from umatobi.constants import *
