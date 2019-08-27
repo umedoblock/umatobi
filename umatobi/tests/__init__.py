@@ -6,7 +6,7 @@ from umatobi import constants
 
 constants.SIMULATION_DIR = os.path.join(os.path.dirname(__file__), 'umatobi-simulation')
 constants.FIXTURES_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
-constants.LOGGER_STREAM = open('/tmp/stdout_test.log', 'w')
+constants.LOGGER_STREAM = open(os.path.join(constants.SIMULATION_DIR, 'stdout.log'), 'w')
 
 from umatobi.constants import *
 
