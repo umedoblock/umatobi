@@ -2,10 +2,13 @@ import datetime, io, os
 from contextlib import contextmanager
 from unittest.mock import patch
 
-from umatobi.constants import *
 from umatobi import constants
-SIMULATION_DIR = os.path.join(__name__.split('.')[1], 'umatobi-simulation')
-FIXTURES_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+constants.SIMULATION_DIR = os.path.join(__name__.split('.')[1], 'umatobi-simulation')
+constants.FIXTURES_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
+constants.LOGGER_STREAM = open('/tmp/stdout_test.log', 'w')
+
+from umatobi.constants import *
 
 SIMULATION_SECONDS = 30
 D_TIMEDELTA = {
@@ -15,7 +18,6 @@ D_TIMEDELTA = {
         datetime.timedelta(0, 73, 138770),
 }
 TD_ZERO = datetime.timedelta(0, 0, 0)
-constants.LOGGER_STREAM = open('/tmp/stdout_test.log', 'w')
 
 class MockIO(io.BytesIO):
     def recv(self, bufsize, flags=0):
