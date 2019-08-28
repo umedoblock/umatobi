@@ -113,11 +113,27 @@ class Darkness(object):
         self._queue_darkness = queue.Queue()
         self.all_nodes_inactive = threading.Event()
         self.im_sleeping = threading.Event()
-        self.exhale_queue = ExhaleQueue(self.POLLING_EXHALEQUEUE, self)
+        self._exhale_queue = ExhaleQueue(self.POLLING_EXHALEQUEUE, self)
 
         self.byebye_nodes = threading.Event()
 
         self.nodes = []
+
+    def start(self):
+        '''\
+        simulation 開始。
+        simulation に必要な node thread を多数作成する。
+        node thread 作成後、Client が leave_there を
+        signal 状態にするまで待機し続ける。
+        node が吐き出したqueueを、clientと共有するdbにcommitする。
+        '''
+        # create db in ExhaleQueue()
+        self._exhale_queue.start()
+
+        self._spawn_nodes()
+        self._sleeping()
+        self._leave_here()
+        self._stop()
 
     def _spawn_nodes(self):
         for i in range(self.num_nodes):
@@ -129,10 +145,10 @@ class Darkness(object):
                 'byebye_nodes': self.byebye_nodes,
                 '_queue_darkness': self._queue_darkness
             }
-            node_ = Node(**d_node)
-            logger.info('{} created {}.'.format(self, node_))
-            node_.start()
-            self.nodes.append(node_)
+            node = Node(**d_node)
+            logger.info('{} created {}.'.format(self, node))
+            node.start()
+            self.nodes.append(node)
 
         self.made_nodes.value = len(self.nodes)
         if self.made_nodes.value == 1:
@@ -141,56 +157,44 @@ class Darkness(object):
             msg = '{} spawns {} nodes.'.format(self, self.made_nodes.value)
         logger.info(msg)
 
-        for node_ in self.nodes:
-            node_.im_ready.wait()
+        for node in self.nodes:
+            node.im_ready.wait()
         logger.info('All nodes that {} spawns are ready.'.format(self))
 
-    def start(self):
-        '''\
-        simulation 開始。
-        simulation に必要な node thread を多数作成する。
-        node thread 作成後、Client が leave_there を
-        signal 状態にするまで待機し続ける。
-        node が吐き出したqueueを、clientと共有するdbにcommitする。
-        '''
-        # create db in ExhaleQueue()
-        self.exhale_queue.start()
-
-        self._spawn_nodes()
-        self.sleeping()
-        self.leave_here()
-        self.stop()
-
-    def sleeping(self):
-        logger.info(('{} is sleeping now....').format(self))
+    def _sleeping(self):
+        logger.info(('{} is _sleeping now....').format(self))
         self.im_sleeping.set()
         self.leave_there.wait()
         logger.info(('{} got leave_there signal.').format(self))
 
-    def leave_here(self):
+    def _leave_here(self):
         logger.info(('{} set byebye_nodes signal.').format(self))
         self.byebye_nodes.set()
 
-        for node_ in self.nodes:
-            logger.info('{} wait thread join.'.format(node_))
-            node_.join()
-            logger.info('{} thread joined.'.format(node_))
+        for node in self.nodes:
+            logger.info('{} wait thread join.'.format(node))
+            node.join()
+            logger.info('{} thread joined.'.format(node))
 
         # 全てのnodeが不活性となった後、queueにobjを追加するnodeは存在しない。
-        # また、不活性となった後、exhale_queue sched は自動的に停止する。
+        # また、不活性となった後、_exhale_queue sched は自動的に停止する。
         self.all_nodes_inactive.set()
         # よって、ここより下でも上でも、inhole_queues_from_nodes()を
         # 実行する必要はない。
         # ただし、_queue_darkness内のqueueを取りこぼさないために、
         # client_db.close() を確実に実行させるために、
         # ExhaleQueue() 内の sched thread の終了を保証する必要がある。
-        logger.info('{} wait exhale_queue thread join.'.format(node_))
-        self.exhale_queue.join()
+        logger.info('{} wait _exhale_queue thread join.'.format(node))
+        self._exhale_queue.join()
 
-    def stop(self):
+    def _stop(self):
         '''simulation 終了'''
-        for i in range(self.num_nodes):
-            logger.info('stop node i={}'.format(i))
+        for node in self.nodes:
+            d = {
+                'self': self,
+                'node': node,
+            }
+            logger.info('{self}._stop() node(={node})'.format(**d))
 
     def __str__(self):
         return 'Darkness(id={})'.format(self.id)
