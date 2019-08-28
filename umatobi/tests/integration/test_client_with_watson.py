@@ -30,7 +30,12 @@ class ClientStoryTests(unittest.TestCase):
         # delete dbs, logs...
         shutil.rmtree(self.watson.dir_name, ignore_errors=True)
 
+    # client emurate client.start()
+    # watson emurate watson.run()
     def test_client_story_with_watson(self):
+      ######################################################################
+      # The first half of simulation #######################################
+      ######################################################################
         watson = self.watson
         num_nodes = 10
 
@@ -45,8 +50,19 @@ class ClientStoryTests(unittest.TestCase):
 
         client._start_darkness()
 
+      ######################################################################
+      # watson.relaxing() ##################################################
+      # watson sleep until simulation time passed ##########################
+      ######################################################################
+
+      ######################################################################
+      # The second half of simulation ######################################
+      ######################################################################
         watson.release_clients()
+
         watson.watson_tcp_office.shutdown()
+        watson._wait_client_db()
+
         client._wait_break_down()
 
 #       # Client 終了処理開始。
@@ -54,6 +70,11 @@ class ClientStoryTests(unittest.TestCase):
 
         client.close()
         # emulate client.start() done !
+
+        watson.simulation_db.access_db()
+        watson._merge_db_to_simulation_db()
+        watson._construct_simulation_table()
+        watson.simulation_db.close()
 
         watson.watson_open_office.join()
 

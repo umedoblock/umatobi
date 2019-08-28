@@ -156,6 +156,9 @@ class Darkness(object):
         self.exhale_queue.start()
 
         self._spawn_nodes()
+        self.sleeping()
+        self.leave_here()
+        self.stop()
 
     def sleeping(self):
         logger.info(('{} is sleeping now....').format(self))
