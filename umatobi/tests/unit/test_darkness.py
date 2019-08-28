@@ -39,7 +39,7 @@ class DarknessAsClient(threading.Thread):
         # client become leave mode.
 
 class DarknessTests(unittest.TestCase):
-    def test_darkess_basic(self):
+    def test_darkess_start(self):
         darkness_id = 1
         client_id = 1
         start_up_orig = make_start_up_orig()
