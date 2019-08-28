@@ -103,7 +103,5 @@ class DarknessTests(unittest.TestCase):
         self.assertTrue(darkness.byebye_nodes.is_set())
         self.assertEqual(threading.active_count(), 1)
 
-        darkness.stop()
-
 if __name__ == '__main__':
     unittest.main()
