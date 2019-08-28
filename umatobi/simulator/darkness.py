@@ -112,6 +112,7 @@ class Darkness(object):
 
         self._queue_darkness = queue.Queue()
         self.all_nodes_inactive = threading.Event()
+        self.im_sleeping = threading.Event()
         self.exhale_queue = ExhaleQueue(self.POLLING_EXHALEQUEUE, self)
 
         self.byebye_nodes = threading.Event()
@@ -162,10 +163,11 @@ class Darkness(object):
 
     def sleeping(self):
         logger.info(('{} is sleeping now....').format(self))
+        self.im_sleeping.set()
         self.leave_there.wait()
+        logger.info(('{} got leave_there signal.').format(self))
 
     def leave_here(self):
-        logger.info(('{} got leave_there signal.').format(self))
         logger.info(('{} set byebye_nodes signal.').format(self))
         self.byebye_nodes.set()
 

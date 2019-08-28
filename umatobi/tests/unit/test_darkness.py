@@ -9,6 +9,35 @@ from umatobi.simulator.darkness import Darkness
 from umatobi.lib import make_start_up_orig, make_start_up_time
 from umatobi.simulator import sql
 
+class DarknessAsClient(threading.Thread):
+    def __init__(self, darkness_tests, darkness):
+        threading.Thread.__init__(self)
+        self.darkness_tests = darkness_tests
+        self.darkness = darkness
+
+    def run(self):
+        self.darkness.im_sleeping.wait()
+        self.darkness_tests.assertFalse(self.darkness.byebye_nodes.is_set())
+        self.darkness_tests.assertFalse(self.darkness.all_nodes_inactive.is_set())
+
+        incremented_threads = 1 + 2 * self.darkness.num_nodes
+        # increment incremented_threads 1 for Polling
+        # increment incremented_threads num_nodes for node threads
+        # increment incremented_threads num_nodes for open_office_node threads
+        # Because each node has an open_office_node thread
+        self.darkness_tests.assertEqual(threading.active_count(),
+                     1 + 1 + incremented_threads)
+        # above why "1 + 1" ?
+        #       left 1     means of cource main thread.
+        #      right     1 means this DarknessAsClient thread.
+        # Therefore   "+ 1" must be there. right ?
+        self.darkness_tests.assertEqual(self.darkness.made_nodes.value,
+                                        self.darkness.num_nodes)
+
+        # Originally client set leave_there event.
+        self.darkness.leave_there.set()
+        # client become leave mode.
+
 class DarknessTests(unittest.TestCase):
     def test_darkess_basic(self):
         darkness_id = 1
@@ -21,7 +50,6 @@ class DarknessTests(unittest.TestCase):
         num_darkness = 8
         # share with client and darknesses
         made_nodes = multiprocessing.Value('i', 0)
-        print("made_nodes =", made_nodes)
         # share with client and another darknesses
         leave_there =threading.Event()
 
@@ -45,11 +73,13 @@ class DarknessTests(unittest.TestCase):
             attr = getattr(darkness, k)
             self.assertEqual(v, attr)
         self.assertFalse(darkness.byebye_nodes.is_set())
+        self.assertEqual(darkness.leave_there, leave_there)
         self.assertEqual(darkness.client_db.db_path,
                          os.path.join(dir_name, f"client.{client_id}.db"))
         self.assertListEqual(darkness.nodes, [])
         self.assertEqual(darkness._queue_darkness.qsize(), 0)
         self.assertFalse(darkness.all_nodes_inactive.is_set())
+        self.assertFalse(darkness.im_sleeping.is_set())
 
         client_db = sql.SQL(db_path=darkness.client_db_path,
                             schema_path=SCHEMA_PATH)
@@ -58,22 +88,17 @@ class DarknessTests(unittest.TestCase):
 
         self.assertEqual(threading.active_count(), 1)
         # "1" means of course a main thread.
+        self.assertFalse(darkness.byebye_nodes.is_set())
+
+        ######################################################################
+        # Originally client set darkness.leave_there event. ##################
+        # But there is no client. Therefore darkness must play client role. ##
+        ######################################################################
+        darkness_as_client = DarknessAsClient(self, darkness)
+        darkness_as_client.start()
+
         darkness.start()
-        incremented_threads = 1 + 2 * darkness.num_nodes
-        # increment incremented_threads 1 for Polling
-        # increment incremented_threads num_nodes for node threads
-        # increment incremented_threads num_nodes for open_office_node threads
-        # Because each node has an open_office_node thread
-        self.assertEqual(threading.active_count(), 1 + incremented_threads)
-        self.assertEqual(darkness.made_nodes.value, darkness.num_nodes)
 
-        self.assertFalse(darkness.byebye_nodes.is_set())
-        darkness.leave_there.set() # for test
-        darkness.sleeping()
-
-        self.assertFalse(darkness.byebye_nodes.is_set())
-        self.assertFalse(darkness.all_nodes_inactive.is_set())
-        darkness.leave_here()
         self.assertTrue(darkness.all_nodes_inactive.is_set())
         self.assertTrue(darkness.byebye_nodes.is_set())
         self.assertEqual(threading.active_count(), 1)
