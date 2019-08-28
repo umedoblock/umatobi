@@ -22,7 +22,7 @@ class ExhaleQueue(Polling):
 
     def run(self):
         '''\
-        sqlite3は、sqlite3.connet()を実行したthreadでのみ、commit(), select()
+        sqlite3は、sqlite3.connect()を実行したthreadでのみ、commit(), select()
         などの操作を許可している。sqlite3.connet()を実行したthreadと
         別のthreadでcommit(), select()などを行うと例外が発生する。
         また、client_db.create_db()内で、sqlite3.connect()を実行している。
@@ -81,6 +81,7 @@ class Darkness(object):
     '''漆黒の闇'''
 
     POLLING_EXHALEQUEUE = 5.0
+    NODES_PER_DARKNESS = 5
 
     def __init__(self, **kwargs):
         '''\
@@ -184,7 +185,8 @@ class Darkness(object):
         # ただし、_queue_darkness内のqueueを取りこぼさないために、
         # client_db.close() を確実に実行させるために、
         # ExhaleQueue() 内の sched thread の終了を保証する必要がある。
-        logger.info('{} wait _exhale_queue thread join.'.format(node))
+        for node in self.nodes:
+            logger.info('{} wait _exhale_queue thread join.'.format(node))
         self._exhale_queue.join()
 
     def _stop(self):
@@ -194,7 +196,7 @@ class Darkness(object):
                 'self': self,
                 'node': node,
             }
-            logger.info('{self}._stop() node(={node})'.format(**d))
+            logger.info('{self}._stop() {node}'.format(**d))
 
     def __str__(self):
         return 'Darkness(id={})'.format(self.id)
