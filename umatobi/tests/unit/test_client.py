@@ -42,7 +42,7 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(client.num_darkness, num_darkness)
         self.assertEqual(client.last_darkness_make_nodes, Client.NODES_PER_DARKNESS)
 
-    def test_client__waitbreak_down(self):
+    def test_client__waits_to_break_down(self):
         watson_office_addr = ('localhost', 0)
         num_nodes = 10
 
@@ -50,9 +50,9 @@ class ClientTests(unittest.TestCase):
 
         client._tcp_sock = MockIO(b'break down.')
         with self.assertLogs('umatobi', level='INFO') as cm:
-            client._wait_break_down()
-        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._wait_break_down\(\)')
-        self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._wait_break_down\(\), .* got break down from \.*')
+            client._waits_to_break_down()
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
+        self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
 
     def test_client_start(self):
         watson_office_addr = ('localhost', 0)

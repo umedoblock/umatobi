@@ -48,6 +48,33 @@ class Client(object):
         self.timeout_sec = 1
         socket.setdefaulttimeout(self.timeout_sec)
 
+    ########################################################################
+    # inside of client
+    ########################################################################
+    def start(self):
+        '''\
+        Darknessを、たくさん作成する。
+        作成後は、watsonから終了通知("break down")を受信するまで待機する。
+        '''
+        logger.info(f"{self}.start()")
+
+        self._consult_watson()
+
+        self._has_a_lot_on_mind()
+
+        self._confesses_darkness()
+
+        self._waits_to_break_down()
+
+        # time will tell
+
+        self._run_a_way()
+
+        self._come_to_a_bad_end()
+
+    ########################################################################
+    # function of lines
+    ########################################################################
     def _consult_watson(self):
         logger.info(f"{self}._consult_watson()")
         self._tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -59,40 +86,15 @@ class Client(object):
 
         client_id = self.id
 
-    def start(self):
-        '''\
-        Darknessを、たくさん作成する。
-        作成後は、watsonから終了通知("break down")を受信するまで待機する。
-        '''
-        logger.info(f"{self}.start()")
-
-        self._consult_watson()
-
-        self._make_growings_table()
-
-        self._start_darkness()
-
-        self._wait_break_down()
-
-        # Client 終了処理開始。
-        self._release()
-        self._close()
-
-    def _close(self):
-        # must be _close() not shutdown() about socket.SOCK_STREAM
-        # ResourceWarning: unclosed <socket.socket fd=7, ...
-        logger.info(f"{self}._close()")
-        self._tcp_sock.close()
-
-    def _make_growings_table(self):
-        logger.info(f"{self}._make_growings_table()")
+    def _has_a_lot_on_mind(self):
+        logger.info(f"{self}._makes_growings_table()")
         self.client_db = sql.SQL(db_path=self.client_db_path,
                                  schema_path=self.schema_path)
         self.client_db.create_db()
         self.client_db.create_table('growings')
 
-    def _start_darkness(self):
-        logger.info(f"{self}._start_darkness()")
+    def _confesses_darkness(self):
+        logger.info(f"{self}._confesses_darkness()")
         # Darkness が作成する node の数を設定する。
         nodes_per_darkness = self.nodes_per_darkness
 
@@ -117,9 +119,9 @@ class Client(object):
                 'num_nodes':  nodes_per_darkness,
                 'first_node_id':  first_node_id,
                 'num_darkness': self.num_darkness,
-                # share with client and darknesses
+                # share with client and darkness
                 'made_nodes':  multiprocessing.Value('i', 0),
-                # share with client and another darknesses
+                # share with client and another darkness
                 'leave_there':  self.leave_there,
             }
             darkness_process = \
@@ -133,12 +135,12 @@ class Client(object):
         for darkness_process in self.darkness_processes:
             darkness_process.start()
 
-    def _wait_break_down(self):
-        logger.info(f"{self}._wait_break_down()")
+    def _waits_to_break_down(self):
+        logger.info(f"{self}._waits_to_break_down()")
         # watson から終了通知("break down")が届くまで待機し続ける。
         # TODO: #149 watson からの接続であると確認する。
         while True:
-            logger.debug(f"{self}._wait_break_down(), _tcp_sock={self._tcp_sock}")
+            logger.debug(f"{self}._waits_to_break_down(), _tcp_sock={self._tcp_sock}")
             try:
                 recved_msg = self._tcp_sock.recv(1024)
             except socket.timeout:
@@ -146,36 +148,32 @@ class Client(object):
                 continue
 
             if recved_msg == b'break down.':
-                logger.info(f"{self}._wait_break_down(), {self} got break down from {self._tcp_sock}.")
+                logger.info(f"{self}._waits_to_break_down(), {self} got break down from {self._tcp_sock}.")
                 break
 
-    def join(self):
-        '''threading.Thread を使用していた頃の名残。'''
-        logger.info(f"{self}.join()")
-
-    def _release(self):
+    def _run_a_way(self):
         '''\
         Client 終了処理。leave_thereにsignal を set することで、
         Clientの作成した Darkness達は一斉に終了処理を始める。
         '''
-        logger.info(f"{self}._release()")
+        logger.info(f"{self}._run_a_way()")
         self.leave_there.set()
 
         for darkness_p in self.darkness_processes:
             darkness_p.join()
-            logger.info(f"{self}._release(), {darkness_p} process joind.")
+            logger.info(f"{self}._run_a_way(), {darkness_p} process joind.")
 
-        logger.info(f"{self.client_db}._close()")
+        logger.info(f"{self.client_db}._run_a_way()")
         self.client_db.close()
       # logger.error('self._sock.getsockname() =', ('127.0.0.1', 20000))
         # ip のみ比較、 compare only ip
         if False and self._tcp_sock.getsockname()[0] != self.watson_office_addr[0]:
             logger.error('TODO: #169 simulation終了後、clientがclient.N.dbをwatsonにTCPにて送信。')
             # _sock=('0.0.0.0', 22343), watson_office_addr=('localhost', 55555)
-            logger.info(f"{self}._release(), {self} got break down from watson(={self.watson}). send client.{client.id}.db to {self._tcp_sock}.")
+            logger.info(f"{self}._run_a_way(), {self} got break down from watson(={self.watson}). send client.{client.id}.db to {self._tcp_sock}.")
         else:
             # ip が同じ
-            message = (f"{self}._release(), client and watson use same IP. " +
+            message = (f"{self}._run_a_way(), client and watson use same IP. " +
                        f"Therefore " +
                        f"don\'t send client.{self.id}.db to watson.")
             logger.info(message)
@@ -186,6 +184,18 @@ class Client(object):
 
         logger.info(f"{self} created num of nodes {self.total_created_nodes}")
 
+    def _come_to_a_bad_end(self):
+        # must call close() about socket.SOCK_STREAM
+        # you wil come to a bad end
+        # if you call shutdown() about socket.SOCK_STREAM.
+        # Happily, you don't get below ResourceWarning.
+        logger.info(f"{self}._come_to_a_bad_end()")
+        self._tcp_sock.close()
+        # ResourceWarning: unclosed <socket.socket fd=7, ...
+
+    ########################################################################
+    # function of lines
+    ########################################################################
     def _init_attrs(self):
         '''\
         watson に接続し、id, start_up_origを受信する。
