@@ -48,11 +48,11 @@ class Client(object):
         self.timeout_sec = 1
         socket.setdefaulttimeout(self.timeout_sec)
 
-    def consult_watson(self):
-        logger.info(f"{self}.consult_watson()")
+    def _consult_watson(self):
+        logger.info(f"{self}._consult_watson()")
         self._tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        logger.info(f"{self}.consult_watson(), _tcp_sock.connect(={self.watson_office_addr})")
+        logger.info(f"{self}._consult_watson(), _tcp_sock.connect(={self.watson_office_addr})")
         self._tcp_sock.connect(self.watson_office_addr)
 
         _d_init_attrs = self._init_attrs()
@@ -66,7 +66,7 @@ class Client(object):
         '''
         logger.info(f"{self}.start()")
 
-        self.consult_watson()
+        self._consult_watson()
 
         self._make_growings_table()
 
@@ -76,12 +76,12 @@ class Client(object):
 
         # Client 終了処理開始。
         self._release()
-        self.close()
+        self._close()
 
-    def close(self):
-        # must be close() not shutdown() about socket.SOCK_STREAM
+    def _close(self):
+        # must be _close() not shutdown() about socket.SOCK_STREAM
         # ResourceWarning: unclosed <socket.socket fd=7, ...
-        logger.info(f"{self}.close()")
+        logger.info(f"{self}._close()")
         self._tcp_sock.close()
 
     def _make_growings_table(self):
@@ -165,7 +165,7 @@ class Client(object):
             darkness_p.join()
             logger.info(f"{self}._release(), {darkness_p} process joind.")
 
-        logger.info(f"{self.client_db}.close()")
+        logger.info(f"{self.client_db}._close()")
         self.client_db.close()
       # logger.error('self._sock.getsockname() =', ('127.0.0.1', 20000))
         # ip のみ比較、 compare only ip
