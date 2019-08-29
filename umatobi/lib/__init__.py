@@ -1,4 +1,4 @@
-import json, datetime, time, os, threading, sched, configparser
+import json, datetime, time, os, threading, sched, configparser, socket
 
 from umatobi.constants import *
 
@@ -23,6 +23,30 @@ class Polling(threading.Thread):
 
     def run(self):
         self._sche.run()
+
+def sock_send(tcp_sock, data):
+    try:
+        result = tcp_sock.sendall(data)
+    except socket.timeout as e:
+        logger.info(f"{self.tcp_sock} got timeout.")
+        return False
+    return True
+
+def sock_recv(tcp_sock, buf_size):
+    try:
+        recved_data = tcp_sock.recv(buf_size)
+    except socket.timeout:
+        recved_data = None
+
+    return recved_data
+
+def are_on_the_same_network_endpoint(You, I):
+    if You[0] == I[0]:
+        logger.info(f"You(={You}) and I(={I}) refer to the same network endpoint.")
+        return True
+    else:
+        logger.info(f"You(={You}) and I(={I}) refer to the same network endpoint.")
+        return False
 
 def get_host_port(host_port):
     sp = host_port.split(':')

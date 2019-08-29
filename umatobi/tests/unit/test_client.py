@@ -42,6 +42,12 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(client.num_darkness, num_darkness)
         self.assertEqual(client.last_darkness_make_nodes, Client.NODES_PER_DARKNESS)
 
+    def test_client__consult_watson(self):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 10
+
+        client = Client(watson_office_addr, num_nodes)
+
     def test_client__waits_to_break_down(self):
         watson_office_addr = ('localhost', 0)
         num_nodes = 10
