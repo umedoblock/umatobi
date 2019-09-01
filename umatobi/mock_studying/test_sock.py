@@ -72,16 +72,18 @@ class ClientTestCase(unittest.TestCase):
 #   @mock.patch('sock.socket')
 #   def test_socket7(self, mock_sock_socket):
     def test_socket7(self):
-        patcher = mock.patch('sock.Client', autospec=True)
+        watson_office_addr = ('localhost', 11111)
+        patcher = mock.patch('sock.Client', autospec=True, watson_office_addr=watson_office_addr)
         mock_client = patcher.start()
 
         self.assertIsInstance(mock_client, Client)
-#       watson_office_addr = ('localhost', 11111)
 #       c = Client(watson_office_addr)
 #       c = unittest.mock.create_autospec(Client, watson_office_addr)
 #       m = Mock(spec=Client)
 #       c._make_contact_with()
-#       mock_sock_socket.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
+        mock_client._make_contact_with()
+#       mock_client.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
+      # mock_client._tcp_sock.connect.assert_called_with(watson_office_addr)
 
     def test_request(self):
         import urllib
