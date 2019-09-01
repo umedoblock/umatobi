@@ -2,6 +2,7 @@ import socket
 from unittest import mock
 import unittest
 
+import sock
 from sock import Client
 
 class ClientTestCase(unittest.TestCase):
@@ -40,3 +41,11 @@ class ClientTestCase(unittest.TestCase):
             c = Client(watson_office_addr)
             c._make_contact_with()
             c._tcp_sock.connect.assert_called_with(watson_office_addr)
+
+    # no with statement againt test_socket4()
+    @mock.patch('sock.socket', autospec=True)
+    def test_socket5(self, mock_sock_socket):
+        watson_office_addr = ('localhost', 11111)
+        c = Client(watson_office_addr)
+        c._make_contact_with()
+        mock_sock_socket.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
