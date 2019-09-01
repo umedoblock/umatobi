@@ -45,3 +45,11 @@ class ClientTestCase(unittest.TestCase):
         c = Client(watson_office_addr)
         c._make_contact_with()
         mock_sock_socket.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
+
+    # no autospec againt test_socket4()
+    @mock.patch('sock.socket')
+    def test_socket6(self, mock_sock_socket):
+        watson_office_addr = ('localhost', 11111)
+        c = Client(watson_office_addr)
+        c._make_contact_with()
+        mock_sock_socket.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
