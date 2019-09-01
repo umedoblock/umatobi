@@ -13,13 +13,11 @@ class ClientTestCase(unittest.TestCase):
         mock_contact_with.assert_called_with(client)
 
     @mock.patch.object(socket, 'socket', autospec=True)
-#   @mock.patch('sock.socket')
     def test_socket2(self, mock_socket):
         client = Client(('localhost', 11111))
         client._make_contact_with()
 
         mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
-      # mock_contact_with.assert_called_with('localhost', 11111)
 
 #   @mock.patch.object(socket.socket, 'connect', autospec=True)
 #   @mock.patch.object(socket, 'socket', spec=socket)
@@ -31,8 +29,6 @@ class ClientTestCase(unittest.TestCase):
 #       mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
 #       mock_socket.return_value.attribute = socket.socket
 #       mock_socket_connect.assert_called_with(client._tcp_sock, 'localhost', 11111)
-
-  # @mock.patch('sock.socket.socket')
 
     def test_socket4(self):
       # https://stackoverflow.com/questions/31864168/mocking-a-socket-connection-in-python
