@@ -23,17 +23,18 @@ class ClientTestCase(unittest.TestCase):
 
         mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
 
-    #  socket(): OK
-    # connect(): ?
-    @mock.patch.object(socket, 'socket')
-    def test_socket3(self, mock_socket, mock_connect):
-        client = Client(('localhost', 11111))
-        client._make_contact_with()
+  ###  socket(): OK
+  ### connect(): ?
+  ##@mock.patch.object(socket, 'socket')
+  ##@mock.patch('sock.socket', autospec=True)
+  ##def test_socket3(self, mock_socket, mock_connect):
+  ##    client = Client(('localhost', 11111))
+  ##    client._make_contact_with()
 
-        print(client._tcp_sock)
-        mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
-        mock_socket.return_value.attribute = socket.socket
-        mock_connect.connect.assert_called_with(client, 'localhost', 11111)
+  ##    print(client._tcp_sock)
+  ##    mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
+# ##    mock_socket.return_value.attribute = socket.socket
+  ##    client._tcp_sock.connect.assert_called_with(client, 'localhost', 11111)
 
     #  socket(): OK!
     # connect(): OK
