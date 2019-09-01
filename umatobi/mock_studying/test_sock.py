@@ -68,3 +68,35 @@ class ClientTestCase(unittest.TestCase):
         c = Client(watson_office_addr)
         c._make_contact_with()
         mock_sock_socket.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
+
+#   @mock.patch('sock.socket')
+#   def test_socket7(self, mock_sock_socket):
+    def test_socket7(self):
+        patcher = mock.patch('sock.Client', autospec=True)
+        mock_client = patcher.start()
+
+        self.assertIsInstance(mock_client, Client)
+#       watson_office_addr = ('localhost', 11111)
+#       c = Client(watson_office_addr)
+#       c = unittest.mock.create_autospec(Client, watson_office_addr)
+#       m = Mock(spec=Client)
+#       c._make_contact_with()
+#       mock_sock_socket.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
+
+    def test_request(self):
+        import urllib
+        from urllib import request
+
+        patcher = mock.patch('urllib.request', autospec=True)
+        mock_request = patcher.start()
+
+        self.assertIs(urllib.request, mock_request)
+        self.assertIsInstance(mock_request.Request, request.Request)
+        req = mock_request.Request('foo')
+       #print('req =', req)
+        self.assertIsInstance(req, request.Request)
+
+        req.add_header('spam', 'eggs')
+        req.add_header.assert_called_with('spam', 'eggs')
+
+        patcher.stop()
