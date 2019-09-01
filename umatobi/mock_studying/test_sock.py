@@ -6,12 +6,16 @@ import sock
 from sock import Client
 
 class ClientTestCase(unittest.TestCase):
+    #  socket(): ?
+    # connect(): ?
     @mock.patch.object(Client, '_make_contact_with', autospec=True)
     def test_socket(self, mock_contact_with):
         client = Client(('localhost', 11111))
         client._make_contact_with()
         mock_contact_with.assert_called_with(client)
 
+    #  socket(): OK
+    # connect(): ?
     @mock.patch.object(socket, 'socket', autospec=True)
     def test_socket2(self, mock_socket):
         client = Client(('localhost', 11111))
@@ -19,6 +23,8 @@ class ClientTestCase(unittest.TestCase):
 
         mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
 
+    #  socket(): OK
+    # connect(): ?
     @mock.patch.object(socket.socket, 'connect', autospec=True)
     @mock.patch.object(socket, 'socket')
     def test_socket3(self, mock_socket, mock_socket_connect):
@@ -30,6 +36,8 @@ class ClientTestCase(unittest.TestCase):
         mock_socket.return_value.attribute = socket.socket
 #       mock_socket_connect.assert_called_with(client._tcp_sock, 'localhost', 11111)
 
+    #  socket(): ?
+    # connect(): OK
     def test_socket4(self):
       # https://stackoverflow.com/questions/31864168/mocking-a-socket-connection-in-python
         with unittest.mock.patch('sock.socket.socket'):
@@ -39,6 +47,8 @@ class ClientTestCase(unittest.TestCase):
             self.assertTrue(c._tcp_sock)
             c._tcp_sock.connect.assert_called_with(watson_office_addr)
 
+    #  socket(): OK
+    # connect(): ?
     # no with statement againt test_socket4()
     @mock.patch('sock.socket', autospec=True)
     def test_socket5(self, mock_sock_socket):
@@ -47,6 +57,8 @@ class ClientTestCase(unittest.TestCase):
         c._make_contact_with()
         mock_sock_socket.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
 
+    #  socket(): OK
+    # connect(): ?
     # no autospec againt test_socket4()
     @mock.patch('sock.socket')
     def test_socket6(self, mock_sock_socket):
