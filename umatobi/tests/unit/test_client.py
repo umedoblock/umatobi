@@ -70,47 +70,33 @@ class ClientTests(unittest.TestCase):
             client._make_contact_with()
             mock_client_sock.socket.assert_called_with(umatobi.simulator.client.socket.AF_INET, umatobi.simulator.client.socket.SOCK_STREAM)
             self.assertTrue(client._tcp_sock)
-            print(client._tcp_sock)
 
-#   @mock.patch.object(umatobi.simulator.client.Client, '_tcp_sock', 100)
-   #@mock.patch('umatobi.simulator.client.Client._watch_mailbox', return_value=b'break down.')
     def test_client__waits_to_break_down(self):
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
 
         client = Client(watson_office_addr, num_nodes)
 
-#       mock_watch_mailbox.socket.assert_called_with(umatobi.simulator.client.socket.AF_INET, umatobi.simulator.client.socket.SOCK_STREAM)
-#       self.assertTrue(client._tcp_sock)
-#       client._tcp_sock.connect.assert_called_with(watson_office_addr)
-
         client._tcp_sock = mock.MagicMock()
         client._tcp_sock.recv.return_value = b'break down.'
         with self.assertLogs('umatobi', level='INFO') as cm:
             client._waits_to_break_down()
-      # print(mock_client.mock_calls)
       # mock_client._watch_mailbox.assert_called_with(client._tcp_sock)
       # self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
       # self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
 
     @mock.patch.object(umatobi.simulator.client.Client, '_watch_mailbox', autospec=True)
     def test_client__waits_to_break_down2(self, mock_client):
-        mock_client.return_value = b'???'
+        mock_client.return_value = b'break down.'
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
 
         client = Client(watson_office_addr, num_nodes)
 
-#       mock_watch_mailbox.socket.assert_called_with(umatobi.simulator.client.socket.AF_INET, umatobi.simulator.client.socket.SOCK_STREAM)
-#       self.assertTrue(client._tcp_sock)
-#       client._tcp_sock.connect.assert_called_with(watson_office_addr)
-
         client._tcp_sock = mock.MagicMock()
         client._tcp_sock.recv.return_value = b'break down.'
         with self.assertLogs('umatobi', level='INFO') as cm:
             client._waits_to_break_down()
-        print(mock_client.mock_calls)
-        mock_client._watch_mailbox.assert_called_with(client._tcp_sock)
       # self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
       # self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
 
