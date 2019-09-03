@@ -103,19 +103,6 @@ class ClientTests(unittest.TestCase):
       # self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
       # self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
 
-#   def test_client__waits_to_break_down_not_work(self):
-#       watson_office_addr = ('localhost', 0)
-#       num_nodes = 10
-
-#       client = Client(watson_office_addr, num_nodes)
-
-#       client._tcp_sock = MockIO(b'break down.')
-#       with self.assertLogs('umatobi', level='INFO') as cm:
-#           with recv_the_script_from_sock(b'break down.'):
-#               client._waits_to_break_down()
-#       self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
-#       self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
-
     def test_client_start(self):
         watson_office_addr = ('localhost', 0)
         num_nodes = 10
