@@ -139,16 +139,19 @@ class Client(object):
         logger.info(f"{self}._waits_to_break_down()")
         # watson から終了通知("break down")が届くまで待機し続ける。
         # TODO: #149 watson からの接続であると確認する。
+        tries = 0
         while True:
-            logger.debug(f"{self}._waits_to_break_down(), _tcp_sock={self._tcp_sock}")
+            logger.debug(f"{self}._waits_to_break_down(), _tcp_sock={self._tcp_sock}, tries={tries}")
             recved_mail = self._watch_mailbox(self._tcp_sock)
+            logger.info(f"{self}._waits_to_break_down(), got mail={recved_mail} from {self._tcp_sock}, tries={tries}.")
             if not recved_mail:
                 continue
 
             if recved_mail == b'break down.':
-                logger.info(f"{self}._waits_to_break_down() got break down from {self._tcp_sock}.")
+                logger.info(f"{self}._waits_to_break_down(), got break down from {self._tcp_sock}, tries={tries}.")
                 break
-            logger.error(f"{self}._waits_to_break_down() got unknown mail from {self._tcp_sock}.")
+            logger.error(f"{self}._waits_to_break_down(), got unknown mail from {self._tcp_sock}, tries={tries}.")
+            tries += 1
 
     def _run_a_way(self):
         '''\
@@ -252,24 +255,23 @@ class Client(object):
         self._franticalliy_tell(mail, insistent)
         got_mail = self._franticalliy_watch_mailbox(insistent)
 
-        logger.debug(f"{self}._hello_watson(), got_mail={got_mail}, tries={tries}.")
+        logger.debug(f"{self}._hello_watson(), got_mail={got_mail}.")
 
         return got_mail
 
-    def _franticalliy_tell(mail, insistent):
+    def _franticalliy_tell(self, mail, insistent):
         tries = 0
         while tries < insistent:
             logger.info(f"{self}._franticalliy_tell(), tries={tries}, insistent={insistent}.")
             told = self._tell_truth(mail)
             if told:
                 break
-            else:
-                tries += 1
+            tries += 1
 
         if tries >= insistent:
-            raise RuntimeError(f"cannot tell mail={mail} to {self.watson_office_addr}")
+            raise RuntimeError(f"cannot tell truth. {tries} times failed. cannot tell mail={mail} to {self.watson_office_addr}")
 
-    def _franticalliy_watch_mailbox(insistent):
+    def _franticalliy_watch_mailbox(self, insistent):
         tries = 0
         recved_mail = b'<empty>'
         while tries < insistent:
@@ -277,9 +279,9 @@ class Client(object):
             recved_mail = self._watch_mailbox()
             if recved_mail:
                 break
-            else:
-                tries += 1
-                continue
+
+            tries += 1
+
         logger.debug(f"{self}._hello_watson(), recved_mail={recved_mail}, tries={tries}.")
         reply = bytes2dict(recved_mail)
         return reply
