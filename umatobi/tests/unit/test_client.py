@@ -1,5 +1,5 @@
 import re, os, io
-import sys, shutil
+import sys, shutil, sqlite3
 from unittest import mock
 import unittest
 
@@ -7,6 +7,7 @@ import umatobi
 from umatobi.lib import *
 from umatobi.tests import *
 from umatobi.simulator.client import Client
+from umatobi.simulator.sql import SQL
 
 class ClientTests(unittest.TestCase):
 
@@ -87,9 +88,23 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(getattr(client, 'client_db_path'), os.path.join(client.dir_name, f'client.{client.id}.db'), reply[key])
         self.assertEqual(getattr(client, 'schema_path'), SCHEMA_PATH)
 
+        with self.assertRaises(AttributeError) as cm:
+            getattr(client, 'client_db')
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "'Client' object has no attribute 'client_db'")
+
         with self.assertLogs('umatobi', level='INFO') as cm:
             client._has_a_lot_on_mind()
         self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._makes_growings_table\(\)')
+        self.assertIsInstance(getattr(client, 'client_db'), SQL)
+        self.assertIn('growings', client.client_db.get_table_names())
+
+        client.client_db.close()
+
+        with self.assertRaises(sqlite3.ProgrammingError) as cm:
+            client.client_db.get_table_names()
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "Cannot operate on a closed cursor.")
 
     @mock.patch('umatobi.simulator.client.socket')
     def test_client__make_contact_with(self, mock_client_sock):

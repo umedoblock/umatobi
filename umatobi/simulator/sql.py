@@ -154,6 +154,7 @@ class SQL(object):
         return rows
 
     def close(self):
+        self.commit()
         self._cur.close()
         self._conn.close()
 
