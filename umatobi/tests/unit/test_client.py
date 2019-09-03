@@ -4,6 +4,7 @@ from unittest import mock
 import unittest
 
 import umatobi
+from umatobi.lib import *
 from umatobi.tests import *
 from umatobi.simulator.client import Client
 
@@ -57,6 +58,38 @@ class ClientTests(unittest.TestCase):
 #       with unittest.mock.patch('umatobi.simulator.client.Client._consult_watson'):
 #           client._make_contact_with.assert_called_with()
 
+
+    def test_client__has_a_lot_on_mind(self):
+        start_up_orig = make_start_up_orig()
+        start_up_time = y15sformat_time(start_up_orig)
+
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 10
+        client = Client(watson_office_addr, num_nodes)
+        client._hello_watson = mock.MagicMock()
+        client._hello_watson.return_value = {
+            'client_id': 1,
+            'start_up_orig': start_up_orig_to_isoformat(make_start_up_orig()),
+            'dir_name': os.path.join(SIMULATION_DIR, start_up_time),
+            'node_index': 1,
+            'log_level': 'INFO',
+        }
+        reply = client._init_attrs()
+        for key, value in reply.items():
+            if key == 'client_id':
+                key_ = 'id'
+            else:
+                key_ = key
+            if key == 'start_up_orig':
+                self.assertEqual(getattr(client, key_), isoformat_to_start_up_orig(reply[key]))
+            else:
+                self.assertEqual(getattr(client, key_), reply[key])
+        self.assertEqual(getattr(client, 'client_db_path'), os.path.join(client.dir_name, f'client.{client.id}.db'), reply[key])
+        self.assertEqual(getattr(client, 'schema_path'), SCHEMA_PATH)
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            client._has_a_lot_on_mind()
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._makes_growings_table\(\)')
 
     @mock.patch('umatobi.simulator.client.socket')
     def test_client__make_contact_with(self, mock_client_sock):
