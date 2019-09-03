@@ -1,7 +1,9 @@
 import re, os, io
 import sys, shutil
+from unittest import mock
 import unittest
 
+import umatobi
 from umatobi.tests import *
 from umatobi.simulator.client import Client
 
@@ -42,23 +44,73 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(client.num_darkness, num_darkness)
         self.assertEqual(client.last_darkness_make_nodes, Client.NODES_PER_DARKNESS)
 
-    def test_client__consult_watson(self):
+#   @mock.patch.object('Client', '_make_contact_with')
+#   def test_client__consult_watson(self, mock_make_contact_with):
+#       mock_make_contact_with.rete
+#       watson_office_addr = ('localhost', 11111)
+#       num_nodes = 10
+#       client = Client(watson_office_addr, num_nodes)
+#       client._consult_watson()
+
+#    #  @mock.patch('umatobi.simulator.client.Client.socket.socket')
+#     # with unittest.mock.patch('umatobi.simulator.client.Client.socket.socket'):
+#       with unittest.mock.patch('umatobi.simulator.client.Client._consult_watson'):
+#           client._make_contact_with.assert_called_with()
+
+
+#   @mock.patch('umatobi.simulator.client.Client', '_watch_mailbox', return_value=b'a')
+#   def test_client__make_contact_with(self, mock_mailbox):
+#       with unittest.mock.patch('umatobi.simulator.client.socket.socket'):
+#           watson_office_addr = ('localhost', 11111)
+#           num_nodes = 10
+#           client = Client(watson_office_addr, num_nodes)
+#           client._make_contact_with()
+#           mock_client_sock.socket.assert_called_with(umatobi.simulator.client.socket.AF_INET, umatobi.simulator.client.socket.SOCK_STREAM)
+#           self.assertTrue(client._tcp_sock)
+
+#   @mock.patch.object(umatobi.simulator.client.Client, '_tcp_sock', 100)
+   #@mock.patch('umatobi.simulator.client.Client._watch_mailbox', return_value=b'break down.')
+   #@mock.patch('umatobi.simulator.client.Client')
+   #def test_client__waits_to_break_down(self, mock_client):
+    def test_client__waits_to_break_down(self):
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
+# self._tcp_sock.connect(self.watson_office_addr)
+#       mock_client = mock.create_autospec(Client)
+#       mock_client._waits_to_break_down()
 
         client = Client(watson_office_addr, num_nodes)
+#       client._tcp_sock = ''
+#     # mock.patch.object(client, '_tcp_sock', return_value=100)
+#       mock.patch(client, '_tcp_sock', return_value=100)
+#       print('client._tcp_sock =', client._tcp_sock)
+#       client._make_contact_with()
+#       mock.patch.object(client, '_tcp_sock', 100)
 
-    def test_client__waits_to_break_down(self):
-        watson_office_addr = ('localhost', 0)
-        num_nodes = 10
+#       mock_watch_mailbox.socket.assert_called_with(umatobi.simulator.client.socket.AF_INET, umatobi.simulator.client.socket.SOCK_STREAM)
+#       self.assertTrue(client._tcp_sock)
+#       client._tcp_sock.connect.assert_called_with(watson_office_addr)
 
-        client = Client(watson_office_addr, num_nodes)
-
-        client._tcp_sock = MockIO(b'break down.')
+        client._tcp_sock = mock.MagicMock()
+        client._tcp_sock.recv.return_value = b'break down.'
         with self.assertLogs('umatobi', level='INFO') as cm:
             client._waits_to_break_down()
-        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
-        self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
+      # mock_client._watch_mailbox.assert_called_with(client._tcp_sock)
+      # self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
+      # self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
+
+#   def test_client__waits_to_break_down_not_work(self):
+#       watson_office_addr = ('localhost', 0)
+#       num_nodes = 10
+
+#       client = Client(watson_office_addr, num_nodes)
+
+#       client._tcp_sock = MockIO(b'break down.')
+#       with self.assertLogs('umatobi', level='INFO') as cm:
+#           with recv_the_script_from_sock(b'break down.'):
+#               client._waits_to_break_down()
+#       self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
+#       self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
 
     def test_client_start(self):
         watson_office_addr = ('localhost', 0)
