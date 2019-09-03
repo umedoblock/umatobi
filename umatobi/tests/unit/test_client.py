@@ -58,15 +58,19 @@ class ClientTests(unittest.TestCase):
 #           client._make_contact_with.assert_called_with()
 
 
-#   @mock.patch('umatobi.simulator.client.Client', '_watch_mailbox', return_value=b'a')
-#   def test_client__make_contact_with(self, mock_mailbox):
-#       with unittest.mock.patch('umatobi.simulator.client.socket.socket'):
-#           watson_office_addr = ('localhost', 11111)
-#           num_nodes = 10
-#           client = Client(watson_office_addr, num_nodes)
-#           client._make_contact_with()
-#           mock_client_sock.socket.assert_called_with(umatobi.simulator.client.socket.AF_INET, umatobi.simulator.client.socket.SOCK_STREAM)
-#           self.assertTrue(client._tcp_sock)
+    @mock.patch('umatobi.simulator.client.socket')
+    def test_client__make_contact_with(self, mock_client_sock):
+        with unittest.mock.patch('umatobi.simulator.client.socket.socket'):
+            watson_office_addr = ('localhost', 11111)
+            num_nodes = 10
+            client = Client(watson_office_addr, num_nodes)
+            self.assertEqual(client.watson_office_addr, watson_office_addr)
+            self.assertEqual(client.num_nodes, num_nodes)
+
+            client._make_contact_with()
+            mock_client_sock.socket.assert_called_with(umatobi.simulator.client.socket.AF_INET, umatobi.simulator.client.socket.SOCK_STREAM)
+            self.assertTrue(client._tcp_sock)
+            print(client._tcp_sock)
 
 #   @mock.patch.object(umatobi.simulator.client.Client, '_tcp_sock', 100)
    #@mock.patch('umatobi.simulator.client.Client._watch_mailbox', return_value=b'break down.')
