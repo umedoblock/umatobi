@@ -6,6 +6,10 @@ from unittest.mock import patch
 class SomeClass(object):
     attribute = 'someclass_someclass'
 
+    function = 'function'
+#   def function(cls):
+#       return 'function'
+
 class Sentinel(object):
     attribute = 'sentinel_sentinel'
 
@@ -26,15 +30,28 @@ print('sentinel =', sentinel)
 
 original = SomeClass.attribute
 print('original =', original)
+print()
 
 @patch.object(SomeClass, 'attribute', sentinel.attribute)
 def test():
     print(f'SomeClass.attribute(={SomeClass.attribute}) == sentinel.attribute(={sentinel.attribute})')
     assert SomeClass.attribute == sentinel.attribute
 
+@patch.object(SomeClass, 'function', return_value=sentinel.attribute)
+def test2(what):
+    print('what =', what)
+    print('what() =', what())
+    print('what.function() =', what.function())
+    print(f'SomeClass.function()(={SomeClass.function()}) == sentinel.attribute={sentinel.attribute})')
+    assert SomeClass.function() == sentinel.attribute
+
 test()
 print(f'SomeClass.attribute(={SomeClass.attribute}) == original(={original})')
 assert SomeClass.attribute == original
+print()
+
+test2()
+print()
 
 def test_func():
     config = {'method.return_value': 3, 'other.side_effect': KeyError}
@@ -49,6 +66,7 @@ def test_func():
     print(s())
     print('s.method() =')
     print(s.method())
+
     print('mock_thing.method() =')
     print(mock_thing.method())
     print('mock_thing.other() =')
@@ -57,6 +75,7 @@ def test_func():
     except KeyError as err:
         print('got KeyError()')
     patcher.stop()
+    print()
 
     s = Sentinel()
     patcher = patch.object(s, 'func', return_value='return')
@@ -64,6 +83,7 @@ def test_func():
     print('s.func() =')
     print(s.func())
     patcher.stop()
+    print()
 
     print('s.method() 1 =')
     s.method()
@@ -73,11 +93,13 @@ def test_func():
     print('s.method() 2 =')
     print(s.method())
     patcher.stop()
+    print()
 
     patcher = patch.object(s, 'apple', return_value='yes')
     patcher.start()
     print('fruit ? =')
     print(s.apple())
     patcher.stop()
+    print()
 
 test_func()
