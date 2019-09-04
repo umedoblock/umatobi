@@ -1,3 +1,4 @@
+# https://docs.python.org/3/library/unittest.mock.html?highlight=mock
 from io import StringIO
 
 from unittest.mock import patch
