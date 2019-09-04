@@ -18,6 +18,9 @@ class Sentinel(object):
     def method(self):
         print(self.attr)
 
+    def apple(self):
+        return 'aaa'
+
 sentinel = Sentinel()
 print('sentinel =', sentinel)
 
@@ -55,7 +58,6 @@ def test_func():
         print('got KeyError()')
     patcher.stop()
 
-    config = {'method.return_value': 3, 'other.side_effect': KeyError}
     s = Sentinel()
     patcher = patch.object(s, 'func', return_value='return')
     patcher.start()
@@ -70,6 +72,12 @@ def test_func():
     patcher.start()
     print('s.method() 2 =')
     print(s.method())
+    patcher.stop()
+
+    patcher = patch.object(s, 'apple', return_value='yes')
+    patcher.start()
+    print('fruit ? =')
+    print(s.apple())
     patcher.stop()
 
 test_func()
