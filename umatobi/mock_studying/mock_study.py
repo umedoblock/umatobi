@@ -2,6 +2,20 @@ import unittest
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
+class Bar(object):
+    def __init__(self):
+        self.bar = 'bar __init__()' # __init__() kill bar() function
+        print('bar __init__()')
+
+    def bar(self):
+      # self.bar = 'bar bar()' # bar() suiside ageint Bar class
+        print('bar bar()')
+
+    def baz(self):
+        self.baz = 'baz baz()'
+        print('bar baz()')
+      # self.bar() # bar() is dead.
+
 class Foo(object):
     sock = 'sock'
 
@@ -16,6 +30,11 @@ class Foo(object):
         return 'I am tes().'
 
 if __name__ == '__main__':
+    bar = Bar()
+  # bar.bar()
+    bar.baz()
+
+    print()
     print('hello')
     m = MagicMock()
   # print('mock =', m)
