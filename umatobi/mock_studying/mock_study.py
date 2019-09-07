@@ -40,11 +40,20 @@ if __name__ == '__main__':
   # print('mock =', m)
 
     foo = Foo()
-    with patch.object(foo, 'sock', 'sock with') as mocked:
+    with patch.object(foo, 'sock', 'sock with') as mocked1:
         print('foo.sock =', foo.sock)
 
-    with patch.object(foo, 'sock2', return_value='sock2() with') as mocked:
-        print('foo.sock2() =', foo.sock2())
+    with patch.object(Foo, 'sock2', return_value='sock2() with') as mocked2:
+        foo2 = Foo()
+        print('1 foo2.sock2() =', foo2.sock2())
+    mocked2.assert_called_once_with()
+
+#   with patch.object(Foo, 'sock2', autospec=True) as mocked3:
+#       mocked3.return_value = 'mocked3.return_value'
+#       foo3 = Foo()
+#       foo3.sock2()
+#       print('2 foo3.sock2() =', foo3.sock2())
+#   mocked3.assert_called_once_with()
 
     foo3 = Foo()
     with patch.object(Foo, 'tes') as mocked_tes:
