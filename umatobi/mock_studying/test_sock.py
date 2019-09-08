@@ -50,14 +50,17 @@ class ClientTestCase(unittest.TestCase):
             c._tcp_sock.connect.assert_called_with(watson_office_addr)
 
     #  socket(): OK
-    # connect(): ?
+    # connect(): OK
     # no with statement againt test_socket4()
     @mock.patch('sock.socket', autospec=True)
     def test_socket5(self, mock_sock_socket):
         watson_office_addr = ('localhost', 11111)
         c = Client(watson_office_addr)
+
         c._make_contact_with()
         mock_sock_socket.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
+
+        c._tcp_sock.connect.assert_called_once_with(watson_office_addr)
 
     #  socket(): OK
     # connect(): ?
