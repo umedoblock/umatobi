@@ -59,34 +59,21 @@ class ClientTestCase(unittest.TestCase):
 
         c._make_contact_with()
         mock_sock_socket.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
-
         c._tcp_sock.connect.assert_called_once_with(watson_office_addr)
 
-    #  socket(): OK
-    # connect(): ?
-    # no autospec againt test_socket4()
-    @mock.patch('sock.socket')
-    def test_socket6(self, mock_sock_socket):
-        watson_office_addr = ('localhost', 11111)
-        c = Client(watson_office_addr)
-        c._make_contact_with()
-        mock_sock_socket.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
-
-#   @mock.patch('sock.socket')
-#   def test_socket7(self, mock_sock_socket):
     def test_socket7(self):
         watson_office_addr = ('localhost', 11111)
         patcher = mock.patch('sock.Client', autospec=True, watson_office_addr=watson_office_addr)
         mock_client = patcher.start()
-
         self.assertIsInstance(mock_client, Client)
-#       c = Client(watson_office_addr)
-#       c = unittest.mock.create_autospec(Client, watson_office_addr)
-#       m = Mock(spec=Client)
-#       c._make_contact_with()
-        mock_client._make_contact_with()
-#       mock_client.socket.assert_called_with(sock.socket.AF_INET, sock.socket.SOCK_STREAM)
-      # mock_client._tcp_sock.connect.assert_called_with(watson_office_addr)
+        self.assertEqual(mock_client.watson_office_addr, watson_office_addr)
+
+        mock_client._make_contact_with_raise()
+        mock_client._make_contact_with_raise.assert_called_with()
+        # absolutely no call client._make_contact_with_raise()
+        # so difficult to understand it !
+
+        mock_client = patcher.stop()
 
     def test_request(self):
         import urllib
