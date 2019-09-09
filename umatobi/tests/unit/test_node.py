@@ -137,13 +137,13 @@ class NodeTests(unittest.TestCase):
         self.assertTrue(os.path.isfile(node.master_hand_path))
 
         with open(node.master_hand_path) as master_palm:
-            master_hand_on = master_palm.read()
-            self.assertEqual(master_hand_on, node.get_info())
+            master_palm_on = master_palm.read()
+            self.assertEqual(master_palm_on, node.get_info())
 
         node.regist() # twice
         with open(node.master_hand_path) as master_palm:
-            master_hand_on2 = master_palm.read()
-            self.assertEqual(master_hand_on2, node.get_info() * 2)
+            master_palm_on2 = master_palm.read()
+            self.assertEqual(master_palm_on2, node.get_info() * 2)
 
         os.remove(node.master_hand_path)
 
