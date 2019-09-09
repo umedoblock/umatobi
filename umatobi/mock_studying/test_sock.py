@@ -1,3 +1,6 @@
+# Thanks Naftuli Kay
+# https://www.toptal.com/python/an-introduction-to-mocking-in-python
+
 import socket
 from unittest import mock
 import unittest
