@@ -14,9 +14,6 @@ from umatobi.simulator.core.key import Key
 from umatobi.simulator.node import Node, NodeOffice
 from umatobi.simulator.node import Node
 from umatobi.simulator.node import NodeOpenOffice, NodeUDPOffice
-from umatobi import lib
-from umatobi.lib import current_y15sformat_time, make_start_up_orig
-from umatobi.lib import dict2json, json2dict
 
 class NodeTests(unittest.TestCase):
     def assertIsPort(self, port):
@@ -24,7 +21,7 @@ class NodeTests(unittest.TestCase):
         self.assertLessEqual(port, 65535)
 
     def setUp(self):
-        self.the_moment = lib.make_start_up_orig()
+        self.the_moment = make_start_up_orig()
         with time_machine(self.the_moment):
             node_assets = Node.make_node_assets()
         node = Node(host='localhost', id=1, **node_assets)
