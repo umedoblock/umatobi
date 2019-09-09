@@ -11,9 +11,7 @@ from umatobi.lib import *
 from umatobi.tests import *
 from umatobi.log import logger
 from umatobi.simulator.core.key import Key
-from umatobi.simulator.node import Node, NodeOffice
-from umatobi.simulator.node import Node
-from umatobi.simulator.node import NodeOpenOffice, NodeUDPOffice
+from umatobi.simulator.node import *
 
 class NodeTests(unittest.TestCase):
     def assertIsPort(self, port):
