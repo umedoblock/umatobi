@@ -140,6 +140,7 @@ class Client(object):
         # watson から終了通知("break down")が届くまで待機し続ける。
         # TODO: #149 watson からの接続であると確認する。
         tries = 0
+        recved_mail = b''
         while True:
             logger.debug(f"{self}._waits_to_break_down(), _tcp_sock={self._tcp_sock}, tries={tries}")
             recved_mail = self._watch_mailbox(self._tcp_sock)
@@ -152,6 +153,8 @@ class Client(object):
                 break
             logger.error(f"{self}._waits_to_break_down(), got unknown mail from {self._tcp_sock}, tries={tries}.")
             tries += 1
+
+        return recved_mail
 
     def _run_a_way(self):
         '''\
