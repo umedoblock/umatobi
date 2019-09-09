@@ -128,10 +128,9 @@ class ClientTests(unittest.TestCase):
         client._tcp_sock = mock.MagicMock()
         client._tcp_sock.recv.return_value = b'break down.'
         with self.assertLogs('umatobi', level='INFO') as cm:
-            client._waits_to_break_down()
-      # mock_client._watch_mailbox.assert_called_with(client._tcp_sock)
-      # self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
-      # self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
+            recved_mail = client._waits_to_break_down()
+        self.assertEqual(recved_mail, b'break down.')
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
 
     @mock.patch.object(umatobi.simulator.client.Client, '_watch_mailbox', autospec=True)
     def test_client__waits_to_break_down2(self, mock_client):
@@ -144,8 +143,9 @@ class ClientTests(unittest.TestCase):
         client._tcp_sock = mock.MagicMock()
         client._tcp_sock.recv.return_value = b'break down.'
         with self.assertLogs('umatobi', level='INFO') as cm:
-            client._waits_to_break_down()
-      # self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
+            recved_mail = client._waits_to_break_down()
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
+        self.assertEqual(recved_mail, b'break down.')
       # self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
 
     def test_client_start(self):
