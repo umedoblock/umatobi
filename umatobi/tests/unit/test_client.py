@@ -59,6 +59,29 @@ class ClientTests(unittest.TestCase):
 #       with unittest.mock.patch('umatobi.simulator.client.Client._consult_watson'):
 #           client._make_contact_with.assert_called_with()
 
+    @mock.patch.object(Client, '_make_contact_with', autospec=True)
+    def test__make_contact_with(self, mock_contact_with):
+        num_nodes = 100
+        client = Client(('localhost', 11111), num_nodes)
+        self.assertEqual(client.watson_office_addr, ('localhost', 11111))
+        self.assertEqual(client.num_nodes, num_nodes)
+
+        client._make_contact_with()
+        mock_contact_with.assert_called_with(client)
+
+    @mock.patch.object(socket, 'socket', autospec=True)
+    def test__make_contact_with2(self, mock_socket):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 100
+        client = Client(watson_office_addr, num_nodes)
+        self.assertEqual(client.watson_office_addr, watson_office_addr)
+        self.assertEqual(client.num_nodes, num_nodes)
+
+        self.assertIsNone(getattr(client, '_tcp_sock', None))
+        client._make_contact_with()
+        mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
+        client._tcp_sock.connect.assert_called_with(watson_office_addr)
+        self.assertIsInstance(client._tcp_sock, type(mock_socket.return_value))
 
     def test_client__has_a_lot_on_mind(self):
         start_up_orig = make_start_up_orig()
