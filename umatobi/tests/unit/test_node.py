@@ -103,7 +103,7 @@ class NodeTests(unittest.TestCase):
         node = self.node
 
         self.master_hand_path = '/tmp/none'
-        with self.assertLogs('umatobi', level='DEBUG') as cm:
+        with self.assertLogs('umatobi', level='INFO') as cm:
             ret = node._steal_master_palm()
         self.assertIsNone(ret)
         mock_path.isfile.assert_called_with(node.master_hand_path)
@@ -200,8 +200,6 @@ class NodeTests(unittest.TestCase):
         node_.byebye_nodes.set() # act darkness
         logger.info(f"node_.disappear()")
         node_.disappear()
-        for th in threading.enumerate():
-            print(f"th={th}")
         self.assertEqual(1, threading.active_count())
 
         os.remove(node_.master_hand_path)
