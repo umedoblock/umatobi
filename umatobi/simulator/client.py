@@ -84,8 +84,6 @@ class Client(object):
 
         _d_init_attrs = self._init_attrs()
 
-        client_id = self.id
-
     def _has_a_lot_on_mind(self):
         logger.info(f"{self}._makes_growings_table()")
         self.client_db = sql.SQL(db_path=self.client_db_path,
@@ -208,6 +206,10 @@ class Client(object):
 
         logger.info(f"{self}._make_contact_with(), {self._tcp_sock}.connect(={self.watson_office_addr})")
         self._tcp_sock.connect(self.watson_office_addr)
+
+    def _say_good_bye(self):
+        logger.info(f"{self}._say_good_bye(), {self._tcp_sock}.close(={self.watson_office_addr})")
+        self._tcp_sock.close()
 
     #   _consult_watson()
     def _init_attrs(self):

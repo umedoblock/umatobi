@@ -46,18 +46,17 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(client.num_darkness, num_darkness)
         self.assertEqual(client.last_darkness_make_nodes, Client.NODES_PER_DARKNESS)
 
-#   @mock.patch.object('Client', '_make_contact_with')
-#   def test_client__consult_watson(self, mock_make_contact_with):
-#       mock_make_contact_with.rete
-#       watson_office_addr = ('localhost', 11111)
-#       num_nodes = 10
-#       client = Client(watson_office_addr, num_nodes)
-#       client._consult_watson()
+    @mock.patch.object(Client, '_make_contact_with', autospec=True)
+    @mock.patch.object(Client, '_init_attrs', autospec=True)
+    def test_client__consult_watson(self, mock_init_attrs, mock_contact_with):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 10
+        client = Client(watson_office_addr, num_nodes)
 
-#    #  @mock.patch('umatobi.simulator.client.Client.socket.socket')
-#     # with unittest.mock.patch('umatobi.simulator.client.Client.socket.socket'):
-#       with unittest.mock.patch('umatobi.simulator.client.Client._consult_watson'):
-#           client._make_contact_with.assert_called_with()
+        client._consult_watson()
+
+        mock_contact_with.assert_called_once()
+        mock_init_attrs.assert_called_once()
 
     @mock.patch.object(Client, '_make_contact_with', autospec=True)
     def test__make_contact_with(self, mock_contact_with):
@@ -114,6 +113,20 @@ class ClientTests(unittest.TestCase):
 
         # clean up because we got a real socket object.
         client._tcp_sock.close()
+
+    def test_client__mock_close(self):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 100
+        client = Client(watson_office_addr, num_nodes)
+        self.assertEqual(client.watson_office_addr, watson_office_addr)
+        self.assertEqual(client.num_nodes, num_nodes)
+
+        client._tcp_sock = None
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with mock.patch.object(client, '_tcp_sock') as mock__tcp_sock:
+                client._say_good_bye()
+        mock__tcp_sock.close.assert_called_once_with()
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._say_good_bye\(\), .+\.close\(.+\)')
 
     def test_client__has_a_lot_on_mind(self):
         start_up_orig = make_start_up_orig()
