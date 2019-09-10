@@ -83,6 +83,38 @@ class ClientTests(unittest.TestCase):
         client._tcp_sock.connect.assert_called_with(watson_office_addr)
         self.assertIsInstance(client._tcp_sock, type(mock_socket.return_value))
 
+    def test_client__make_contact_with2(self):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 100
+        client = Client(watson_office_addr, num_nodes)
+        self.assertEqual(client.watson_office_addr, watson_office_addr)
+        self.assertEqual(client.num_nodes, num_nodes)
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with mock.patch.object(socket, 'socket') as mock_socket:
+                client._make_contact_with()
+
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._make_contact_with\(\), .+\.connect\(.+\)')
+        mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
+        client._tcp_sock.connect.assert_called_with(watson_office_addr)
+        self.assertIsInstance(client._tcp_sock, type(mock_socket.return_value))
+
+    @mock.patch.object(socket.socket, 'connect')
+    def test_client__mock_connect(self, mock_connect):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 100
+        client = Client(watson_office_addr, num_nodes)
+        self.assertEqual(client.watson_office_addr, watson_office_addr)
+        self.assertEqual(client.num_nodes, num_nodes)
+
+        # socket.socket() return a socket object
+        client._make_contact_with()
+        self.assertIsInstance(client._tcp_sock, socket.socket)
+        mock_connect.assert_called_once_with(watson_office_addr)
+
+        # clean up because we got a real socket object.
+        client._tcp_sock.close()
+
     def test_client__has_a_lot_on_mind(self):
         start_up_orig = make_start_up_orig()
         start_up_time = y15sformat_time(start_up_orig)
