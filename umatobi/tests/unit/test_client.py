@@ -216,14 +216,40 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(recved_mail, b'break down.')
       # self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
 
-    def test_client_start(self):
+    @mock.patch.object(Client, '_consult_watson', autospec=True)
+    @mock.patch.object(Client, '_has_a_lot_on_mind', autospec=True)
+    @mock.patch.object(Client, '_confesses_darkness', autospec=True)
+    @mock.patch.object(Client, '_waits_to_break_down', autospec=True)
+    @mock.patch.object(Client, '_run_a_way', autospec=True)
+    @mock.patch.object(Client, '_come_to_a_bad_end', autospec=True)
+    def test_client_start(self, *mocks):
         watson_office_addr = ('localhost', 0)
         num_nodes = 10
-
         client = Client(watson_office_addr, num_nodes)
 
-        self.assertEqual(watson_office_addr, client.watson_office_addr)
-        self.assertEqual(num_nodes, client.num_nodes)
+      # battle of log
+      # print('mocks[0] =', mocks[0])
+      # print('type(mocks[0]) =', type(mocks[0]))
+      # print('str(mocks[0]) =', str(mocks[0]))
+      # print('mocks[0].__dict__ =', mocks[0].__dict__)
+      # print('dir(mocks[0]) =', dir(mocks[0]))
+      # print('mocks[0].mock._extract_mock_name() =', mocks[0].mock._extract_mock_name())
+
+        for mock in reversed(mocks):
+            m = re.search('function (.+) at', str(mock))
+            func_name = m[1]
+            try:
+                mock.assert_called_once_with(client)
+            except AssertionError as err:
+              # err_msg = f"Expected '{mock.mock._extract_mock_name()}' to be called once. Called 0 times."
+                err_msg = f"Expected '{func_name}' to be called once. Called 0 times."
+                self.assertEqual(err.args[0], err_msg)
+            self.assertEqual(0, mock.call_count)
+
+        client.start()
+
+        for mock in reversed(mocks):
+            mock.assert_called_once_with(client)
 
 if __name__ == '__main__':
     unittest.main()
