@@ -41,6 +41,8 @@ class ClientTests(unittest.TestCase):
         print('master.mock_calls[0] =', master.mock_calls[0])
         print('master.mock_calls[0].mock =', master.mock_calls[0].mock)
 
+        print('------------------------------------------------')
+        print('888 mocks[0].mock_calls[0] == master.mock_calls[0] is', mocks[0].mock_calls[0] == master.mock_calls[0])
 # ------------------------------------------------
 # mocks[0].mock_calls = [call(<__main__.Client object at 0x103248ef0>),
 #  call.__eq__(call._come_to_a_bad_end(<__main__.Client object at 0x103248ef0>)),
