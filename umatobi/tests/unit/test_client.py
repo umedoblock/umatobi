@@ -258,14 +258,14 @@ class ClientTests(unittest.TestCase):
     @mock.patch.object(Client, '_waits_to_break_down', autospec=True)
     @mock.patch.object(Client, '_run_a_way', autospec=True)
     @mock.patch.object(Client, '_come_to_a_bad_end', autospec=True)
-    def test_client_start2(self, *mocks):
+    def test_client_start_by_call_order(self, *mocks):
         watson_office_addr = ('localhost', 0)
         num_nodes = 10
         master = MagicMock()
         with patch('umatobi.simulator.client.Client', autospec=True, spec_set=True):
             client = Client(watson_office_addr, num_nodes)
 
-        for mock in reversed(mocks):
+        for mock in mocks:
             m = re.search('function (.+) at', str(mock))
             func_name = m[1]
           # print('func_name =', func_name)
@@ -279,7 +279,11 @@ class ClientTests(unittest.TestCase):
 
         client.start()
 
-        for i, mock in enumerate(mocks):
+      # print('mocks[0] == master.method_calls[0] is', mocks[0] == master.method_calls[0])
+      # print('mocks[0] == master.method_calls[0] is', master.method_calls[0] == mocks[0])
+      # print('mocks =', mocks)
+      # print('master.method_calls =', master.method_calls)
+        for i, mock in enumerate(reversed(mocks)):
           # self.assertEqual(master.mock_calls[i], mock.mock_calls[0]) # FALSE!
             self.assertEqual(mock.mock_calls[0], master.mock_calls[i]) # TRUE!!
             # ??? different __eq__() ???
