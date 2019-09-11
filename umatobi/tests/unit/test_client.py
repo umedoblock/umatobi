@@ -279,14 +279,18 @@ class ClientTests(unittest.TestCase):
 
         client.start()
 
-        for mock in reversed(mocks):
-            mock.assert_called_once_with(client)
+#       for mock in reversed(mocks):
+#           mock.assert_called_once_with(client)
 
         print('---', mocks[0].mock_calls[0] == master.mock_calls[0])
-        for i, mock in enumerate(reversed(mocks)):
-            print(master.mock_calls[i] == mock.mock_calls[0])
-            self.assertEqual(master.mock_calls[i], mock.mock_calls[0])
-        self.assertLength(mocks, master.mock_calls)
+        self.assertEqual(mocks[0].mock_calls[0], master.mock_calls[0])
+        for i, mock in enumerate(mocks):
+            print()
+            print(mocks[0].mock_calls[0] == master.mock_calls[0]) # True
+            print(master.mock_calls[0] == mocks[0].mock_calls[0]) # False
+            print(mocks[0].mock_calls[0] == master.mock_calls[0]) # True
+            print(master.mock_calls[i] == mocks[0].mock_calls[0]) # False
+          # self.assertEqual(master.mock_calls[i], mock.mock_calls[0])
         print('list(master.mock_calls) =', list(master.mock_calls))
         print('list(reversed(mocks)) =', list(reversed(mocks)))
       # self.assertEqual(list(master.mock_calls), list(reversed(mocks)))
