@@ -290,7 +290,9 @@ class ClientTests(unittest.TestCase):
             print(master.mock_calls[0] == mocks[0].mock_calls[0]) # False
             print(mocks[0].mock_calls[0] == master.mock_calls[0]) # True
             print(master.mock_calls[i] == mocks[0].mock_calls[0]) # False
-          # self.assertEqual(master.mock_calls[i], mock.mock_calls[0])
+          # self.assertEqual(master.mock_calls[i], mock.mock_calls[0]) # FALSE!
+            self.assertEqual(mock.mock_calls[0], master.mock_calls[i]) # TRUE!!
+            # ??? different __eq__() ???
         print('list(master.mock_calls) =', list(master.mock_calls))
         print('list(reversed(mocks)) =', list(reversed(mocks)))
       # self.assertEqual(list(master.mock_calls), list(reversed(mocks)))
