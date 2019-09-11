@@ -259,11 +259,13 @@ class ClientTests(unittest.TestCase):
     @mock.patch.object(Client, '_run_a_way', autospec=True)
     @mock.patch.object(Client, '_come_to_a_bad_end', autospec=True)
     def test_client_start_by_call_order(self, *mocks):
-        watson_office_addr = ('localhost', 0)
+        watson_office_addr = ('localhost', 11111)
         num_nodes = 10
         master = MagicMock()
         with patch('umatobi.simulator.client.Client', autospec=True, spec_set=True):
             client = Client(watson_office_addr, num_nodes)
+        self.assertEqual(client.watson_office_addr, ('localhost', 11111))
+        self.assertEqual(client.num_nodes, num_nodes)
 
         for mock in mocks:
             m = re.search('function (.+) at', str(mock))
