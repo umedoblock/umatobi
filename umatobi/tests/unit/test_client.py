@@ -1,6 +1,7 @@
 import re, os, io
 import sys, shutil, sqlite3
 from unittest import mock
+from unittest.mock import MagicMock
 import unittest
 
 import umatobi
@@ -250,6 +251,52 @@ class ClientTests(unittest.TestCase):
 
         for mock in reversed(mocks):
             mock.assert_called_once_with(client)
+
+    @mock.patch.object(Client, '_consult_watson', autospec=True)
+    @mock.patch.object(Client, '_has_a_lot_on_mind', autospec=True)
+    @mock.patch.object(Client, '_confesses_darkness', autospec=True)
+    @mock.patch.object(Client, '_waits_to_break_down', autospec=True)
+    @mock.patch.object(Client, '_run_a_way', autospec=True)
+    @mock.patch.object(Client, '_come_to_a_bad_end', autospec=True)
+    def test_client_start2(self, *mocks):
+        watson_office_addr = ('localhost', 0)
+        num_nodes = 10
+        master = MagicMock()
+        with patch('umatobi.simulator.client.Client', autospec=True, spec_set=True):
+            client = Client(watson_office_addr, num_nodes)
+
+        for mock in reversed(mocks):
+            m = re.search('function (.+) at', str(mock))
+            func_name = m[1]
+          # print('func_name =', func_name)
+            master.attach_mock(mock.mock, func_name)
+            try:
+                mock.assert_called_once_with(client)
+            except AssertionError as err:
+                err_msg = f"Expected '{func_name}' to be called once. Called 0 times."
+                self.assertEqual(err.args[0], err_msg)
+            self.assertEqual(0, mock.call_count)
+
+        client.start()
+
+        for mock in reversed(mocks):
+            mock.assert_called_once_with(client)
+
+        print('---', mocks[0].mock_calls[0] == master.mock_calls[0])
+        for i, mock in enumerate(reversed(mocks)):
+            print(master.mock_calls[i] == mock.mock_calls[0])
+            self.assertEqual(master.mock_calls[i], mock.mock_calls[0])
+        self.assertLength(mocks, master.mock_calls)
+        print('list(master.mock_calls) =', list(master.mock_calls))
+        print('list(reversed(mocks)) =', list(reversed(mocks)))
+      # self.assertEqual(list(master.mock_calls), list(reversed(mocks)))
+
+        print('1 unittest.mock.call =', unittest.mock.call.call_list())
+
+        print('2 master.mock_calls =', master.mock_calls)
+      # print('master.method_calls =', master.method_calls)
+#       print('dir(master) =', dir(master))
+#       print('master.__dict__ =', master.__dict__)
 
 if __name__ == '__main__':
     unittest.main()
