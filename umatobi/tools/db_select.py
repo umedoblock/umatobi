@@ -7,12 +7,12 @@ from umatobi import simulator
 
 if __name__ == '__main__':
     # examples:
-    # umatobi/select.py --help
-    # umatobi/select.py --show-timestamps
-    # umatobi/select.py watson.db clients
-    # umatobi/select.py --index=1 client.1.db pickles
+    # umatobi/db_select.py --help
+    # umatobi/db_select.py --show-timestamps
+    # umatobi/db_select.py watson.db clients
+    # umatobi/db_select.py --index=1 client.1.db pickles
 
-    args, db_path = args_db('select.py')
+    args, db_path = args_db('db_select.py')
   # print('args =', args)
 
     if not db_path:
