@@ -58,7 +58,7 @@ if __name__ == '__main__':
     # 引数の解析
     args = args_()
 
-    watson_office_addr = lib.get_host_port(args.watson_office_addr)
+    watson_office_addr = get_host_port(args.watson_office_addr)
 
   # t = datetime.datetime.now()
   # >>> t
