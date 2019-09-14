@@ -1,6 +1,7 @@
 import json, datetime, time, os, threading, sched, configparser, socket
 
 from umatobi.constants import *
+from umatobi.log import *
 
 class Polling(threading.Thread):
     def __init__(self, polling_secs):
@@ -23,6 +24,65 @@ class Polling(threading.Thread):
 
     def run(self):
         self._sche.run()
+
+def sock_create(v4_v6, tcp_udp):
+
+    #  AddressFamily(value, names=None, *, module=None, qualname=None, type=None, start=1)
+    #  AF_INET = <AddressFamily.AF_INET: 2>
+    #  AF_INET6 = <AddressFamily.AF_INET6: 30>
+    #  AF_UNIX = <AddressFamily.AF_UNIX: 1>
+
+    address_family = {
+        'v4': socket.AF_INET,
+        'v6': socket.AF_INET6,
+#     'file': socket.AF_UNIX,
+    }
+    v4_v6 = v4_v6.lower()
+
+    try:
+        af = address_family[v4_v6]
+    except KeyError as err:
+        if err.args[0] != v4_v6:
+            raise err
+        logger.error(f"\"{v4_v6}\" is inappropriate as v4_v6.")
+        return None
+
+    #  SocketKind(value, names=None, *, module=None, qualname=None, type=None, start=1)
+    #  SOCK_DGRAM = <SocketKind.SOCK_DGRAM: 2>
+    #  SOCK_STREAM = <SocketKind.SOCK_STREAM: 1>
+
+    socket_kind = {
+        'tcp': socket.SOCK_STREAM,
+        'udp': socket.SOCK_DGRAM,
+#       'raw': socket.SOCK_RAW,
+    }
+
+    #  Data descriptors defined here:
+    #  family
+    #      the socket family
+    #
+    #  proto
+    #      the socket protocol
+    #
+    #  timeout
+    #      the socket timeout
+    #
+    #  type
+    #      the socket type
+
+    tcp_udp = tcp_udp.lower()
+
+    try:
+        sk = socket_kind[tcp_udp]
+    except KeyError as err:
+        if err.args[0] != tcp_udp:
+            raise err
+        logger.error(f"\"{tcp_udp}\" is inappropriate as tcp_udp.")
+        return None
+
+    tcp_sock = socket.socket(af, sk)
+
+    return tcp_sock
 
 def sock_send(tcp_sock, data):
     try:
