@@ -57,3 +57,28 @@ $ git checkout -b dev
 # how to delete remote upstream branch
 https://www.git-tower.com/learn/git/faq/delete-remote-branch
 $ git push origin --delete develop
+
+## how to make new branch and upstream
+$ git checkout -b dev
+
+$ git branch -v
+* dev    a6e36dd $ git push origin --delete develop
+  master 4da3956 Merge branch 'develop' for closing
+
+$ git branch --set-upstream-to master
+Branch 'dev' set up to track local branch 'master'.
+
+$ git branch -v
+* dev    a6e36dd [ahead 1] $ git push origin --delete develop
+  master 4da3956 Merge branch 'develop' for closing
+[ahead 1] が付いている。
+
+$ vim git-branching-model.txt
+editing...
+
+$ git diff git-branching-model.txt
+....
+
+$ git commit git-branching-model.txt
+
+$ git push origin dev
