@@ -1,0 +1,17 @@
+https://nvie.com/posts/a-successful-git-branching-model/
+A successful Git branching model
+By Vincent Driessen
+
+First of all, please see above post.
+
+I learn it.
+So I use
+
+ * master
+ * develop
+ * freature
+ * release
+
+branches.
+
+I use them by each role
