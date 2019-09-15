@@ -15,3 +15,9 @@ So I use
 branches.
 
 I use them by each role
+
+$ git checkout -b develop
+
+$ git branch --list
+* develop
+  master
