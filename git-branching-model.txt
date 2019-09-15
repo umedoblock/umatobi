@@ -1,51 +1,3 @@
-## parallel develop with feature2 and feature3 branches on dev branch.
-
-### current status of branch
-
-$ git branch -v
-* dev      2106ad6 [ahead 5] simply pairs of create and delete.
-  master   4da3956 Merge branch 'develop' for closing
-
-### make feature2 and feature3 branches on dev branch
-$ git checkout -b feature2
-$ git checkout -b feature3 dev
-
-### change branch to feature2
-$ git checkout feature2
-
-### some times repeat
-$ vim git-branching-model.txt
-$ git commit
-
-### change branch to feature3
-$ git checkout feature3
-
-### some times repeat
-$ vim git-branching-model.txt
-$ git commit
-
-### organize branches to dev
-$ git checkout dev
-
-#### merge
-* If you already set "merge.ff"
-$ git config merge.ff false
-    or
-$ git config --global merge.ff false
-
-just below
-$ git merge feature2
-
-* If you don't set "merge.ff"
-$ git merge --no-ff feature2
-
-#### push local change and merge to remote
-$ git push origin
-
-### delete some branches
-$ git branch -d feature2
-$ git branch -d feature3
-
 # A successful Git branching model
 https://nvie.com/posts/a-successful-git-branching-model/
 A successful Git branching model
@@ -121,4 +73,52 @@ $ git push origin
 https://www.git-tower.com/learn/git/faq/delete-remote-branch
 $ git branch -d develop
 $ git push origin --delete develop
+
+## parallel develop with feature2 and feature3 branches on dev branch.
+
+### current status of branch
+
+$ git branch -v
+* dev      2106ad6 [ahead 5] simply pairs of create and delete.
+  master   4da3956 Merge branch 'develop' for closing
+
+### make feature2 and feature3 branches on dev branch
+$ git checkout -b feature2
+$ git checkout -b feature3 dev
+
+### change branch to feature2
+$ git checkout feature2
+
+### some times repeat
+$ vim git-branching-model.txt
+$ git commit
+
+### change branch to feature3
+$ git checkout feature3
+
+### some times repeat
+$ vim git-branching-model.txt
+$ git commit
+
+### organize branches to dev
+$ git checkout dev
+
+#### merge
+* If you already set "merge.ff"
+$ git config merge.ff false
+    or
+$ git config --global merge.ff false
+
+just below
+$ git merge feature2
+
+* If you don't set "merge.ff"
+$ git merge --no-ff feature2
+
+#### push local change and merge to remote
+$ git push origin
+
+### delete some branches
+$ git branch -d feature2
+$ git branch -d feature3
 
