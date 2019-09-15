@@ -1,5 +1,6 @@
 f2 f2 f2
 f2 f2
+f2
 
 # add feature
 $ git branch -v
