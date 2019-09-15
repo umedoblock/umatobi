@@ -1,14 +1,67 @@
 import os, sys, datetime, shutil
 import unittest
+from unittest.mock import patch
 
 from umatobi.tests import *
 from umatobi.log import logger, make_logger
 from umatobi import lib
+from umatobi.lib import *
 
 class LibTests(unittest.TestCase):
 
     def setUp(self):
         self.tests_simulation_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'umatobi-simulation').replace('/unit/', '/')
+
+    def test_sock_create_ok(self):
+        sock = sock_create('v4', 'tcp')
+        self.assertEqual(sock.family, socket.AF_INET)
+        self.assertEqual(sock.type, socket.SOCK_STREAM)
+        sock.close()
+        sock = sock_create('v4', 'udp')
+        self.assertEqual(sock.family, socket.AF_INET)
+        self.assertEqual(sock.type, socket.SOCK_DGRAM)
+        sock.close()
+        sock = sock_create('v6', 'tcp')
+        self.assertEqual(sock.family, socket.AF_INET6)
+        self.assertEqual(sock.type, socket.SOCK_STREAM)
+        sock.close()
+        sock = sock_create('v6', 'udp')
+        self.assertEqual(sock.family, socket.AF_INET6)
+        self.assertEqual(sock.type, socket.SOCK_DGRAM)
+        sock.close()
+
+        sock = sock_create('V4', 'TCP')
+        self.assertEqual(sock.family, socket.AF_INET)
+        self.assertEqual(sock.type, socket.SOCK_STREAM)
+        sock.close()
+        sock = sock_create('V4', 'UDP')
+        self.assertEqual(sock.family, socket.AF_INET)
+        self.assertEqual(sock.type, socket.SOCK_DGRAM)
+        sock.close()
+        sock = sock_create('V6', 'TCP')
+        self.assertEqual(sock.family, socket.AF_INET6)
+        self.assertEqual(sock.type, socket.SOCK_STREAM)
+        sock.close()
+        sock = sock_create('V6', 'UDP')
+        self.assertEqual(sock.family, socket.AF_INET6)
+        self.assertEqual(sock.type, socket.SOCK_DGRAM)
+        sock.close()
+
+    def test_sock_create_fail(self):
+        with self.assertLogs('umatobi', level='ERROR') as cm:
+            sock = sock_create('raw', 'tcp')
+        self.assertIsNone(sock)
+        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"raw" is inappropriate as v4_v6.')
+
+        with self.assertLogs('umatobi', level='ERROR') as cm:
+            sock = sock_create('ipsec', 'tcp')
+        self.assertIsNone(sock)
+        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"ipsec" is inappropriate as v4_v6.')
+
+        with self.assertLogs('umatobi', level='ERROR') as cm:
+            sock = sock_create('v4', 'dccp')
+        self.assertIsNone(sock)
+        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"dccp" is inappropriate as tcp_udp.')
 
     def test_get_table_columns(self):
         expected_items = {
