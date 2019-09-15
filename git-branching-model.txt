@@ -1,0 +1,51 @@
+https://nvie.com/posts/a-successful-git-branching-model/
+A successful Git branching model
+By Vincent Driessen
+
+First of all, please see above post.
+
+I learn it.
+So I use
+
+ * master
+ * develop
+ * freature
+ * release
+
+branches.
+
+I use them by each role
+
+$ git config merge.ff false
+    or
+$ git config --global merge.ff false
+
+$ git checkout -b develop
+
+$ git branch --list
+* develop
+  master
+
+$ git branch --set-upstream-to master
+
+$ git branch --list
+* develop
+  master
+
+$ git push . HEAD
+
+$ git branch -v
+* develop 6b14f60 [ahead 3] $ git config merge.ff false
+  master  159ca21 Merge branch 'unit_test_lib'
+
+$ git push origin develop
+
+$ git checkout master
+
+$ git branch -v
+  develop 9f13f24 [ahead 4] $ git push origin develop
+* master  159ca21 Merge branch 'unit_test_lib'
+
+$ git push . HEAD
+
+$ git checkout develop
