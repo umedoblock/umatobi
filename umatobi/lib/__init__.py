@@ -26,6 +26,7 @@ class Polling(threading.Thread):
         self._sche.run()
 
 def sock_create(v4_v6, tcp_udp):
+    #  import socket;help(socket)
 
     #  AddressFamily(value, names=None, *, module=None, qualname=None, type=None, start=1)
     #  AF_INET = <AddressFamily.AF_INET: 2>
