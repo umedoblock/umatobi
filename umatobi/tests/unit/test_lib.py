@@ -63,6 +63,32 @@ class LibTests(unittest.TestCase):
         self.assertIsNone(sock)
         self.assertRegex(cm.output[0], r'^ERROR:umatobi:"dccp" is inappropriate as tcp_udp.')
 
+    def test_sock_recv_ok_tcp(self):
+        with patch('umatobi.lib.socket', autospec=True, spec_set=True):
+            tcp_sock = sock_create('v4', 'tcp')
+        self.assertIsInstance(tcp_sock, socket.socket)
+
+        with patch.object(tcp_sock, 'recv', return_value=b'mocked data') as mock_sock:
+            recved_data = sock_recv(tcp_sock, 1024)
+        self.assertEqual(recved_data, b'mocked data')
+
+        with patch.object(tcp_sock, 'recv', side_effect=socket.timeout):
+            recved_data = sock_recv(tcp_sock, 1024)
+        self.assertIsNone(recved_data)
+
+    def test_sock_recv_ok_udp(self):
+        with patch('umatobi.lib.socket', autospec=True, spec_set=True):
+            udp_sock = sock_create('v4', 'udp')
+        self.assertIsInstance(udp_sock, socket.socket)
+
+        with patch.object(udp_sock, 'recv', return_value=b'mocked data') as mock_sock:
+            recved_data = sock_recv(udp_sock, 1024)
+        self.assertEqual(recved_data, b'mocked data')
+
+        with patch.object(udp_sock, 'recv', side_effect=socket.timeout):
+            recved_data = sock_recv(udp_sock, 1024)
+        self.assertIsNone(recved_data)
+
     def test_get_table_columns(self):
         expected_items = {
             'simulation': (
