@@ -25,3 +25,17 @@ $ git checkout -b develop
 $ git branch --list
 * develop
   master
+
+$ git branch --set-upstream-to master
+
+$ git branch --list
+* develop
+  master
+
+$ git push . HEAD
+
+$ git branch -v
+* develop 6b14f60 [ahead 3] $ git config merge.ff false
+  master  159ca21 Merge branch 'unit_test_lib'
+
+$ git push origin develop
