@@ -24,13 +24,21 @@ $ git config --global merge.ff false
 # simply pairs opration of create and delete a branch
 https://www.git-tower.com/learn/git/faq/delete-remote-branch
 
-$ git checkout -b develop
+$ git checkout -b review-my-research
 $ git branch --set-upstream-to master
 
-$ git checkout dev
+$ vim git-branching-model.txt
 
-$ git branch -d develop
-$ git push origin --delete develop
+$ git checkout dev
+$ git branch -v
+* dev                61bacbe [ahead 23] miss to change branch.
+  master             4da3956 Merge branch 'develop' for closing
+  review-my-research 444bbeb [ahead 22] recatoring
+
+$ git merge review-my-research
+
+$ git branch -d review-my-research
+$ git push origin --delete review-my-research
 
 ## how to make new remote branch and upstream
 $ git checkout -b dev
