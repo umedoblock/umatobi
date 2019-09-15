@@ -1,6 +1,7 @@
 import os, sys, datetime, shutil
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+from io import StringIO
 
 from umatobi.tests import *
 from umatobi.log import logger, make_logger
@@ -62,6 +63,26 @@ class LibTests(unittest.TestCase):
             sock = sock_create('v4', 'dccp')
         self.assertIsNone(sock)
         self.assertRegex(cm.output[0], r'^ERROR:umatobi:"dccp" is inappropriate as tcp_udp.')
+
+    def test_sock_send_ok_tcp(self):
+        with patch('umatobi.lib.socket', spec_set=True, new_callable=MagicMock):
+            tcp_sock = sock_create('v4', 'tcp')
+
+        send_data = b'send mocked data'
+        result = sock_send(tcp_sock, send_data)
+        tcp_sock.sendall.assert_called_once_with(send_data)
+        self.assertTrue(result)
+
+        with patch('umatobi.lib.socket', spec_set=True, new_callable=MagicMock) as mock_sock:
+            tcp_sock = sock_create('v4', 'tcp')
+        mock_sock.socket.assert_called_once_with(mock_sock.AF_INET, mock_sock.SOCK_STREAM)
+
+        send_data = b'send mocked data'
+        with patch.object(tcp_sock, 'sendall', side_effect=socket.timeout):
+            with self.assertLogs('umatobi', level='INFO') as cm:
+                result = sock_send(tcp_sock, send_data)
+        self.assertRegex(cm.output[0], r".+ got timeout\.")
+        self.assertFalse(result)
 
     def test_sock_recv_ok_tcp(self):
         with patch('umatobi.lib.socket', autospec=True, spec_set=True):
