@@ -16,6 +16,10 @@ branches.
 
 I use them by each role
 
+$ git config merge.ff false
+    or
+$ git config --global merge.ff false
+
 $ git checkout -b develop
 
 $ git branch --list
