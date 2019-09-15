@@ -1,12 +1,3 @@
-f3
-f3
-f3f3f3
-
-# add feature on dev
-f2 f2 f2
-f2 f2
-f2
-
 $ git branch -v
 * dev      2106ad6 [ahead 5] simply pairs of create and delete.
   master   4da3956 Merge branch 'develop' for closing
