@@ -49,3 +49,11 @@ $ git branch -v
 $ git push . HEAD
 
 $ git checkout develop
+$ git checkout master
+
+$ git branch -d develop
+$ git checkout -b dev
+
+# how to delete remote upstream branch
+https://www.git-tower.com/learn/git/faq/delete-remote-branch
+$ git push origin --delete develop
