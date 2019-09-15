@@ -1,4 +1,4 @@
-# add feature
+# add feature on dev
 $ git branch -v
 * dev      2106ad6 [ahead 5] simply pairs of create and delete.
   master   4da3956 Merge branch 'develop' for closing
@@ -7,6 +7,9 @@ $ vim git-branching-model.txt
 $ git commit
 $ git checkout dev
 $ git merge --no-ff feature1
+
+$ git push origin
+$ git branch -d feature1
 
 # A successful Git branching model
 https://nvie.com/posts/a-successful-git-branching-model/
