@@ -1,8 +1,11 @@
+## parallel develop with feature2 and feature3 branches on dev branch.
+
+### current status of branch
+
 $ git branch -v
 * dev      2106ad6 [ahead 5] simply pairs of create and delete.
   master   4da3956 Merge branch 'develop' for closing
 
-## parallel develop with feature2 and feature3 branches on dev branch.
 ### make feature2 and feature3 branches on dev branch
 $ git checkout -b feature2
 $ git checkout -b feature3 dev
