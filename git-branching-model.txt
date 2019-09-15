@@ -78,10 +78,6 @@ Your branch is ahead of 'master' by 3 commits.
 
 $ git push origin dev
 
-or simply
-
-$ git push origin
-
 ## how to delete local and remote upstream branch
 https://www.git-tower.com/learn/git/faq/delete-remote-branch
 $ git branch -d develop
