@@ -39,3 +39,13 @@ $ git branch -v
   master  159ca21 Merge branch 'unit_test_lib'
 
 $ git push origin develop
+
+$ git checkout master
+
+$ git branch -v
+  develop 9f13f24 [ahead 4] $ git push origin develop
+* master  159ca21 Merge branch 'unit_test_lib'
+
+$ git push . HEAD
+
+$ git checkout develop
