@@ -129,3 +129,12 @@ $ git push origin
 $ git branch -d feature2
 $ git branch -d feature3
 
+## delete origin/HEAD
+$ git branch -r -v
+  origin/HEAD   -> origin/master
+  origin/master d0c6bcb Merge branch 'dev'
+
+$ git remote set-head origin -d
+
+$ git branch -r -v
+  origin/master d0c6bcb Merge branch 'dev'
