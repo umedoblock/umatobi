@@ -17,11 +17,14 @@ branches.
 
 I use them by each role
 
+## please set 'merge.ff'
 $ git config merge.ff false
     or
 $ git config --global merge.ff false
 
-# simply pairs opration of create and delete a branch
+# git command summary
+
+## simply and instant pairs opration of create and delete a branch
 https://www.git-tower.com/learn/git/faq/delete-remote-branch
 
 $ git checkout -b review-my-research
@@ -114,21 +117,15 @@ $ git commit
 $ git checkout dev
 
 #### merge
-* If you already set "merge.ff"
-$ git config merge.ff false
-    or
-$ git config --global merge.ff false
-
-just below
 $ git merge feature2
 
-* If you don't set "merge.ff"
+* If you don't set or make sense "merge.ff"
 $ git merge --no-ff feature2
 
 #### push local change and merge to remote
 $ git push origin
 
-### delete some branches
+### delete local branches
 $ git branch -d feature2
 $ git branch -d feature3
 
