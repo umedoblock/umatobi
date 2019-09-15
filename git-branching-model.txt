@@ -3,7 +3,7 @@ https://nvie.com/posts/a-successful-git-branching-model/
 A successful Git branching model
 By Vincent Driessen
 
-First of all, please see above post.
+# First of all, please see above post.
 
 I learn it.
 So I use
@@ -21,7 +21,7 @@ $ git config merge.ff false
     or
 $ git config --global merge.ff false
 
-# simply pairs of create and delete
+# simply pairs opration of create and delete a branch
 https://www.git-tower.com/learn/git/faq/delete-remote-branch
 
 $ git checkout -b develop
