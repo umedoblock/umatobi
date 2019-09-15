@@ -1,3 +1,5 @@
+f2 f2 f2
+
 # add feature
 $ git branch -v
 * dev      2106ad6 [ahead 5] simply pairs of create and delete.
