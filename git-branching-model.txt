@@ -42,6 +42,7 @@ $ git branch -v
 $ git merge review-my-research
 
 $ git branch -d review-my-research
+$ git branch -D review-my-research
 $ git push origin --delete review-my-research
 
 ## how to make new remote branch and upstream
