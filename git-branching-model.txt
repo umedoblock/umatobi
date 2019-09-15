@@ -1,3 +1,4 @@
+# A successful Git branching model
 https://nvie.com/posts/a-successful-git-branching-model/
 A successful Git branching model
 By Vincent Driessen
@@ -20,6 +21,15 @@ $ git config merge.ff false
     or
 $ git config --global merge.ff false
 
+# simply pairs of create and delete
+https://www.git-tower.com/learn/git/faq/delete-remote-branch
+
+$ git checkout -b develop
+$ git branch --set-upstream-to master
+
+$ git branch -d develop
+$ git push origin --delete develop
+
 ## how to make new remote branch and upstream
 $ git checkout -b dev
 
@@ -36,6 +46,8 @@ $ git branch -v
 
 "a6e36dd" の後に "[ahead 1]" が付いている。
 
+## how to cycle develop at local
+
 $ vim git-branching-model.txt
 editing...
 
@@ -49,7 +61,13 @@ On branch dev
 Your branch is ahead of 'master' by 3 commits.
   (use "git push" to publish your local commits)
 
+## how to connect local develop to remote
+
 $ git push origin dev
+
+or simply
+
+$ git push origin
 
 ## how to delete local and remote upstream branch
 https://www.git-tower.com/learn/git/faq/delete-remote-branch
