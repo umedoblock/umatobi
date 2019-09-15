@@ -20,45 +20,7 @@ $ git config merge.ff false
     or
 $ git config --global merge.ff false
 
-$ git checkout -b develop
-
-$ git branch --list
-* develop
-  master
-
-$ git branch --set-upstream-to master
-
-$ git branch --list
-* develop
-  master
-
-$ git push . HEAD
-
-$ git branch -v
-* develop 6b14f60 [ahead 3] $ git config merge.ff false
-  master  159ca21 Merge branch 'unit_test_lib'
-
-$ git push origin develop
-
-$ git checkout master
-
-$ git branch -v
-  develop 9f13f24 [ahead 4] $ git push origin develop
-* master  159ca21 Merge branch 'unit_test_lib'
-
-$ git push . HEAD
-
-$ git checkout develop
-$ git checkout master
-
-$ git branch -d develop
-$ git checkout -b dev
-
-# how to delete remote upstream branch
-https://www.git-tower.com/learn/git/faq/delete-remote-branch
-$ git push origin --delete develop
-
-## how to make new branch and upstream
+## how to make new remote branch and upstream
 $ git checkout -b dev
 
 $ git branch -v
@@ -71,7 +33,8 @@ Branch 'dev' set up to track local branch 'master'.
 $ git branch -v
 * dev    a6e36dd [ahead 1] $ git push origin --delete develop
   master 4da3956 Merge branch 'develop' for closing
-[ahead 1] が付いている。
+
+"a6e36dd" の後に "[ahead 1]" が付いている。
 
 $ vim git-branching-model.txt
 editing...
@@ -82,3 +45,9 @@ $ git diff git-branching-model.txt
 $ git commit git-branching-model.txt
 
 $ git push origin dev
+
+## how to delete local and remote upstream branch
+https://www.git-tower.com/learn/git/faq/delete-remote-branch
+$ git branch -d develop
+$ git push origin --delete develop
+
