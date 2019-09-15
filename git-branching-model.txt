@@ -44,6 +44,11 @@ $ git diff git-branching-model.txt
 
 $ git commit git-branching-model.txt
 
+$ git status .
+On branch dev
+Your branch is ahead of 'master' by 3 commits.
+  (use "git push" to publish your local commits)
+
 $ git push origin dev
 
 ## how to delete local and remote upstream branch
