@@ -134,3 +134,6 @@ $ git remote set-head origin -d
 
 $ git branch -r -v
   origin/master d0c6bcb Merge branch 'dev'
+
+## change remote origin
+$ git push -u origin dev
