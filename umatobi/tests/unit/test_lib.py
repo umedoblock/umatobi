@@ -111,6 +111,12 @@ class LibTests(unittest.TestCase):
             recved_data = sock_recv(udp_sock, 1024)
         self.assertIsNone(recved_data)
 
+    def test_get_host_port(self):
+        host_port = 'localhost:8888'
+        self.assertEqual(get_host_port(host_port), ('localhost', 8888))
+        host_port = '192.168.1.1:9999'
+        self.assertEqual(get_host_port(host_port), ('192.168.1.1', 9999))
+
     def test_get_table_columns(self):
         expected_items = {
             'simulation': (
