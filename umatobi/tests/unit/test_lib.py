@@ -117,6 +117,19 @@ class LibTests(unittest.TestCase):
         host_port = '192.168.1.1:9999'
         self.assertEqual(get_host_port(host_port), ('192.168.1.1', 9999))
 
+    def test_get_db_from_schema(self):
+        expected_tables = ('simulation', 'nodes', 'clients', 'growings')
+        db = get_db_from_schema()
+        tables = db.sections()
+        self.assertSequenceEqual(tables, expected_tables)
+        print('db.sections() =', db.sections())
+        for table in db.sections():
+            print('table =', table)
+            print(f'db[{table}] = {db[table]}')
+            print(f'db[{table}].items() = {db[table].items()}')
+            for column, data_type in db[table].items():
+                print(f'column={column}, data_type={data_type}')
+
     def test_get_table_columns(self):
         expected_items = {
             'simulation': (
