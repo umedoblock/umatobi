@@ -145,16 +145,16 @@ class LibTests(unittest.TestCase):
 
     def test_get_db_from_schema(self):
         # SCHEMA_PATH='umatobi/simulator/simulation.schema'
-        config_db = ConfigDb(SCHEMA_PATH)
+        schema_parser = SchemaParser(SCHEMA_PATH)
 
         expected_table_names = ('simulation', 'nodes', 'clients', 'growings')
-        self.assertSequenceEqual(config_db.table_names(), expected_table_names)
-       #print('config_db.table_names() =', config_db.table_names())
-       #for table_name in config_db.table_names():
+        self.assertSequenceEqual(schema_parser.table_names(), expected_table_names)
+       #print('schema_parser.table_names() =', schema_parser.table_names())
+       #for table_name in schema_parser.table_names():
        #    print('table_name =', table_name)
-       #    print(f'config_db[{table_name}] = {config_db[table_name]}')
-       #    print(f'config_db[{table_name}].items() = {config_db[table_name].items()}')
-       #    for column, data_type in config_db[table_name].items():
+       #    print(f'schema_parser[{table_name}] = {schema_parser[table_name]}')
+       #    print(f'schema_parser[{table_name}].items() = {schema_parser[table_name].items()}')
+       #    for column, data_type in schema_parser[table_name].items():
        #        print(f'column={column}, data_type={data_type}')
 
     def test_get_table_columns(self):
@@ -174,16 +174,16 @@ class LibTests(unittest.TestCase):
 
         }
 
-        config_db = ConfigDb(SCHEMA_PATH)
-        self.assertSequenceEqual(config_db.table_names(),
+        schema_parser = SchemaParser(SCHEMA_PATH)
+        self.assertSequenceEqual(schema_parser.table_names(),
                            tuple(expected_items.keys()))
 
-        for table_name in config_db.table_names():
-           #for column, data_type in config_db[table_name].items():
+        for table_name in schema_parser.table_names():
+           #for column, data_type in schema_parser[table_name].items():
                #print(table_name, column, data_type)
-               #print(tuple(config_db[table_name].keys()))
+               #print(tuple(schema_parser[table_name].keys()))
                #print(expected_items[table_name])
-            self.assertSequenceEqual(tuple(config_db[table_name].keys()),
+            self.assertSequenceEqual(tuple(schema_parser[table_name].keys()),
                                            expected_items[table_name])
 
     def test_dict2json_and_json2dict(self):

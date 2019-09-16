@@ -115,11 +115,6 @@ def get_host_port(host_port):
     port = int(sp[1])
     return host, port
 
-class Converter(object):
-
-    def __init__(self):
-        pass
-
 DATA_TYPE_CONVERTER = {
     'blob': str.encode,
     'float': float,
@@ -127,7 +122,7 @@ DATA_TYPE_CONVERTER = {
     'text': str,
 }
 
-class ConfigDb(configparser.ConfigParser):
+class SchemaParser(configparser.ConfigParser):
     def __init__(self, schema_path):
         super().__init__()
         with open(schema_path, encoding='utf-8') as schema:
@@ -151,14 +146,15 @@ class ConfigDb(configparser.ConfigParser):
                 d_table[column] = converter
               # print(f'column={column}, data_type={data_type}, converter={converter}')
 
-#   def table_names(self):
-#       return self.sections()
-
     def get_table_names(self):
         return self.table_names()
 
-    def get_columns(table_name):
+    def get_columns(self, table_name):
         return self[table_name]
+
+    def convert_config(self, config, table_names=tuple()):
+        if not table_names:
+            table_names = config.sections
 
 def get_master_hand(start_up_orig):
     start_up_time = make_start_up_time(start_up_orig)
