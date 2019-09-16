@@ -77,7 +77,6 @@ class LibTests(unittest.TestCase):
             tcp_sock = sock_create('v4', 'tcp')
         mock_sock.socket.assert_called_once_with(mock_sock.AF_INET, mock_sock.SOCK_STREAM)
 
-        send_data = b'send mocked data'
         with patch.object(tcp_sock, 'sendall', side_effect=socket.timeout):
             with self.assertLogs('umatobi', level='INFO') as cm:
                 result = sock_send(tcp_sock, send_data)
@@ -89,9 +88,10 @@ class LibTests(unittest.TestCase):
             tcp_sock = sock_create('v4', 'tcp')
         self.assertIsInstance(tcp_sock, socket.socket)
 
-        with patch.object(tcp_sock, 'recv', return_value=b'mocked data') as mock_sock:
+        expected_recv = b'recv mocked data'
+        with patch.object(tcp_sock, 'recv', return_value=expected_recv) as mock_sock:
             recved_data = sock_recv(tcp_sock, 1024)
-        self.assertEqual(recved_data, b'mocked data')
+        self.assertEqual(recved_data, expected_recv)
 
         with patch.object(tcp_sock, 'recv', side_effect=socket.timeout):
             recved_data = sock_recv(tcp_sock, 1024)
@@ -102,9 +102,10 @@ class LibTests(unittest.TestCase):
             udp_sock = sock_create('v4', 'udp')
         self.assertIsInstance(udp_sock, socket.socket)
 
-        with patch.object(udp_sock, 'recv', return_value=b'mocked data') as mock_sock:
+        expected_recv = b'recv mocked data'
+        with patch.object(udp_sock, 'recv', return_value=expected_recv) as mock_sock:
             recved_data = sock_recv(udp_sock, 1024)
-        self.assertEqual(recved_data, b'mocked data')
+        self.assertEqual(recved_data, expected_recv)
 
         with patch.object(udp_sock, 'recv', side_effect=socket.timeout):
             recved_data = sock_recv(udp_sock, 1024)
