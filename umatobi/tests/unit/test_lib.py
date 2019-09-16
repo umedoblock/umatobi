@@ -6,6 +6,7 @@ from io import StringIO
 from umatobi.tests import *
 from umatobi.log import logger, make_logger
 from umatobi import lib
+from umatobi.simulator.core.key import Key
 from umatobi.lib import *
 
 class LibTests(unittest.TestCase):
@@ -142,6 +143,45 @@ class LibTests(unittest.TestCase):
             converter = DATA_TYPE_CONVERTER[converter_name]
             self.assertEqual(converter(d_values[column_name]),
                              expected_values[column_name])
+
+    def test_schema_parser(self):
+        keyid = 'a' * Key.KEY_HEXES
+        simulation_conf_str = f'''
+[simulation]
+watson_office_addr: localhost:11111
+simulation_ms: 30000
+title: in test_schema_parser()
+memo: test to combine schema_parser and simulation.conf
+version: 0.0.0
+n_clients: 4
+total_nodes: 1000
+
+[nodes]
+id: 100
+office_addr: 127.0.0.1:22222
+key: 0x{keyid}
+status: active
+'''
+
+        schema_parser = SchemaParser(SCHEMA_PATH)
+        config = configparser.ConfigParser()
+        config.read_string(simulation_conf_str)
+      # print('config.sections =', tuple(config.sections()))
+
+        records = schema_parser.spawn_records(config,
+                                              table_names=config.sections())
+        self.assertEqual(records.simulation['watson_office_addr'], 'localhost:11111')
+        self.assertEqual(records.simulation['simulation_ms'], 30000)
+        self.assertEqual(records.simulation['title'], 'in test_schema_parser()')
+        self.assertEqual(records.simulation['memo'], 'test to combine schema_parser and simulation.conf')
+        self.assertEqual(records.simulation['version'], '0.0.0')
+        self.assertEqual(records.simulation['n_clients'], 4)
+        self.assertEqual(records.simulation['total_nodes'], 1000)
+
+        self.assertEqual(records.nodes['id'], 100)
+        self.assertEqual(records.nodes['office_addr'], '127.0.0.1:22222')
+        self.assertEqual(records.nodes['key'], str.encode(f'0x{keyid}'))
+        self.assertEqual(records.nodes['status'], 'active')
 
     def test_get_db_from_schema(self):
         # SCHEMA_PATH='umatobi/simulator/simulation.schema'

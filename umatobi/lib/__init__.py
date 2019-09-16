@@ -122,6 +122,9 @@ DATA_TYPE_CONVERTER = {
     'text': str,
 }
 
+class Records(object):
+    pass
+
 class SchemaParser(configparser.ConfigParser):
     def __init__(self, schema_path):
         super().__init__()
@@ -152,9 +155,28 @@ class SchemaParser(configparser.ConfigParser):
     def get_columns(self, table_name):
         return self[table_name]
 
-    def convert_config(self, config, table_names=tuple()):
+    def spawn_records(self, config, table_names=tuple()):
         if not table_names:
-            table_names = config.sections
+            table_names = config.sections()
+
+        records = Records()
+        for table_name in table_names:
+            record = self.parse_record(config[table_name], table_name)
+            setattr(records, table_name, record)
+
+        return records
+
+    def parse_record(self, record, table_name):
+        d = {}
+        for column_name, as_string in record.items():
+          # print('column_name =', column_name, 'as_string =', as_string)
+            d_table = getattr(self, table_name)
+          # print('d_table.items() =', d_table.items())
+            converter = d_table[column_name]
+          # print('converter =', converter)
+            value = converter(as_string)
+            d[column_name] = value
+        return d
 
 def get_master_hand(start_up_orig):
     start_up_time = make_start_up_time(start_up_orig)
