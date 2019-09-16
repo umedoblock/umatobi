@@ -117,18 +117,45 @@ class LibTests(unittest.TestCase):
         host_port = '192.168.1.1:9999'
         self.assertEqual(get_host_port(host_port), ('192.168.1.1', 9999))
 
+    def test_data_type_converter(self):
+        d_schema = {
+            'column_blob': 'blob',
+            'column_float': 'float',
+            'column_integer': 'integer',
+            'column_text': 'text',
+        }
+
+        d_values = {
+            'column_blob': 'blob',
+            'column_float': '-1.0',
+            'column_integer': '10',
+            'column_text': 'text',
+        }
+        expected_values = {
+            'column_blob': b'blob',
+            'column_float': -1.0,
+            'column_integer': 10,
+            'column_text': 'text',
+        }
+        for column_name, data_type in d_schema.items():
+            converter_name = d_schema[column_name]
+            converter = DATA_TYPE_CONVERTER[converter_name]
+            self.assertEqual(converter(d_values[column_name]),
+                             expected_values[column_name])
+
     def test_get_db_from_schema(self):
-        expected_tables = ('simulation', 'nodes', 'clients', 'growings')
-        db = get_db_from_schema()
-        tables = db.sections()
-        self.assertSequenceEqual(tables, expected_tables)
-        print('db.sections() =', db.sections())
-        for table in db.sections():
-            print('table =', table)
-            print(f'db[{table}] = {db[table]}')
-            print(f'db[{table}].items() = {db[table].items()}')
-            for column, data_type in db[table].items():
-                print(f'column={column}, data_type={data_type}')
+        # SCHEMA_PATH='umatobi/simulator/simulation.schema'
+        config_db = ConfigDb(SCHEMA_PATH)
+
+        expected_table_names = ('simulation', 'nodes', 'clients', 'growings')
+        self.assertSequenceEqual(config_db.table_names(), expected_table_names)
+       #print('config_db.table_names() =', config_db.table_names())
+       #for table_name in config_db.table_names():
+       #    print('table_name =', table_name)
+       #    print(f'config_db[{table_name}] = {config_db[table_name]}')
+       #    print(f'config_db[{table_name}].items() = {config_db[table_name].items()}')
+       #    for column, data_type in config_db[table_name].items():
+       #        print(f'column={column}, data_type={data_type}')
 
     def test_get_table_columns(self):
         expected_items = {
@@ -147,11 +174,17 @@ class LibTests(unittest.TestCase):
 
         }
 
-        db = lib.get_db_from_schema()
-        self.assertSequenceEqual(db.sections(), tuple(expected_items.keys()))
+        config_db = ConfigDb(SCHEMA_PATH)
+        self.assertSequenceEqual(config_db.table_names(),
+                           tuple(expected_items.keys()))
 
-        for section in db.sections():
-            self.assertSequenceEqual(tuple(db[section].keys()), tuple(expected_items[section]))
+        for table_name in config_db.table_names():
+           #for column, data_type in config_db[table_name].items():
+               #print(table_name, column, data_type)
+               #print(tuple(config_db[table_name].keys()))
+               #print(expected_items[table_name])
+            self.assertSequenceEqual(tuple(config_db[table_name].keys()),
+                                           expected_items[table_name])
 
     def test_dict2json_and_json2dict(self):
         d = {

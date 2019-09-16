@@ -115,18 +115,50 @@ def get_host_port(host_port):
     port = int(sp[1])
     return host, port
 
-def get_db_from_schema():
-    db = configparser.ConfigParser()
-    with open(SCHEMA_PATH, encoding='utf-8') as schema:
-        db.read_file(schema)
-  # print('db =', db)
-  # print('db.sections =', db.sections)
-  # print('tuple(db.sections()) =', tuple(db.sections()))
-  # db.keys() = ('DEFAULT', 'simulation', 'nodes', 'clients', 'growings')
-    return db
+class Converter(object):
 
-def get_table_columns(table_name):
-    return get_db_from_schema()[table_name]
+    def __init__(self):
+        pass
+
+DATA_TYPE_CONVERTER = {
+    'blob': str.encode,
+    'float': float,
+    'integer': int,
+    'text': str,
+}
+
+class ConfigDb(configparser.ConfigParser):
+    def __init__(self, schema_path):
+        super().__init__()
+        with open(schema_path, encoding='utf-8') as schema:
+            self.read_file(schema)
+
+        self.table_names = self.sections
+        # grep ':' tests/unit/test_lib.py | grep -v '^#' | \
+        #       awk '{print $2}' | \
+        #       sort | uniq
+        # blob
+        # float
+        # integer
+        # text
+
+        for table_name in self.table_names():
+            setattr(self, table_name, dict())
+            d_table = getattr(self, table_name)
+            for column, as_string in self[table_name].items():
+                data_type = as_string.split(' ')[0]
+                converter = DATA_TYPE_CONVERTER[data_type]
+                d_table[column] = converter
+              # print(f'column={column}, data_type={data_type}, converter={converter}')
+
+#   def table_names(self):
+#       return self.sections()
+
+    def get_table_names(self):
+        return self.table_names()
+
+    def get_columns(table_name):
+        return self[table_name]
 
 def get_master_hand(start_up_orig):
     start_up_time = make_start_up_time(start_up_orig)
