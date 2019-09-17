@@ -1,4 +1,5 @@
-import json, datetime, time, os, threading, sched, configparser, socket
+import json, time, os, threading, sched, configparser, socket
+from datetime import datetime as datetime2
 
 from umatobi.constants import *
 from umatobi.log import *
@@ -178,12 +179,13 @@ class SchemaParser(configparser.ConfigParser):
             d[column_name] = value
         return d
 
-def get_master_hand(start_up_orig):
-    start_up_time = make_start_up_time(start_up_orig)
-    return os.path.join(start_up_time, MASTER_HAND)
+def get_master_hand(simulation_time):
+    y15s = SimulationTime.time_to_y15s(simulation_time)
+    return os.path.join(y15s, MASTER_HAND)
 
-def get_master_hand_path(simulation_dir, start_up_orig):
-    return os.path.join(simulation_dir, get_master_hand(start_up_orig))
+def get_master_hand_path(simulation_dir, simulation_time):
+    return os.path.join(simulation_dir,
+                        get_master_hand(simulation_time))
 
 def validate_kwargs(st_barrier, kwargs):
     if st_barrier != kwargs.keys():
@@ -214,40 +216,77 @@ def tell_shutdown_time():
     shutdown_time = datetime_now()
     return shutdown_time
 
-def datetime_now():
-    return datetime.datetime.now()
+class SimulationTime(object):
+    Y15S_FORMAT='%Y-%m-%dT%H%M%S'
 
-def make_start_up_orig():
-    start_up_orig = datetime_now()
-    return start_up_orig
+    @classmethod
+    def now(cls):
+        return datetime2.now()
 
-def make_start_up_time(start_up_orig=None):
-    if not start_up_orig:
-        start_up_orig = make_start_up_orig()
-    start_up_time = y15sformat_time(start_up_orig)
-    return start_up_time
+    @classmethod
+    def iso_to_time(cls, isoformat):
+        start_up_orig = datetime2.fromisoformat(isoformat)
+        return SimulationTime(start_up_orig)
 
-def start_up_orig_to_isoformat(start_up_orig):
-  # >>> datetime.datetime.isoformat(now)
-  # '2019-08-27T02:43:20.708976'
-    return datetime.datetime.isoformat(start_up_orig)
+    @classmethod
+    def time_to_iso(cls, simulation_time):
+      # >>> datetime2.isoformat(now)
+      # '2019-08-27T02:43:20.708976'
+        return datetime2.isoformat(simulation_time.start_up_orig)
 
-def isoformat_to_start_up_orig(isoformat):
-  # >>> datetime.datetime.fromisoformat('2019-08-27T02:43:20.708976')
-  # datetime.datetime(2019, 8, 27, 2, 43, 20, 708976)
-    return datetime.datetime.fromisoformat(isoformat)
+    @classmethod
+    def y15s_to_time(cls, y15s):
+        start_up_orig = \
+            datetime2.strptime(y15s, SimulationTime.Y15S_FORMAT)
+        return SimulationTime(start_up_orig)
 
-Y15S_FORMAT='%Y-%m-%dT%H%M%S'
-def y15sformat_time(t):
-    "'return time format '2012-11-02T232227'"
-    return t.strftime(Y15S_FORMAT)
+    @classmethod
+    def time_to_y15s(cls, simulation_time):
+        start_up_orig = simulation_time.start_up_orig
+        return start_up_orig.strftime(SimulationTime.Y15S_FORMAT)
 
-def current_y15sformat_time():
-    now = datetime_now()
-    return y15sformat_time(now)
+    def __init__(self, start_up_orig=None):
+        if not start_up_orig:
+            self.start_up_orig = SimulationTime.now()
+        else:
+            self.start_up_orig = start_up_orig
 
-def y15sformat_parse(s):
-    return datetime.datetime.strptime(s, Y15S_FORMAT)
+    def __eq__(self, other):
+        return self.start_up_orig == other.start_up_orig
+
+    def get_y15s(self):
+        return SimulationTime.time_to_y15s(self)
+
+    def passed_sec(self, now=None):
+        if not now:
+            now = SimulationTime.now()
+        return (now - self.start_up_orig).total_seconds()
+
+    def passed_ms(self, now=None):
+        '''simulation 開始から現在までに経過したmilli秒数。'''
+
+        if not now:
+            now = SimulationTime.now()
+        # relativeCreated の時間単位がmsのため、
+        # elapsed_time()もms単位となるようにする。
+        return int(self.passed_sec(now) * 1000)
+
+# def isoformat_to_start_up_orig(isoformat):
+#   # >>> datetime2.fromisoformat('2019-08-27T02:43:20.708976')
+#   # datetime2(2019, 8, 27, 2, 43, 20, 708976)
+#     return datetime2.fromisoformat(isoformat)
+
+# Y15S_FORMAT='%Y-%m-%dT%H%M%S'
+# def y15sformat_time(t):
+#     "'return time format '2012-11-02T232227'"
+#     return t.strftime(Y15S_FORMAT)
+# 
+# def current_y15sformat_time():
+#     now = datetime_now()
+#     return y15sformat_time(now)
+
+# def y15sformat_parse(s):
+#     return datetime2.strptime(s, Y15S_FORMAT)
 
 def get_passed_ms(start_up_orig):
     '''simulation 開始から現在までに経過したmilli秒数。'''

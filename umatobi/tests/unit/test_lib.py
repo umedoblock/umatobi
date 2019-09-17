@@ -1,7 +1,8 @@
-import os, sys, datetime, shutil
+import os, sys, shutil
 import unittest
 from unittest.mock import patch, MagicMock
 from io import StringIO
+from datetime import datetime, timedelta
 
 from umatobi.tests import *
 from umatobi.log import logger, make_logger
@@ -12,7 +13,17 @@ from umatobi.lib import *
 class LibTests(unittest.TestCase):
 
     def setUp(self):
-        self.tests_simulation_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'umatobi-simulation').replace('/unit/', '/')
+        self.tests_simulation_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'umatobi-simulation')
+        self.simulation_time = SimulationTime()
+
+    def test_simulation_time(self):
+        start_up_orig = SimulationTime.now()
+
+        with time_machine(start_up_orig):
+            simulation_time = SimulationTime()
+        self.assertIsInstance(simulation_time.start_up_orig,
+                              datetime)
+        self.assertEqual(simulation_time.start_up_orig, start_up_orig)
 
     def test_sock_create_ok(self):
         sock = sock_create('v4', 'tcp')
@@ -260,14 +271,14 @@ status: active
         self.assertEqual(SIMULATION_DIR, self.tests_simulation_dir)
 
     def test_master_hand(self):
-        start_up_orig = lib.make_start_up_orig()
-        start_up_time = lib.make_start_up_time(start_up_orig)
-        self.assertEqual(lib.get_master_hand(start_up_orig), f"{start_up_time}/{MASTER_HAND}")
+        simulation_time = self.simulation_time
+        self.assertEqual(lib.get_master_hand(simulation_time), f"{SimulationTime.time_to_y15s(simulation_time)}/{MASTER_HAND}")
 
     def test_master_hand_path(self):
-        start_up_orig = lib.make_start_up_orig()
-        start_up_time = lib.make_start_up_time(start_up_orig)
-        self.assertEqual(lib.get_master_hand_path(SIMULATION_DIR, start_up_orig), os.path.join(self.tests_simulation_dir, f"{start_up_time}/{MASTER_HAND}"))
+        simulation_time = self.simulation_time
+        self.assertEqual(
+            get_master_hand_path(SIMULATION_DIR, simulation_time),
+            os.path.join(self.tests_simulation_dir, f"{simulation_time}/{MASTER_HAND}"))
 
     def test_make_log_dir(self):
         special_dir = SIMULATION_DIR + "-special"
@@ -300,64 +311,69 @@ status: active
         self.assertEqual(tlogger.log_path, os.path.join(self.tests_simulation_dir, 'test_logger.888.log', ))
 
     def test_make_start_up_orig(self):
-        start_up_orig = lib.make_start_up_orig()
-        self.assertIsInstance(start_up_orig, datetime.datetime)
+        simulation_time = self.simulation_time
+        self.assertIsInstance(simulation_time.start_up_orig, datetime)
 
     def test_make_start_up_orig_with_time_machine(self):
-        start_up_orig = lib.make_start_up_orig()
-        years_1000 = datetime.timedelta(days=1000*365)
+        start_up_orig = self.simulation_time.start_up_orig
 
+        years_1000 = timedelta(days=1000*365)
         past = start_up_orig - years_1000
         current = start_up_orig
         future = start_up_orig + years_1000
 
         with time_machine(past):
-            self.assertEqual(lib.make_start_up_orig(), past)
+            self.assertEqual(SimulationTime().start_up_orig, past)
 
         with time_machine(current):
-            self.assertEqual(lib.make_start_up_orig(), current)
+            self.assertEqual(SimulationTime().start_up_orig, current)
 
         with time_machine(future):
-            self.assertEqual(lib.make_start_up_orig(), future)
+            self.assertEqual(SimulationTime().start_up_orig, future)
+
+    def test_y15sformat_time(self):
+        # Y15S_FORMAT='%Y-%m-%dT%H%M%S'
+        simulation_time = self.simulation_time
+        y15s = SimulationTime.time_to_y15s(simulation_time)
+        self.assertIsInstance(y15s, str)
+        self.assertRegex(y15s, r"\A\d{4}-\d{2}-\d{2}T\d{6}\Z")
 
     def test_curren_y15sformat_time(self):
         # Y15S_FORMAT='%Y-%m-%dT%H%M%S'
-        y15s = lib.current_y15sformat_time()
+        y15s = SimulationTime.time_to_y15s(SimulationTime())
         self.assertIsInstance(y15s, str)
         self.assertRegex(y15s, r"\A\d{4}-\d{2}-\d{2}T\d{6}\Z")
 
-    def test_y15sformat_time(self):
-        start_up_orig = lib.make_start_up_orig()
-        # Y15S_FORMAT='%Y-%m-%dT%H%M%S'
-        y15s = lib.y15sformat_time(start_up_orig)
-        self.assertIsInstance(y15s, str)
-        self.assertRegex(y15s, r"\A\d{4}-\d{2}-\d{2}T\d{6}\Z")
+    def test_simulation_time_passed_sec(self):
+        pass
 
-    def test_elapsed_time(self):
-        td = D_TIMEDELTA.get(self._testMethodName, TD_ZERO)
+    # class timedelta(builtins.object)
+    #  |  Difference between two datetime values.
+    #  |
+    #  |  timedelta(days=0, seconds=0, microseconds=0, milliseconds=0,
+    #               minutes=0, hours=0, weeks=0)
 
-        start_up_orig = lib.make_start_up_orig()
-        et = lib.elapsed_time(start_up_orig - td)
-        self.assertEqual(73138, et)
+    def test_simulation_time_passed_ms(self):
+        mili555 = timedelta(milliseconds=555)
+        simulation_time = SimulationTime()
+        start_up_orig = simulation_time.start_up_orig
+        with time_machine(start_up_orig + mili555):
+            passed_ms = simulation_time.passed_ms(SimulationTime().start_up_orig)
+        self.assertEqual(passed_ms, 555)
 
-    def mocked_datetime_now(mocked_datetime=None):
-        if not mocked_datetime:
-            return mocked_datetime
-        else:
-            return datetime.datetime.now()
-
-    def test_from_isoformat_to_start_up_orig(self):
+    def test_from_iso_to_start_up_orig(self):
         isoformat = '2011-11-11T11:11:11.111111'
-        self.assertEqual(lib.isoformat_to_start_up_orig(isoformat), datetime.datetime(2011, 11, 11, 11, 11, 11, 111111))
+        self.assertEqual(SimulationTime.iso_to_time(isoformat), SimulationTime(datetime(2011, 11, 11, 11, 11, 11, 111111)))
 
-    def test_start_up_orig_to_isoformat(self):
-        start_up_orig = datetime.datetime(2011, 11, 11, 11, 11, 11, 111111)
-        self.assertEqual(lib.start_up_orig_to_isoformat(start_up_orig), '2011-11-11T11:11:11.111111')
+    def test_start_up_orig_to_iso(self):
+        start_up_orig = datetime(2011, 11, 11, 11, 11, 11, 111111)
+        with time_machine(start_up_orig):
+            self.assertEqual(SimulationTime.time_to_iso(SimulationTime()), '2011-11-11T11:11:11.111111')
 
     def test_mock_datetime_now(self):
-        manipulated_datetime = datetime.datetime(2011, 11, 11, 11, 11, 11, 111111)
+        manipulated_datetime = datetime(2011, 11, 11, 11, 11, 11, 111111)
         with time_machine(manipulated_datetime):
-            self.assertEqual(lib.datetime_now(), manipulated_datetime)
+            self.assertEqual(SimulationTime.now(), manipulated_datetime)
 
 if __name__ == '__main__':
     unittest.main()
