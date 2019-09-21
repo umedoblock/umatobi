@@ -21,8 +21,12 @@ constants.SIMULATION_ROOT_PATH = _SIMULATION_ROOT_PATH
 constants.LOGGER_STREAM = open(os.path.join(TESTS_PATH, 'stdout.log'), 'w')
 
 # tests original
-constants.FIXTURES_DIR = 'fixtures'
-constants.FIXTURES_DIR_PATH = os.path.join(TESTS_PATH, constants.FIXTURES_DIR)
+TEST_SCHEMA = 'test.schema'
+TEST_DB = 'test.db'
+FIXTURES_DIR = 'fixtures'
+FIXTURES_DIR_PATH = os.path.join(TESTS_PATH, FIXTURES_DIR)
+TEST_SCHEMA_PATH = os.path.join(FIXTURES_DIR_PATH, TEST_SCHEMA)
+TEST_DB_PATH = os.path.join(FIXTURES_DIR_PATH, TEST_DB)
 
 RE_Y15S = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d[0-5]\d[0-5]\d'
 RE_ISO8601 = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d:[0-5]\d:[0-5]\d\.\d{6}'

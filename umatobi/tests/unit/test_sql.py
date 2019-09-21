@@ -9,12 +9,9 @@ from umatobi.tests import *
 from umatobi.simulator.sql import SQL
 from umatobi import lib
 
-test_schema_path = os.path.join(FIXTURES_DIR, 'test.schema')
-test_db_path = os.path.join(FIXTURES_DIR, 'test.db')
-
 def remove_test_db():
     try:
-        os.remove(test_db_path)
+        os.remove(TEST_DB_PATH)
     except OSError as raiz:
         if raiz.args != (2, 'No such file or directory'):
             raise raiz
@@ -31,7 +28,7 @@ def insert_test_table_n_records(db, n_records):
         test['val_real'] = i * 111.111
         test['val_text'] = 't' * (i + 1)
         test['val_blob'] = b'bytes' * (i + 1)
-        test['now'] = lib.current_y15sformat_time()
+        test['now'] = SimulationTime().get_y15s()
         e = datetime.datetime.now()
         test['elapsed_time'] = (e - s).total_seconds()
         db.insert('test_table', test)
@@ -47,15 +44,13 @@ class SQLTests(unittest.TestCase):
         remove_test_db()
 
     def test_create_db_and_table(self):
-        sql = SQL(db_path=test_db_path,
-                                schema_path=test_schema_path)
+        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
         sql.create_db()
         sql.create_table('test_table')
 
     def test_insert_and_select(self):
         s = datetime.datetime.now()
-        sql = SQL(db_path=test_db_path,
-                                schema_path=test_schema_path)
+        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
         sql.create_db()
         sql.create_table('test_table')
 
@@ -67,7 +62,7 @@ class SQLTests(unittest.TestCase):
         d_insert['val_real'] = 10.0
         d_insert['val_text'] = 'text'
         d_insert['val_blob'] = b'bytes'
-        d_insert['now'] = lib.current_y15sformat_time()
+        d_insert['now'] = SimulationTime().get_y15s()
         e = datetime.datetime.now()
         d_insert['elapsed_time'] = (e - s).total_seconds()
         sql.insert('test_table', d_insert)
@@ -76,10 +71,10 @@ class SQLTests(unittest.TestCase):
       # d_select = {}
       # d_select['id'] = 1, d_select
         d_selected = sql.select('test_table')
-        print('type(d_selected) =')
-        print(type(d_selected))
-        print('d_selected =')
-        print(d_selected)
+      # print('type(d_selected) =')
+      # print(type(d_selected))
+      # print('d_selected =')
+      # print(d_selected)
 
         d = {}
         d['id'] = 0
@@ -96,8 +91,7 @@ class SQLTests(unittest.TestCase):
             self.assertEqual(d_insert[column], d_selected[0][index])
 
     def test_take_table(self):
-        db = SQL(db_path=test_db_path,
-                               schema_path=test_schema_path)
+        db = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
         db.create_db()
         db.create_table('test_table')
 
@@ -111,8 +105,7 @@ class SQLTests(unittest.TestCase):
 #       print('records=', records)
 #       print(records)
 #       print('-------------------------------------')
-        memory_db = \
-            SQL(db_path=':memory:', schema_path=test_schema_path)
+        memory_db = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
         memory_db.create_db()
         memory_db.take_table(db, 'test_table')
 
@@ -145,8 +138,7 @@ class SQLTests(unittest.TestCase):
         d['now'] = 6
         d['elapsed_time'] = 7
 
-        sql = SQL(db_path=test_db_path,
-                                schema_path=test_schema_path)
+        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
         sql.create_db()
         sql.create_table('test_table')
 
@@ -158,8 +150,8 @@ class SQLTests(unittest.TestCase):
         d_insert['val_real'] = 10.0
         d_insert['val_text'] = 'text'
         d_insert['val_blob'] = b'bytes'
-        d_insert['now'] = lib.current_y15sformat_time()
-        e = datetime.datetime.now()
+        d_insert['now'] = SimulationTime().get_y15s()
+        e = SimulationTime.now()
         d_insert['elapsed_time'] = (e - s).total_seconds()
         sql.insert('test_table', d_insert)
         sql.commit()
@@ -178,7 +170,7 @@ class SQLTests(unittest.TestCase):
         d_update['val_blob'] = b'bytes bytes'
         now = datetime.datetime.now()
         t = now + datetime.timedelta(0, 1000, 0)
-        d_update['now'] = lib.y15sformat_time(t)
+        d_update['now'] = SimulationTime(t).get_y15s()
         e = datetime.datetime.now()
         d_update['elapsed_time'] = (e - s).total_seconds()
 
@@ -200,8 +192,7 @@ class SQLTests(unittest.TestCase):
         d['now'] = 6
         d['elapsed_time'] = 7
 
-        sql = SQL(db_path=test_db_path,
-                                schema_path=test_schema_path)
+        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
         sql.create_db()
         sql.create_table('test_table')
 
@@ -215,7 +206,7 @@ class SQLTests(unittest.TestCase):
         d_insert['val_blob'] = b'bytes'
         s = datetime.datetime.now()
         now = s
-        d_insert['now'] = lib.y15sformat_time(now)
+        d_insert['now'] = SimulationTime(now).get_y15s()
         e = s + datetime.timedelta(0, 100, 0)
         d_insert['elapsed_time'] = (e - s).total_seconds()
         sql.insert('test_table', d_insert)
@@ -233,7 +224,7 @@ class SQLTests(unittest.TestCase):
         d_update['val_real'] = 100.0
         d_update['val_text'] = 'text text'
         d_update['val_blob'] = b'bytes bytes'
-        d_update['now'] = lib.y15sformat_time(now + datetime.timedelta(0, 200))
+        d_update['now'] = SimulationTime(now + datetime.timedelta(0, 200)).get_y15s()
         e = s + datetime.timedelta(0, 200, 0)
         d_update['elapsed_time'] = (e - s).total_seconds()
 
@@ -254,8 +245,7 @@ class SQLTests(unittest.TestCase):
             self.assertNotEqual(d_insert[column], d_selected[0][index])
 
     def test_create_db_and_table_on_memory(self):
-        sql = SQL(db_path=':memory:',
-                                schema_path=test_schema_path)
+        sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
         sql.create_db()
         sql.create_table('test_table')
 
