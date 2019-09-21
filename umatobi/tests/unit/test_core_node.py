@@ -5,8 +5,6 @@ import unittest
 import queue
 
 from umatobi.simulator.core.node import Node
-from umatobi.lib import current_y15sformat_time
-from umatobi.lib import y15sformat_time, y15sformat_parse, make_start_up_orig
 
 class CoreNodeTests(unittest.TestCase):
 

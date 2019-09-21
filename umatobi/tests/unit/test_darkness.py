@@ -5,8 +5,8 @@ import unittest
 import queue
 
 from umatobi.tests import *
+from umatobi.lib import *
 from umatobi.simulator.darkness import Darkness, ExhaleQueue
-from umatobi.lib import make_start_up_orig, make_start_up_time
 from umatobi.simulator import sql
 
 class DarknessAsClient(threading.Thread):
@@ -27,6 +27,8 @@ class DarknessAsClient(threading.Thread):
         if self.darkness._exhale_queue.is_alive():
             # increment incremented_threads 1 for Polling if it is alive
             incremented_threads += 1
+        self.darkness_tests.assertEqual(threading.active_count() - 2,
+                                        incremented_threads)
         self.darkness_tests.assertEqual(threading.active_count(),
                      1 + 1 + incremented_threads)
         # above why "1 + 1" ?
@@ -44,8 +46,9 @@ class DarknessTests(unittest.TestCase):
     def setUp(self):
         darkness_id = 1
         client_id = 1
-        start_up_orig = make_start_up_orig()
-        dir_name = os.path.join(SIMULATION_DIR, make_start_up_time(start_up_orig))
+        self.now = SimulationTime.now()
+        with time_machine(self.now):
+            self.simulation_time = SimulationTime()
         log_level = 'INFO'
         nodes_per_darkness = Darkness.NODES_PER_DARKNESS
         first_node_id = 1
@@ -58,8 +61,7 @@ class DarknessTests(unittest.TestCase):
         self.darkness_d_config = {
             'id':  darkness_id,
             'client_id':  client_id,
-            'start_up_orig':  start_up_orig,
-            'dir_name':  dir_name,
+            'iso8601':  self.simulation_time.get_iso8601(),
             'log_level':  log_level,
             'num_nodes':  nodes_per_darkness,
             'first_node_id':  first_node_id,
@@ -84,16 +86,20 @@ class DarknessTests(unittest.TestCase):
         darkness = self.darkness
 
         leave_there = darkness_d_config['leave_there']
-        dir_name = darkness_d_config['dir_name']
         client_id = darkness_d_config['client_id']
+        iso8601 = darkness_d_config['iso8601']
+        simulation_time = SimulationTime.iso8601_to_time(iso8601)
 
+        self.assertEqual(darkness.simulation_time.start_up_orig, self.now)
         self.assertEqual(darkness.leave_there, leave_there)
         self.assertFalse(darkness.leave_there.is_set())
 
         self.assertEqual(darkness.client_db.db_path,
-                         os.path.join(dir_name, f"client.{client_id}.db"))
-        self.assertEqual(darkness.schema_path, SCHEMA_PATH)
+                         darkness.get_client_db_path())
+        self.assertEqual(darkness.simulation_schema_path,
+                         get_simulation_schema_path(simulation_time))
         self.assertIsInstance(darkness.client_db, sql.SQL)
+        self.assertRegex(darkness.client_db_path, RE_CLIENT_N_DB)
 
         self.assertEqual(darkness._queue_darkness.qsize(), 0)
         self.assertFalse(darkness.all_nodes_inactive.is_set())
@@ -103,25 +109,30 @@ class DarknessTests(unittest.TestCase):
 
         self.assertEqual(darkness.nodes, [])
 
+    def test_get_client_db_path(self):
+        darkness = self.darkness
+        self.assertRegex(darkness.get_client_db_path(), RE_CLIENT_N_DB)
+
     def test_darkess_start(self):
         darkness_d_config = self.darkness_d_config
         darkness = self.darkness
 
         leave_there = darkness_d_config['leave_there']
-        dir_name = darkness_d_config['dir_name']
+        iso8601 = darkness_d_config['iso8601']
+        simulation_time = SimulationTime.iso8601_to_time(iso8601)
         client_id = darkness_d_config['client_id']
 
         self.assertFalse(darkness.byebye_nodes.is_set())
         self.assertEqual(darkness.leave_there, leave_there)
-        self.assertEqual(darkness.client_db.db_path,
-                         os.path.join(dir_name, f"client.{client_id}.db"))
+        self.assertRegex(darkness.client_db.db_path,
+                         RE_CLIENT_N_DB)
         self.assertListEqual(darkness.nodes, [])
         self.assertEqual(darkness._queue_darkness.qsize(), 0)
         self.assertFalse(darkness.all_nodes_inactive.is_set())
         self.assertFalse(darkness.im_sleeping.is_set())
 
         client_db = sql.SQL(db_path=darkness.client_db_path,
-                            schema_path=SCHEMA_PATH)
+                            schema_path=get_simulation_schema_path(simulation_time))
         client_db.create_db()
         client_db.create_table('growings')
         client_db.close()
@@ -161,12 +172,12 @@ class DarknessTests(unittest.TestCase):
         self.assertFalse(darkness.leave_there.is_set())
         self.assertFalse(darkness.im_sleeping.is_set())
 
-        darkness_as_client = DarknessAsClient(self, darkness)
+      # darkness_as_client = DarknessAsClient(self, darkness)
 
-        darkness_as_client.start() # darkness.leave_there.set()
-        darkness._sleeping()       # darkness.im_sleeping.set()
-        self.assertTrue(darkness.leave_there.is_set())
-        self.assertTrue(darkness.im_sleeping.is_set())
+      # darkness_as_client.start() # darkness.leave_there.set()
+      # darkness._sleeping()       # darkness.im_sleeping.set()
+      # self.assertTrue(darkness.leave_there.is_set())
+      # self.assertTrue(darkness.im_sleeping.is_set())
 
     def test_darkness__leave_here(self):
         darkness = self.darkness
@@ -174,7 +185,7 @@ class DarknessTests(unittest.TestCase):
         darkness._spawn_nodes()
 
         client_db = sql.SQL(db_path=darkness.client_db_path,
-                            schema_path=SCHEMA_PATH)
+                        schema_path=get_simulation_schema_path(darkness.simulation_time))
         client_db.create_db()
         client_db.create_table('growings')
         client_db.close()

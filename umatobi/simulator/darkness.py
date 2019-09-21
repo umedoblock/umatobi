@@ -4,7 +4,7 @@ from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.node import Node
 from umatobi.simulator import sql
-from umatobi.lib import Polling, validate_kwargs
+from umatobi.lib import *
 
 class ExhaleQueue(Polling):
     def __init__(self, polling_secs, darkness):
@@ -13,7 +13,7 @@ class ExhaleQueue(Polling):
         self.darkness = darkness
         self.client_db_path = self.darkness.client_db_path
         self.client_db = self.darkness.client_db
-        self.schema_path = self.darkness.schema_path
+        self.schema_path = self.darkness.simulation_schema_path
         self._queue_darkness = self.darkness._queue_darkness
         self.queue_size_total = 0
         logger.info('{} created ExhaleQueue()'.format(self.darkness))
@@ -90,7 +90,7 @@ class Darkness(object):
         '''
         st_barrier = set([
             'id', 'client_id', 'first_node_id',
-            'dir_name', 'num_nodes', 'log_level', 'start_up_orig',
+            'num_nodes', 'log_level', 'iso8601',
             'made_nodes', # share with client and darknesses
             'leave_there', # share with client and another darknesses
             'num_darkness',
@@ -105,11 +105,12 @@ class Darkness(object):
                           'num_nodes={}.').format(self, self.num_nodes))
         logger.debug('{} debug log test.'.format(self))
 
-        self.client_db_path = os.path.join(self.dir_name,
-                                     'client.{}.db'.format(self.client_id))
-        self.schema_path = SCHEMA_PATH
+        self.simulation_time = SimulationTime.iso8601_to_time(self.iso8601)
+        self.client_db_path = self.get_client_db_path()
+        self.simulation_schema_path = \
+                get_simulation_schema_path(self.simulation_time)
         self.client_db = sql.SQL(db_path=self.client_db_path,
-                                 schema_path=self.schema_path)
+                             schema_path=self.simulation_schema_path)
 
         self._queue_darkness = queue.Queue()
         self.all_nodes_inactive = threading.Event()
@@ -119,6 +120,9 @@ class Darkness(object):
         self.byebye_nodes = threading.Event()
 
         self.nodes = []
+
+    def get_client_db_path(self):
+        return get_client_db_path(self.simulation_time, self.client_id)
 
     def start(self):
         '''\
@@ -142,7 +146,7 @@ class Darkness(object):
             host, port = 'localhost', 10000 + id
             d_node = {
                 'host': host, 'port': port, 'id': id,
-                'start_up_orig': self.start_up_orig,
+                'iso8601': self.simulation_time.get_iso8601(),
                 'byebye_nodes': self.byebye_nodes,
                 '_queue_darkness': self._queue_darkness
             }

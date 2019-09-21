@@ -122,12 +122,12 @@ class Node(node.Node):
     @classmethod
     def make_node_assets(cls):
         byebye_nodes = threading.Event()
-        start_up_orig = make_start_up_orig()
+        iso8601 = SimulationTime().get_iso8601(),
         _queue_darkness = queue.Queue()
 
         d = {
             'byebye_nodes': byebye_nodes,
-            'start_up_orig': start_up_orig,
+            'iso8601': iso8601,
             '_queue_darkness': _queue_darkness,
         }
 
@@ -149,14 +149,13 @@ class Node(node.Node):
         self.key = Key()
         self.status = 'active'
 
+        self.simulation_time = SimulationTime.iso8601_to_time(self.iso8601)
+
         self.nodes = []
         self.im_ready = threading.Event()
         self.office_door = threading.Lock()
         self.office_addr_assigned = threading.Event()
-        self.master_palm_path = get_master_palm_path(SIMULATION_DIR, self.start_up_orig)
-
-    def get_master_palm_path(simulation_time):
-        self.master_palm_path = os.path.join(SIMULATION_DIR_PATH, simulation_time.y15s, MASTER_PALM)
+        self.master_palm_path = get_master_palm_path(self.simulation_time)
 
     def run(self):
         self._open_office()
@@ -240,8 +239,7 @@ class Node(node.Node):
         self._queue_darkness.put(tup)
 
     def get_elapsed_time(self):
-        et = elapsed_time(self.start_up_orig)
-        return et
+        return self.simulation_time.passed_ms()
 
     def appear(self):
         super().appear()
