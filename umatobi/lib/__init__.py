@@ -179,17 +179,23 @@ class SchemaParser(configparser.ConfigParser):
             d[column_name] = value
         return d
 
-def get_simulation_schema_path(simulation_time):
-    simulation_schema_path = re.sub(SIMULATION_TIME_ATAT,
-                                    simulation_time.get_y15s(),
-                                    SIMULATION_SCHEMA_PATH)
+def get_simulation_dir_path(simulation_time):
+    simulation_dir_path = re.sub(SIMULATION_TIME_ATAT,
+                                 simulation_time.get_y15s(),
+                                 SIMULATION_DIR_PATH)
+    if not os.path.isdir(simulation_dir_path):
+        os.mkdir(simulation_dir_path)
+        logger.info(f"os.mkdir(simulation_dir_path={simulation_dir_path})")
 
-    simulation_schema_dir = os.path.dirname(simulation_schema_path)
-    if not os.path.isdir(simulation_schema_dir):
-        os.mkdir(simulation_schema_dir)
-        logger.info(f"os.mkdir(simulation_schema_dir={simulation_schema_dir})")
+    return simulation_dir_path
+
+def get_simulation_schema_path(simulation_time):
+    simulation_dir_path = get_simulation_dir_path(simulation_time)
+    simulation_schema_path = os.path.join(simulation_dir_path,
+                                          SIMULATION_SCHEMA)
+
     if not os.path.isfile(simulation_schema_path):
-        logger.info(f"shutil.copyfile(SIMULATION_SCHEMA_ORIG={SIMULATION_SCHEMA_ORIG}, simulation_schema_dir={simulation_schema_dir})")
+        logger.info(f"shutil.copyfile(SIMULATION_SCHEMA_ORIG={SIMULATION_SCHEMA_ORIG}, simulation_schema_path={simulation_schema_path})")
         shutil.copyfile(SIMULATION_SCHEMA_ORIG, simulation_schema_path)
 
     return simulation_schema_path

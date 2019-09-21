@@ -15,9 +15,15 @@ class LibTests(unittest.TestCase):
     RE_ISO8601 = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d:[0-5]\d:[0-5]\d\.\d{6}'
 
     def assert_simulation_schema_path(self, inspected_path):
-        self.assertTrue(os.path.isdir(os.path.dirname(inspected_path)))
-        self.assertNotRegex(inspected_path, SIMULATION_TIME_ATAT)
-        self.assertRegex(inspected_path, LibTests.RE_Y15S)
+        self.assert_simulation_dir_path(inspected_path)
+        self.assertRegex(inspected_path, f"{SIMULATION_SCHEMA}$")
+
+    def assert_simulation_dir_path(self, dir_path):
+        self.assertTrue(os.path.isdir(os.path.dirname(dir_path)))
+        self.assertNotRegex(dir_path,
+                            SIMULATION_TIME_ATAT)
+        self.assertRegex(dir_path,
+                         LibTests.RE_Y15S)
 
     def setUp(self):
         self.simulation_dir_path = \
@@ -227,6 +233,12 @@ status: active
        #        print(f'column={column}, data_type={data_type}')
 
     # SimulationTime.Y15S_FORMAT='%Y-%m-%dT%H%M%S'
+    def test_get_simulation_dir_path(self):
+        simulation_time = self.simulation_time
+        simulation_dir_path = get_simulation_dir_path(simulation_time)
+        self.assertTrue(os.path.isdir(simulation_dir_path))
+        self.assert_simulation_dir_path(simulation_dir_path)
+
     def test_get_simulation_schema_path(self):
         simulation_time = self.simulation_time
         simulation_schema_path = get_simulation_schema_path(simulation_time)
