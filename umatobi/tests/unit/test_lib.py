@@ -11,12 +11,8 @@ from umatobi.simulator.core.key import Key
 
 class LibTests(unittest.TestCase):
 
-    RE_Y15S = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d[0-5]\d[0-5]\d'
-    RE_ISO8601 = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d:[0-5]\d:[0-5]\d\.\d{6}'
-    RE_CLIENT_N_DB = r'client\.\d+\.db$'
-
     def assert_client_db_path(self, client_db_path):
-        self.assertRegex(client_db_path, LibTests.RE_CLIENT_N_DB)
+        self.assertRegex(client_db_path, RE_CLIENT_N_DB)
         self.assertNotRegex(client_db_path, ATAT_N)
 
     def assert_simulation_schema_path(self, inspected_path):
@@ -27,8 +23,7 @@ class LibTests(unittest.TestCase):
         self.assertTrue(os.path.isdir(os.path.dirname(dir_path)))
         self.assertNotRegex(dir_path,
                             SIMULATION_TIME_ATAT)
-        self.assertRegex(dir_path,
-                         LibTests.RE_Y15S)
+        self.assertRegex(dir_path, RE_Y15S)
 
     def setUp(self):
         self.simulation_dir_path = \
@@ -250,8 +245,7 @@ status: active
         self.assertTrue(os.path.isfile(simulation_schema_path))
         self.assertNotRegex(simulation_schema_path,
                             SIMULATION_TIME_ATAT)
-        self.assertRegex(simulation_schema_path,
-                         LibTests.RE_Y15S)
+        self.assertRegex(simulation_schema_path, RE_Y15S)
 
     def test_get_client_db_path(self):
         client_id = 8
@@ -339,10 +333,10 @@ status: active
         self.assertRegex(get_root_path(), UMATOBI_ROOT_PATH)
 
     def test_get_iso8601(self):
-        self.assertRegex(self.simulation_time.get_iso8601(), LibTests.RE_ISO8601)
+        self.assertRegex(self.simulation_time.get_iso8601(), RE_ISO8601)
 
     def test_get_y15s(self):
-        self.assertRegex(self.simulation_time.get_y15s(), LibTests.RE_Y15S)
+        self.assertRegex(self.simulation_time.get_y15s(), RE_Y15S)
 
     def test_master_palm_path(self):
         simulation_time = self.simulation_time
