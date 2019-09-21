@@ -179,6 +179,10 @@ class SchemaParser(configparser.ConfigParser):
             d[column_name] = value
         return d
 
+def get_client_db_path(simulation_time, client_id):
+    client_n_db = re.sub(ATAT_N, str(client_id), CLIENT_N_DB)
+    return os.path.join(get_simulation_dir_path(simulation_time), client_n_db)
+
 def get_simulation_dir_path(simulation_time):
     simulation_dir_path = re.sub(SIMULATION_TIME_ATAT,
                                  simulation_time.get_y15s(),

@@ -13,6 +13,11 @@ class LibTests(unittest.TestCase):
 
     RE_Y15S = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d[0-5]\d[0-5]\d'
     RE_ISO8601 = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d:[0-5]\d:[0-5]\d\.\d{6}'
+    RE_CLIENT_N_DB = r'client\.\d+\.db$'
+
+    def assert_client_db_path(self, client_db_path):
+        self.assertRegex(client_db_path, LibTests.RE_CLIENT_N_DB)
+        self.assertNotRegex(client_db_path, ATAT_N)
 
     def assert_simulation_schema_path(self, inspected_path):
         self.assert_simulation_dir_path(inspected_path)
@@ -247,6 +252,17 @@ status: active
                             SIMULATION_TIME_ATAT)
         self.assertRegex(simulation_schema_path,
                          LibTests.RE_Y15S)
+
+    def test_get_client_db_path(self):
+        client_id = 8
+        client_db_path = get_client_db_path(self.simulation_time,
+                                            client_id)
+        self.assert_client_db_path(client_db_path)
+
+        client_id = 88888
+        client_db_path = get_client_db_path(self.simulation_time,
+                                            client_id)
+        self.assert_client_db_path(client_db_path)
 
     def test_get_table_columns(self):
         expected_items = {

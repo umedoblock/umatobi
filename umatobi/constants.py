@@ -9,6 +9,8 @@ SIMULATION_DB = 'simulation.db'
 SIMULATION_SCHEMA = 'simulation.schema'
 WATSON_DB = 'watson.db'
 MASTER_PALM = 'master_palm.txt'
+ATAT_N = '@@N@@'
+CLIENT_N_DB = f'client.{ATAT_N}.db'
 
 UMATOBI_ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 SIMULATION_ROOT_PATH = os.path.join(os.path.expanduser('~'), SIMULATION_DIR)
