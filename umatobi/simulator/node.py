@@ -153,7 +153,10 @@ class Node(node.Node):
         self.im_ready = threading.Event()
         self.office_door = threading.Lock()
         self.office_addr_assigned = threading.Event()
-        self.master_hand_path = get_master_hand_path(SIMULATION_DIR, self.start_up_orig)
+        self.master_palm_path = get_master_palm_path(SIMULATION_DIR, self.start_up_orig)
+
+    def get_master_palm_path(, simulation_time)
+        self.master_palm_path = os.path.join(SIMULATION_DIR_PATH, simulation_time.y15s, MASTER_PALM)
 
     def run(self):
         self._open_office()
@@ -161,7 +164,7 @@ class Node(node.Node):
         d_attrs = self.get_attrs()
         self.put_on_darkness(d_attrs, et)
 
-        self._steal_master_palm()
+        self._steal_a_glance()
         self.regist()
 
         logger.info(f"byebye_nodes.wait()")
@@ -195,9 +198,9 @@ class Node(node.Node):
         return f"{':'.join(map(str, self.office_addr))}:{self.key}" + '\n'
 
     def regist(self):
-        logger.info(f"regist(), master_hand_path={self.master_hand_path}")
-        os.makedirs(os.path.dirname(self.master_hand_path), exist_ok=True)
-        with open(self.master_hand_path, 'a') as master:
+        logger.info(f"regist(), master_palm_path={self.master_palm_path}")
+        os.makedirs(os.path.dirname(self.master_palm_path), exist_ok=True)
+        with open(self.master_palm_path, 'a') as master:
             print(self.get_info(), end='', file=master)
       # msg = 'I am Node.'
       # recver_addr = ('localhost', 222)
@@ -205,13 +208,13 @@ class Node(node.Node):
       # recved_msg, who = self.sock.recvfrom(1024)
         self.im_ready.set()
 
-    def _steal_master_palm(self):
-        if not os.path.isfile(self.master_hand_path):
-            logger.info(f"not found 'master_hand_path={self.master_hand_path}'")
+    def _steal_a_glance(self):
+        if not os.path.isfile(self.master_palm_path):
+            logger.info(f"not found 'master_palm_path={self.master_palm_path}'")
             return None
 
-        logger.info(f"found 'master_hand_path={self.master_hand_path}'")
-        with open(self.master_hand_path) as master_palm:
+        logger.info(f"found 'master_palm_path={self.master_palm_path}'")
+        with open(self.master_palm_path) as master_palm:
             node_lines = master_palm.read()
         return node_lines
 
