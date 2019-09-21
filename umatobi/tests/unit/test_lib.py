@@ -308,7 +308,7 @@ status: active
         self.assertEqual(re.sub(TESTS_PATH, '', UMATOBI_ROOT_PATH), os.sep + 'umatobi-root')
         self.assertRegex(get_root_path(), UMATOBI_ROOT_PATH)
 
-    def test_gety15s(self):
+    def test_get_y15s(self):
         self.assertRegex(self.simulation_time.get_y15s(), LibTests.RE_Y15S)
 
     def test_master_palm_path(self):
