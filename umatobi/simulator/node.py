@@ -155,7 +155,7 @@ class Node(node.Node):
         self.office_addr_assigned = threading.Event()
         self.master_palm_path = get_master_palm_path(SIMULATION_DIR, self.start_up_orig)
 
-    def get_master_palm_path(, simulation_time)
+    def get_master_palm_path(simulation_time):
         self.master_palm_path = os.path.join(SIMULATION_DIR_PATH, simulation_time.y15s, MASTER_PALM)
 
     def run(self):
