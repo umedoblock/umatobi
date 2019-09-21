@@ -238,12 +238,12 @@ class SimulationTime(object):
         return datetime2.now()
 
     @classmethod
-    def iso_to_time(cls, isoformat):
-        start_up_orig = datetime2.fromisoformat(isoformat)
+    def iso8601_to_time(cls, iso8601format):
+        start_up_orig = datetime2.fromisoformat(iso8601format)
         return SimulationTime(start_up_orig)
 
     @classmethod
-    def time_to_iso(cls, simulation_time):
+    def time_to_iso8601(cls, simulation_time):
       # >>> datetime2.isoformat(now)
       # '2019-08-27T02:43:20.708976'
         return datetime2.isoformat(simulation_time.start_up_orig)
@@ -267,6 +267,9 @@ class SimulationTime(object):
 
     def __eq__(self, other):
         return self.start_up_orig == other.start_up_orig
+
+    def get_iso8601(self):
+        return SimulationTime.time_to_iso8601(self)
 
     def get_y15s(self):
         return SimulationTime.time_to_y15s(self)

@@ -12,6 +12,8 @@ from umatobi.simulator.core.key import Key
 class LibTests(unittest.TestCase):
 
     RE_Y15S = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d[0-5]\d[0-5]\d'
+    RE_ISO8601 = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d:[0-5]\d:[0-5]\d\.\d{6}'
+
     def assert_simulation_schema_path(self, inspected_path):
         self.assertTrue(os.path.isdir(os.path.dirname(inspected_path)))
         self.assertNotRegex(inspected_path, SIMULATION_TIME_ATAT)
@@ -308,6 +310,9 @@ status: active
         self.assertEqual(re.sub(TESTS_PATH, '', UMATOBI_ROOT_PATH), os.sep + 'umatobi-root')
         self.assertRegex(get_root_path(), UMATOBI_ROOT_PATH)
 
+    def test_get_iso8601(self):
+        self.assertRegex(self.simulation_time.get_iso8601(), LibTests.RE_ISO8601)
+
     def test_get_y15s(self):
         self.assertRegex(self.simulation_time.get_y15s(), LibTests.RE_Y15S)
 
@@ -404,12 +409,12 @@ status: active
 
     def test_from_iso_to_start_up_orig(self):
         isoformat = '2011-11-11T11:11:11.111111'
-        self.assertEqual(SimulationTime.iso_to_time(isoformat), SimulationTime(datetime(2011, 11, 11, 11, 11, 11, 111111)))
+        self.assertEqual(SimulationTime.iso8601_to_time(isoformat), SimulationTime(datetime(2011, 11, 11, 11, 11, 11, 111111)))
 
     def test_start_up_orig_to_iso(self):
         start_up_orig = datetime(2011, 11, 11, 11, 11, 11, 111111)
         with time_machine(start_up_orig):
-            self.assertEqual(SimulationTime.time_to_iso(SimulationTime()), '2011-11-11T11:11:11.111111')
+            self.assertEqual(SimulationTime.time_to_iso8601(SimulationTime()), '2011-11-11T11:11:11.111111')
 
     def test_mock_datetime_now(self):
         manipulated_datetime = datetime(2011, 11, 11, 11, 11, 11, 111111)
