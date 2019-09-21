@@ -1,20 +1,29 @@
-import os, sys, shutil
+import os, sys, re, shutil
 import unittest
 from unittest.mock import patch, MagicMock
 from io import StringIO
 from datetime import datetime, timedelta
 
 from umatobi.tests import *
-from umatobi.log import logger, make_logger
-from umatobi import lib
-from umatobi.simulator.core.key import Key
+from umatobi.log import make_logger
 from umatobi.lib import *
+from umatobi.simulator.core.key import Key
 
 class LibTests(unittest.TestCase):
 
+    RE_Y15S = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d[0-5]\d[0-5]\d'
+    def assert_simulation_schema_path(self, inspected_path):
+        self.assertTrue(os.path.isdir(os.path.dirname(inspected_path)))
+        self.assertNotRegex(inspected_path, SIMULATION_TIME_ATAT)
+        self.assertRegex(inspected_path, LibTests.RE_Y15S)
+
     def setUp(self):
-        self.tests_simulation_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'umatobi-simulation')
+        self.simulation_dir_path = \
+            os.path.join(SIMULATION_ROOT_PATH, SIMULATION_DIR_PATH)
         self.simulation_time = SimulationTime()
+
+    def tearDown(self):
+        shutil.rmtree(os.path.dirname(get_master_palm_path(self.simulation_time)), ignore_errors=True)
 
     def test_simulation_time(self):
         start_up_orig = SimulationTime.now()
@@ -174,7 +183,11 @@ key: 0x{keyid}
 status: active
 '''
 
-        schema_parser = SchemaParser(SCHEMA_PATH)
+        simulation_time = self.simulation_time
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        self.assert_simulation_schema_path(simulation_schema_path)
+
+        schema_parser = SchemaParser(simulation_schema_path)
         config = configparser.ConfigParser()
         config.read_string(simulation_conf_str)
       # print('config.sections =', tuple(config.sections()))
@@ -195,8 +208,11 @@ status: active
         self.assertEqual(records.nodes['status'], 'active')
 
     def test_get_db_from_schema(self):
-        # SCHEMA_PATH='umatobi/simulator/simulation.schema'
-        schema_parser = SchemaParser(SCHEMA_PATH)
+        simulation_time = self.simulation_time
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        self.assert_simulation_schema_path(simulation_schema_path)
+
+        schema_parser = SchemaParser(simulation_schema_path)
 
         expected_table_names = ('simulation', 'nodes', 'clients', 'growings')
         self.assertSequenceEqual(schema_parser.table_names(), expected_table_names)
@@ -207,6 +223,16 @@ status: active
        #    print(f'schema_parser[{table_name}].items() = {schema_parser[table_name].items()}')
        #    for column, data_type in schema_parser[table_name].items():
        #        print(f'column={column}, data_type={data_type}')
+
+    # SimulationTime.Y15S_FORMAT='%Y-%m-%dT%H%M%S'
+    def test_get_simulation_schema_path(self):
+        simulation_time = self.simulation_time
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        self.assertTrue(os.path.isfile(simulation_schema_path))
+        self.assertNotRegex(simulation_schema_path,
+                            SIMULATION_TIME_ATAT)
+        self.assertRegex(simulation_schema_path,
+                         LibTests.RE_Y15S)
 
     def test_get_table_columns(self):
         expected_items = {
@@ -225,7 +251,10 @@ status: active
 
         }
 
-        schema_parser = SchemaParser(SCHEMA_PATH)
+        simulation_time = self.simulation_time
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        self.assert_simulation_schema_path(simulation_schema_path)
+        schema_parser = SchemaParser(simulation_schema_path)
         self.assertSequenceEqual(schema_parser.table_names(),
                            tuple(expected_items.keys()))
 
@@ -245,9 +274,9 @@ status: active
         }
 
         self.assertIsInstance(d, dict)
-        j = lib.dict2json(d)
+        j = dict2json(d)
         self.assertIsInstance(j, str)
-        d2 = lib.json2dict(j)
+        d2 = json2dict(j)
         self.assertIsInstance(d2, dict)
         self.assertNotEqual(id(d2), id(d))
         self.assertEqual(d2, d)
@@ -260,28 +289,38 @@ status: active
         }
 
         self.assertIsInstance(d, dict)
-        b = lib.dict2bytes(d)
+        b = dict2bytes(d)
         self.assertIsInstance(b, bytes)
-        d2 = lib.bytes2dict(b)
+        d2 = bytes2dict(b)
         self.assertIsInstance(d2, dict)
         self.assertNotEqual(id(d2), id(d))
         self.assertEqual(d2, d)
 
-    def test_SIMULATION_DIR(self):
-        self.assertEqual(SIMULATION_DIR, self.tests_simulation_dir)
+    def test_some_PATHes(self):
+        self.assertRegex(UMATOBI_ROOT_PATH, f"^{TESTS_PATH}")
+        self.assertRegex(SIMULATION_ROOT_PATH, f"^{TESTS_PATH}")
 
-    def test_master_hand(self):
-        simulation_time = self.simulation_time
-        self.assertEqual(lib.get_master_hand(simulation_time), f"{SimulationTime.time_to_y15s(simulation_time)}/{MASTER_HAND}")
+        self.assertRegex(SIMULATION_DIR_PATH, r'/@@SIMULATION_TIME@@$')
+        self.assertRegex(SIMULATION_SCHEMA_PATH, r'/tests/')
 
-    def test_master_hand_path(self):
+    def test_root_path(self):
+        self.assertEqual(get_root_path(), UMATOBI_ROOT_PATH)
+        self.assertEqual(re.sub(TESTS_PATH, '', UMATOBI_ROOT_PATH), os.sep + 'umatobi-root')
+        self.assertRegex(get_root_path(), UMATOBI_ROOT_PATH)
+
+    def test_gety15s(self):
+        self.assertRegex(self.simulation_time.get_y15s(), LibTests.RE_Y15S)
+
+    def test_master_palm_path(self):
         simulation_time = self.simulation_time
         self.assertEqual(
-            get_master_hand_path(SIMULATION_DIR, simulation_time),
-            os.path.join(self.tests_simulation_dir, f"{simulation_time}/{MASTER_HAND}"))
+            get_master_palm_path(simulation_time),
+            os.path.join(SIMULATION_ROOT_PATH,
+                         simulation_time.get_y15s(),
+                         MASTER_PALM))
 
     def test_make_log_dir(self):
-        special_dir = SIMULATION_DIR + "-special"
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
         self.assertFalse(os.path.isdir(special_dir))
         tlogger = make_logger(log_dir=special_dir, name='special', id_=None, level="INFO")
         self.assertTrue(os.path.isdir(special_dir))
@@ -292,7 +331,7 @@ status: active
         self.assertTrue(os.path.isdir(special_dir))
         shutil.rmtree(special_dir)
 
-        special_dir = SIMULATION_DIR + "-special2"
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
         self.assertFalse(os.path.isdir(special_dir))
         tlogger = make_logger(log_dir=special_dir, name='', id_=None, level="INFO")
         self.assertTrue(os.path.isdir(special_dir))
@@ -304,11 +343,13 @@ status: active
         shutil.rmtree(special_dir)
 
     def test_log_path(self):
-        tlogger = make_logger(log_dir=SIMULATION_DIR, name='test_logger', id_=None, level="INFO")
-        self.assertEqual(tlogger.log_path, os.path.join(self.tests_simulation_dir, 'test_logger.log', ))
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
+        tlogger = make_logger(log_dir=special_dir, name='test_logger', id_=None, level="INFO")
+        self.assertEqual(tlogger.log_path, os.path.join(special_dir, 'test_logger.log', ))
 
-        tlogger = make_logger(log_dir=SIMULATION_DIR, name='test_logger', id_=888, level="INFO")
-        self.assertEqual(tlogger.log_path, os.path.join(self.tests_simulation_dir, 'test_logger.888.log', ))
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
+        tlogger = make_logger(log_dir=special_dir, name='test_logger', id_=888, level="INFO")
+        self.assertEqual(tlogger.log_path, os.path.join(special_dir, 'test_logger.888.log', ))
 
     def test_make_start_up_orig(self):
         simulation_time = self.simulation_time

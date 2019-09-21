@@ -1,4 +1,4 @@
-import json, time, os, threading, sched, configparser, socket
+import json, time, os, threading, sched, configparser, socket, re, shutil
 from datetime import datetime as datetime2
 
 from umatobi.constants import *
@@ -179,13 +179,27 @@ class SchemaParser(configparser.ConfigParser):
             d[column_name] = value
         return d
 
-def get_master_hand(simulation_time):
-    y15s = SimulationTime.time_to_y15s(simulation_time)
-    return os.path.join(y15s, MASTER_HAND)
+def get_simulation_schema_path(simulation_time):
+    simulation_schema_path = re.sub(SIMULATION_TIME_ATAT,
+                                    simulation_time.get_y15s(),
+                                    SIMULATION_SCHEMA_PATH)
 
-def get_master_hand_path(simulation_dir, simulation_time):
-    return os.path.join(simulation_dir,
-                        get_master_hand(simulation_time))
+    simulation_schema_dir = os.path.dirname(simulation_schema_path)
+    if not os.path.isdir(simulation_schema_dir):
+        os.mkdir(simulation_schema_dir)
+        logger.info(f"os.mkdir(simulation_schema_dir={simulation_schema_dir})")
+    if not os.path.isfile(simulation_schema_path):
+        logger.info(f"shutil.copyfile(SIMULATION_SCHEMA_ORIG={SIMULATION_SCHEMA_ORIG}, simulation_schema_dir={simulation_schema_dir})")
+        shutil.copyfile(SIMULATION_SCHEMA_ORIG, simulation_schema_path)
+
+    return simulation_schema_path
+
+def get_root_path():
+    return UMATOBI_ROOT_PATH
+
+def get_master_palm_path(simulation_time):
+    y15s = SimulationTime.time_to_y15s(simulation_time)
+    return os.path.join(re.sub(SIMULATION_TIME_ATAT, y15s, SIMULATION_DIR_PATH), MASTER_PALM)
 
 def validate_kwargs(st_barrier, kwargs):
     if st_barrier != kwargs.keys():

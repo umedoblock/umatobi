@@ -3,14 +3,8 @@ from contextlib import contextmanager
 from unittest.mock import patch
 from datetime import timedelta
 
-from umatobi import constants
+from umatobi.tests.constants import *
 from umatobi.lib import SimulationTime
-
-constants.SIMULATION_DIR = os.path.join(os.path.dirname(__file__), 'umatobi-simulation')
-constants.FIXTURES_DIR = os.path.join(os.path.dirname(__file__), 'fixtures')
-constants.LOGGER_STREAM = open(os.path.join(constants.SIMULATION_DIR, 'stdout.log'), 'w')
-
-from umatobi.constants import *
 
 SIMULATION_SECONDS = 30
 D_TIMEDELTA = {
