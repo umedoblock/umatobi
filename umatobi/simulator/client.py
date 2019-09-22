@@ -87,7 +87,7 @@ class Client(object):
     def _has_a_lot_on_mind(self):
         logger.info(f"{self}._makes_growings_table()")
         self.client_db = sql.SQL(db_path=self.client_db_path,
-                                 schema_path=self.schema_path)
+                                 schema_path=self.simulation_schema_path)
         self.client_db.create_db()
         self.client_db.create_table('growings')
 
@@ -196,6 +196,9 @@ class Client(object):
         # Happily, you don't get below ResourceWarning.
         # ResourceWarning: unclosed <socket.socket fd=7, ...
 
+    def get_db_path(self):
+        return get_client_db_path(self.simulation_time, self.id)
+
     ########################################################################
     # action of detail
     ########################################################################
@@ -225,13 +228,12 @@ class Client(object):
             raise RuntimeError('client cannot say "I am Client." to watson where is {}'.format(self.watson_office_addr))
 
         self.id = reply['client_id']
-        self.start_up_orig = isoformat_to_start_up_orig(reply['start_up_orig'])
-        self.dir_name = reply['dir_name']
-        self.client_db_path = os.path.join(self.dir_name,
-                                     'client.{}.db'.format(self.id))
+        self.simulation_time = SimulationTime.iso8601_to_time(reply['iso8601'])
+
+        self.client_db_path = self.get_db_path()
         self.node_index = reply['node_index']
         self.log_level = reply['log_level']
-        self.schema_path = SCHEMA_PATH
+        self.simulation_schema_path = get_simulation_schema_path(self.simulation_time)
 
         return reply
 

@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 import unittest
 
 import umatobi
-from umatobi.lib import *
 from umatobi.tests import *
+from umatobi.lib import *
 from umatobi.simulator.client import Client
 from umatobi.simulator.sql import SQL
 
@@ -130,32 +130,32 @@ class ClientTests(unittest.TestCase):
         self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._say_good_bye\(\), .+\.close\(.+\)')
 
     def test_client__has_a_lot_on_mind(self):
-        start_up_orig = make_start_up_orig()
-        start_up_time = y15sformat_time(start_up_orig)
+        expected_simulation_time = SimulationTime()
 
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
         client = Client(watson_office_addr, num_nodes)
+
         client._hello_watson = mock.MagicMock()
         client._hello_watson.return_value = {
             'client_id': 1,
-            'start_up_orig': start_up_orig_to_isoformat(make_start_up_orig()),
-            'dir_name': os.path.join(SIMULATION_DIR, start_up_time),
+            'iso8601': expected_simulation_time.get_iso8601(),
             'node_index': 1,
             'log_level': 'INFO',
         }
+
         reply = client._init_attrs()
         for key, value in reply.items():
             if key == 'client_id':
                 key_ = 'id'
             else:
                 key_ = key
-            if key == 'start_up_orig':
-                self.assertEqual(getattr(client, key_), isoformat_to_start_up_orig(reply[key]))
+            if key == 'iso8601':
+                self.assertEqual(client.simulation_time, expected_simulation_time)
             else:
                 self.assertEqual(getattr(client, key_), reply[key])
-        self.assertEqual(getattr(client, 'client_db_path'), os.path.join(client.dir_name, f'client.{client.id}.db'), reply[key])
-        self.assertEqual(getattr(client, 'schema_path'), SCHEMA_PATH)
+        self.assertEqual(getattr(client, 'client_db_path'), get_client_db_path(client.simulation_time, client.id))
+        self.assertEqual(getattr(client, 'simulation_schema_path'), get_simulation_schema_path(client.simulation_time))
 
         with self.assertRaises(AttributeError) as cm:
             getattr(client, 'client_db')
