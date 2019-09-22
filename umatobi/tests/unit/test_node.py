@@ -19,6 +19,12 @@ class NodeTests(unittest.TestCase):
         self.assertLessEqual(port, 65535)
 
     def setUp(self):
+        self.simulation_time = SimulationTime()
+        self.simulation_dir_path = \
+                get_simulation_dir_path(self.simulation_time)
+
+        os.makedirs(self.simulation_dir_path, exist_ok=True)
+
         self.the_moment = SimulationTime.now()
         with time_machine(self.the_moment):
             node_assets = Node.make_node_assets()
@@ -71,20 +77,20 @@ class NodeTests(unittest.TestCase):
 
         node.release()
 
-    def test_steal_master_palm(self):
+    def test__steal_a_glance_at_master_palm(self):
+        iso8601 = SimulationTime().get_iso8601()
         node = self.node
-        node2 = Node(host='localhost', port=11112, start_up_orig=node.start_up_orig)
-        node3 = Node(host='localhost', port=11113, start_up_orig=node.start_up_orig)
+        node2 = Node(host='localhost', port=11112, iso8601=iso8601)
+        node3 = Node(host='localhost', port=11113, iso8601=iso8601)
         self.assertTrue(hasattr(node, 'master_palm_path'))
 
         master_palm_on = node2.get_info() + node3.get_info()
 
-        os.makedirs(os.path.dirname(node.master_palm_path), exist_ok=True)
         with open(node.master_palm_path, 'w') as master_palm:
             print(node2.get_info(), file=master_palm, end='')
             print(node3.get_info(), file=master_palm, end='')
 
-        node_lines = node._steal_master_palm()
+        node_lines = node._steal_a_glance_at_master_palm()
         self.assertEqual(node_lines, master_palm_on)
         os.remove(node.master_palm_path)
 
@@ -92,19 +98,19 @@ class NodeTests(unittest.TestCase):
         node3.release()
 
     @patch('os.path')
-    def test_steal_master_palm_logger_info(self, mock_path):
+    def test_steal_a_glance_at_master_palm_logger_info(self, mock_path):
         mock_path.isfile.return_value = False
 
         node = self.node
 
         self.master_palm_path = '/tmp/none'
         with self.assertLogs('umatobi', level='INFO') as cm:
-            ret = node._steal_master_palm()
+            ret = node._steal_a_glance_at_master_palm()
         self.assertIsNone(ret)
         mock_path.isfile.assert_called_with(node.master_palm_path)
         self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
 
-    def test_steal_master_palm_logger_info2(self):
+    def test_steal_a_glance_at_master_palm_logger_info2(self):
         node = self.node
 
         patcher = patch('os.path')
@@ -112,7 +118,7 @@ class NodeTests(unittest.TestCase):
         mock_path.isfile.return_value = False
 
         with self.assertLogs('umatobi', level='INFO') as cm:
-            ret = node._steal_master_palm()
+            ret = node._steal_a_glance_at_master_palm()
         self.assertIsNone(ret)
         mock_path.isfile.assert_called_with(node.master_palm_path)
         self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")

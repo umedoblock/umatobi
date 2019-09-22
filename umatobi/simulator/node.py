@@ -117,7 +117,7 @@ class NodeOffice(socketserver.DatagramRequestHandler):
 
 class Node(node.Node):
 
-    ATTRS = ('id', 'office_addr', 'key', 'status')
+    ATTRS = ('id', 'office_addr', 'key', 'status', 'simulation_time')
 
     @classmethod
     def make_node_assets(cls):
@@ -163,7 +163,7 @@ class Node(node.Node):
         d_attrs = self.get_attrs()
         self.put_on_darkness(d_attrs, et)
 
-        self._steal_a_glance()
+        self._steal_a_glance_at_master_palm()
         self.regist()
 
         logger.info(f"byebye_nodes.wait()")
@@ -207,7 +207,7 @@ class Node(node.Node):
       # recved_msg, who = self.sock.recvfrom(1024)
         self.im_ready.set()
 
-    def _steal_a_glance(self):
+    def _steal_a_glance_at_master_palm(self):
         if not os.path.isfile(self.master_palm_path):
             logger.info(f"not found 'master_palm_path={self.master_palm_path}'")
             return None
