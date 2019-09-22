@@ -122,7 +122,7 @@ class Node(node.Node):
     @classmethod
     def make_node_assets(cls):
         byebye_nodes = threading.Event()
-        iso8601 = SimulationTime().get_iso8601(),
+        iso8601 = SimulationTime().get_iso8601()
         _queue_darkness = queue.Queue()
 
         d = {
