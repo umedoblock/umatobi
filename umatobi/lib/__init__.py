@@ -193,6 +193,12 @@ def get_simulation_dir_path(simulation_time):
 
     return simulation_dir_path
 
+def get_simulation_db_path(simulation_time):
+    simulation_dir_path = get_simulation_dir_path(simulation_time)
+    simulation_db_path = os.path.join(simulation_dir_path,
+                                      SIMULATION_DB)
+    return simulation_db_path
+
 def get_simulation_schema_path(simulation_time):
     simulation_dir_path = get_simulation_dir_path(simulation_time)
     simulation_schema_path = os.path.join(simulation_dir_path,
