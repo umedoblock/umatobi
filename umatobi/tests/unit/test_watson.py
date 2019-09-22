@@ -1,6 +1,6 @@
 import os, datetime
 import sys, shutil
-import threading, io
+import threading, io, selectors
 import unittest
 
 from umatobi.tests import *
@@ -8,13 +8,20 @@ from umatobi.simulator.watson import Watson, WatsonOffice
 from umatobi.simulator.watson import WatsonOpenOffice, WatsonTCPOffice
 from umatobi.lib import *
 
+if hasattr(selectors, 'PollSelector'):
+  # _ServerSelector = selectors.PollSelector
+  # _ServerSelector = <class 'selectors.PollSelector'>
+    patch_arg = 'selectors.PollSelector.select'
+else:
+  # _ServerSelector = selectors.SelectSelector
+    patch_arg = 'selectors.SelectSelector.select'
+
 class WatsonTests(unittest.TestCase):
     def setUp(self):
         self.watson_office_addr = ('localhost', 65530)
         self.log_level = 'INFO'
         self.simulation_time = SimulationTime()
 
-        td = D_TIMEDELTA.get(self._testMethodName, TD_ZERO)
         self.watson = Watson(self.watson_office_addr, SIMULATION_SECONDS,
                              self.simulation_time, self.log_level)
 
@@ -38,23 +45,48 @@ class WatsonTests(unittest.TestCase):
         self.assertEqual(watson.simulation_schema_path, expected_simulation_schema_path)
         self.assertEqual(watson.total_nodes, 0)
 
-    def test_watson_start(self):
+    @patch('time.sleep')
+    def test_watson_start(self, mock_sleep):
         watson = self.watson
         # 以下では，watson.start() の emulate
 
         watson.touch_simulation_db_on_clients()
         watson_open_office = watson.open_office()
 
+        mock_sleep.assert_not_called()
         watson.relaxing()
+        mock_sleep.assert_called()
 
         watson.release_clients()
-        watson.watson_tcp_office.shutdown()
+        watson.watson_tcp_office.shutdown() # heavy
         watson._wait_client_db()
 
         watson.simulation_db.access_db()
         watson._merge_db_to_simulation_db()
         watson._construct_simulation_table()
         watson.simulation_db.close()
+
+####@patch(patch_arg, return_value=False)
+####@patch('time.sleep')
+####def test_watson_start2(self, mock_sleep, mock_selector):
+####    watson = self.watson
+####    # 以下では，watson.start() の emulate
+
+####    watson.touch_simulation_db_on_clients()
+####    watson_open_office = watson.open_office()
+
+####    mock_sleep.assert_not_called()
+####    watson.relaxing()
+####    mock_sleep.assert_called()
+
+####    watson.release_clients()
+####    watson.watson_tcp_office.shutdown() # heavy
+####    watson._wait_client_db()
+
+####    watson.simulation_db.access_db()
+####    watson._merge_db_to_simulation_db()
+####    watson._construct_simulation_table()
+####    watson.simulation_db.close()
 
 class Req(object):
     # use self.rfile.readline() in WatsonOffice.handle()
@@ -99,7 +131,7 @@ class WatsonOfficeTests(unittest.TestCase):
         watson_office = \
             WatsonOfficeTestsHandle(request, client_address, server)
         self.assertTrue(watson_office.to_client)
-        self.assertEqual(1, len(watson_office.server.clients))
+        self.assertEqual(len(watson_office.server.clients), 1)
         self.assertEqual(request.sheep['num_nodes'], watson_office.server.watson.total_nodes)
 
         tc = watson_office.to_client
