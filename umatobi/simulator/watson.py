@@ -36,7 +36,7 @@ class WatsonTCPOffice(socketserver.TCPServer):
         self.watson = watson
         self.clients = []
     #   self.server in WatsonOffice class means WatsonTCPOffice instance.
-        self.start_up_orig = watson.start_up_orig
+        self.simulation_time = watson.simulation_time
         self.simulation_db = simulator.sql.SQL(db_path=watson.simulation_db_path)
         logger.info(f"{self}.simulation_db.access_db(), db_path={watson.simulation_db_path}")
         self.simulation_db.access_db()
@@ -98,7 +98,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
                 'id': client_id,
                 'host': client_addr[0],
                 'port': client_addr[1],
-                'joined': elapsed_time(self.server.start_up_orig),
+                'joined': self.server.simulation_time.passed_ms(),
                 'num_nodes': num_nodes,
                 'node_index': self.server.watson.total_nodes + 1,
                 'log_level': self.server.watson.log_level,
@@ -109,9 +109,8 @@ class WatsonOffice(socketserver.StreamRequestHandler):
             self.server.simulation_db.commit()
 
             to_client = {
-                'dir_name': self.server.watson.dir_name,
                 'client_id': client_id,
-                'start_up_orig': start_up_orig_to_isoformat(self.server.start_up_orig),
+                'iso8601': self.server.simulation_time.get_iso8601(),
                 'node_index': self.server.watson.total_nodes + 1,
                 'log_level': self.server.watson.log_level,
             }
@@ -137,7 +136,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
 
-    def __init__(self, watson_office_addr, simulation_seconds, start_up_orig, dir_name, log_level):
+    def __init__(self, watson_office_addr, simulation_seconds, simulation_time, dir_name, log_level):
         '''\
         watson: Cient, Node からの TCP 接続を待つ。
         起動時刻を start_up_time と名付けて記録する。
@@ -146,7 +145,7 @@ class Watson(threading.Thread):
 
         self.watson_office_addr = watson_office_addr
         self.log_level = log_level
-        logger.info(f"Watson(self={self}, watson_office_addr={watson_office_addr}, simulation_seconds={simulation_seconds}, start_up_orig={start_up_orig}, dir_name={dir_name}, log_level={log_level}))")
+        logger.info(f"Watson(self={self}, watson_office_addr={watson_office_addr}, simulation_seconds={simulation_seconds}, simulation_time={simulation_time}, dir_name={dir_name}, log_level={log_level}))")
 
         self.watson_office_addr_assigned = threading.Event()
         self.simulation_seconds = simulation_seconds
@@ -154,8 +153,7 @@ class Watson(threading.Thread):
         self.dir_name = dir_name
         os.makedirs(self.dir_name, exist_ok=True)
 
-        self.start_up_orig = start_up_orig
-        self.start_up_time = y15sformat_time(self.start_up_orig)
+        self.simulation_time = simulation_time
 
         self.simulation_db_path = os.path.join(self.dir_name, SIMULATION_DB)
         self.schema_path = SCHEMA_PATH
@@ -165,12 +163,12 @@ class Watson(threading.Thread):
         self.total_nodes = 0
 
     def relaxing(self):
-        et_ms = elapsed_time(self.start_up_orig)
-        et_secs = et_ms / 1000
+        et_ms = self.simulation_time.passed_ms()
+        et_secs = self.simulation_time.passed_seconds()
         relaxing_time = self.simulation_seconds - et_secs
 
         logger.info(f"{self}.relaxing(), relaxing_time={relaxing_time}")
-        logger.debug(f"{self}.relaxing(), simulation_seconds={self.simulation_seconds}, start_up_orig={self.start_up_orig}, et_ms={et_ms}, et_secs={et_secs}")
+        logger.debug(f"{self}.relaxing(), simulation_seconds={self.simulation_seconds}, simulation_time={self.simulation_time}, et_ms={et_ms}, et_secs={et_secs}")
         time.sleep(relaxing_time)
 
     def run(self):
