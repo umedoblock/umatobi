@@ -19,7 +19,7 @@ class NodeTests(unittest.TestCase):
         self.assertLessEqual(port, 65535)
 
     def setUp(self):
-        self.the_moment = make_start_up_orig()
+        self.the_moment = SimulationTime.now()
         with time_machine(self.the_moment):
             node_assets = Node.make_node_assets()
         node = Node(host='localhost', id=1, **node_assets)
@@ -75,18 +75,18 @@ class NodeTests(unittest.TestCase):
         node = self.node
         node2 = Node(host='localhost', port=11112, start_up_orig=node.start_up_orig)
         node3 = Node(host='localhost', port=11113, start_up_orig=node.start_up_orig)
-        self.assertTrue(hasattr(node, 'master_hand_path'))
+        self.assertTrue(hasattr(node, 'master_palm_path'))
 
         master_palm_on = node2.get_info() + node3.get_info()
 
-        os.makedirs(os.path.dirname(node.master_hand_path), exist_ok=True)
-        with open(node.master_hand_path, 'w') as master_palm:
+        os.makedirs(os.path.dirname(node.master_palm_path), exist_ok=True)
+        with open(node.master_palm_path, 'w') as master_palm:
             print(node2.get_info(), file=master_palm, end='')
             print(node3.get_info(), file=master_palm, end='')
 
         node_lines = node._steal_master_palm()
         self.assertEqual(node_lines, master_palm_on)
-        os.remove(node.master_hand_path)
+        os.remove(node.master_palm_path)
 
         node2.release()
         node3.release()
@@ -97,12 +97,12 @@ class NodeTests(unittest.TestCase):
 
         node = self.node
 
-        self.master_hand_path = '/tmp/none'
+        self.master_palm_path = '/tmp/none'
         with self.assertLogs('umatobi', level='INFO') as cm:
             ret = node._steal_master_palm()
         self.assertIsNone(ret)
-        mock_path.isfile.assert_called_with(node.master_hand_path)
-        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_hand_path={node.master_hand_path}'")
+        mock_path.isfile.assert_called_with(node.master_palm_path)
+        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
 
     def test_steal_master_palm_logger_info2(self):
         node = self.node
@@ -114,40 +114,40 @@ class NodeTests(unittest.TestCase):
         with self.assertLogs('umatobi', level='INFO') as cm:
             ret = node._steal_master_palm()
         self.assertIsNone(ret)
-        mock_path.isfile.assert_called_with(node.master_hand_path)
-        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_hand_path={node.master_hand_path}'")
+        mock_path.isfile.assert_called_with(node.master_palm_path)
+        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
         patcher.stop()
 
     def test_regist(self):
         node = self.node
 
         node.port = 63333
-        self.assertTrue(hasattr(node, 'master_hand_path'))
+        self.assertTrue(hasattr(node, 'master_palm_path'))
 
-        self.assertFalse(os.path.exists(node.master_hand_path))
+        self.assertFalse(os.path.exists(node.master_palm_path))
         self.assertFalse(node.im_ready.is_set())
         node.regist() # once
         self.assertTrue(node.im_ready.is_set())
-        self.assertTrue(os.path.isdir(os.path.dirname(node.master_hand_path)))
-        self.assertTrue(os.path.isfile(node.master_hand_path))
+        self.assertTrue(os.path.isdir(os.path.dirname(node.master_palm_path)))
+        self.assertTrue(os.path.isfile(node.master_palm_path))
 
-        with open(node.master_hand_path) as master_palm:
+        with open(node.master_palm_path) as master_palm:
             master_palm_on = master_palm.read()
             self.assertEqual(master_palm_on, node.get_info())
 
         node.regist() # twice
-        with open(node.master_hand_path) as master_palm:
+        with open(node.master_palm_path) as master_palm:
             master_palm_on2 = master_palm.read()
             self.assertEqual(master_palm_on2, node.get_info() * 2)
 
-        os.remove(node.master_hand_path)
+        os.remove(node.master_palm_path)
 
     def test_node_basic(self):
         node_assets = Node.make_node_assets()
         node_ = Node(host='localhost', id=1, **node_assets)
         self.assertFalse(node_.im_ready.is_set())
 
-        attrs = ('id', 'start_up_orig', \
+        attrs = ('id', 'iso8601', \
                  'byebye_nodes', '_queue_darkness')
         for attr in attrs:
             self.assertTrue(hasattr(node_, attr), attr)
@@ -178,7 +178,7 @@ class NodeTests(unittest.TestCase):
 
         node_.disappear()
 
-        os.remove(node_.master_hand_path)
+        os.remove(node_.master_palm_path)
 
     def test_node_thread(self):
         logger.info(f"")
@@ -197,7 +197,7 @@ class NodeTests(unittest.TestCase):
         node_.disappear()
         self.assertEqual(1, threading.active_count())
 
-        os.remove(node_.master_hand_path)
+        os.remove(node_.master_palm_path)
 
 class NodeOfficeTests(unittest.TestCase):
     def setUp(self):
