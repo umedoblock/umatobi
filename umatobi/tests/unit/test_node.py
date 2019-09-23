@@ -12,197 +12,7 @@ from umatobi.log import logger
 from umatobi.simulator.core.key import Key
 from umatobi.simulator.node import *
 
-class NodeTests(unittest.TestCase):
-    def assertIsPort(self, port):
-        self.assertGreaterEqual(port, 1024)
-        self.assertLessEqual(port, 65535)
-
-    def setUp(self):
-        self.simulation_time = SimulationTime()
-        self.simulation_dir_path = \
-                get_simulation_dir_path(self.simulation_time)
-
-        os.makedirs(self.simulation_dir_path, exist_ok=True)
-
-        self.the_moment = SimulationTime.now()
-        with time_machine(self.the_moment):
-            node_assets = make_node_assets()
-        node = Node(host='localhost', id=1, **node_assets)
-        key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
-        node.key.update(key)
-        self.node = node
-        self.key = key
-
-    def tearDown(self):
-        self.node.release()
-
-    def test_get_attrs(self):
-        node = self.node
-
-        attrs = node.get_attrs()
-        self.assertSetEqual(set(attrs.keys()), set(Node.ATTRS))
-
-    def test_put_on_darkness(self):
-        node = self.node
-
-        et = node.get_elapsed_time()
-        attrs = node.get_attrs()
-
-        self.assertEqual(node._queue_darkness.qsize(), 0)
-        node.put_on_darkness(attrs, et)
-        self.assertEqual(node._queue_darkness.qsize(), 1)
-
-        got_et, got_pickled = node._queue_darkness.get()
-        self.assertEqual(node._queue_darkness.qsize(), 0)
-        got_d_attrs = pickle.loads(got_pickled)
-        self.assertEqual(got_et, et)
-        self.assertEqual(got_d_attrs, attrs)
-
-    def test_update_key(self):
-        node = self.node
-
-        self.assertEqual(node.key.key, self.key)
-        key = b'\xfe\xdc\xba\x98\x76\x54\x32\x10' * 4
-        node.key.update(key)
-        self.assertEqual(node.key.key, key)
-
-    def test_node_get_info(self):
-        node_assets = make_node_assets()
-        node = Node(host='localhost', port=55555, **node_assets)
-        node_info_line = f"{node.office_addr[0]}:{node.office_addr[1]}:{str(node.key)}" + '\n'
-        self.assertEqual(node.office_addr[0], 'localhost')
-        self.assertEqual(node.office_addr[1], 55555)
-        self.assertEqual(node.get_info(), node_info_line)
-
-        node.release()
-
-    def test__steal_a_glance_at_master_palm(self):
-        iso8601 = SimulationTime().get_iso8601()
-        node = self.node
-        node2 = Node(host='localhost', port=11112, iso8601=iso8601)
-        node3 = Node(host='localhost', port=11113, iso8601=iso8601)
-        self.assertTrue(hasattr(node, 'master_palm_path'))
-
-        master_palm_on = node2.get_info() + node3.get_info()
-
-        with open(node.master_palm_path, 'w') as master_palm:
-            print(node2.get_info(), file=master_palm, end='')
-            print(node3.get_info(), file=master_palm, end='')
-
-        node_lines = node._steal_a_glance_at_master_palm()
-        self.assertEqual(node_lines, master_palm_on)
-        os.remove(node.master_palm_path)
-
-        node2.release()
-        node3.release()
-
-    @patch('os.path')
-    def test_steal_a_glance_at_master_palm_logger_info(self, mock_path):
-        mock_path.isfile.return_value = False
-
-        node = self.node
-
-        self.master_palm_path = '/tmp/none'
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            ret = node._steal_a_glance_at_master_palm()
-        self.assertIsNone(ret)
-        mock_path.isfile.assert_called_with(node.master_palm_path)
-        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
-
-    def test_steal_a_glance_at_master_palm_logger_info2(self):
-        node = self.node
-
-        patcher = patch('os.path')
-        mock_path = patcher.start()
-        mock_path.isfile.return_value = False
-
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            ret = node._steal_a_glance_at_master_palm()
-        self.assertIsNone(ret)
-        mock_path.isfile.assert_called_with(node.master_palm_path)
-        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
-        patcher.stop()
-
-    def test_regist(self):
-        node = self.node
-
-        node.port = 63333
-        self.assertTrue(hasattr(node, 'master_palm_path'))
-
-        self.assertFalse(os.path.exists(node.master_palm_path))
-        self.assertFalse(node.im_ready.is_set())
-        node.regist() # once
-        self.assertTrue(node.im_ready.is_set())
-        self.assertTrue(os.path.isdir(os.path.dirname(node.master_palm_path)))
-        self.assertTrue(os.path.isfile(node.master_palm_path))
-
-        with open(node.master_palm_path) as master_palm:
-            master_palm_on = master_palm.read()
-            self.assertEqual(master_palm_on, node.get_info())
-
-        node.regist() # twice
-        with open(node.master_palm_path) as master_palm:
-            master_palm_on2 = master_palm.read()
-            self.assertEqual(master_palm_on2, node.get_info() * 2)
-
-        os.remove(node.master_palm_path)
-
-    def test_node_basic(self):
-        node_assets = make_node_assets()
-        node_ = Node(host='localhost', id=1, **node_assets)
-        self.assertFalse(node_.im_ready.is_set())
-
-        attrs = ('id', 'iso8601', \
-                 'byebye_nodes', '_queue_darkness')
-        for attr in attrs:
-            self.assertTrue(hasattr(node_, attr), attr)
-
-      # node.start()
-        node_.appear()
-        node_.regist() # node_.im_ready.set()
-        self.assertTrue(node_.im_ready.is_set())
-
-        node_.office_addr_assigned.wait()
-        self.assertIsInstance(node_.office_addr, tuple)
-        self.assertEqual(node_.office_addr[0], 'localhost')
-        self.assertIsPort(node_.office_addr[1])
-
-        tup = node_._queue_darkness.get()
-        et, pickle_dumps = tup
-        d = pickle.loads(pickle_dumps)
-        self.assertEqual(d['id'], 1)
-        self.assertEqual(d['id'], node_.id)
-
-        self.assertEqual(d['office_addr'][0], 'localhost')
-        self.assertIsPort(d['office_addr'][1])
-
-        self.assertIsInstance(d['key'], Key)
-        self.assertEqual(d['status'], 'active')
-
-        node_.byebye_nodes.set() # act darkness
-
-        node_.disappear()
-
-        os.remove(node_.master_palm_path)
-
-    def test_node_thread(self):
-        logger.info(f"")
-        node_assets = make_node_assets()
-        node_ = Node(host='localhost', id=1, **node_assets)
-
-        logger.info(f"node_.appear()")
-        node_.appear()
-        node_.office_addr_assigned.wait()
-        self.assertEqual(node_.office_addr, node_.office_addr)
-        self.assertEqual(3, threading.active_count())
-
-        logger.info(f"node_.byebye_nodes.set()")
-        node_.byebye_nodes.set() # act darkness
-        logger.info(f"node_.disappear()")
-        node_.disappear()
-        self.assertEqual(1, threading.active_count())
-
-        os.remove(node_.master_palm_path)
+# class NodeOpenOfficeTests(unittest.TestCase):
 
 class NodeUDPOfficeTests(unittest.TestCase):
     def test__determine_node_office_addr_every_ports_are_in_use(self):
@@ -270,6 +80,208 @@ class NodeOfficeTests(unittest.TestCase):
         d_recved = json2dict(packet.decode())
         self.assertEqual(d_recved['hop'], d['hop'] * 2)
         self.assertEqual(d_recved['profess'], 'You are Green.')
+
+class NodeTests(unittest.TestCase):
+    def assertIsPort(self, port):
+        self.assertGreaterEqual(port, 1024)
+        self.assertLessEqual(port, 65535)
+
+    def setUp(self):
+        self.simulation_time = SimulationTime()
+        self.simulation_dir_path = \
+                get_simulation_dir_path(self.simulation_time)
+
+        os.makedirs(self.simulation_dir_path, exist_ok=True)
+
+        self.the_moment = SimulationTime.now()
+        with time_machine(self.the_moment):
+            node_assets = make_node_assets()
+        node = Node(host='localhost', id=1, **node_assets)
+        key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
+        node.key.update(key)
+        self.node = node
+        self.key = key
+
+    def tearDown(self):
+        self.node.release()
+
+#   def test_run(self):
+#   def test__open_office(self):
+#   def test__force_shutdown(self):
+#   def test_set_attrs(self):
+#   def test_get_elapsed_time(self):
+#   def test_appear(self):
+#   def test_disappear(self):
+#   def test_release_clients(self):
+#   def test___str__(self):
+
+    def test_node_thread(self):
+        logger.info(f"")
+        node_assets = make_node_assets()
+        node_ = Node(host='localhost', id=1, **node_assets)
+
+        logger.info(f"node_.appear()")
+        node_.appear()
+        node_.office_addr_assigned.wait()
+        self.assertEqual(node_.office_addr, node_.office_addr)
+        self.assertEqual(3, threading.active_count())
+
+        logger.info(f"node_.byebye_nodes.set()")
+        node_.byebye_nodes.set() # act darkness
+        logger.info(f"node_.disappear()")
+        node_.disappear()
+        self.assertEqual(1, threading.active_count())
+
+        os.remove(node_.master_palm_path)
+
+    def test_node_basic(self):
+        node_assets = make_node_assets()
+        node_ = Node(host='localhost', id=1, **node_assets)
+        self.assertFalse(node_.im_ready.is_set())
+
+        attrs = ('id', 'iso8601', \
+                 'byebye_nodes', '_queue_darkness')
+        for attr in attrs:
+            self.assertTrue(hasattr(node_, attr), attr)
+
+      # node.start()
+        node_.appear()
+        node_.regist() # node_.im_ready.set()
+        self.assertTrue(node_.im_ready.is_set())
+
+        node_.office_addr_assigned.wait()
+        self.assertIsInstance(node_.office_addr, tuple)
+        self.assertEqual(node_.office_addr[0], 'localhost')
+        self.assertIsPort(node_.office_addr[1])
+
+        tup = node_._queue_darkness.get()
+        et, pickle_dumps = tup
+        d = pickle.loads(pickle_dumps)
+        self.assertEqual(d['id'], 1)
+        self.assertEqual(d['id'], node_.id)
+
+        self.assertEqual(d['office_addr'][0], 'localhost')
+        self.assertIsPort(d['office_addr'][1])
+
+        self.assertIsInstance(d['key'], Key)
+        self.assertEqual(d['status'], 'active')
+
+        node_.byebye_nodes.set() # act darkness
+
+        node_.disappear()
+
+        os.remove(node_.master_palm_path)
+
+    def test_node_get_info(self):
+        node_assets = make_node_assets()
+        node = Node(host='localhost', port=55555, **node_assets)
+        node_info_line = f"{node.office_addr[0]}:{node.office_addr[1]}:{str(node.key)}" + '\n'
+        self.assertEqual(node.office_addr[0], 'localhost')
+        self.assertEqual(node.office_addr[1], 55555)
+        self.assertEqual(node.get_info(), node_info_line)
+
+        node.release()
+
+    def test_regist(self):
+        node = self.node
+
+        node.port = 63333
+        self.assertTrue(hasattr(node, 'master_palm_path'))
+
+        self.assertFalse(os.path.exists(node.master_palm_path))
+        self.assertFalse(node.im_ready.is_set())
+        node.regist() # once
+        self.assertTrue(node.im_ready.is_set())
+        self.assertTrue(os.path.isdir(os.path.dirname(node.master_palm_path)))
+        self.assertTrue(os.path.isfile(node.master_palm_path))
+
+        with open(node.master_palm_path) as master_palm:
+            master_palm_on = master_palm.read()
+            self.assertEqual(master_palm_on, node.get_info())
+
+        node.regist() # twice
+        with open(node.master_palm_path) as master_palm:
+            master_palm_on2 = master_palm.read()
+            self.assertEqual(master_palm_on2, node.get_info() * 2)
+
+        os.remove(node.master_palm_path)
+
+    def test__steal_a_glance_at_master_palm(self):
+        iso8601 = SimulationTime().get_iso8601()
+        node = self.node
+        node2 = Node(host='localhost', port=11112, iso8601=iso8601)
+        node3 = Node(host='localhost', port=11113, iso8601=iso8601)
+        self.assertTrue(hasattr(node, 'master_palm_path'))
+
+        master_palm_on = node2.get_info() + node3.get_info()
+
+        with open(node.master_palm_path, 'w') as master_palm:
+            print(node2.get_info(), file=master_palm, end='')
+            print(node3.get_info(), file=master_palm, end='')
+
+        node_lines = node._steal_a_glance_at_master_palm()
+        self.assertEqual(node_lines, master_palm_on)
+        os.remove(node.master_palm_path)
+
+        node2.release()
+        node3.release()
+
+    @patch('os.path')
+    def test_steal_a_glance_at_master_palm_logger_info(self, mock_path):
+        mock_path.isfile.return_value = False
+
+        node = self.node
+
+        self.master_palm_path = '/tmp/none'
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            ret = node._steal_a_glance_at_master_palm()
+        self.assertIsNone(ret)
+        mock_path.isfile.assert_called_with(node.master_palm_path)
+        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
+
+    def test_steal_a_glance_at_master_palm_logger_info2(self):
+        node = self.node
+
+        patcher = patch('os.path')
+        mock_path = patcher.start()
+        mock_path.isfile.return_value = False
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            ret = node._steal_a_glance_at_master_palm()
+        self.assertIsNone(ret)
+        mock_path.isfile.assert_called_with(node.master_palm_path)
+        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
+        patcher.stop()
+
+    def test_get_attrs(self):
+        node = self.node
+
+        attrs = node.get_attrs()
+        self.assertSetEqual(set(attrs.keys()), set(Node.ATTRS))
+
+    def test_put_on_darkness(self):
+        node = self.node
+
+        et = node.get_elapsed_time()
+        attrs = node.get_attrs()
+
+        self.assertEqual(node._queue_darkness.qsize(), 0)
+        node.put_on_darkness(attrs, et)
+        self.assertEqual(node._queue_darkness.qsize(), 1)
+
+        got_et, got_pickled = node._queue_darkness.get()
+        self.assertEqual(node._queue_darkness.qsize(), 0)
+        got_d_attrs = pickle.loads(got_pickled)
+        self.assertEqual(got_et, et)
+        self.assertEqual(got_d_attrs, attrs)
+
+    def test_update_key(self):
+        node = self.node
+
+        self.assertEqual(node.key.key, self.key)
+        key = b'\xfe\xdc\xba\x98\x76\x54\x32\x10' * 4
+        node.key.update(key)
+        self.assertEqual(node.key.key, key)
 
 if __name__ == '__main__':
     unittest.main()
