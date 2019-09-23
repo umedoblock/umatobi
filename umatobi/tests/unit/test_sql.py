@@ -9,13 +9,6 @@ from umatobi.tests import *
 from umatobi.simulator.sql import SQL
 from umatobi import lib
 
-def remove_test_db():
-    try:
-        os.remove(TEST_DB_PATH)
-    except OSError as raiz:
-        if raiz.args != (2, 'No such file or directory'):
-            raise raiz
-
 def insert_test_table_n_records(db, n_records):
     s = datetime.datetime.now()
     inserts = [None] * n_records
@@ -40,17 +33,23 @@ def insert_test_table_n_records(db, n_records):
     return inserts
 
 class SQLTests(unittest.TestCase):
-    def tearDown(self):
-        remove_test_db()
 
     def test_create_db_and_table(self):
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
+        self.assertTrue(os.path.isfile(sql.db_path))
         sql.create_table('test_table')
+
+        self.assertTrue(os.path.isfile(sql.db_path))
+        sql.remove_db()
+        self.assertFalse(os.path.isfile(sql.db_path))
 
     def test_remove_db(self):
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
+        self.assertTrue(os.path.isfile(sql.db_path))
 
         self.assertTrue(os.path.isfile(sql.db_path))
         sql.remove_db()
@@ -58,6 +57,7 @@ class SQLTests(unittest.TestCase):
 
     def test_remove_db_memory(self):
         sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
         self.assertFalse(os.path.isfile(sql.db_path))
 
@@ -84,7 +84,9 @@ class SQLTests(unittest.TestCase):
     def test_insert_and_select(self):
         s = datetime.datetime.now()
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
+        self.assertTrue(os.path.isfile(sql.db_path))
         sql.create_table('test_table')
 
         d_insert = {}
@@ -123,9 +125,15 @@ class SQLTests(unittest.TestCase):
         for column, index in d.items():
             self.assertEqual(d_insert[column], d_selected[0][index])
 
+        self.assertTrue(os.path.isfile(sql.db_path))
+        sql.remove_db()
+        self.assertFalse(os.path.isfile(sql.db_path))
+
     def test_take_table(self):
         db = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(db.db_path))
         db.create_db()
+        self.assertTrue(os.path.isfile(db.db_path))
         db.create_table('test_table')
 
         n_records = 100
@@ -139,8 +147,13 @@ class SQLTests(unittest.TestCase):
 #       print(records)
 #       print('-------------------------------------')
         memory_db = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(memory_db.db_path))
         memory_db.create_db()
+        self.assertFalse(os.path.isfile(memory_db.db_path))
         memory_db.take_table(db, 'test_table')
+
+        db.remove_db()
+        self.assertFalse(os.path.isfile(db.db_path))
 
         memory_records = \
             memory_db.select('test_table', conditions='order by id')
@@ -156,6 +169,10 @@ class SQLTests(unittest.TestCase):
             for key in memory_records[i].keys():
                 self.assertEqual(inserts[i][key], memory_records[i][key])
 
+        self.assertFalse(os.path.isfile(memory_db.db_path))
+        memory_db.remove_db()
+        self.assertFalse(os.path.isfile(memory_db.db_path))
+
     def test_insert_and_insert(self):
         s = datetime.datetime.now()
         d = {}
@@ -169,7 +186,9 @@ class SQLTests(unittest.TestCase):
         d['elapsed_time'] = 7
 
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
+        self.assertTrue(os.path.isfile(sql.db_path))
         sql.create_table('test_table')
 
         d_insert = {}
@@ -210,6 +229,10 @@ class SQLTests(unittest.TestCase):
         args = raiz.exception.args
         self.assertEqual('UNIQUE constraint failed: test_table.id', args[0])
 
+        self.assertTrue(os.path.isfile(sql.db_path))
+        sql.remove_db()
+        self.assertFalse(os.path.isfile(sql.db_path))
+
     def test_update_and_select(self):
         s = datetime.datetime.now()
         d = {}
@@ -223,7 +246,9 @@ class SQLTests(unittest.TestCase):
         d['elapsed_time'] = 7
 
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
+        self.assertTrue(os.path.isfile(sql.db_path))
         sql.create_table('test_table')
 
         d_insert = {}
@@ -274,13 +299,23 @@ class SQLTests(unittest.TestCase):
             self.assertEqual(d_update[column], d_selected[0][index])
             self.assertNotEqual(d_insert[column], d_selected[0][index])
 
+        self.assertTrue(os.path.isfile(sql.db_path))
+        sql.remove_db()
+        self.assertFalse(os.path.isfile(sql.db_path))
+
     def test_create_db_and_table_on_memory(self):
         sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
+        self.assertFalse(os.path.isfile(sql.db_path))
+
         sql.create_table('test_table')
 
       # print(sql._create_table['test_table'])
 
+        self.assertFalse(os.path.isfile(sql.db_path))
+        sql.remove_db()
+        self.assertFalse(os.path.isfile(sql.db_path))
+
 if __name__ == '__main__':
-    remove_test_db()
     unittest.main(exit=False)
