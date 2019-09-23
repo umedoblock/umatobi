@@ -52,10 +52,11 @@ class NodeUDPOffice(socketserver.UDPServer):
                 # self.server_close() を忘れずに。
                 super().__init__(addr, NodeOffice)
             except OSError as oe:
-              # [Errno 98] Address already in use
-                if oe.errno != 98:
+              # Address already in use
+                if oe.args[1] == 'Address already in use':
+                    continue
+                else:
                     raise(oe)
-                continue
             break
 
         # office_addr が決定されている。

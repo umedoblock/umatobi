@@ -4,7 +4,6 @@ import threading, socket
 import unittest, time
 import math, pickle
 from unittest.mock import patch
-from unittest import mock
 
 import umatobi
 from umatobi.lib import *
@@ -204,6 +203,29 @@ class NodeTests(unittest.TestCase):
         self.assertEqual(1, threading.active_count())
 
         os.remove(node_.master_palm_path)
+
+class NodeUDPOfficeTests(unittest.TestCase):
+    def test__determine_node_office_addr_every_ports_are_in_use(self):
+        node_assets = make_node_assets()
+        node = Node(id=48, host='localhost', **node_assets)
+
+        with self.assertRaises(RuntimeError) as cm:
+            with patch('socket.socket.bind',
+                    side_effect=OSError(4848484848,
+                                    'Address already in use')) as mock_bind:
+                server = NodeUDPOffice(node)
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], 'every ports are in use.')
+
+    def test__determine_node_office_addr(self):
+        node_assets = make_node_assets()
+        node = Node(id=48, host='localhost', **node_assets)
+
+        side_effects = [OSError(22222222, 'Address already in use'), None]
+        with patch('socket.socket.bind', side_effect=side_effects) as mock_bind:
+            server = NodeUDPOffice(node)
+
+        server.server_close()
 
 class NodeOfficeTests(unittest.TestCase):
     def setUp(self):
