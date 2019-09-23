@@ -2,7 +2,7 @@ import os
 import sys, shutil
 import threading, socket
 import unittest, time
-import math, queue, pickle
+import math, pickle
 from unittest.mock import patch
 from unittest import mock
 
@@ -27,7 +27,7 @@ class NodeTests(unittest.TestCase):
 
         self.the_moment = SimulationTime.now()
         with time_machine(self.the_moment):
-            node_assets = Node.make_node_assets()
+            node_assets = make_node_assets()
         node = Node(host='localhost', id=1, **node_assets)
         key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
         node.key.update(key)
@@ -68,7 +68,7 @@ class NodeTests(unittest.TestCase):
         self.assertEqual(node.key.key, key)
 
     def test_node_get_info(self):
-        node_assets = Node.make_node_assets()
+        node_assets = make_node_assets()
         node = Node(host='localhost', port=55555, **node_assets)
         node_info_line = f"{node.office_addr[0]}:{node.office_addr[1]}:{str(node.key)}" + '\n'
         self.assertEqual(node.office_addr[0], 'localhost')
@@ -149,7 +149,7 @@ class NodeTests(unittest.TestCase):
         os.remove(node.master_palm_path)
 
     def test_node_basic(self):
-        node_assets = Node.make_node_assets()
+        node_assets = make_node_assets()
         node_ = Node(host='localhost', id=1, **node_assets)
         self.assertFalse(node_.im_ready.is_set())
 
@@ -188,7 +188,7 @@ class NodeTests(unittest.TestCase):
 
     def test_node_thread(self):
         logger.info(f"")
-        node_assets = Node.make_node_assets()
+        node_assets = make_node_assets()
         node_ = Node(host='localhost', id=1, **node_assets)
 
         logger.info(f"node_.appear()")
@@ -207,7 +207,7 @@ class NodeTests(unittest.TestCase):
 
 class NodeOfficeTests(unittest.TestCase):
     def setUp(self):
-        node_assets = Node.make_node_assets()
+        node_assets = make_node_assets()
         node = Node(id=1, host='localhost', **node_assets)
         self.node = node
 

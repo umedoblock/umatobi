@@ -1,4 +1,4 @@
-import io, os, socket
+import io, os, socket, threading, queue
 from contextlib import contextmanager
 from unittest.mock import patch
 from datetime import timedelta
@@ -14,6 +14,19 @@ D_TIMEDELTA = {
         timedelta(0, 73, 138770),
 }
 TD_ZERO = timedelta(0, 0, 0)
+
+def make_node_assets():
+    byebye_nodes = threading.Event()
+    iso8601 = SimulationTime().get_iso8601()
+    _queue_darkness = queue.Queue()
+
+    d = {
+        'byebye_nodes': byebye_nodes,
+        'iso8601': iso8601,
+        '_queue_darkness': _queue_darkness,
+    }
+
+    return d
 
 class MockIO(io.BytesIO):
     def recv(self, bufsize, flags=0):

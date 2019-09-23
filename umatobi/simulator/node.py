@@ -1,4 +1,4 @@
-import sys, os, threading, struct, math, random, queue, pickle, socketserver, datetime
+import sys, os, threading, struct, math, random, pickle, socketserver, datetime
 
 from umatobi.simulator.core.key import Key
 from umatobi.log import *
@@ -118,20 +118,6 @@ class NodeOffice(socketserver.DatagramRequestHandler):
 class Node(node.Node):
 
     ATTRS = ('id', 'office_addr', 'key', 'status', 'simulation_time')
-
-    @classmethod
-    def make_node_assets(cls):
-        byebye_nodes = threading.Event()
-        iso8601 = SimulationTime().get_iso8601()
-        _queue_darkness = queue.Queue()
-
-        d = {
-            'byebye_nodes': byebye_nodes,
-            'iso8601': iso8601,
-            '_queue_darkness': _queue_darkness,
-        }
-
-        return d
 
     def __init__(self, **kwargs):
         '''\
