@@ -47,177 +47,6 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(client.num_darkness, num_darkness)
         self.assertEqual(client.last_darkness_make_nodes, Client.NODES_PER_DARKNESS)
 
-    @mock.patch.object(Client, '_make_contact_with', autospec=True)
-    @mock.patch.object(Client, '_init_attrs', autospec=True)
-    def test_client__consult_watson(self, mock_init_attrs, mock_contact_with):
-        watson_office_addr = ('localhost', 11111)
-        num_nodes = 10
-        client = Client(watson_office_addr, num_nodes)
-
-        client._consult_watson()
-
-        mock_contact_with.assert_called_once()
-        mock_init_attrs.assert_called_once()
-
-    @mock.patch.object(Client, '_make_contact_with', autospec=True)
-    def test__make_contact_with(self, mock_contact_with):
-        num_nodes = 100
-        client = Client(('localhost', 11111), num_nodes)
-        self.assertEqual(client.watson_office_addr, ('localhost', 11111))
-        self.assertEqual(client.num_nodes, num_nodes)
-
-        client._make_contact_with()
-        mock_contact_with.assert_called_with(client)
-
-    @mock.patch.object(socket, 'socket', autospec=True)
-    def test__make_contact_with2(self, mock_socket):
-        watson_office_addr = ('localhost', 11111)
-        num_nodes = 100
-        client = Client(watson_office_addr, num_nodes)
-        self.assertEqual(client.watson_office_addr, watson_office_addr)
-        self.assertEqual(client.num_nodes, num_nodes)
-
-        self.assertIsNone(getattr(client, '_tcp_sock', None))
-        client._make_contact_with()
-        mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
-        client._tcp_sock.connect.assert_called_with(watson_office_addr)
-        self.assertIsInstance(client._tcp_sock, type(mock_socket.return_value))
-
-    def test_client__make_contact_with2(self):
-        watson_office_addr = ('localhost', 11111)
-        num_nodes = 100
-        client = Client(watson_office_addr, num_nodes)
-        self.assertEqual(client.watson_office_addr, watson_office_addr)
-        self.assertEqual(client.num_nodes, num_nodes)
-
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            with mock.patch.object(socket, 'socket') as mock_socket:
-                client._make_contact_with()
-
-        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._make_contact_with\(\), .+\.connect\(.+\)')
-        mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
-        client._tcp_sock.connect.assert_called_with(watson_office_addr)
-        self.assertIsInstance(client._tcp_sock, type(mock_socket.return_value))
-
-    @mock.patch.object(socket.socket, 'connect')
-    def test_client__mock_connect(self, mock_connect):
-        watson_office_addr = ('localhost', 11111)
-        num_nodes = 100
-        client = Client(watson_office_addr, num_nodes)
-        self.assertEqual(client.watson_office_addr, watson_office_addr)
-        self.assertEqual(client.num_nodes, num_nodes)
-
-        # socket.socket() return a socket object
-        client._make_contact_with()
-        self.assertIsInstance(client._tcp_sock, socket.socket)
-        mock_connect.assert_called_once_with(watson_office_addr)
-
-        # clean up because we got a real socket object.
-        client._tcp_sock.close()
-
-    def test_client__mock_close(self):
-        watson_office_addr = ('localhost', 11111)
-        num_nodes = 100
-        client = Client(watson_office_addr, num_nodes)
-        self.assertEqual(client.watson_office_addr, watson_office_addr)
-        self.assertEqual(client.num_nodes, num_nodes)
-
-        client._tcp_sock = None
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            with mock.patch.object(client, '_tcp_sock') as mock__tcp_sock:
-                client._say_good_bye()
-        mock__tcp_sock.close.assert_called_once_with()
-        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._say_good_bye\(\), .+\.close\(.+\)')
-
-    def test_client__has_a_lot_on_mind(self):
-        expected_simulation_time = SimulationTime()
-
-        watson_office_addr = ('localhost', 11111)
-        num_nodes = 10
-        client = Client(watson_office_addr, num_nodes)
-
-        client._hello_watson = mock.MagicMock()
-        client._hello_watson.return_value = {
-            'client_id': 1,
-            'iso8601': expected_simulation_time.get_iso8601(),
-            'node_index': 1,
-            'log_level': 'INFO',
-        }
-
-        reply = client._init_attrs()
-        for key, value in reply.items():
-            if key == 'client_id':
-                key_ = 'id'
-            else:
-                key_ = key
-            if key == 'iso8601':
-                self.assertEqual(client.simulation_time, expected_simulation_time)
-            else:
-                self.assertEqual(getattr(client, key_), reply[key])
-        self.assertEqual(getattr(client, 'client_db_path'), get_client_db_path(client.simulation_time, client.id))
-        self.assertEqual(getattr(client, 'simulation_schema_path'), get_simulation_schema_path(client.simulation_time))
-
-        with self.assertRaises(AttributeError) as cm:
-            getattr(client, 'client_db')
-        the_exception = cm.exception
-        self.assertEqual(the_exception.args[0], "'Client' object has no attribute 'client_db'")
-
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            client._has_a_lot_on_mind()
-        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._makes_growings_table\(\)')
-        self.assertIsInstance(getattr(client, 'client_db'), SQL)
-        self.assertIn('growings', client.client_db.get_table_names())
-
-        client.client_db.close()
-
-        with self.assertRaises(sqlite3.ProgrammingError) as cm:
-            client.client_db.get_table_names()
-        the_exception = cm.exception
-        self.assertEqual(the_exception.args[0], "Cannot operate on a closed cursor.")
-        client.client_db.remove_db()
-
-    @mock.patch('umatobi.simulator.client.socket')
-    def test_client__make_contact_with(self, mock_client_sock):
-        with unittest.mock.patch('umatobi.simulator.client.socket.socket'):
-            watson_office_addr = ('localhost', 11111)
-            num_nodes = 10
-            client = Client(watson_office_addr, num_nodes)
-            self.assertEqual(client.watson_office_addr, watson_office_addr)
-            self.assertEqual(client.num_nodes, num_nodes)
-
-            client._make_contact_with()
-            mock_client_sock.socket.assert_called_with(umatobi.simulator.client.socket.AF_INET, umatobi.simulator.client.socket.SOCK_STREAM)
-            self.assertTrue(client._tcp_sock)
-
-    def test_client__waits_to_break_down(self):
-        watson_office_addr = ('localhost', 11111)
-        num_nodes = 10
-
-        client = Client(watson_office_addr, num_nodes)
-
-        client._tcp_sock = mock.MagicMock()
-        client._tcp_sock.recv.return_value = b'break down.'
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            recved_mail = client._waits_to_break_down()
-        self.assertEqual(recved_mail, b'break down.')
-        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
-
-    @mock.patch.object(umatobi.simulator.client.Client, '_watch_mailbox', autospec=True)
-    def test_client__waits_to_break_down2(self, mock_client):
-        mock_client.return_value = b'break down.'
-        watson_office_addr = ('localhost', 11111)
-        num_nodes = 10
-
-        client = Client(watson_office_addr, num_nodes)
-
-        client._tcp_sock = mock.MagicMock()
-        client._tcp_sock.recv.return_value = b'break down.'
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            recved_mail = client._waits_to_break_down()
-        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
-        self.assertEqual(recved_mail, b'break down.')
-      # self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
-
     @mock.patch.object(Client, '_consult_watson', autospec=True)
     @mock.patch.object(Client, '_has_a_lot_on_mind', autospec=True)
     @mock.patch.object(Client, '_confesses_darkness', autospec=True)
@@ -291,6 +120,226 @@ class ClientTests(unittest.TestCase):
             self.assertEqual(mock.mock_calls[0], master.mock_calls[i]) # TRUE!!
             # ??? different __eq__() ???
         self.assertEqual(len(mocks), len(master.mock_calls))
+
+    @mock.patch.object(Client, '_make_contact_with', autospec=True)
+    @mock.patch.object(Client, '_init_attrs', autospec=True)
+    def test_client__consult_watson(self, mock_init_attrs, mock_contact_with):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 10
+        client = Client(watson_office_addr, num_nodes)
+
+        client._consult_watson()
+
+        mock_contact_with.assert_called_once()
+        mock_init_attrs.assert_called_once()
+
+    def test_client__has_a_lot_on_mind(self):
+        expected_simulation_time = SimulationTime()
+
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 10
+        client = Client(watson_office_addr, num_nodes)
+
+        client._hello_watson = mock.MagicMock()
+        client._hello_watson.return_value = {
+            'client_id': 1,
+            'iso8601': expected_simulation_time.get_iso8601(),
+            'node_index': 1,
+            'log_level': 'INFO',
+        }
+
+        reply = client._init_attrs()
+        for key, value in reply.items():
+            if key == 'client_id':
+                key_ = 'id'
+            else:
+                key_ = key
+            if key == 'iso8601':
+                self.assertEqual(client.simulation_time, expected_simulation_time)
+            else:
+                self.assertEqual(getattr(client, key_), reply[key])
+        self.assertEqual(getattr(client, 'client_db_path'), get_client_db_path(client.simulation_time, client.id))
+        self.assertEqual(getattr(client, 'simulation_schema_path'), get_simulation_schema_path(client.simulation_time))
+
+        with self.assertRaises(AttributeError) as cm:
+            getattr(client, 'client_db')
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "'Client' object has no attribute 'client_db'")
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            client._has_a_lot_on_mind()
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._makes_growings_table\(\)')
+        self.assertIsInstance(getattr(client, 'client_db'), SQL)
+        self.assertIn('growings', client.client_db.get_table_names())
+
+        client.client_db.close()
+
+        with self.assertRaises(sqlite3.ProgrammingError) as cm:
+            client.client_db.get_table_names()
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "Cannot operate on a closed cursor.")
+        client.client_db.remove_db()
+
+    def test_client__has_a_lot_on_mind(self):
+        expected_simulation_time = SimulationTime()
+
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 10
+        client = Client(watson_office_addr, num_nodes)
+
+        client._hello_watson = mock.MagicMock()
+        client._hello_watson.return_value = {
+            'client_id': 1,
+            'iso8601': expected_simulation_time.get_iso8601(),
+            'node_index': 1,
+            'log_level': 'INFO',
+        }
+
+        reply = client._init_attrs()
+        for key, value in reply.items():
+            if key == 'client_id':
+                key_ = 'id'
+            else:
+                key_ = key
+            if key == 'iso8601':
+                self.assertEqual(client.simulation_time, expected_simulation_time)
+            else:
+                self.assertEqual(getattr(client, key_), reply[key])
+        self.assertEqual(getattr(client, 'client_db_path'), get_client_db_path(client.simulation_time, client.id))
+        self.assertEqual(getattr(client, 'simulation_schema_path'), get_simulation_schema_path(client.simulation_time))
+
+        with self.assertRaises(AttributeError) as cm:
+            getattr(client, 'client_db')
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "'Client' object has no attribute 'client_db'")
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            client._has_a_lot_on_mind()
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._makes_growings_table\(\)')
+        self.assertIsInstance(getattr(client, 'client_db'), SQL)
+        self.assertIn('growings', client.client_db.get_table_names())
+
+        client.client_db.close()
+
+        with self.assertRaises(sqlite3.ProgrammingError) as cm:
+            client.client_db.get_table_names()
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "Cannot operate on a closed cursor.")
+        client.client_db.remove_db()
+
+    def test_client__waits_to_break_down(self):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 10
+
+        client = Client(watson_office_addr, num_nodes)
+
+        client._tcp_sock = mock.MagicMock()
+        client._tcp_sock.recv.return_value = b'break down.'
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            recved_mail = client._waits_to_break_down()
+        self.assertEqual(recved_mail, b'break down.')
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
+
+    @mock.patch.object(umatobi.simulator.client.Client, '_watch_mailbox', autospec=True)
+    def test_client__waits_to_break_down2(self, mock_client):
+        mock_client.return_value = b'break down.'
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 10
+
+        client = Client(watson_office_addr, num_nodes)
+
+        client._tcp_sock = mock.MagicMock()
+        client._tcp_sock.recv.return_value = b'break down.'
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            recved_mail = client._waits_to_break_down()
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
+        self.assertEqual(recved_mail, b'break down.')
+      # self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
+
+    @mock.patch.object(Client, '_make_contact_with', autospec=True)
+    def test__make_contact_with(self, mock_contact_with):
+        num_nodes = 100
+        client = Client(('localhost', 11111), num_nodes)
+        self.assertEqual(client.watson_office_addr, ('localhost', 11111))
+        self.assertEqual(client.num_nodes, num_nodes)
+
+        client._make_contact_with()
+        mock_contact_with.assert_called_with(client)
+
+    @mock.patch.object(socket, 'socket', autospec=True)
+    def test__make_contact_with2(self, mock_socket):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 100
+        client = Client(watson_office_addr, num_nodes)
+        self.assertEqual(client.watson_office_addr, watson_office_addr)
+        self.assertEqual(client.num_nodes, num_nodes)
+
+        self.assertIsNone(getattr(client, '_tcp_sock', None))
+        client._make_contact_with()
+        mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
+        client._tcp_sock.connect.assert_called_with(watson_office_addr)
+        self.assertIsInstance(client._tcp_sock, type(mock_socket.return_value))
+
+    @mock.patch('umatobi.simulator.client.socket')
+    def test_client__make_contact_with(self, mock_client_sock):
+        with unittest.mock.patch('umatobi.simulator.client.socket.socket'):
+            watson_office_addr = ('localhost', 11111)
+            num_nodes = 10
+            client = Client(watson_office_addr, num_nodes)
+            self.assertEqual(client.watson_office_addr, watson_office_addr)
+            self.assertEqual(client.num_nodes, num_nodes)
+
+            client._make_contact_with()
+            mock_client_sock.socket.assert_called_with(umatobi.simulator.client.socket.AF_INET, umatobi.simulator.client.socket.SOCK_STREAM)
+            self.assertTrue(client._tcp_sock)
+
+    def test_client__make_contact_with2(self):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 100
+        client = Client(watson_office_addr, num_nodes)
+        self.assertEqual(client.watson_office_addr, watson_office_addr)
+        self.assertEqual(client.num_nodes, num_nodes)
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with mock.patch.object(socket, 'socket') as mock_socket:
+                client._make_contact_with()
+
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._make_contact_with\(\), .+\.connect\(.+\)')
+        mock_socket.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
+        client._tcp_sock.connect.assert_called_with(watson_office_addr)
+        self.assertIsInstance(client._tcp_sock, type(mock_socket.return_value))
+
+    @mock.patch.object(socket.socket, 'connect')
+    def test_client__mock_connect(self, mock_connect):
+        # client._make_contact_with()
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 100
+        client = Client(watson_office_addr, num_nodes)
+        self.assertEqual(client.watson_office_addr, watson_office_addr)
+        self.assertEqual(client.num_nodes, num_nodes)
+
+        # socket.socket() return a socket object
+        client._make_contact_with()
+        self.assertIsInstance(client._tcp_sock, socket.socket)
+        mock_connect.assert_called_once_with(watson_office_addr)
+
+        # clean up because we got a real socket object.
+        client._tcp_sock.close()
+
+    def test_client__mock_close(self):
+        # client._say_good_bye()
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 100
+        client = Client(watson_office_addr, num_nodes)
+        self.assertEqual(client.watson_office_addr, watson_office_addr)
+        self.assertEqual(client.num_nodes, num_nodes)
+
+        client._tcp_sock = None
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with mock.patch.object(client, '_tcp_sock') as mock__tcp_sock:
+                client._say_good_bye()
+        mock__tcp_sock.close.assert_called_once_with()
+        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._say_good_bye\(\), .+\.close\(.+\)')
 
 if __name__ == '__main__':
     unittest.main()
