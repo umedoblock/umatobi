@@ -174,6 +174,7 @@ class ClientTests(unittest.TestCase):
             client.client_db.get_table_names()
         the_exception = cm.exception
         self.assertEqual(the_exception.args[0], "Cannot operate on a closed cursor.")
+        client.client_db.remove_db()
 
     @mock.patch('umatobi.simulator.client.socket')
     def test_client__make_contact_with(self, mock_client_sock):

@@ -100,6 +100,7 @@ class DarknessTests(unittest.TestCase):
                          get_simulation_schema_path(simulation_time))
         self.assertIsInstance(darkness.client_db, sql.SQL)
         self.assertRegex(darkness.client_db_path, RE_CLIENT_N_DB)
+        self.assertFalse(os.path.isfile(darkness.client_db_path))
 
         self.assertEqual(darkness._queue_darkness.qsize(), 0)
         self.assertFalse(darkness.all_nodes_inactive.is_set())
@@ -131,11 +132,18 @@ class DarknessTests(unittest.TestCase):
         self.assertFalse(darkness.all_nodes_inactive.is_set())
         self.assertFalse(darkness.im_sleeping.is_set())
 
+        self.assertFalse(os.path.isfile(darkness.client_db_path))
         client_db = sql.SQL(db_path=darkness.client_db_path,
                             schema_path=get_simulation_schema_path(simulation_time))
+        self.assertFalse(os.path.isfile(darkness.client_db_path))
         client_db.create_db()
+        self.assertTrue(os.path.isfile(darkness.client_db_path))
         client_db.create_table('growings')
+        self.assertTrue(os.path.isfile(darkness.client_db_path))
         client_db.close()
+        self.assertTrue(os.path.isfile(darkness.client_db_path))
+        client_db.remove_db()
+        self.assertFalse(os.path.isfile(darkness.client_db_path))
 
         self.assertEqual(threading.active_count(), 1)
         # "1" means of course a main thread.
@@ -197,6 +205,7 @@ class DarknessTests(unittest.TestCase):
         client_db.create_db()
         client_db.create_table('growings')
         client_db.close()
+        client_db.remove_db()
 
         self.assertFalse(darkness.byebye_nodes.is_set())
         self.assertFalse(darkness.all_nodes_inactive.is_set())
