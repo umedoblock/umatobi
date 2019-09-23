@@ -62,6 +62,15 @@ class SQL(object):
         self._conn.row_factory = sqlite3.Row
         self._cur = self._conn.cursor()
 
+    def remove_db(self):
+        logger.debug(f"{self}.remove_db(), db_path={self.db_path}")
+        if self.db_path != ":memory:":
+            if os.path.isfile(self.db_path):
+                logger.info(f"{self} os.remove(db_path={self.db_path})")
+                os.remove(self.db_path)
+            else:
+                logger.info(f"{self} not found db_path={self.db_path}.")
+
     def create_table(self, table_name):
         logger.info(f"{self}.create_table(table_name={table_name})")
         # ここまで頑張ったところで力尽きました。

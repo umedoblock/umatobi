@@ -48,6 +48,39 @@ class SQLTests(unittest.TestCase):
         sql.create_db()
         sql.create_table('test_table')
 
+    def test_remove_db(self):
+        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        sql.create_db()
+
+        self.assertTrue(os.path.isfile(sql.db_path))
+        sql.remove_db()
+        self.assertFalse(os.path.isfile(sql.db_path))
+
+    def test_remove_db_memory(self):
+        sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        sql.create_db()
+        self.assertFalse(os.path.isfile(sql.db_path))
+
+        with self.assertRaises(AssertionError) as err:
+            with self.assertLogs('umatobi', level='INFO') as cm:
+                sql.remove_db()
+            self.assertFalse(os.path.isfile(sql.db_path))
+        args = err.exception.args
+        self.assertEqual('no logs of level INFO or higher triggered on umatobi', args[0])
+
+    def test_remove_db_not_memory(self):
+        not_found_path = '/not/found/db_path'
+        sql = SQL(db_path=not_found_path, schema_path=TEST_SCHEMA_PATH)
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with patch('umatobi.simulator.sql.os.path.isfile',
+                        return_value=False) as mock_isfile:
+                self.assertFalse(os.path.isfile(sql.db_path))
+                sql.remove_db()
+                self.assertFalse(os.path.isfile(sql.db_path))
+        mock_isfile.assert_called_with(sql.db_path)
+        self.assertRegex(cm.output[0], r'INFO:umatobi:SQL\(db_path="{}", schema_path=".+/test.schema"\) not found db_path={}\.$'.format(not_found_path, not_found_path))
+
     def test_insert_and_select(self):
         s = datetime.datetime.now()
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
