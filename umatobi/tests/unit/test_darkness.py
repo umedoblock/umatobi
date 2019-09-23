@@ -179,9 +179,17 @@ class DarknessTests(unittest.TestCase):
       # self.assertTrue(darkness.leave_there.is_set())
       # self.assertTrue(darkness.im_sleeping.is_set())
 
+  # Pay attention to call order setUp() and @patch().
+  # TestCase call setUp() before call @patch()
+  # @patch.object(Polling, 'sleep', return_value=None)
+  # @patch('umatobi.lib.Polling.sleep', return_value=None)
+  # @patch.object(umatobi.lib.Polling, 'sleep', return_value=None)
     def test_darkness__leave_here(self):
         darkness = self.darkness
-        darkness._exhale_queue.start() # for ExhaleQueue object
+
+        with patch.object(Polling, 'sleep') as mock_sleep:
+            darkness._exhale_queue.start() # for ExhaleQueue object
+
         darkness._spawn_nodes()
 
         client_db = sql.SQL(db_path=darkness.client_db_path,
@@ -192,6 +200,7 @@ class DarknessTests(unittest.TestCase):
 
         self.assertFalse(darkness.byebye_nodes.is_set())
         self.assertFalse(darkness.all_nodes_inactive.is_set())
+        self.assertNotEqual(len(darkness.nodes), 0)
         self.assertEqual(len(darkness.nodes), darkness.num_nodes)
         for node in darkness.nodes:
             self.assertTrue(node.is_alive())
@@ -201,6 +210,7 @@ class DarknessTests(unittest.TestCase):
 
         self.assertTrue(darkness.byebye_nodes.is_set())
         self.assertTrue(darkness.all_nodes_inactive.is_set())
+        self.assertNotEqual(len(darkness.nodes), 0)
         self.assertEqual(len(darkness.nodes), darkness.num_nodes)
         for node in darkness.nodes:
             self.assertFalse(node.is_alive())

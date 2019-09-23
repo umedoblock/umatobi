@@ -39,7 +39,8 @@ class ExhaleQueue(Polling):
 
         time.sleep(self.sleep_secs)
 
-        Polling.run(self)
+        super().run()
+
         logger.info('{} queue_size_total={}'.format(self.darkness, self.queue_size_total))
         logger.info('{} stop ExhaleQueue()'.format(self.darkness))
 
@@ -169,7 +170,7 @@ class Darkness(object):
     def _sleeping(self):
         logger.info(('{} is _sleeping now....').format(self))
         self.im_sleeping.set()
-        self.leave_there.wait()
+        self.leave_there.wait() # heavy
         logger.info(('{} got leave_there signal.').format(self))
 
     def _leave_here(self):

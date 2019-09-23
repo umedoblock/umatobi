@@ -5,12 +5,17 @@ from umatobi.constants import *
 from umatobi.log import *
 
 class Polling(threading.Thread):
+
+    @classmethod
+    def sleep(cls, secs):
+        logger.info(f'Polling.sleep(secs={secs})')
+        time.sleep(secs)
+
     def __init__(self, polling_secs):
         threading.Thread.__init__(self)
         self.polling_secs = polling_secs
-        # class sched.scheduler(timefunc, delayfunc)
-        self._sche = sched.scheduler(time.time, time.sleep)
-        self._sche.enter(self.polling_secs, 1, self._polling, ())
+        self._sche = sched.scheduler(timefunc=time.time, delayfunc=Polling.sleep)
+#       self._sche.enter(self.polling_secs, 1, self._polling, ()) # 犯人
 
     def polling(self):
         raise NotImplementedError()
