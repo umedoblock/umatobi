@@ -65,7 +65,6 @@ class Node(threading.Thread):
                 pass
         except OverflowError as raiz:
           # getsockaddrarg: port must be 0-65535.
-            print('raiz.args =', raiz.args)
             self.udp_sock.close()
             self.udp_sock = None
             logger.error('cannot bind({}). reason={}'.format(self.udp_ip, raiz.args))

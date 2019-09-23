@@ -123,9 +123,6 @@ class SQLTests(unittest.TestCase):
             for key in memory_records[i].keys():
                 self.assertEqual(inserts[i][key], memory_records[i][key])
 
-    def test_update_and_update(self):
-        'impossible see #189'
-
     def test_insert_and_insert(self):
         s = datetime.datetime.now()
         d = {}
