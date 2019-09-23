@@ -27,6 +27,7 @@ class WatsonOpenOffice(threading.Thread):
             logger.info(f"{self}.run(), watson_tcp_office.serve_forever()")
             watson_tcp_office.serve_forever()
         logger.info(f"{self}.run() end!")
+        watson_tcp_office.server_close()
 
 # WatsonTCPOffice and WatsonOffice classes are on same thread.
 class WatsonTCPOffice(socketserver.TCPServer):
@@ -55,6 +56,8 @@ class WatsonTCPOffice(socketserver.TCPServer):
                 raise RuntimeError("every ports are in use.")
             addr = (host, port)
             try:
+                # 以下で、bind() して帰ってくるので、
+                # self.server_close() を忘れずに。
                 super().__init__(addr, WatsonOffice)
             except OSError as oe:
                 if oe.errno != 98:

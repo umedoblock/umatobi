@@ -76,6 +76,8 @@ class WatsonOfficeTests(unittest.TestCase):
         self.assertEqual(d_client['log_level'], watson.log_level)
         self.assertEqual(d_client['num_nodes'], request.sheep['num_nodes'])
 
+        server.server_close()
+
 class WatsonTests(unittest.TestCase):
     def setUp(self):
         self.watson_office_addr = ('localhost', 65530)
