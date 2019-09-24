@@ -9,7 +9,7 @@ class Client(object):
     def wrap(self):
         self._come_to_a_bad_end()
 
-class ClientTests(unittest.TestCase):
+class MockClientTests(unittest.TestCase):
     @mock.patch.object(Client, '_come_to_a_bad_end', autospec=True)
     def test_client_start2(self, *mocks):
         client = Client()

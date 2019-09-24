@@ -13,6 +13,10 @@ from umatobi.tests.unit.test_screen import ScreenTests
 from umatobi.tests.unit.test_node import NodeTests, NodeOfficeTests
 from umatobi.tests.unit.test_darkness import DarknessTests
 
+from umatobi.tests.unit.test_core_key import CoreKeyTests
+from umatobi.tests.unit.test_logger import LoggerNodeTests, LoggerClientTests
+from umatobi.tests.unit.test_mock_call_order import MockClientTests
+
 def test_main():
     # see: Lib/test/test_math.py
     unit_suite = unittest.TestSuite()

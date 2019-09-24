@@ -13,7 +13,7 @@ from umatobi.simulator.client import Client
 from umatobi.simulator.node import Node
 from umatobi import lib
 
-class NodeTests(unittest.TestCase):
+class LoggerNodeTests(unittest.TestCase):
     def setUp(self):
         self.the_moment = lib.make_start_up_orig()
         with time_machine(self.the_moment):
@@ -54,7 +54,7 @@ class NodeTests(unittest.TestCase):
         self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_hand_path={node.master_hand_path}'")
         patcher.stop()
 
-class ClientTests(unittest.TestCase):
+class LoggerClientTests(unittest.TestCase):
     def test_client__waits_to_break_down(self):
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
