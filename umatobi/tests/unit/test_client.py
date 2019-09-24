@@ -1,4 +1,4 @@
-import re, os, io
+import re, os, io, importlib
 import sys, shutil, sqlite3
 from unittest import mock
 from unittest.mock import MagicMock
@@ -15,10 +15,15 @@ class ClientTests(unittest.TestCase):
     def test_client___init__(self):
         watson_office_addr = ('localhost', 10000)
 
+        timeout_sec = 1
         num_darkness = 7
         remain = Client.NODES_PER_DARKNESS - 1
+
         num_nodes = Client.NODES_PER_DARKNESS * (num_darkness - 1) + remain
+
         client = Client(watson_office_addr, num_nodes)
+        self.assertEqual(client.timeout_sec, timeout_sec)
+        self.assertEqual(socket.getdefaulttimeout(), client.timeout_sec)
         self.assertEqual(client.watson_office_addr, watson_office_addr)
         self.assertEqual(client.num_nodes, num_nodes)
         self.assertEqual(client.id, -1)
@@ -29,7 +34,6 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(client.total_created_nodes, 0)
         self.assertEqual(client.darkness_processes, [])
         self.assertFalse(client.leave_there.is_set())
-        self.assertEqual(client.timeout_sec, 1)
 
         num_darkness = 7
         remain = 1
