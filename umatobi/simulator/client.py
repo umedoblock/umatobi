@@ -73,6 +73,8 @@ class Client(object):
 
         self._come_to_a_bad_end()
 
+        self._thank_you_so_much()
+
     ########################################################################
     # client of action
     ########################################################################
@@ -196,6 +198,10 @@ class Client(object):
         # Happily, you don't get below ResourceWarning.
         # ResourceWarning: unclosed <socket.socket fd=7, ...
 
+    def _thank_you_so_much(self):
+        logger.info(f"{self}._thank_you_so_much()")
+        self._say_good_bye()
+
     def get_db_path(self):
         return get_client_db_path(self.simulation_time, self.id)
 
@@ -209,10 +215,6 @@ class Client(object):
 
         logger.info(f"{self}._make_contact_with(), {self._tcp_sock}.connect(={self.watson_office_addr})")
         self._tcp_sock.connect(self.watson_office_addr)
-
-    def _say_good_bye(self):
-        logger.info(f"{self}._say_good_bye(), {self._tcp_sock}.close(={self.watson_office_addr})")
-        self._tcp_sock.close()
 
     #   _consult_watson()
     def _init_attrs(self):
@@ -305,3 +307,7 @@ class Client(object):
         recved_mail = sock_recv(self._tcp_sock, letter_size)
         logger.info(f"{self}._watch_mailbox() returns {recved_mail.decode()}.")
         return recved_mail
+
+    def _say_good_bye(self):
+        logger.info(f"{self}._say_good_bye(), {self._tcp_sock}.close(={self.watson_office_addr})")
+        self._tcp_sock.close()
