@@ -126,17 +126,22 @@ class ClientTests(unittest.TestCase):
             # ??? different __eq__() ???
         self.assertEqual(len(mocks), len(master.mock_calls))
 
-    @mock.patch.object(Client, '_make_contact_with', autospec=True)
-    @mock.patch.object(Client, '_init_attrs', autospec=True)
-    def test_client__consult_watson(self, mock_init_attrs, mock_contact_with):
+    @mock.patch('socket.setdefaulttimeout')
+    @mock.patch('socket.socket')
+    @mock.patch.object(Client, '_init_attrs', return_value={'mock_key': 'mock_value'}, autospec=True)
+    def test_client__consult_watson(self, mock_init_attrs, mock_socket, mock_setdefaulttimeout):
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
         client = Client(watson_office_addr, num_nodes)
+        mock_setdefaulttimeout.assert_called_once_with(Client.SOCKET_TIMEOUT_SEC)
 
+        self.assertIsNone(getattr(client, 'client_init_attrs', None))
         client._consult_watson()
-
-        mock_contact_with.assert_called_once()
-        mock_init_attrs.assert_called_once()
+        mock_socket.assert_called_once_with(socket.AF_INET,
+                                            socket.SOCK_STREAM)
+        client._tcp_sock.connect.assert_called_once_with(client.watson_office_addr)
+        self.assertEqual(client.client_init_attrs,
+                       {'mock_key': 'mock_value'})
 
     def test_client__has_a_lot_on_mind(self):
         expected_simulation_time = SimulationTime()

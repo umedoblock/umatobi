@@ -82,7 +82,7 @@ class Client(object):
 
         self._make_contact_with()
 
-        _d_init_attrs = self._init_attrs()
+        self.client_init_attrs = self._init_attrs()
 
     def _has_a_lot_on_mind(self):
         logger.info(f"{self}._makes_growings_table()")
