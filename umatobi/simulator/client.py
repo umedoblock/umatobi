@@ -14,6 +14,7 @@ def make_darkness(d_config):
 class Client(object):
     NODES_PER_DARKNESS = 4
     LETTER_SIZE = 1024
+    SOCKET_TIMEOUT_SEC = 1
 
     def __init__(self, watson_office_addr, num_nodes):
         '''\
@@ -46,8 +47,7 @@ class Client(object):
 
         self.leave_there = multiprocessing.Event()
 
-        self.timeout_sec = 1
-        socket.setdefaulttimeout(self.timeout_sec)
+        socket.setdefaulttimeout(self.SOCKET_TIMEOUT_SEC)
 
     ########################################################################
     # inside of client

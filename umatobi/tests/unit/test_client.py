@@ -12,18 +12,19 @@ from umatobi.simulator.sql import SQL
 
 class ClientTests(unittest.TestCase):
 
-    def test_client___init__(self):
+    @patch('socket.getdefaulttimeout', side_effect=[None, Client.SOCKET_TIMEOUT_SEC])
+    @patch('socket.setdefaulttimeout')
+    def test_client___init__(self, mock_setdefaulttimeout, mock_getdefaulttimeout):
         watson_office_addr = ('localhost', 10000)
 
-        timeout_sec = 1
         num_darkness = 7
         remain = Client.NODES_PER_DARKNESS - 1
-
         num_nodes = Client.NODES_PER_DARKNESS * (num_darkness - 1) + remain
 
+        self.assertIsNone(socket.getdefaulttimeout())
         client = Client(watson_office_addr, num_nodes)
-        self.assertEqual(client.timeout_sec, timeout_sec)
-        self.assertEqual(socket.getdefaulttimeout(), client.timeout_sec)
+        mock_setdefaulttimeout.assert_called_with(Client.SOCKET_TIMEOUT_SEC)
+        self.assertEqual(socket.getdefaulttimeout(), Client.SOCKET_TIMEOUT_SEC)
         self.assertEqual(client.watson_office_addr, watson_office_addr)
         self.assertEqual(client.num_nodes, num_nodes)
         self.assertEqual(client.id, -1)
