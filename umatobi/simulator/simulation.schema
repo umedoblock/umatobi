@@ -1,89 +1,50 @@
-# Python 3.2.2
-# 11.6.5. SQLite and Python types
-# 11.6.5.1. Introduction
-#
-# SQLite natively supports the following types: NULL, INTEGER, REAL, TEXT, BLOB.
-#
-# The following Python types can thus be sent to SQLite without any problem:
-# Python type | SQLite type
-# ------------+------------
-# None        | NULL
-# int         | INTEGER
-# float       | REAL
-# str         | TEXT
-# bytes       | BLOB
-#
-# This is how SQLite types are converted to Python types by default:
-# SQLite type | Python type
-# ------------+------------
-# NULL        | None
-# INTEGER     | int
-# REAL        | float
-# TEXT        | depends on text_factory, str by default
-# BLOB        | bytes
-#
-# The type system of the sqlite3 module is extensible in two ways: you can
-# store additional Python types in a SQLite database via object adaptation, and
-# you can let the sqlite3 module convert SQLite types to different Python types
-# via converters.
+# About db owener
+# Watson creates and manipulates simulation.db.
+# Client creates and manipulates client.N.db.
 
-################################################################################
-# Note also that keys in sections are case-insensitive and stored in lowercase 1.
+# discuss about database and table structure #34
+# https://github.com/umedoblock/umatobi/issues/34
 
-################################################################################
-# By default, all keys in sections are accessible in a case-insensitive manner
-# 1. E.g. for option in parser["section"] yields only optionxform’ed option key
-# names. This means lowercased keys by default. At the same time, for a section
-# that holds the key 'a', both expressions return True:
-
-# simulation.db ###############################################################
-# watson.db, client.1.db を一纏めにし作成される。
+# simulation.db
+# Watson merges some client.N.db and makes simulation.db
 [simulation]
-watson_office_addr: text
-simulation_ms: integer
 title: text
-memo: text
-version: text
-n_clients: integer
+start_up_iso8601: text # Watson start up
+open_office_iso8601: text not null
+close_office_iso8601: text not null
+end_up_iso8601: text not null
+simulation_secs: integer
+watson_office_addr: text
 total_nodes: integer
-# [growings]
-# see client.1.db
+n_clients: integer
+memo: text
+log_level: text
+version: text
 
-[nodes]
-# idはwatson, clientが管理する値であるから、autoincrement 付けない。
-id: integer primary key unique not null
-office_addr: text not null
-# host: text not null
-# 複数clientの時、host or ip が異なり、port番号は同じという場合があるから、
-# port: integer not null # unique は付けない。
-keyid: integer # ?
-key: blob
-rad: float
-x: float
-y: float
-status: text not null
-
+# in client.N.db and simulation.db
 [clients]
 id: integer primary key autoincrement unique not null
-host: text
-port: integer
-joined: integer
-log_level: text
+addr: text not null # "host:port" format
+consult_iso8601: text # client consult to watson
+thank_you_so_much_iso8601: text # client thanks watson
 num_nodes: integer
 node_index: integer
+log_level: text
 
-# client.1.db #################################################################
-# darkness commit to client.1.db database.
-# nodes are growing.
+# in client.N.db
+# darkness commit to client.N.db database.
 [growings]
 id: integer primary key autoincrement unique not null
-elapsed_time: integer
+now_iso8601: integer
 pickle: blob not null
 
-# "name TEXT UNIQUE NOT NULL)")
-# "year INTEGER NOT NULL, "
-# "director_id INTEGER NOT NULL, "
-# "FOREIGN KEY (director_id) REFERENCES directors)")
+# watson and client manage nodes.id, so don't set autoincrement
+[nodes]
+id: integer primary key unique not null
+now_iso8601: integer
+addr: text not null
+key: blob
+status: text not null
 
 # [shots]
 # id: integer primary key
