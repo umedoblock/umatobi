@@ -176,17 +176,23 @@ class LibTests(unittest.TestCase):
         keyid = 'a' * Key.KEY_HEXES
         simulation_conf_str = f'''
 [simulation]
-watson_office_addr: localhost:11111
-simulation_ms: 30000
 title: in test_schema_parser()
-memo: test to combine schema_parser and simulation.conf
-version: 0.0.0
-n_clients: 4
+start_up_iso8601: 2011-11-11T11:11:11.123456
+open_office_iso8601: 2011-11-11T11:11:12.789012
+close_office_iso8601: 2011-11-11T11:11:42.345678
+end_up_iso8601: 2011-11-11T11:11:44.901234
+simulation_secs: 30
+watson_office_addr: localhost:11111
 total_nodes: 1000
+n_clients: 4
+memo: test to combine schema_parser and simulation.conf
+log_level: INFO
+version: 0.0.0
 
 [nodes]
 id: 100
-office_addr: 127.0.0.1:22222
+now_iso8601: 2011-12-22T11:11:44.901234
+addr: 127.0.0.1:22222
 key: 0x{keyid}
 status: active
 '''
@@ -202,17 +208,23 @@ status: active
 
         records = schema_parser.spawn_records(config,
                                               table_names=config.sections())
-        self.assertEqual(records.simulation['watson_office_addr'], 'localhost:11111')
-        self.assertEqual(records.simulation['simulation_ms'], 30000)
         self.assertEqual(records.simulation['title'], 'in test_schema_parser()')
-        self.assertEqual(records.simulation['memo'], 'test to combine schema_parser and simulation.conf')
-        self.assertEqual(records.simulation['version'], '0.0.0')
-        self.assertEqual(records.simulation['n_clients'], 4)
+        self.assertEqual(records.simulation['start_up_iso8601'], '2011-11-11T11:11:11.123456')
+        self.assertEqual(records.simulation['open_office_iso8601'], '2011-11-11T11:11:12.789012')
+        self.assertEqual(records.simulation['close_office_iso8601'], '2011-11-11T11:11:42.345678')
+        self.assertEqual(records.simulation['end_up_iso8601'], '2011-11-11T11:11:44.901234')
+        self.assertEqual(records.simulation['simulation_secs'], 30)
+        self.assertEqual(records.simulation['watson_office_addr'], 'localhost:11111')
         self.assertEqual(records.simulation['total_nodes'], 1000)
+        self.assertEqual(records.simulation['n_clients'], 4)
+        self.assertEqual(records.simulation['memo'], 'test to combine schema_parser and simulation.conf')
+        self.assertEqual(records.simulation['log_level'], 'INFO')
+        self.assertEqual(records.simulation['version'], '0.0.0')
 
         self.assertEqual(records.nodes['id'], 100)
-        self.assertEqual(records.nodes['office_addr'], '127.0.0.1:22222')
-        self.assertEqual(records.nodes['key'], str.encode(f'0x{keyid}'))
+        self.assertEqual(records.nodes['now_iso8601'], '2011-12-22T11:11:44.901234')
+        self.assertEqual(records.nodes['addr'], '127.0.0.1:22222')
+        self.assertEqual(records.nodes['key'], b'0x' + b'a' * Key.KEY_HEXES)
         self.assertEqual(records.nodes['status'], 'active')
 
     def test_get_db_from_schema(self):
@@ -222,7 +234,7 @@ status: active
 
         schema_parser = SchemaParser(simulation_schema_path)
 
-        expected_table_names = ('simulation', 'nodes', 'clients', 'growings')
+        expected_table_names = ('simulation', 'clients', 'growings', 'nodes')
         self.assertSequenceEqual(schema_parser.table_names(), expected_table_names)
        #print('schema_parser.table_names() =', schema_parser.table_names())
        #for table_name in schema_parser.table_names():
@@ -261,18 +273,21 @@ status: active
     def test_get_table_columns(self):
         expected_items = {
             'simulation': (
-                'watson_office_addr', 'simulation_ms', 'title',
-                'memo', 'version', 'n_clients', 'total_nodes'
-            ),
-            'nodes': (
-                'id', 'office_addr', 'keyid', 'key', 'rad', 'x', 'y', 'status'
+                'title', 'start_up_iso8601', 'open_office_iso8601',
+                'close_office_iso8601', 'end_up_iso8601', 'simulation_secs',
+                'watson_office_addr', 'total_nodes', 'n_clients', 'memo',
+                'log_level', 'version',
             ),
             'clients': (
-                'id', 'host', 'port', 'joined', 'log_level',
-                'num_nodes', 'node_index'
+                'id', 'addr', 'consult_iso8601', 'thank_you_so_much_iso8601',
+                'num_nodes', 'node_index', 'log_level'
             ),
-            'growings': ( 'id', 'elapsed_time', 'pickle')
-
+            'growings': (
+                'id', 'now_iso8601', 'pickle'
+            ),
+            'nodes': (
+                'id', 'now_iso8601', 'addr', 'key', 'status'
+            ),
         }
 
         simulation_time = self.simulation_time
