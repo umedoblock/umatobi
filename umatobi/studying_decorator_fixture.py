@@ -25,7 +25,7 @@ def dump_yaml_test1():
         'val_integer': 100,
         'val_real':    1.1,
         'val_text':    'text context',
-        'val_blob':    b'binary',
+        'val_blob':    b'binary strings',
         'now':         datetime.datetime(2011, 11, 11, 11, 11, 44, 901234),
     }
 
@@ -43,6 +43,16 @@ def load_yaml_test1(yaml_path, key):
 #   print('y =', y)
     print("y['e'] =", y['e'])
     print("y['f'] =", y['f'])
+
+# import base64
+# >>> base64.b64encode(b'binary')
+# b'YmluYXJ5'
+# >>> base64.b64decode(b'YmluYXJ5')
+# b'binary'
+# val_blob: !!binary |
+#   YmluYXJ5
+# val_blob: !!binary |
+#   YmluYXJ5IHN0cmluZ3M=
 
 def fixture(yaml_path, key):
     with open(yaml_path) as f:
