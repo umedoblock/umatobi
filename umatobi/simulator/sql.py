@@ -47,7 +47,7 @@ class SQL(object):
         logger.info(f"{self}.create_db(), db_path={self.db_path}")
         if self.db_path != ":memory:":
             db_dir_name = os.path.dirname(self.db_path)
-            if not os.path.isdir(db_dir_name):
+            if db_dir_name and not os.path.isdir(db_dir_name):
                 logger.debug(f"{self}, not os.path.isdir({db_dir_name})")
                 os.makedirs(db_dir_name, exist_ok=True)
         try:

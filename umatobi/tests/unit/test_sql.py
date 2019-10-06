@@ -3,6 +3,7 @@ import os
 import time
 import datetime
 import unittest
+from unittest.mock import MagicMock
 import sqlite3
 
 from umatobi.tests import *
@@ -44,6 +45,17 @@ class SQLTests(unittest.TestCase):
         self.assertTrue(os.path.isfile(sql.db_path))
         sql.remove_db()
         self.assertFalse(os.path.isfile(sql.db_path))
+
+    @patch.object(sqlite3, 'connect')
+    def test_create_db_db_dir_name_empty(self, mock_sqlite3_connect):
+        sql = SQL(db_path='fixture.db', schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(sql.db_path))
+        sql.create_db()
+        mock_sqlite3_connect.called_with(sql.db_path)
+
+        self.assertIsInstance(sql._conn, MagicMock)
+        self.assertEqual(sql._conn.row_factory, sqlite3.Row)
+        self.assertIsInstance(sql._cur, MagicMock)
 
     def test_remove_db(self):
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
