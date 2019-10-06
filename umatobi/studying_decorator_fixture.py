@@ -1,4 +1,4 @@
-import yaml
+import yaml, datetime
 
 from umatobi.simulator.sql import SQL
 from umatobi.tests import *
@@ -18,11 +18,31 @@ def debug(f1):
     print('--')
     return inner
 
+def dump_yaml_test1():
+    d = {
+        'id': 1,
+        'val_null':    None,
+        'val_integer': 100,
+        'val_real':    1.1,
+        'val_text':    'text context',
+        'val_blob':    b'binary',
+        'now':         datetime.datetime(2011, 11, 11, 11, 11, 44, 901234),
+    }
+
+    dumped_yaml = yaml.dump(d)
+    print('d =')
+    print(d)
+    print()
+    print('dumped_yaml =')
+    print(dumped_yaml)
+
 def load_yaml_test1(yaml_path, key):
     with open(yaml_path) as f:
         y = yaml.load(f, Loader=yaml.SafeLoader)
       # y = yaml.safe_load(f, Loader=yaml.SafeLoader)
-    print('y =', y)
+#   print('y =', y)
+    print("y['e'] =", y['e'])
+    print("y['f'] =", y['f'])
 
 def fixture(yaml_path, key):
     with open(yaml_path) as f:
@@ -62,5 +82,6 @@ if __name__ == '__main__':
 
 #   sample()
 
+    dump_yaml_test1()
     load_yaml_test1(TEST_YAML_PATH + ".1", 'foo')
 #   fixture(TEST_YAML_PATH, 'foo')
