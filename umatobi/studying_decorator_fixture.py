@@ -44,6 +44,9 @@ def load_yaml_test1(yaml_path, key):
     print("y['e'] =", y['e'])
     print("y['f'] =", y['f'])
 
+# see in detail
+# https://pyyaml.org/wiki/PyYAMLDocumentation
+
 # import base64
 # >>> base64.b64encode(b'binary')
 # b'YmluYXJ5'
