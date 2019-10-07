@@ -16,6 +16,7 @@ from umatobi.tests.unit.test_darkness import DarknessTests
 from umatobi.tests.unit.test_core_key import CoreKeyTests
 from umatobi.tests.unit.test_logger import LoggerNodeTests, LoggerClientTests
 from umatobi.tests.unit.test_mock_call_order import MockClientTests
+from umatobi.tests.unit.test_fixture import FixtureTests
 
 def test_main():
     # see: Lib/test/test_math.py
@@ -34,6 +35,7 @@ def test_main():
     unit_suite.addTest(unittest.makeSuite(NodeTests))
     unit_suite.addTest(unittest.makeSuite(NodeOfficeTests))
     unit_suite.addTest(unittest.makeSuite(DarknessTests))
+    unit_suite.addTest(unittest.makeSuite(FixtureTests))
 
     run_unittest(unit_suite)
 
