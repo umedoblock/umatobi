@@ -40,9 +40,7 @@ def load_yaml_test1(yaml_path, key):
     with open(yaml_path) as f:
         y = yaml.load(f, Loader=yaml.SafeLoader)
       # y = yaml.safe_load(f, Loader=yaml.SafeLoader)
-#   print('y =', y)
-    print("y['e'] =", y['e'])
-    print("y['f'] =", y['f'])
+    print('y1 =', y)
 
 # see in detail
 # https://pyyaml.org/wiki/PyYAMLDocumentation
@@ -66,6 +64,18 @@ def fixture(yaml_path, key):
     def inner(db, table, key, value):
         row = db.select('* from table where key=value')
         return row
+
+# @fixture(TEST_YAML_PATH + ".1", 'foo')
+# def test_fixture_yaml_path1(fixture_load1):
+#     with open(yaml_path) as f:
+#         y = yaml.load(f, Loader=yaml.SafeLoader)
+#       # y = yaml.safe_load(f, Loader=yaml.SafeLoader)
+#     print('y =', y)
+#
+#   # def inner(db, table, key, value):
+#     def inner(db, table, key, value):
+#         row = db.select('* from table where key=value')
+#         return row
 
 @debug
 def facto(num):
@@ -96,5 +106,5 @@ if __name__ == '__main__':
 #   sample()
 
     dump_yaml_test1()
-    load_yaml_test1(TEST_YAML_PATH + ".1", 'foo')
+    load_yaml_test1(TEST_YAML_PATH.replace(ATAT_N, '1'), 'foo')
 #   fixture(TEST_YAML_PATH, 'foo')
