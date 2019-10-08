@@ -53,3 +53,10 @@ def time_machine(the_era):
             yield
         finally:
             pass
+
+def fixture(yaml_path, key):
+    y = load_yaml(yaml_path)
+  # def inner(db, table, key, value):
+    def inner(db, table, key, value):
+        row = db.select('* from table where key=value')
+        return row

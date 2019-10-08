@@ -1,33 +1,32 @@
 # @fixtures('test.yaml')['foo']
 
 foo:
-    table_name: test_table
-    key: abc
+- TEST_SCHEMA_PATH
+- 'test_table'
+- id: 1
+  val_null:    null
+  val_integer: integer
+  val_real:    real
+  val_text:    text
+  val_blob:    blob
+  now:    text
 
-id:
-val_null:    null
-val_integer: integer
-val_real:    real
-val_text:    text
-val_blob:    blob
-now:    text
-
-    table_name: take_table
-    key: def
-
-[simulation]
-title: in test_schema_parser()
-start_up_iso8601: 2011-11-11T11:11:11.123456
-open_office_iso8601: 2011-11-11T11:11:12.789012
-close_office_iso8601: 2011-11-11T11:11:42.345678
-end_up_iso8601: 2011-11-11T11:11:44.901234
-simulation_secs: 30
-watson_office_addr: localhost:11111
-total_nodes: 1000
-n_clients: 4
-memo: test to combine schema_parser and simulation.conf
-log_level: INFO
-version: 0.0.0
+bar:
+- TEST_SCHEMA_PATH
+- 'take_table'
+  table_name: simulation
+  title: in test_schema_parser()
+  start_up_iso8601: 2011-11-11T11:11:11.123456
+  open_office_iso8601: 2011-11-11T11:11:12.789012
+  close_office_iso8601: 2011-11-11T11:11:42.345678
+  end_up_iso8601: 2011-11-11T11:11:44.901234
+  simulation_secs: 30
+  watson_office_addr: localhost:11111
+  total_nodes: 1000
+  n_clients: 4
+  memo: test to combine schema_parser and simulation.conf
+  log_level: INFO
+  version: 0.0.0
 
 quentin:
 _table_name: nodes

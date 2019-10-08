@@ -1,0 +1,9 @@
+e:
+    id: 1
+    val_null:    null
+    val_integer: 100
+    val_real:    1.1
+    val_text:    text context
+    val_blob: !!binary |
+      YmluYXJ5
+    now:         2011-11-11T11:11:44.901234

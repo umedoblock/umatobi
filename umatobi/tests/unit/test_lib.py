@@ -4,6 +4,7 @@ from unittest.mock import patch, MagicMock
 from io import StringIO
 from datetime import datetime, timedelta
 
+import yaml
 from umatobi.tests import *
 from umatobi.log import make_logger
 from umatobi.lib import *
@@ -457,6 +458,71 @@ status: active
         manipulated_datetime = datetime(2011, 11, 11, 11, 11, 11, 111111)
         with time_machine(manipulated_datetime):
             self.assertEqual(SimulationTime.now(), manipulated_datetime)
+
+    def test_load_yaml1(self):
+        y = load_yaml(TEST_YAML_PATH.replace(ATAT_N, '1'))
+        expected_obj = {'a': 1}
+        self.assertEqual(y, expected_obj)
+
+    def test_load_yaml2(self):
+        y = load_yaml(TEST_YAML_PATH.replace(ATAT_N, '2'))
+        expected_obj = {'b': {'c': 3, 'd': 4}}
+        self.assertEqual(y, expected_obj)
+
+    def test_load_yaml3(self):
+        y = load_yaml(TEST_YAML_PATH.replace(ATAT_N, '3'))
+        expected_obj = {
+            'e': {
+                'id': 1,
+                'now': datetime(2011, 11, 11, 11, 11, 44, 901234),
+                'val_blob': b'binary',
+                'val_integer': 100,
+                'val_null': None,
+                'val_real': 1.1,
+                'val_text': 'text context'
+            }
+        }
+
+        self.assertEqual(y, expected_obj)
+
+    def test_load_yaml4(self):
+        y = load_yaml(TEST_YAML_PATH.replace(ATAT_N, '4'))
+        expected_obj = {
+            'foo': [
+                'schema_path',
+                 'table_name', {
+                    'id': 1,
+                    'val_blob': b'binary strings',
+                    'val_num': 8,
+                    'val_null': None
+                }
+            ]
+        }
+
+        self.assertEqual(y, expected_obj)
+
+    def test_dump_yaml(self):
+        d = {
+            'id': 1,
+            'val_null':    None,
+            'val_integer': 100,
+            'val_real':    1.1,
+            'val_text':    'text context',
+            'val_blob':    b'binary strings',
+            'now':         datetime(2011, 11, 11, 11, 11, 44, 901234),
+        }
+
+        dumped_yaml = yaml.dump(d)
+        expected_dump = '''id: 1
+now: 2011-11-11 11:11:44.901234
+val_blob: !!binary |
+  YmluYXJ5IHN0cmluZ3M=
+val_integer: 100
+val_null: null
+val_real: 1.1
+val_text: text context
+'''
+        self.assertEqual(dumped_yaml, expected_dump)
 
 if __name__ == '__main__':
     unittest.main()

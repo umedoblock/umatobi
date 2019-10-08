@@ -1,0 +1,8 @@
+foo:
+- schema_path
+- table_name
+- id: 1
+  val_num: 8
+  val_null: null
+  val_blob: !!binary |
+    YmluYXJ5IHN0cmluZ3M=

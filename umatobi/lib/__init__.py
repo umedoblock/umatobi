@@ -1,6 +1,7 @@
 import json, time, os, threading, sched, configparser, socket, re, shutil
 from datetime import datetime as datetime2
 
+import yaml
 from umatobi.constants import *
 from umatobi.log import *
 
@@ -351,3 +352,8 @@ def get_passed_seconds(orig):
 def get_passed_ms(orig):
     passed_seconds = get_passed_seconds(orig)
     return _normalize_ms(passed_seconds)
+
+def load_yaml(yaml_path):
+    with open(yaml_path) as f:
+        y = yaml.load(f, Loader=yaml.SafeLoader)
+    return y
