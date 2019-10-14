@@ -26,11 +26,10 @@ class FixtureTests(unittest.TestCase):
             '../simulator/simulation.schema', \
             'nodes', \
             {
-                'id': 3,
-                'now_iso8601':
-                    datetime.datetime(2011, 12, 22, 11, 11, 44, 901234),
+                'id': '3',
+                'now_iso8601': '2011-12-22T11:11:44.901234',
                 'addr': '127.0.0.1:22222',
-                'key': int('1' * Key.KEY_HEXES, 16),
+                'key': '0x' + '1' * Key.KEY_HEXES,
                 'status': 'active'
             }
 
