@@ -2,9 +2,10 @@ import io, os, socket, threading, queue
 from contextlib import contextmanager
 from unittest.mock import patch
 from datetime import timedelta
+import functools
 
 from umatobi.tests.constants import *
-from umatobi.lib import SimulationTime
+from umatobi.lib import *
 
 SIMULATION_SECONDS = 30
 D_TIMEDELTA = {
@@ -54,9 +55,20 @@ def time_machine(the_era):
         finally:
             pass
 
-def fixture(yaml_path, key):
-    y = load_yaml(yaml_path)
-  # def inner(db, table, key, value):
-    def inner(db, table, key, value):
-        row = db.select('* from table where key=value')
-        return row
+def fixtures(f):
+    @functools.wraps(f)
+    def wrapper(self, *args, **kwargs):
+        ret = f(self, *args, **kwargs)
+        return ret
+    return wrapper
+
+# see decora_success.py
+# def fixtures(*args, **kwargs):
+#     logger.info(f'fixtures(args={args}, kwargs={kwargs})')
+#     # __init__.py fixtures() - fixtures(args=('tests/fixtures/test.yaml',
+#     #  'quentin'), kwargs={}) -...
+#
+#     def inner(self, func):
+#         logger.info(f'func={func}')
+#         return func(100)
+#     return inner

@@ -354,6 +354,7 @@ def get_passed_ms(orig):
     return _normalize_ms(passed_seconds)
 
 def load_yaml(yaml_path):
+    print(f'with open(yaml_path={yaml_path}) as f')
     with open(yaml_path) as f:
         y = yaml.load(f, Loader=yaml.SafeLoader)
     return y

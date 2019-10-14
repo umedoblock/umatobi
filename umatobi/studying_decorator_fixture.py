@@ -11,9 +11,13 @@ def debug(f1):
     print('before2')
     def inner(num):
         print('before')
-        f1(num)
+        print('f1 =', f1)
+        print('inner =', inner)
+        print('num =', num)
+        debug_got_by_f1 = f1(num)
+        print('debug_got_by_f1 is', debug_got_by_f1)
         print('after')
-        return True
+        return debug_got_by_f1
     print('after2')
     print('--')
     return inner
@@ -98,7 +102,8 @@ def func(num):
 #     sql.remove_db()
 
 if __name__ == '__main__':
-#   facto(5)
+    v = facto(5)
+    print('fact(5) return v =', v)
 #   print()
 
 #   print(func(6))
