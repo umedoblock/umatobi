@@ -2,6 +2,8 @@
 umatobi-simulation/
 umatobi-simulation-test/
 
+decore.py
+
 # virtual env
 .local/
 
