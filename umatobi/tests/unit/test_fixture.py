@@ -22,7 +22,7 @@ class FixtureTests(unittest.TestCase):
     def test_quentin_as_component(self):
         expected_schema_path, \
         expected_table_name, \
-        expected_quentin = \
+        expected_quentin_raw = \
             '../simulator/simulation.schema', \
             'nodes', \
             {
@@ -36,7 +36,7 @@ class FixtureTests(unittest.TestCase):
         schema_path, table_name, quentin_raw = FixtureTests.YAML['quentin']
         self.assertEqual(expected_schema_path, schema_path)
         self.assertEqual(expected_table_name, table_name)
-        self.assertEqual(expected_quentin, quentin_raw)
+        self.assertEqual(expected_quentin_raw, quentin_raw)
 
 if __name__ == '__main__':
     unittest.main()
