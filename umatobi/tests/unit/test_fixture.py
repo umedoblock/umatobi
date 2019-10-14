@@ -1,20 +1,43 @@
 import unittest
-import sys
+import sys, datetime
 
 from umatobi.tests import *
 from umatobi.lib import *
+from umatobi.simulator.core.key import Key
 
 pa = TEST_YAML_PATH.replace(ATAT_N, '1')
 class FixtureTests(unittest.TestCase):
 
-    yaml_path = 'tests/fixtures/test.yaml'
-  # @fixtures(yaml_path, 'quentin')
-  # @fixtures(yaml_path, 'quentin')
-    @fixtures(yaml_path, 'quentin')
-    def test_fixture(self):
-        print(f'self = {self}', file=sys.stderr)
-#       print('fixture_yaml1 =', fixture_yaml1)
-#       self.assertEqual(fixture_yaml1, 1)
+    YAML = {}
+
+    @classmethod
+    def setUpClass(cls):
+        # yaml_path = 'tests/fixtures/test.yaml'
+        cls.YAML = load_yaml(TEST_FIXTURES_PATH.replace(ATAT_N, ''))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.YAML = ''
+
+    def test_quentin_as_component(self):
+        expected_schema_path, \
+        expected_table_name, \
+        expected_quentin = \
+            '../simulator/simulation.schema', \
+            'nodes', \
+            {
+                'id': 3,
+                'now_iso8601':
+                    datetime.datetime(2011, 12, 22, 11, 11, 44, 901234),
+                'addr': '127.0.0.1:22222',
+                'key': int('1' * Key.KEY_HEXES, 16),
+                'status': 'active'
+            }
+
+        schema_path, table_name, quentin_raw = FixtureTests.YAML['quentin']
+        self.assertEqual(expected_schema_path, schema_path)
+        self.assertEqual(expected_table_name, table_name)
+        self.assertEqual(expected_quentin, quentin_raw)
 
 if __name__ == '__main__':
     unittest.main()

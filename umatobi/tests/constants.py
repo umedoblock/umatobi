@@ -33,6 +33,7 @@ YAML_DIR_PATH = os.path.join(TESTS_PATH, YAML_DIR)
 TEST_SCHEMA_PATH = os.path.join(FIXTURES_DIR_PATH, TEST_SCHEMA)
 TEST_DB_PATH = os.path.join(FIXTURES_DIR_PATH, TEST_DB)
 TEST_YAML_PATH = os.path.join(YAML_DIR_PATH, TEST_YAML)
+TEST_FIXTURES_PATH = os.path.join(FIXTURES_DIR_PATH, TEST_YAML)
 
 RE_Y15S = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d[0-5]\d[0-5]\d'
 RE_ISO8601 = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d:[0-5]\d:[0-5]\d\.\d{6}'
