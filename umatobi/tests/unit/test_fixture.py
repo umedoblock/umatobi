@@ -29,7 +29,8 @@ class FixtureTests(unittest.TestCase):
                 'id': '3',
                 'now_iso8601': '2011-12-22T11:11:44.901234',
                 'addr': '127.0.0.1:22222',
-                'key': '0x' + '1' * Key.KEY_HEXES,
+              # 'key': '0x' + '1' * Key.KEY_HEXES,
+                'key': 'ERERERERERERERERERERERERERERERERERERERERERE=',
                 'status': 'active'
             }
 

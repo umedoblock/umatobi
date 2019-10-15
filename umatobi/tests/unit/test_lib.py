@@ -156,7 +156,8 @@ class LibTests(unittest.TestCase):
         }
 
         d_values = {
-            'column_blob': 'blob',
+#           'column_blob': 'blob',
+            'column_blob': 'YmxvYg==',
             'column_float': '-1.0',
             'column_integer': '10',
             'column_text': 'text',
@@ -170,11 +171,45 @@ class LibTests(unittest.TestCase):
         for column_name, data_type in d_schema.items():
             converter_name = d_schema[column_name]
             converter = DATA_TYPE_CONVERTER[converter_name]
+          # print('column_name =', column_name)
+          # print('data_type =', data_type)
             self.assertEqual(converter(d_values[column_name]),
                              expected_values[column_name])
 
+    def test_make_fixture(self):
+        expected_schema_path, \
+        expected_table_name, \
+        expected_qwer_raw = \
+            '../simulator/simulation.schema', \
+            'nodes', \
+            {
+                'id': '4',
+                'now_iso8601': '2011-12-22T11:11:44.901234',
+                'addr': '127.0.0.1:22222',
+                'key': 'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=',
+                'status': 'inactive'
+            }
+
+        schema_path, table_name, qwer_raw = load_yaml(TEST_FIXTURES_PATH.replace(ATAT_N, ''))['qwer']
+        self.assertEqual(expected_schema_path, schema_path)
+        self.assertEqual(expected_table_name, table_name)
+        self.assertEqual(expected_qwer_raw, qwer_raw)
+
+        expected_qwer = \
+            {
+                'id': 4,
+                'now_iso8601': '2011-12-22T11:11:44.901234',
+                'addr': '127.0.0.1:22222',
+                'key': b'\xaa' * Key.KEY_OCTETS,
+                'status': 'inactive'
+            }
+
+        qwer = make_fixture(os.path.join(TESTS_PATH, schema_path), table_name, qwer_raw)
+      # print('qwer =', qwer)
+      # print('qwer_raw =', expected_qwer)
+        self.assertEqual(qwer, expected_qwer)
+
     def test_schema_parser(self):
-        keyid = 'a' * Key.KEY_HEXES
         simulation_conf_str = f'''
 [simulation]
 title: in test_schema_parser()
@@ -194,9 +229,13 @@ version: 0.0.0
 id: 100
 now_iso8601: 2011-12-22T11:11:44.901234
 addr: 127.0.0.1:22222
-key: 0x{keyid}
+key: qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=
 status: active
 '''
+# >>> base64.b64encode(b'\xaa\xaa\xaa')
+# b'qqqq'
+# >>> base64.b64decode(b'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=')
+# b'\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa'
 
         simulation_time = self.simulation_time
         simulation_schema_path = get_simulation_schema_path(simulation_time)
@@ -225,7 +264,7 @@ status: active
         self.assertEqual(records.nodes['id'], 100)
         self.assertEqual(records.nodes['now_iso8601'], '2011-12-22T11:11:44.901234')
         self.assertEqual(records.nodes['addr'], '127.0.0.1:22222')
-        self.assertEqual(records.nodes['key'], b'0x' + b'a' * Key.KEY_HEXES)
+        self.assertEqual(records.nodes['key'], b'\xaa' * Key.KEY_OCTETS)
         self.assertEqual(records.nodes['status'], 'active')
 
     def test_get_db_from_schema(self):
@@ -509,14 +548,23 @@ status: active
             'val_real':    1.1,
             'val_text':    'text context',
             'val_blob':    b'binary strings',
+            'val_11':      b'\x11' * 32,
+            'val_aa':      b'\xaa' * 32,
+            'val_cc':      b'\xcc' * 32,
             'now':         datetime(2011, 11, 11, 11, 11, 44, 901234),
         }
 
         dumped_yaml = yaml.dump(d)
         expected_dump = '''id: 1
 now: 2011-11-11 11:11:44.901234
+val_11: !!binary |
+  ERERERERERERERERERERERERERERERERERERERERERE=
+val_aa: !!binary |
+  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=
 val_blob: !!binary |
   YmluYXJ5IHN0cmluZ3M=
+val_cc: !!binary |
+  zMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMw=
 val_integer: 100
 val_null: null
 val_real: 1.1

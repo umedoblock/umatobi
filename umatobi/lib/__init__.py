@@ -1,4 +1,5 @@
 import json, time, os, threading, sched, configparser, socket, re, shutil
+import base64
 from datetime import datetime as datetime2
 
 import yaml
@@ -122,8 +123,13 @@ def get_host_port(host_port):
     port = int(sp[1])
     return host, port
 
+def make_fixture(schema_path, table_name, component):
+    schema_parser = SchemaParser(schema_path)
+    d = schema_parser.parse_record(component, table_name)
+    return d
+
 DATA_TYPE_CONVERTER = {
-    'blob': str.encode,
+    'blob': base64.b64decode,
     'float': float,
     'integer': int,
     'text': str,
@@ -176,11 +182,8 @@ class SchemaParser(configparser.ConfigParser):
     def parse_record(self, record, table_name):
         d = {}
         for column_name, as_string in record.items():
-          # print('column_name =', column_name, 'as_string =', as_string)
             d_table = getattr(self, table_name)
-          # print('d_table.items() =', d_table.items())
             converter = d_table[column_name]
-          # print('converter =', converter)
             value = converter(as_string)
             d[column_name] = value
         return d
