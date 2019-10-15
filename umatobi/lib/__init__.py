@@ -158,11 +158,11 @@ class SchemaParser(configparser.ConfigParser):
 
         for table_name in self.table_names():
             setattr(self, table_name, dict())
-            d_table = getattr(self, table_name)
+            converter_table = getattr(self, table_name)
             for column, as_string in self[table_name].items():
                 data_type = as_string.split(' ')[0]
                 converter = DATA_TYPE_CONVERTER[data_type]
-                d_table[column] = converter
+                converter_table[column] = converter
               # print(f'column={column}, data_type={data_type}, converter={converter}')
 
     def get_table_names(self):
@@ -185,8 +185,8 @@ class SchemaParser(configparser.ConfigParser):
     def parse_record(self, record, table_name):
         d = {}
         for column_name, as_string in record.items():
-            d_table = getattr(self, table_name)
-            converter = d_table[column_name]
+            converter_table = getattr(self, table_name)
+            converter = converter_table[column_name]
             value = converter(as_string)
             d[column_name] = value
         return d
