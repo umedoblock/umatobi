@@ -148,6 +148,7 @@ class SchemaParser(configparser.ConfigParser):
             self.read_file(schema)
 
         self.table_names = self.sections
+        self.tables = {}
         # grep ':' tests/unit/test_lib.py | grep -v '^#' | \
         #       awk '{print $2}' | \
         #       sort | uniq
@@ -157,12 +158,11 @@ class SchemaParser(configparser.ConfigParser):
         # text
 
         for table_name in self.table_names():
-            setattr(self, table_name, dict())
-            converter_table = getattr(self, table_name)
+            self.tables[table_name] = {}
             for column, as_string in self[table_name].items():
                 data_type = as_string.split(' ')[0]
                 converter = DATA_TYPE_CONVERTER[data_type]
-                converter_table[column] = converter
+                self.tables[table_name][column] = converter
               # print(f'column={column}, data_type={data_type}, converter={converter}')
 
     def get_table_names(self):
@@ -185,8 +185,7 @@ class SchemaParser(configparser.ConfigParser):
     def parse_record(self, record, table_name):
         d = {}
         for column_name, as_string in record.items():
-            converter_table = getattr(self, table_name)
-            converter = converter_table[column_name]
+            converter = self.tables[table_name][column_name]
             value = converter(as_string)
             d[column_name] = value
         return d
