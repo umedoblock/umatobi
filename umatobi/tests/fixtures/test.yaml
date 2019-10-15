@@ -32,7 +32,7 @@ bar:
   version: '0.0.0'
 
 quentin:
-- ../simulator/simulation.schema
+- ../../simulator/simulation.schema
 - nodes
 - id: '3'
   now_iso8601: '2011-12-22T11:11:44.901234'
@@ -42,7 +42,7 @@ quentin:
   status: 'active'
 
 qwer:
-- ../simulator/simulation.schema
+- ../../simulator/simulation.schema
 - nodes
 - id: '4'
   now_iso8601: '2011-12-22T11:11:44.901234'
@@ -56,7 +56,7 @@ qwer:
   status: 'inactive'
 
 asdf:
-- ../simulator/simulation.schema
+- ../../simulator/simulation.schema
 - nodes
 - id: '5'
   now_iso8601: '2011-12-22T11:11:44.901234'

@@ -177,24 +177,6 @@ class LibTests(unittest.TestCase):
                              expected_values[column_name])
 
     def test_make_fixture(self):
-        expected_schema_path, \
-        expected_table_name, \
-        expected_qwer_raw = \
-            '../simulator/simulation.schema', \
-            'nodes', \
-            {
-                'id': '4',
-                'now_iso8601': '2011-12-22T11:11:44.901234',
-                'addr': '127.0.0.1:22222',
-                'key': 'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=',
-                'status': 'inactive'
-            }
-
-        schema_path, table_name, qwer_raw = load_yaml(TEST_FIXTURES_PATH.replace(ATAT_N, ''))['qwer']
-        self.assertEqual(expected_schema_path, schema_path)
-        self.assertEqual(expected_table_name, table_name)
-        self.assertEqual(expected_qwer_raw, qwer_raw)
-
         expected_qwer = \
             {
                 'id': 4,
@@ -204,9 +186,10 @@ class LibTests(unittest.TestCase):
                 'status': 'inactive'
             }
 
-        qwer = make_fixture(os.path.join(TESTS_PATH, schema_path), table_name, qwer_raw)
-      # print('qwer =', qwer)
-      # print('qwer_raw =', expected_qwer)
+        yaml_path = TEST_FIXTURES_PATH.replace(ATAT_N, '')
+      # print('yaml_path =', yaml_path)
+        qwer = make_fixture(yaml_path, 'qwer')
+
         self.assertEqual(qwer, expected_qwer)
 
     def test_schema_parser(self):

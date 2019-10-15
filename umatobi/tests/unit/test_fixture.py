@@ -23,7 +23,7 @@ class FixtureTests(unittest.TestCase):
         expected_schema_path, \
         expected_table_name, \
         expected_quentin_raw = \
-            '../simulator/simulation.schema', \
+            '../../simulator/simulation.schema', \
             'nodes', \
             {
                 'id': '3',
