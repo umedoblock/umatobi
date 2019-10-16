@@ -61,14 +61,3 @@ def fixtures(f):
         ret = f(self, *args, **kwargs)
         return ret
     return wrapper
-
-# see decora_success.py
-# def fixtures(*args, **kwargs):
-#     logger.info(f'fixtures(args={args}, kwargs={kwargs})')
-#     # __init__.py fixtures() - fixtures(args=('tests/fixtures/test.yaml',
-#     #  'quentin'), kwargs={}) -...
-#
-#     def inner(self, func):
-#         logger.info(f'func={func}')
-#         return func(100)
-#     return inner

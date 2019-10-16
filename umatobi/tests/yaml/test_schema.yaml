@@ -1,0 +1,25 @@
+test_normal:
+- ../fixtures/test.schema
+- test_table
+- id: 111
+  val_null:    'null'
+  val_integer: '10'
+  val_real:    '7.5'
+  val_text:    'test area'
+  val_blob:    'YmFzZTY0IGVuY29kZWQgYmxvYg=='
+# >>> base64.b64encode(b'base64 encoded blob')
+# b'YmFzZTY0IGVuY29kZWQgYmxvYg=='
+
+test_id_is_null:
+- ../fixtures/test.schema
+- test_table
+- id: 'null'
+  val_null:    'null'
+  val_integer: '0'
+  val_real:    '0.0'
+  val_text:    'id is null'
+  val_blob:    'aWQgaXMgbnVsbA=='
+# >>> base64.b64encode(b'base64 encoded blob')
+# b'YmFzZTY0IGVuY29kZWQgYmxvYg=='
+# echo -n 'id is null' | python3 -m base64 -e -
+# aWQgaXMgbnVsbA==

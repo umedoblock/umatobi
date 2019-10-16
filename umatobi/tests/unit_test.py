@@ -1,7 +1,8 @@
 import unittest
 from test.support import run_unittest
 
-from umatobi.tests.unit.test_lib import LibTests
+from umatobi.tests.unit.test_lib import LibTests, SimulationTimeTests
+from umatobi.tests.unit.test_lib import SchemaParserTests
 from umatobi.tests.unit.test_sql import SQLTests
 from umatobi.tests.unit.test_core_node import CoreNodeTests
 from umatobi.tests.unit.test_watson import WatsonTests
@@ -24,6 +25,8 @@ def test_main():
 
     # success
     unit_suite.addTest(unittest.makeSuite(LibTests))
+    unit_suite.addTest(unittest.makeSuite(SimulationTimeTests))
+    unit_suite.addTest(unittest.makeSuite(SchemaParserTests))
     unit_suite.addTest(unittest.makeSuite(SQLTests))
     unit_suite.addTest(unittest.makeSuite(CoreNodeTests))
     unit_suite.addTest(unittest.makeSuite(WatsonTests))

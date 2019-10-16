@@ -34,15 +34,6 @@ class LibTests(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(os.path.dirname(get_master_palm_path(self.simulation_time)), ignore_errors=True)
 
-    def test_simulation_time(self):
-        start_up_orig = SimulationTime.now()
-
-        with time_machine(start_up_orig):
-            simulation_time = SimulationTime()
-        self.assertIsInstance(simulation_time.start_up_orig,
-                              datetime)
-        self.assertEqual(simulation_time.start_up_orig, start_up_orig)
-
     def test_sock_create_ok(self):
         sock = sock_create('v4', 'tcp')
         self.assertEqual(sock.family, socket.AF_INET)
@@ -147,35 +138,6 @@ class LibTests(unittest.TestCase):
         host_port = '192.168.1.1:9999'
         self.assertEqual(get_host_port(host_port), ('192.168.1.1', 9999))
 
-    def test_data_type_converter(self):
-        d_schema = {
-            'column_blob': 'blob',
-            'column_float': 'float',
-            'column_integer': 'integer',
-            'column_text': 'text',
-        }
-
-        d_values = {
-#           'column_blob': 'blob',
-            'column_blob': 'YmxvYg==',
-            'column_float': '-1.0',
-            'column_integer': '10',
-            'column_text': 'text',
-        }
-        expected_values = {
-            'column_blob': b'blob',
-            'column_float': -1.0,
-            'column_integer': 10,
-            'column_text': 'text',
-        }
-        for column_name, data_type in d_schema.items():
-            converter_name = d_schema[column_name]
-            converter = DATA_TYPE_CONVERTER[converter_name]
-          # print('column_name =', column_name)
-          # print('data_type =', data_type)
-            self.assertEqual(converter(d_values[column_name]),
-                             expected_values[column_name])
-
     def test_make_fixture(self):
         expected_qwer = \
             {
@@ -192,80 +154,87 @@ class LibTests(unittest.TestCase):
 
         self.assertEqual(qwer, expected_qwer)
 
-    def test_schema_parser(self):
-        simulation_conf_str = f'''
-[simulation]
-title: in test_schema_parser()
-start_up_iso8601: 2011-11-11T11:11:11.123456
-open_office_iso8601: 2011-11-11T11:11:12.789012
-close_office_iso8601: 2011-11-11T11:11:42.345678
-end_up_iso8601: 2011-11-11T11:11:44.901234
-simulation_secs: 30
-watson_office_addr: localhost:11111
-total_nodes: 1000
-n_clients: 4
-memo: test to combine schema_parser and simulation.conf
-log_level: INFO
-version: 0.0.0
+    def test_make_fixture_normal(self):
+        expected_id_is_null = {
+            'id': 111,
+            'val_null': None,
+            'val_integer': 10,
+            'val_real': 7.5,
+            'val_text': 'test area',
+            'val_blob': b'base64 encoded blob',
+        }
 
-[nodes]
-id: 100
-now_iso8601: 2011-12-22T11:11:44.901234
-addr: 127.0.0.1:22222
-key: qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=
-status: active
-'''
-# >>> base64.b64encode(b'\xaa\xaa\xaa')
-# b'qqqq'
-# >>> base64.b64decode(b'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=')
-# b'\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa'
+        fixture_id_is_null = \
+                make_fixture(TEST_YAML_PATH.replace(ATAT_N, '_schema'),
+                            'test_normal')
+        self.assertEqual(fixture_id_is_null, expected_id_is_null)
 
-        simulation_time = self.simulation_time
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
-        self.assert_simulation_schema_path(simulation_schema_path)
+    def test_make_fixture_id_is_null(self):
+        expected_id_is_null = {
+            'id': None,
+            'val_null': None,
+            'val_integer': 0,
+            'val_real': 0.0,
+            'val_text': 'id is null',
+            'val_blob': b'id is null',
+        }
 
-        schema_parser = SchemaParser(simulation_schema_path)
-        config = configparser.ConfigParser()
-        config.read_string(simulation_conf_str)
-      # print('config.sections =', tuple(config.sections()))
+        fixture_id_is_null = \
+                make_fixture(TEST_YAML_PATH.replace(ATAT_N, '_schema'),
+                            'test_id_is_null')
+        self.assertEqual(fixture_id_is_null, expected_id_is_null)
 
-        records = schema_parser.spawn_records(config,
-                                              table_names=config.sections())
-        self.assertEqual(records.simulation['title'], 'in test_schema_parser()')
-        self.assertEqual(records.simulation['start_up_iso8601'], '2011-11-11T11:11:11.123456')
-        self.assertEqual(records.simulation['open_office_iso8601'], '2011-11-11T11:11:12.789012')
-        self.assertEqual(records.simulation['close_office_iso8601'], '2011-11-11T11:11:42.345678')
-        self.assertEqual(records.simulation['end_up_iso8601'], '2011-11-11T11:11:44.901234')
-        self.assertEqual(records.simulation['simulation_secs'], 30)
-        self.assertEqual(records.simulation['watson_office_addr'], 'localhost:11111')
-        self.assertEqual(records.simulation['total_nodes'], 1000)
-        self.assertEqual(records.simulation['n_clients'], 4)
-        self.assertEqual(records.simulation['memo'], 'test to combine schema_parser and simulation.conf')
-        self.assertEqual(records.simulation['log_level'], 'INFO')
-        self.assertEqual(records.simulation['version'], '0.0.0')
+    def test_converter_blob(self):
+      # $ echo -n 'converter_blob' | python3 -m base64 -e -
+      # Y29udmVydGVyX2Jsb2I=
+      # $ echo -n '' | python3 -m base64 -e -
 
-        self.assertEqual(records.nodes['id'], 100)
-        self.assertEqual(records.nodes['now_iso8601'], '2011-12-22T11:11:44.901234')
-        self.assertEqual(records.nodes['addr'], '127.0.0.1:22222')
-        self.assertEqual(records.nodes['key'], b'\xaa' * Key.KEY_OCTETS)
-        self.assertEqual(records.nodes['status'], 'active')
+      # $ echo -n 'a b c' | python3 -m base64 -e -
+      # YSBiIGM=
+        self.assertEqual(converter_blob(''), b'')
+        self.assertEqual(converter_blob('Y29udmVydGVyX2Jsb2I='), b'converter_blob')
+        self.assertEqual(converter_blob('YSBiIGM='), b'a b c')
 
-    def test_get_db_from_schema(self):
-        simulation_time = self.simulation_time
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
-        self.assert_simulation_schema_path(simulation_schema_path)
+    def test_converter_real(self):
+        self.assertEqual(converter_real('0.0'), 0.0)
+        self.assertEqual(converter_real('100.8'), 100.8)
+        self.assertIsNone(converter_real('null'))
+        self.assertIsNone(converter_real('NULL'))
+        self.assertIsNone(converter_real('Null'))
+        self.assertIsNone(converter_real('None'))
+        self.assertIsNone(converter_real('none'))
+        self.assertIsNone(converter_real('NONE'))
 
-        schema_parser = SchemaParser(simulation_schema_path)
+    def test_converter_integer(self):
+        self.assertEqual(converter_integer('0'), 0)
+        self.assertEqual(converter_integer('100'), 100)
+        self.assertIsNone(converter_integer('null'))
+        self.assertIsNone(converter_integer('NULL'))
+        self.assertIsNone(converter_integer('Null'))
+        self.assertIsNone(converter_integer('None'))
+        self.assertIsNone(converter_integer('none'))
+        self.assertIsNone(converter_integer('NONE'))
 
-        expected_table_names = ('simulation', 'clients', 'growings', 'nodes')
-        self.assertSequenceEqual(schema_parser.table_names(), expected_table_names)
-       #print('schema_parser.table_names() =', schema_parser.table_names())
-       #for table_name in schema_parser.table_names():
-       #    print('table_name =', table_name)
-       #    print(f'schema_parser[{table_name}] = {schema_parser[table_name]}')
-       #    print(f'schema_parser[{table_name}].items() = {schema_parser[table_name].items()}')
-       #    for column, data_type in schema_parser[table_name].items():
-       #        print(f'column={column}, data_type={data_type}')
+    def test_converter_text(self):
+        self.assertEqual(converter_text(''), '')
+        self.assertEqual(converter_text('converter_text'), 'converter_text')
+
+    def test_converter_null(self):
+        self.assertIsNone(converter_null(0))
+        self.assertIsNone(converter_null(1))
+        self.assertIsNone(converter_null((1, 2, 3)))
+        self.assertIsNone(converter_null('any arg'))
+
+    def test_get_client_db_path(self):
+        client_id = 8
+        client_db_path = get_client_db_path(self.simulation_time,
+                                            client_id)
+        self.assert_client_db_path(client_db_path)
+
+        client_id = 88888
+        client_db_path = get_client_db_path(self.simulation_time,
+                                            client_id)
+        self.assert_client_db_path(client_db_path)
 
     # SimulationTime.Y15S_FORMAT='%Y-%m-%dT%H%M%S'
     def test_get_simulation_dir_path(self):
@@ -282,51 +251,25 @@ status: active
                             SIMULATION_TIME_ATAT)
         self.assertRegex(simulation_schema_path, RE_Y15S)
 
-    def test_get_client_db_path(self):
-        client_id = 8
-        client_db_path = get_client_db_path(self.simulation_time,
-                                            client_id)
-        self.assert_client_db_path(client_db_path)
+    def test_get_root_path(self):
+        self.assertEqual(get_root_path(), UMATOBI_ROOT_PATH)
+        self.assertEqual(re.sub(TESTS_PATH, '', UMATOBI_ROOT_PATH), os.sep + 'umatobi-root')
+        self.assertRegex(get_root_path(), UMATOBI_ROOT_PATH)
 
-        client_id = 88888
-        client_db_path = get_client_db_path(self.simulation_time,
-                                            client_id)
-        self.assert_client_db_path(client_db_path)
-
-    def test_get_table_columns(self):
-        expected_items = {
-            'simulation': (
-                'title', 'start_up_iso8601', 'open_office_iso8601',
-                'close_office_iso8601', 'end_up_iso8601', 'simulation_secs',
-                'watson_office_addr', 'total_nodes', 'n_clients', 'memo',
-                'log_level', 'version',
-            ),
-            'clients': (
-                'id', 'addr', 'consult_iso8601', 'thank_you_so_much_iso8601',
-                'num_nodes', 'node_index', 'log_level'
-            ),
-            'growings': (
-                'id', 'now_iso8601', 'pickle'
-            ),
-            'nodes': (
-                'id', 'now_iso8601', 'addr', 'key', 'status'
-            ),
-        }
-
+    def test_get_master_palm_path(self):
         simulation_time = self.simulation_time
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
-        self.assert_simulation_schema_path(simulation_schema_path)
-        schema_parser = SchemaParser(simulation_schema_path)
-        self.assertSequenceEqual(schema_parser.table_names(),
-                           tuple(expected_items.keys()))
+        self.assertEqual(
+            get_master_palm_path(simulation_time),
+            os.path.join(SIMULATION_ROOT_PATH,
+                         simulation_time.get_y15s(),
+                         MASTER_PALM))
 
-        for table_name in schema_parser.table_names():
-           #for column, data_type in schema_parser[table_name].items():
-               #print(table_name, column, data_type)
-               #print(tuple(schema_parser[table_name].keys()))
-               #print(expected_items[table_name])
-            self.assertSequenceEqual(tuple(schema_parser[table_name].keys()),
-                                           expected_items[table_name])
+    def test_some_PATHes(self):
+        self.assertRegex(UMATOBI_ROOT_PATH, f"^{TESTS_PATH}")
+        self.assertRegex(SIMULATION_ROOT_PATH, f"^{TESTS_PATH}")
+
+        self.assertRegex(SIMULATION_DIR_PATH, r'/@@SIMULATION_TIME@@$')
+        self.assertRegex(SIMULATION_SCHEMA_PATH, r'/tests/')
 
     def test_dict2json_and_json2dict(self):
         d = {
@@ -357,32 +300,6 @@ status: active
         self.assertIsInstance(d2, dict)
         self.assertNotEqual(id(d2), id(d))
         self.assertEqual(d2, d)
-
-    def test_some_PATHes(self):
-        self.assertRegex(UMATOBI_ROOT_PATH, f"^{TESTS_PATH}")
-        self.assertRegex(SIMULATION_ROOT_PATH, f"^{TESTS_PATH}")
-
-        self.assertRegex(SIMULATION_DIR_PATH, r'/@@SIMULATION_TIME@@$')
-        self.assertRegex(SIMULATION_SCHEMA_PATH, r'/tests/')
-
-    def test_root_path(self):
-        self.assertEqual(get_root_path(), UMATOBI_ROOT_PATH)
-        self.assertEqual(re.sub(TESTS_PATH, '', UMATOBI_ROOT_PATH), os.sep + 'umatobi-root')
-        self.assertRegex(get_root_path(), UMATOBI_ROOT_PATH)
-
-    def test_get_iso8601(self):
-        self.assertRegex(self.simulation_time.get_iso8601(), RE_ISO8601)
-
-    def test_get_y15s(self):
-        self.assertRegex(self.simulation_time.get_y15s(), RE_Y15S)
-
-    def test_master_palm_path(self):
-        simulation_time = self.simulation_time
-        self.assertEqual(
-            get_master_palm_path(simulation_time),
-            os.path.join(SIMULATION_ROOT_PATH,
-                         simulation_time.get_y15s(),
-                         MASTER_PALM))
 
     def test_make_log_dir(self):
         special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
@@ -415,71 +332,6 @@ status: active
         special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
         tlogger = make_logger(log_dir=special_dir, name='test_logger', id_=888, level="INFO")
         self.assertEqual(tlogger.log_path, os.path.join(special_dir, 'test_logger.888.log', ))
-
-    def test_make_start_up_orig(self):
-        simulation_time = self.simulation_time
-        self.assertIsInstance(simulation_time.start_up_orig, datetime)
-
-    def test_make_start_up_orig_with_time_machine(self):
-        start_up_orig = self.simulation_time.start_up_orig
-
-        years_1000 = timedelta(days=1000*365)
-        past = start_up_orig - years_1000
-        current = start_up_orig
-        future = start_up_orig + years_1000
-
-        with time_machine(past):
-            self.assertEqual(SimulationTime().start_up_orig, past)
-
-        with time_machine(current):
-            self.assertEqual(SimulationTime().start_up_orig, current)
-
-        with time_machine(future):
-            self.assertEqual(SimulationTime().start_up_orig, future)
-
-    def test_y15sformat_time(self):
-        # Y15S_FORMAT='%Y-%m-%dT%H%M%S'
-        simulation_time = self.simulation_time
-        y15s = SimulationTime.time_to_y15s(simulation_time)
-        self.assertIsInstance(y15s, str)
-        self.assertRegex(y15s, r"\A\d{4}-\d{2}-\d{2}T\d{6}\Z")
-
-    def test_curren_y15sformat_time(self):
-        # Y15S_FORMAT='%Y-%m-%dT%H%M%S'
-        y15s = SimulationTime.time_to_y15s(SimulationTime())
-        self.assertIsInstance(y15s, str)
-        self.assertRegex(y15s, r"\A\d{4}-\d{2}-\d{2}T\d{6}\Z")
-
-    def test_simulation_time_passed_sec(self):
-        pass
-
-    # class timedelta(builtins.object)
-    #  |  Difference between two datetime values.
-    #  |
-    #  |  timedelta(days=0, seconds=0, microseconds=0, milliseconds=0,
-    #               minutes=0, hours=0, weeks=0)
-
-    def test_simulation_time_passed_ms(self):
-        mili555 = timedelta(milliseconds=555)
-        simulation_time = SimulationTime()
-        start_up_orig = simulation_time.start_up_orig
-        with time_machine(start_up_orig + mili555):
-            passed_ms = simulation_time.passed_ms(SimulationTime().start_up_orig)
-        self.assertEqual(passed_ms, 555)
-
-    def test_from_iso_to_start_up_orig(self):
-        isoformat = '2011-11-11T11:11:11.111111'
-        self.assertEqual(SimulationTime.iso8601_to_time(isoformat), SimulationTime(datetime(2011, 11, 11, 11, 11, 11, 111111)))
-
-    def test_start_up_orig_to_iso(self):
-        start_up_orig = datetime(2011, 11, 11, 11, 11, 11, 111111)
-        with time_machine(start_up_orig):
-            self.assertEqual(SimulationTime.time_to_iso8601(SimulationTime()), '2011-11-11T11:11:11.111111')
-
-    def test_mock_datetime_now(self):
-        manipulated_datetime = datetime(2011, 11, 11, 11, 11, 11, 111111)
-        with time_machine(manipulated_datetime):
-            self.assertEqual(SimulationTime.now(), manipulated_datetime)
 
     def test_load_yaml1(self):
         y = load_yaml(TEST_YAML_PATH.replace(ATAT_N, '1'))
@@ -554,6 +406,369 @@ val_real: 1.1
 val_text: text context
 '''
         self.assertEqual(dumped_yaml, expected_dump)
+
+class SimulationTimeTests(unittest.TestCase):
+
+    def setUp(self):
+        self.simulation_dir_path = \
+            os.path.join(SIMULATION_ROOT_PATH, SIMULATION_DIR_PATH)
+        self.simulation_time = SimulationTime()
+
+    def tearDown(self):
+        shutil.rmtree(os.path.dirname(get_master_palm_path(self.simulation_time)), ignore_errors=True)
+
+    def test_simulation_time(self):
+        start_up_orig = SimulationTime.now()
+
+        with time_machine(start_up_orig):
+            simulation_time = SimulationTime()
+        self.assertIsInstance(simulation_time.start_up_orig,
+                              datetime)
+        self.assertEqual(simulation_time.start_up_orig, start_up_orig)
+
+    def test_mock_datetime_now(self):
+        manipulated_datetime = datetime(2011, 11, 11, 11, 11, 11, 111111)
+        with time_machine(manipulated_datetime):
+            self.assertEqual(SimulationTime.now(), manipulated_datetime)
+
+    def test_iso8601_to_time(self):
+        isoformat = '2011-11-11T11:11:11.111111'
+        self.assertEqual(SimulationTime.iso8601_to_time(isoformat), SimulationTime(datetime(2011, 11, 11, 11, 11, 11, 111111)))
+
+    def test_time_to_iso8601(self):
+        start_up_orig = datetime(2011, 11, 11, 11, 11, 11, 111111)
+        with time_machine(start_up_orig):
+            self.assertEqual(SimulationTime.time_to_iso8601(SimulationTime()), '2011-11-11T11:11:11.111111')
+
+    def test_y15s_to_time(self):
+        pass
+
+    def test_time_to_y15s(self):
+        # Y15S_FORMAT='%Y-%m-%dT%H%M%S'
+        simulation_time = self.simulation_time
+        y15s = SimulationTime.time_to_y15s(simulation_time)
+        self.assertIsInstance(y15s, str)
+        self.assertRegex(y15s, r"\A\d{4}-\d{2}-\d{2}T\d{6}\Z")
+
+    def test_time_to_y15s_2(self):
+        # Y15S_FORMAT='%Y-%m-%dT%H%M%S'
+        y15s = SimulationTime.time_to_y15s(SimulationTime())
+        self.assertIsInstance(y15s, str)
+        self.assertRegex(y15s, r"\A\d{4}-\d{2}-\d{2}T\d{6}\Z")
+
+    def test_init(self):
+        pass
+
+    def test_eq(self):
+        pass
+
+    def test_get_iso8601(self):
+        self.assertRegex(self.simulation_time.get_iso8601(), RE_ISO8601)
+
+    def test_get_y15s(self):
+        self.assertRegex(self.simulation_time.get_y15s(), RE_Y15S)
+
+    def test_passed_sec(self):
+        pass
+
+    def test_passed_ms(self):
+        mili555 = timedelta(milliseconds=555)
+        simulation_time = SimulationTime()
+        start_up_orig = simulation_time.start_up_orig
+        with time_machine(start_up_orig + mili555):
+            passed_ms = simulation_time.passed_ms(SimulationTime().start_up_orig)
+        self.assertEqual(passed_ms, 555)
+
+    # 以下は必要ない？
+    # no need to below tests ?
+    def test_make_start_up_orig(self):
+        simulation_time = self.simulation_time
+        self.assertIsInstance(simulation_time.start_up_orig, datetime)
+
+    def test_make_start_up_orig_with_time_machine(self):
+        start_up_orig = self.simulation_time.start_up_orig
+
+        years_1000 = timedelta(days=1000*365)
+        past = start_up_orig - years_1000
+        current = start_up_orig
+        future = start_up_orig + years_1000
+
+        with time_machine(past):
+            self.assertEqual(SimulationTime().start_up_orig, past)
+
+        with time_machine(current):
+            self.assertEqual(SimulationTime().start_up_orig, current)
+
+        with time_machine(future):
+            self.assertEqual(SimulationTime().start_up_orig, future)
+
+    # class timedelta(builtins.object)
+    #  |  Difference between two datetime values.
+    #  |
+    #  |  timedelta(days=0, seconds=0, microseconds=0, milliseconds=0,
+    #               minutes=0, hours=0, weeks=0)
+
+
+class SchemaParserTests(unittest.TestCase):
+
+    def assert_simulation_schema_path(self, inspected_path):
+        self.assert_simulation_dir_path(inspected_path)
+        self.assertRegex(inspected_path, f"{SIMULATION_SCHEMA}$")
+
+    def assert_simulation_dir_path(self, dir_path):
+        self.assertTrue(os.path.isdir(os.path.dirname(dir_path)))
+        self.assertNotRegex(dir_path,
+                            SIMULATION_TIME_ATAT)
+        self.assertRegex(dir_path, RE_Y15S)
+
+    def setUp(self):
+        self.simulation_dir_path = \
+            os.path.join(SIMULATION_ROOT_PATH, SIMULATION_DIR_PATH)
+        self.simulation_time = SimulationTime()
+
+    def tearDown(self):
+        shutil.rmtree(os.path.dirname(get_master_palm_path(self.simulation_time)), ignore_errors=True)
+
+    def test_data_type_converter(self):
+        d_schema = {
+            'column_blob': 'blob',
+            'column_real': 'real',
+            'column_integer': 'integer',
+            'column_text': 'text',
+        }
+
+        d_values = {
+#           'column_blob': 'blob',
+            'column_blob': 'YmxvYg==',
+            'column_real': '-1.0',
+            'column_integer': '10',
+            'column_text': 'text',
+        }
+        expected_values = {
+            'column_blob': b'blob',
+            'column_real': -1.0,
+            'column_integer': 10,
+            'column_text': 'text',
+        }
+        for column_name, data_type in d_schema.items():
+            converter_name = d_schema[column_name]
+            converter = SchemaParser.DATA_TYPE_CONVERTER[converter_name]
+          # print('column_name =', column_name)
+          # print('data_type =', data_type)
+            self.assertEqual(converter(d_values[column_name]),
+                             expected_values[column_name])
+
+    def test_schema_parser(self):
+        simulation_time = self.simulation_time
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        self.assert_simulation_schema_path(simulation_schema_path)
+
+        schema_parser = SchemaParser(simulation_schema_path)
+
+        self.assertEqual(schema_parser.table_names(), ['simulation', 'clients', 'growings', 'nodes'])
+        self.assertIsInstance(schema_parser.converter_tables, dict)
+        # see test_construct_converter_tables()
+        # if you hope to make sense about converter_tables structure
+
+    def test_construct_converter_tables(self):
+        # tests/fixtures/test.schema
+        expected_tables = {
+            'test_table': {
+                'id': converter_integer,
+
+                # None in Python
+                'val_null': converter_null,
+
+                # int in Python
+                'val_integer': converter_integer,
+
+                # float in Python
+                'val_real':    converter_real,
+
+                # depends on text_factory, str by default in Python
+                'val_text':    converter_text,
+
+                # bytes in Python
+                'val_blob':    converter_blob,
+            }
+        }
+
+        schema_parser = SchemaParser(TEST_SCHEMA_PATH)
+
+        self.assertEqual(schema_parser.converter_tables['test_table'],
+                         expected_tables['test_table'])
+
+    def test_get_db_from_schema(self):
+        simulation_time = self.simulation_time
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        self.assert_simulation_schema_path(simulation_schema_path)
+
+        schema_parser = SchemaParser(simulation_schema_path)
+
+        expected_table_names = ('simulation', 'clients', 'growings', 'nodes')
+        self.assertSequenceEqual(schema_parser.get_table_names(),
+                                 expected_table_names)
+
+    def test_get_table_names(self):
+        expected_items = {
+            'simulation': (
+                'title', 'start_up_iso8601', 'open_office_iso8601',
+                'close_office_iso8601', 'end_up_iso8601', 'simulation_secs',
+                'watson_office_addr', 'total_nodes', 'n_clients', 'memo',
+                'log_level', 'version',
+            ),
+            'clients': (
+                'id', 'addr', 'consult_iso8601', 'thank_you_so_much_iso8601',
+                'num_nodes', 'node_index', 'log_level'
+            ),
+            'growings': (
+                'id', 'now_iso8601', 'pickle'
+            ),
+            'nodes': (
+                'id', 'now_iso8601', 'addr', 'key', 'status'
+            ),
+        }
+
+        simulation_time = self.simulation_time
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        self.assert_simulation_schema_path(simulation_schema_path)
+
+        schema_parser = SchemaParser(simulation_schema_path)
+        self.assertSequenceEqual(schema_parser.get_table_names(),
+                           tuple(expected_items.keys()))
+
+    def test_get_columns(self):
+        expected_items = {
+            'simulation': (
+                'title', 'start_up_iso8601', 'open_office_iso8601',
+                'close_office_iso8601', 'end_up_iso8601', 'simulation_secs',
+                'watson_office_addr', 'total_nodes', 'n_clients', 'memo',
+                'log_level', 'version',
+            ),
+            'clients': (
+                'id', 'addr', 'consult_iso8601', 'thank_you_so_much_iso8601',
+                'num_nodes', 'node_index', 'log_level'
+            ),
+            'growings': (
+                'id', 'now_iso8601', 'pickle'
+            ),
+            'nodes': (
+                'id', 'now_iso8601', 'addr', 'key', 'status'
+            ),
+        }
+
+        simulation_time = self.simulation_time
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        self.assert_simulation_schema_path(simulation_schema_path)
+
+        schema_parser = SchemaParser(simulation_schema_path)
+        for table_name in schema_parser.table_names():
+            self.assertSequenceEqual(tuple(schema_parser.get_columns(table_name).keys()),
+                                           expected_items[table_name])
+
+    def test_parse_record(self):
+        pass
+
+    def test_spawn_records(self):
+        simulation_conf_str = f'''
+[simulation]
+title: in test_schema_parser()
+start_up_iso8601: 2011-11-11T11:11:11.123456
+open_office_iso8601: 2011-11-11T11:11:12.789012
+close_office_iso8601: 2011-11-11T11:11:42.345678
+end_up_iso8601: 2011-11-11T11:11:44.901234
+simulation_secs: 30
+watson_office_addr: localhost:11111
+total_nodes: 1000
+n_clients: 4
+memo: test to combine schema_parser and simulation.conf
+log_level: INFO
+version: 0.0.0
+
+[nodes]
+id: 100
+now_iso8601: 2011-12-22T11:11:44.901234
+addr: 127.0.0.1:22222
+key: qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=
+status: active
+'''
+# >>> base64.b64encode(b'\xaa\xaa\xaa')
+# b'qqqq'
+# >>> base64.b64decode(b'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=')
+# b'\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa'
+
+        simulation_time = self.simulation_time
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        self.assert_simulation_schema_path(simulation_schema_path)
+
+        schema_parser = SchemaParser(simulation_schema_path)
+        config = configparser.ConfigParser()
+        config.read_string(simulation_conf_str)
+      # print('config.sections =', tuple(config.sections()))
+
+        records = schema_parser.spawn_records(config,
+                                              table_names=config.sections())
+        self.assertEqual(records.simulation['title'], 'in test_schema_parser()')
+        self.assertEqual(records.simulation['start_up_iso8601'], '2011-11-11T11:11:11.123456')
+        self.assertEqual(records.simulation['open_office_iso8601'], '2011-11-11T11:11:12.789012')
+        self.assertEqual(records.simulation['close_office_iso8601'], '2011-11-11T11:11:42.345678')
+        self.assertEqual(records.simulation['end_up_iso8601'], '2011-11-11T11:11:44.901234')
+        self.assertEqual(records.simulation['simulation_secs'], 30)
+        self.assertEqual(records.simulation['watson_office_addr'], 'localhost:11111')
+        self.assertEqual(records.simulation['total_nodes'], 1000)
+        self.assertEqual(records.simulation['n_clients'], 4)
+        self.assertEqual(records.simulation['memo'], 'test to combine schema_parser and simulation.conf')
+        self.assertEqual(records.simulation['log_level'], 'INFO')
+        self.assertEqual(records.simulation['version'], '0.0.0')
+
+        self.assertEqual(records.nodes['id'], 100)
+        self.assertEqual(records.nodes['now_iso8601'], '2011-12-22T11:11:44.901234')
+        self.assertEqual(records.nodes['addr'], '127.0.0.1:22222')
+        self.assertEqual(records.nodes['key'], b'\xaa' * Key.KEY_OCTETS)
+        self.assertEqual(records.nodes['status'], 'active')
+
+    def test_set_converter(self):
+        sp = schema_parser = SchemaParser(TEST_SCHEMA_PATH)
+
+        with self.assertRaises(KeyError):
+            schema_parser.converter_tables['test_table']['blob_column']
+        schema_parser.set_converter('test_table', 'blob_column', 'blob')
+        self.assertEqual(schema_parser.converter_tables['test_table']['blob_column'], converter_blob)
+
+        with self.assertRaises(KeyError):
+            schema_parser.converter_tables['test_table']['real_column']
+        schema_parser.set_converter('test_table', 'real_column', 'real')
+        self.assertEqual(schema_parser.converter_tables['test_table']['real_column'], converter_real)
+
+        with self.assertRaises(KeyError):
+            schema_parser.converter_tables['test_table']['integer_column']
+        schema_parser.set_converter('test_table', 'integer_column', 'integer')
+        self.assertEqual(schema_parser.converter_tables['test_table']['integer_column'], converter_integer)
+
+        with self.assertRaises(KeyError):
+            schema_parser.converter_tables['test_table']['text_column']
+        schema_parser.set_converter('test_table', 'text_column', 'text')
+        self.assertEqual(schema_parser.converter_tables['test_table']['text_column'], converter_text)
+
+        with self.assertRaises(KeyError):
+            schema_parser.converter_tables['test_table']['null_column']
+        schema_parser.set_converter('test_table', 'null_column', 'null')
+        self.assertEqual(schema_parser.converter_tables['test_table']['null_column'], converter_null)
+
+    def test_get_converter(self):
+        sp = schema_parser = SchemaParser(TEST_SCHEMA_PATH)
+        self.assertEqual(sp.get_converter('test_table', 'id'),
+                         converter_integer)
+        self.assertEqual(sp.get_converter('test_table', 'val_null'),
+                         converter_null)
+        self.assertEqual(sp.get_converter('test_table', 'val_integer'),
+                         converter_integer)
+        self.assertEqual(sp.get_converter('test_table', 'val_real'),
+                         converter_real)
+        self.assertEqual(sp.get_converter('test_table', 'val_text'),
+                         converter_text)
+        self.assertEqual(sp.get_converter('test_table', 'val_blob'),
+                         converter_blob)
 
 if __name__ == '__main__':
     unittest.main()

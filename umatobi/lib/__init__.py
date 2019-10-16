@@ -131,64 +131,37 @@ def make_fixture(yaml_path, index):
     fixture = schema_parser.parse_record(component, table_name)
     return fixture
 
-DATA_TYPE_CONVERTER = {
-    'blob': base64.b64decode,
-    'float': float,
-    'integer': int,
-    'text': str,
-}
-
 class Records(object):
     pass
 
-class SchemaParser(configparser.ConfigParser):
-    def __init__(self, schema_path):
-        super().__init__()
-        with open(schema_path, encoding='utf-8') as schema:
-            self.read_file(schema)
+def converter_blob(b64_encoded_string):
+    return base64.b64decode(b64_encoded_string)
 
-        self.table_names = self.sections
-        self.tables = {}
-        # grep ':' tests/unit/test_lib.py | grep -v '^#' | \
-        #       awk '{print $2}' | \
-        #       sort | uniq
-        # blob
-        # float
-        # integer
-        # text
+def converter_real(value):
+    try:
+        f = float(value)
+    except ValueError as err:
+        if err.args[0] == f"could not convert string to float: '{value}'":
+            f = None
+        else:
+            raise err
+    return f
 
-        for table_name in self.table_names():
-            self.tables[table_name] = {}
-            for column, as_string in self[table_name].items():
-                data_type = as_string.split(' ')[0]
-                converter = DATA_TYPE_CONVERTER[data_type]
-                self.tables[table_name][column] = converter
-              # print(f'column={column}, data_type={data_type}, converter={converter}')
+def converter_integer(value):
+    try:
+        i = int(value)
+    except ValueError as err:
+        if err.args[0] == f"invalid literal for int() with base 10: '{value}'":
+            i = None
+        else:
+            raise err
+    return i
 
-    def get_table_names(self):
-        return self.table_names()
+def converter_text(text):
+    return str(text)
 
-    def get_columns(self, table_name):
-        return self[table_name]
-
-    def spawn_records(self, config, table_names=tuple()):
-        if not table_names:
-            table_names = config.sections()
-
-        records = Records()
-        for table_name in table_names:
-            record = self.parse_record(config[table_name], table_name)
-            setattr(records, table_name, record)
-
-        return records
-
-    def parse_record(self, record, table_name):
-        d = {}
-        for column_name, as_string in record.items():
-            converter = self.tables[table_name][column_name]
-            value = converter(as_string)
-            d[column_name] = value
-        return d
+def converter_null(any_arg):
+    return None
 
 def get_client_db_path(simulation_time, client_id):
     client_n_db = re.sub(ATAT_N, str(client_id), CLIENT_N_DB)
@@ -256,6 +229,37 @@ def json2dict(j):
 def tell_shutdown_time():
     shutdown_time = datetime_now()
     return shutdown_time
+
+def get_passed_ms(start_up_orig):
+    '''simulation 開始から現在までに経過したmilli秒数。'''
+    now = datetime_now()
+    # relativeCreated の時間単位がmsのため、
+    # elapsed_time()もms単位となるようにする。
+    return int(((now - start_up_orig) * 1000).total_seconds())
+
+def elapsed_time(start_up_orig, now=None):
+    '''simulation 開始から現在までに経過したmilli秒数。'''
+    if not None:
+        now = datetime_now()
+    # relativeCreated の時間単位がmsのため、
+    # elapsed_time()もms単位となるようにする。
+    return int(((now - start_up_orig) * 1000).total_seconds())
+
+def _normalize_ms(seconds):
+    return int(seconds * 1000)
+
+def get_passed_seconds(orig):
+    e = datetime_now()
+    return (e - orig).total_seconds()
+
+def get_passed_ms(orig):
+    passed_seconds = get_passed_seconds(orig)
+    return _normalize_ms(passed_seconds)
+
+def load_yaml(yaml_path):
+    with open(yaml_path) as f:
+        y = yaml.load(f, Loader=yaml.SafeLoader)
+    return y
 
 class SimulationTime(object):
     Y15S_FORMAT='%Y-%m-%dT%H%M%S'
@@ -332,33 +336,75 @@ class SimulationTime(object):
 # def y15sformat_parse(s):
 #     return datetime2.strptime(s, Y15S_FORMAT)
 
-def get_passed_ms(start_up_orig):
-    '''simulation 開始から現在までに経過したmilli秒数。'''
-    now = datetime_now()
-    # relativeCreated の時間単位がmsのため、
-    # elapsed_time()もms単位となるようにする。
-    return int(((now - start_up_orig) * 1000).total_seconds())
+class SchemaParser(configparser.ConfigParser):
 
-def elapsed_time(start_up_orig, now=None):
-    '''simulation 開始から現在までに経過したmilli秒数。'''
-    if not None:
-        now = datetime_now()
-    # relativeCreated の時間単位がmsのため、
-    # elapsed_time()もms単位となるようにする。
-    return int(((now - start_up_orig) * 1000).total_seconds())
+    DATA_TYPE_CONVERTER = {
+        'blob': converter_blob,
+        'real': converter_real,
+        'integer': converter_integer,
+        'text': converter_text,
+        'null': converter_null,
+    }
 
-def _normalize_ms(seconds):
-    return int(seconds * 1000)
+    def __init__(self, schema_path):
+        super().__init__()
+        with open(schema_path, encoding='utf-8') as schema:
+            self.read_file(schema)
 
-def get_passed_seconds(orig):
-    e = datetime_now()
-    return (e - orig).total_seconds()
+        self.table_names = self.sections
+        self.converter_tables = {}
 
-def get_passed_ms(orig):
-    passed_seconds = get_passed_seconds(orig)
-    return _normalize_ms(passed_seconds)
+        self.construct_converter_tables()
 
-def load_yaml(yaml_path):
-    with open(yaml_path) as f:
-        y = yaml.load(f, Loader=yaml.SafeLoader)
-    return y
+    def construct_converter_tables(self):
+        for table_name in self.table_names():
+            self.converter_tables[table_name] = {}
+            for column_name, as_string in self[table_name].items():
+                data_type = as_string.split(' ')[0]
+                self.set_converter(table_name, column_name, data_type)
+
+    def get_table_names(self):
+        return self.table_names()
+
+    def get_columns(self, table_name):
+        return self[table_name]
+
+    def parse_record(self, record, table_name):
+        d = {}
+        for column_name, as_string in record.items():
+            converter = self.get_converter(table_name, column_name)
+            value = converter(as_string)
+          # print('record =')
+          # print(record)
+          # print('table_name =')
+          # print(table_name)
+          # print('column_name =')
+          # print(column_name)
+          # print('converter =')
+          # print(converter)
+          # print('as_string =')
+          # print(as_string)
+          # print('value =')
+          # print(value)
+          # print()
+            d[column_name] = value
+        return d
+
+    def spawn_records(self, config, table_names=tuple()):
+        if not table_names:
+            table_names = config.sections()
+
+        records = Records()
+        for table_name in table_names:
+            record = self.parse_record(config[table_name], table_name)
+            setattr(records, table_name, record)
+
+        return records
+
+    def set_converter(self, table_name, column_name, data_type):
+        converter = self.DATA_TYPE_CONVERTER[data_type]
+        self.converter_tables[table_name][column_name] = converter
+
+    def get_converter(self, table_name, column_name):
+        converter = self.converter_tables[table_name][column_name]
+        return converter
