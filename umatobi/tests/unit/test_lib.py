@@ -590,6 +590,12 @@ class SchemaParserTests(unittest.TestCase):
 
                 # bytes in Python
                 'val_blob':    converter_blob,
+
+                # time.time() in Python time format '2012-11-02T23:22:27.002'
+                'now':    converter_text,
+
+                # float
+                'elapsed_time':    converter_real,
             }
         }
 
