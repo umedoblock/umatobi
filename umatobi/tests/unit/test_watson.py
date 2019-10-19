@@ -2,6 +2,7 @@ import os, datetime
 import sys, shutil
 import threading, io, selectors
 import unittest
+from unittest.mock import call
 
 from umatobi.tests import *
 from umatobi.simulator.watson import Watson, WatsonOffice
@@ -106,6 +107,19 @@ class WatsonTests(unittest.TestCase):
         self.assertEqual(watson.simulation_db_path, expected_simulation_db_path)
         self.assertEqual(watson.simulation_schema_path, expected_simulation_schema_path)
         self.assertEqual(watson.total_nodes, 0)
+
+    @patch('umatobi.simulator.watson.WatsonOpenOffice')
+    def test_open_office(self, mock_WatsonOpenOffice):
+        # woo stands for WatsonOpenOffice.
+        watson = self.watson
+
+        mock_WatsonOpenOffice.assert_not_called()
+        woo = watson.open_office()
+        mock_WatsonOpenOffice.assert_called()
+        self.assertEqual(woo, watson.watson_open_office)
+
+        watson.watson_open_office.start.assert_called()
+        watson.watson_open_office.in_serve_forever.wait.assert_called()
 
     @patch('time.sleep')
     def test_watson_start(self, mock_sleep):
