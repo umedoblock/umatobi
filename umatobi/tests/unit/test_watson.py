@@ -2,7 +2,8 @@ import os, datetime
 import sys, shutil
 import threading, io, selectors
 import unittest
-from unittest.mock import call
+from unittest.mock import call, MagicMock
+from umatobi.simulator.sql import SQL
 
 from umatobi.tests import *
 from umatobi.simulator.watson import Watson, WatsonOffice
@@ -14,7 +15,7 @@ class Req(object):
     def makefile(self, mode, rbufsize):
         sheep = {}
         sheep['profess'] = 'I am Client.'
-        sheep['num_nodes'] = 111111
+        sheep['num_nodes'] = 333
         self.sheep = sheep
         js_sheep = dict2json(sheep)
         return io.BytesIO(js_sheep.encode('utf-8'))
@@ -30,12 +31,12 @@ class WatsonOfficeTests(unittest.TestCase):
 
     def setUp(self):
         self.watson_office_addr = ('localhost', 65530)
-        self.simulation_time = SimulationTime()
+        self.start_up_iso8601 = SimulationTime()
         self.log_level = 'INFO'
         self.log_level = 'DEBUG'
 
         self.watson = Watson(self.watson_office_addr, SIMULATION_SECONDS,
-                             self.simulation_time, self.log_level)
+                             self.start_up_iso8601, self.log_level)
 
     def test_handle(self):
         watson = self.watson
@@ -59,9 +60,9 @@ class WatsonOfficeTests(unittest.TestCase):
         self.assertFalse('simulation_dir_path' in tc)
         self.assertFalse('simulation_db_path' in tc)
         self.assertFalse('simulation_schema_path' in tc)
-        self.assertFalse('simulation_time' in tc)
+
         self.assertEqual(tc['client_id'], 1)
-        self.assertEqual(tc['iso8601'], watson.simulation_time.get_iso8601())
+        self.assertEqual(tc['start_up_iso8601'], watson.start_up_iso8601.get_iso8601())
         self.assertEqual(tc['node_index'], 1)
         self.assertEqual(tc['log_level'], watson.log_level)
 
@@ -70,8 +71,9 @@ class WatsonOfficeTests(unittest.TestCase):
 
         d_client = dict(clients[0])
         self.assertEqual(d_client['id'], 1)
-        self.assertEqual(d_client['host'], client_address[0])
-        self.assertEqual(d_client['port'], client_address[1])
+        addr = client_address
+        client_addr = f'{addr[0]}:{addr[1]}'
+        self.assertEqual(d_client['addr'], client_addr)
         self.assertEqual(d_client['node_index'], 1)
       # self.assertEqual(d_client['joined'], 12)
         self.assertEqual(d_client['log_level'], watson.log_level)
@@ -83,10 +85,13 @@ class WatsonTests(unittest.TestCase):
     def setUp(self):
         self.watson_office_addr = ('localhost', 65530)
         self.log_level = 'INFO'
-        self.simulation_time = SimulationTime()
+        self.start_up_iso8601 = SimulationTime()
 
         self.watson = Watson(self.watson_office_addr, SIMULATION_SECONDS,
-                             self.simulation_time, self.log_level)
+                             self.start_up_iso8601, self.log_level)
+
+        self.outsider_db = SQL(db_path=self.watson.simulation_db_path,
+                               schema_path=self.watson.simulation_schema_path)
 
     def tearDown(self):
         # delete dbs, logs...
@@ -95,11 +100,11 @@ class WatsonTests(unittest.TestCase):
     def test_watson_basic(self):
         watson = self.watson
         expected_simulation_dir_path = \
-                get_simulation_dir_path(self.simulation_time)
+                get_simulation_dir_path(self.start_up_iso8601)
         expected_simulation_db_path = \
-                get_simulation_db_path(self.simulation_time)
+                get_simulation_db_path(self.start_up_iso8601)
         expected_simulation_schema_path = \
-                get_simulation_schema_path(self.simulation_time)
+                get_simulation_schema_path(self.start_up_iso8601)
 
         self.assertTrue(os.path.isdir(watson.simulation_dir_path))
         self.assertEqual(watson.watson_office_addr, self.watson_office_addr)
@@ -139,8 +144,58 @@ class WatsonTests(unittest.TestCase):
 
         watson.simulation_db.access_db()
         watson._merge_db_to_simulation_db()
+        watson._create_simulation_table()
         watson._construct_simulation_table()
         watson.simulation_db.close()
+
+    def test__create_simulation_db(self):
+        watson = self.watson
+        watson.touch_simulation_db_on_clients()
+        watson.simulation_db.access_db()
+
+        outsider_db = self.outsider_db
+        outsider_db.access_db()
+
+        before_tables = set(outsider_db.get_table_names())
+       #print('before_tables =', before_tables)
+
+        # create 'simulation' table
+        watson._create_simulation_table()
+
+        after_tables = set(outsider_db.get_table_names())
+       #print('after_tables =', after_tables)
+
+        self.assertEqual(after_tables - before_tables, set(('simulation',)))
+
+        watson.simulation_db.remove_db()
+
+    def test__construct_simulation_table(self):
+        watson = self.watson
+        watson.total_nodes = total_nodes = 100
+        watson.touch_simulation_db()
+        watson.simulation_db.access_db()
+        watson._create_simulation_table()
+
+        outsider_db = self.outsider_db
+        outsider_db.access_db()
+
+        n_clients = 30
+        watson.watson_tcp_office = MagicMock(clients=[None] * n_clients)
+
+        # first check
+        selected_rows = outsider_db.select('simulation')
+        self.assertEqual(len(selected_rows), 0)
+
+        # test start, watson._construct_simulation_table()
+        d_simulation = watson._construct_simulation_table()
+        expected_rows = tuple(d_simulation.values())
+
+        selected_rows = outsider_db.select('simulation')
+        self.assertEqual(len(selected_rows), 1)
+       #print(tuple(simulation_rows[0]))
+        self.assertEqual(tuple(selected_rows[0]), expected_rows)
+
+        watson.simulation_db.remove_db()
 
 ####if hasattr(selectors, 'PollSelector'):
 ####  # _ServerSelector = selectors.PollSelector

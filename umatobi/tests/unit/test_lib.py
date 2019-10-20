@@ -619,12 +619,12 @@ class SchemaParserTests(unittest.TestCase):
         expected_items = {
             'simulation': (
                 'title', 'start_up_iso8601', 'open_office_iso8601',
-                'close_office_iso8601', 'end_up_iso8601', 'simulation_secs',
+                'close_office_iso8601', 'end_up_iso8601', 'simulation_seconds',
                 'watson_office_addr', 'total_nodes', 'n_clients', 'memo',
                 'log_level', 'version',
             ),
             'clients': (
-                'id', 'addr', 'consult_iso8601', 'thank_you_so_much_iso8601',
+                'id', 'addr', 'consult_iso8601', 'thanks_iso8601',
                 'num_nodes', 'node_index', 'log_level'
             ),
             'growings': (
@@ -647,12 +647,12 @@ class SchemaParserTests(unittest.TestCase):
         expected_items = {
             'simulation': (
                 'title', 'start_up_iso8601', 'open_office_iso8601',
-                'close_office_iso8601', 'end_up_iso8601', 'simulation_secs',
+                'close_office_iso8601', 'end_up_iso8601', 'simulation_seconds',
                 'watson_office_addr', 'total_nodes', 'n_clients', 'memo',
                 'log_level', 'version',
             ),
             'clients': (
-                'id', 'addr', 'consult_iso8601', 'thank_you_so_much_iso8601',
+                'id', 'addr', 'consult_iso8601', 'thanks_iso8601',
                 'num_nodes', 'node_index', 'log_level'
             ),
             'growings': (
@@ -683,7 +683,7 @@ start_up_iso8601: 2011-11-11T11:11:11.123456
 open_office_iso8601: 2011-11-11T11:11:12.789012
 close_office_iso8601: 2011-11-11T11:11:42.345678
 end_up_iso8601: 2011-11-11T11:11:44.901234
-simulation_secs: 30
+simulation_seconds: 30
 watson_office_addr: localhost:11111
 total_nodes: 1000
 n_clients: 4
@@ -719,7 +719,7 @@ status: active
         self.assertEqual(records.simulation['open_office_iso8601'], '2011-11-11T11:11:12.789012')
         self.assertEqual(records.simulation['close_office_iso8601'], '2011-11-11T11:11:42.345678')
         self.assertEqual(records.simulation['end_up_iso8601'], '2011-11-11T11:11:44.901234')
-        self.assertEqual(records.simulation['simulation_secs'], 30)
+        self.assertEqual(records.simulation['simulation_seconds'], 30)
         self.assertEqual(records.simulation['watson_office_addr'], 'localhost:11111')
         self.assertEqual(records.simulation['total_nodes'], 1000)
         self.assertEqual(records.simulation['n_clients'], 4)

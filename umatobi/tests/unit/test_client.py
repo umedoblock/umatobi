@@ -58,7 +58,7 @@ class ClientTests(unittest.TestCase):
     @mock.patch.object(Client, '_waits_to_break_down', autospec=True)
     @mock.patch.object(Client, '_run_a_way', autospec=True)
     @mock.patch.object(Client, '_come_to_a_bad_end', autospec=True)
-    @mock.patch.object(Client, '_thank_you_so_much', autospec=True)
+    @mock.patch.object(Client, '_thanks', autospec=True)
     def test_client_start(self, *mocks):
         watson_office_addr = ('localhost', 0)
         num_nodes = 10
@@ -94,7 +94,7 @@ class ClientTests(unittest.TestCase):
     @mock.patch.object(Client, '_waits_to_break_down', autospec=True)
     @mock.patch.object(Client, '_run_a_way', autospec=True)
     @mock.patch.object(Client, '_come_to_a_bad_end', autospec=True)
-    @mock.patch.object(Client, '_thank_you_so_much', autospec=True)
+    @mock.patch.object(Client, '_thanks', autospec=True)
     def test_client_start_by_call_order(self, *mocks):
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10

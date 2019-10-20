@@ -73,7 +73,7 @@ class Client(object):
 
         self._come_to_a_bad_end()
 
-        self._thank_you_so_much()
+        self._thanks()
 
     ########################################################################
     # client of action
@@ -198,8 +198,8 @@ class Client(object):
         # Happily, you don't get below ResourceWarning.
         # ResourceWarning: unclosed <socket.socket fd=7, ...
 
-    def _thank_you_so_much(self):
-        logger.info(f"{self}._thank_you_so_much()")
+    def _thanks(self):
+        logger.info(f"{self}._thanks()")
         self._say_good_bye()
 
     def get_db_path(self):

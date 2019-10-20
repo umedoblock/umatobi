@@ -155,7 +155,7 @@ class SQL(object):
         # でも、せっかく書いた replace()。
         # 消すのはもったいないので残す。
         if values:
-            logger.debug(f"{self}._cur(={self._cur}).execute(sql={sql}, values={values})")
+            logger.info(f"{self}._cur(={self._cur}).execute(sql={sql}, values={values})")
             rows = self._cur.execute(sql, values)
         else:
             rows = self._cur.execute(sql)

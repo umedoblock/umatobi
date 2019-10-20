@@ -9,14 +9,17 @@
 # Watson merges some client.N.db and makes simulation.db
 [simulation]
 title: text
-start_up_iso8601: text # Watson start up
-open_office_iso8601: text not null
-close_office_iso8601: text not null
-end_up_iso8601: text not null
-simulation_secs: integer
+
+start_up_iso8601: text not null # Watson start up
+open_office_iso8601: text
+close_office_iso8601: text
+end_up_iso8601: text
+
+simulation_seconds: integer
 watson_office_addr: text
 total_nodes: integer
 n_clients: integer
+
 memo: text
 log_level: text
 version: text
@@ -26,7 +29,7 @@ version: text
 id: integer primary key autoincrement unique not null
 addr: text not null # "host:port" format
 consult_iso8601: text # client consult to watson
-thank_you_so_much_iso8601: text # client thanks watson
+thanks_iso8601: text # client thanks watson
 num_nodes: integer
 node_index: integer
 log_level: text

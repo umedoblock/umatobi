@@ -296,6 +296,12 @@ class SimulationTime(object):
         else:
             self.start_up_orig = start_up_orig
 
+    def __str__(self):
+        return self.get_iso8601()
+
+    def __repr__(self):
+        return self.__str__()
+
     def __eq__(self, other):
         return self.start_up_orig == other.start_up_orig
 
@@ -408,3 +414,10 @@ class SchemaParser(configparser.ConfigParser):
     def get_converter(self, table_name, column_name):
         converter = self.converter_tables[table_name][column_name]
         return converter
+
+if __name__ == '__main__':
+    st = SimulationTime()
+    print('st =', st)
+    print('repr(st) =', repr(st))
+  # st = 2019-10-20T13:09:26.307215
+  # repr(st) = <__main__.SimulationTime object at 0x1083dd1d0>

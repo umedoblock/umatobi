@@ -23,7 +23,7 @@ bar:
   open_office_iso8601: '2011-11-11T11:11:12.789012'
   close_office_iso8601: '2011-11-11T11:11:42.345678'
   end_up_iso8601: '2011-11-11T11:11:44.901234'
-  simulation_secs: '30'
+  simulation_seconds: '30'
   watson_office_addr: 'localhost:11111'
   total_nodes: '1000'
   n_clients: '4'
