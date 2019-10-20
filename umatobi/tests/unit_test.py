@@ -10,7 +10,6 @@ from umatobi.tests.unit.test_client import ClientTests
 from umatobi.tests.unit.test_simulation import SimulationTests
 from umatobi.tests.unit.test_theater import TheaterTests
 from umatobi.tests.unit.test_screen import ScreenTests
-# failed
 from umatobi.tests.unit.test_node import NodeTests, NodeOfficeTests
 from umatobi.tests.unit.test_darkness import DarknessTests
 
@@ -23,7 +22,6 @@ def test_main():
     # see: Lib/test/test_math.py
     unit_suite = unittest.TestSuite()
 
-    # success
     unit_suite.addTest(unittest.makeSuite(LibTests))
     unit_suite.addTest(unittest.makeSuite(SimulationTimeTests))
     unit_suite.addTest(unittest.makeSuite(SchemaParserTests))
@@ -34,7 +32,6 @@ def test_main():
     unit_suite.addTest(unittest.makeSuite(SimulationTests))
     unit_suite.addTest(unittest.makeSuite(TheaterTests))
     unit_suite.addTest(unittest.makeSuite(ScreenTests))
-    #failed
     unit_suite.addTest(unittest.makeSuite(NodeTests))
     unit_suite.addTest(unittest.makeSuite(NodeOfficeTests))
     unit_suite.addTest(unittest.makeSuite(DarknessTests))
