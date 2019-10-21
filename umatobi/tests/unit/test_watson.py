@@ -56,7 +56,8 @@ class WatsonOfficeTests(unittest.TestCase):
                 WatsonOfficeTestsHandle(request, client_address, server)
         self.assertTrue(watson_office.to_client)
         self.assertEqual(len(watson_office.server.clients), 1)
-        self.assertEqual(request.sheep['num_nodes'], watson_office.server.watson.total_nodes)
+        self.assertEqual(watson_office.server.watson.total_nodes,
+                         request.sheep['num_nodes'])
 
         tc = watson_office.to_client
         set_tc = set(tc)
@@ -72,7 +73,7 @@ class WatsonOfficeTests(unittest.TestCase):
         self.assertEqual(tc['log_level'], watson.log_level)
 
         clients = tuple(watson_office.server.simulation_db.select('clients'))
-        self.assertEqual(1, len(clients))
+        self.assertEqual(len(clients), 1)
 
         d_client = dict(clients[0])
         self.assertEqual(d_client['id'], 1)
