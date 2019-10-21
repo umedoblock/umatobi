@@ -59,9 +59,11 @@ class WatsonOfficeTests(unittest.TestCase):
         self.assertEqual(request.sheep['num_nodes'], watson_office.server.watson.total_nodes)
 
         tc = watson_office.to_client
-        self.assertFalse('simulation_dir_path' in tc)
-        self.assertFalse('simulation_db_path' in tc)
-        self.assertFalse('simulation_schema_path' in tc)
+        set_tc = set(tc)
+        never_contain = set(('simulation_dir_path',
+                             'simulation_db_path',
+                             'simulation_schema_path'))
+        self.assertFalse(set_tc & never_contain)
 
         self.assertEqual(tc['client_id'], 1)
         self.assertEqual(tc['start_up_iso8601'], \
