@@ -50,8 +50,10 @@ class WatsonOfficeTests(unittest.TestCase):
         server = WatsonTCPOffice(watson)
 
         request = Req()
-        watson_office = \
-            WatsonOfficeTestsHandle(request, client_address, server)
+        expected_now = SimulationTime()
+        with time_machine(expected_now.start_up_orig):
+            watson_office = \
+                WatsonOfficeTestsHandle(request, client_address, server)
         self.assertTrue(watson_office.to_client)
         self.assertEqual(len(watson_office.server.clients), 1)
         self.assertEqual(request.sheep['num_nodes'], watson_office.server.watson.total_nodes)
@@ -62,7 +64,8 @@ class WatsonOfficeTests(unittest.TestCase):
         self.assertFalse('simulation_schema_path' in tc)
 
         self.assertEqual(tc['client_id'], 1)
-        self.assertEqual(tc['start_up_iso8601'], watson.start_up_iso8601.get_iso8601())
+        self.assertEqual(tc['start_up_iso8601'], \
+                         watson.start_up_iso8601.get_iso8601())
         self.assertEqual(tc['node_index'], 1)
         self.assertEqual(tc['log_level'], watson.log_level)
 
@@ -71,13 +74,15 @@ class WatsonOfficeTests(unittest.TestCase):
 
         d_client = dict(clients[0])
         self.assertEqual(d_client['id'], 1)
-        addr = client_address
-        client_addr = f'{addr[0]}:{addr[1]}'
-        self.assertEqual(d_client['addr'], client_addr)
-        self.assertEqual(d_client['node_index'], 1)
-      # self.assertEqual(d_client['joined'], 12)
-        self.assertEqual(d_client['log_level'], watson.log_level)
+        c_a = client_address
+        expected_addr = f'{c_a[0]}:{c_a[1]}'
+        self.assertEqual(d_client['addr'], expected_addr)
+        self.assertEqual(d_client['consult_iso8601'], \
+                         expected_now.get_iso8601())
+        self.assertEqual(d_client['thanks_iso8601'], None)
         self.assertEqual(d_client['num_nodes'], request.sheep['num_nodes'])
+        self.assertEqual(d_client['node_index'], 1)
+        self.assertEqual(d_client['log_level'], watson.log_level)
 
         server.server_close()
 
