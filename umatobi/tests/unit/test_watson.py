@@ -23,10 +23,6 @@ class Req(object):
     def sendall(self, b):
         pass
 
-class WatsonOfficeTestsHandle(WatsonOffice):
-    def __init__(self, request, client_address, server):
-        super().__init__(request, client_address, server)
-
 class WatsonOfficeTests(unittest.TestCase):
 
     def setUp(self):
@@ -52,8 +48,7 @@ class WatsonOfficeTests(unittest.TestCase):
         request = Req()
         expected_now = SimulationTime()
         with time_machine(expected_now.start_up_orig):
-            watson_office = \
-                WatsonOfficeTestsHandle(request, client_address, server)
+            watson_office = WatsonOffice(request, client_address, server)
         self.assertTrue(watson_office.to_client)
         self.assertEqual(len(watson_office.server.clients), 1)
         self.assertEqual(watson_office.server.watson.total_nodes,
