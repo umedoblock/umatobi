@@ -73,69 +73,110 @@ class WatsonTCPOffice(socketserver.TCPServer):
         pass
 
 class WatsonOffice(socketserver.StreamRequestHandler):
+  # class BaseRequestHandler:
+  #     def __init__(self, request, client_address, server):
+  # class StreamRequestHandler(BaseRequestHandler):
+  # ...
+
+  # BaseRequestHandler instance calls
+  # setup(), handle() and finish() in __init__()
+  # after it sets request, client_address, server as like a below
+
+    def setup(self):
+        super().setup()
+
+        try:
+            self.sheep = bytes2dict(self.rfile.readline())
+        except BaseException as err:
+            self.professed = f'invalid sheep came. error="{err}"'
+            self.err = err
+            return
+
+        logger.info(f"sheep={self.sheep}")
+        if set(self.sheep.keys()) == set(('profess', 'num_nodes')):
+            self.professed = self.sheep['profess']
+            self.num_nodes = self.sheep['num_nodes']
+        else:
+            self.professed = 'sheep doesn\'t profess.'
+            self.num_nodes = -1
+
     def handle(self):
         logger.info(f"""{self}.handle()
-        self.request={self.request} # socket.SOCK_STREAM
-        self.client_address={self.client_address} # ('localhost', 11111)
-        self.server={self.server} # RequestHandler
+        request={self.request} # socket.SOCK_STREAM
+        client_address={self.client_address} # ('localhost', 11111)
+        server={self.server} # RequestHandler
         """)
-    #   self.server in WatsonOffice class means WatsonTCPOffice instance.
-    #   _read = self.rfile.read()
-    #   text_message = _read.decode().strip()
-        sheep = bytes2dict(self.rfile.readline())
-      # text_message = _read.decode().strip()
-      # logger.debug(f"{self}.handle(), text_message={text_message}")
 
-      # sheep = json2dict(text_message)
-        logger.info(f"{self}.handle(), sheep={sheep}")
-        professed = sheep['profess']
-        num_nodes = sheep['num_nodes']
-
-        if professed == 'I am Client.':
-            addr = self.client_address
-            client_addr = f'{addr[0]}:{addr[1]}'
-            client_id = len(self.server.clients) + 1 # client.id start one.
-            self.server.clients.append(self)
-
-            logger.info(f"{self}.handle(), client_id={client_id}, client_addr={client_addr}) came here.")
+        if self.professed == 'I am Client.':
             self.consult_iso8601 = SimulationTime()
-            insert_clients = {
-                'id': client_id,
-                'addr': client_addr,
-                'consult_iso8601': self.consult_iso8601.get_iso8601(),
-                'thanks_iso8601': None,
-                'num_nodes': num_nodes,
-                'node_index': self.server.watson.total_nodes + 1,
-                'log_level': self.server.watson.log_level,
-            }
-            logger.debug(f"{self}.handle(), insert_clients={insert_clients}")
-            sql = self.server.simulation_db.insert('clients', insert_clients)
-            logger.debug(f"{self}.handle(), sql={sql}")
-            self.server.simulation_db.commit()
+            self.client_id = len(self.server.clients)
+            self.server.clients.append(self)
+            self.node_index = self.server.watson.total_nodes
+            self.server.watson.total_nodes += self.num_nodes
 
-            to_client = {
-                'client_id': client_id,
-                'start_up_iso8601': self.server.start_up_iso8601.get_iso8601(),
-                'node_index': self.server.watson.total_nodes + 1,
-                'log_level': self.server.watson.log_level,
-            }
-            self.to_client = to_client
-            logger.debug(f"{self}.handle(), to_client={to_client}")
-            self.server.watson.total_nodes += num_nodes
-            logger.info(f"{self}.handle(), watson.total_nodes={self.server.watson.total_nodes}.")
-            reply = dict2bytes(to_client)
-            logger.info(f"{self}.handle(), reply={reply}, client_addr={client_addr}")
+            logger.info(f"""
+            client_id={self.client_id},
+            client_address={self.client_address},
+            node_index={self.node_index}.
+            """)
+
+            self.insert_client_record()
+
+            client_reply = self.make_client_reply()
+            logger.info(f"total_nodes={self.server.watson.total_nodes}.")
         else:
-            logger.error(f"{self}.handle(), unknown professed='{professed}', text_message={text_message}")
-            reply = b'Go back home.'
+            logger.error(f"unknown professed='{self.professed}'")
+            client_reply = b'Go back home.'
 
-        self.wfile.write(reply)
+        self.client_reply = client_reply
+        logger.info(f"client_reply={client_reply}")
 
     def finish(self):
         logger.info(f"{self}.finish()")
+        self.wfile.write(self.client_reply)
+        # avoid to call
+        # StreamRequestHandler.wfile.flush()
+        # StreamRequestHandler.wfile.close()
+        # StreamRequestHandler.rfile.close()
+        # in
+        # StreamRequestHandler.finish()
+
+    # WatsonOffice original
+
+    def make_client_record(self):
+        addr = ':'.join(str(x) for x in self.client_address)
+        client_record = {
+            'id': self.client_id,
+            'addr': addr,
+            'consult_iso8601': self.consult_iso8601.get_iso8601(),
+            'thanks_iso8601': None,
+            'num_nodes': self.num_nodes,
+            'node_index': self.node_index,
+            'log_level': self.server.watson.log_level,
+        }
+        logger.debug(f"client_record={client_record}")
+        return client_record
+
+    def insert_client_record(self):
+        client_record = self.make_client_record()
+        sql = self.server.simulation_db.insert('clients', client_record)
+        logger.debug(f"sql={sql}")
+        self.server.simulation_db.commit()
+
+    def make_client_reply(self):
+        self.d_client_reply = {
+            'client_id': self.client_id,
+            'start_up_iso8601': self.server.start_up_iso8601.get_iso8601(),
+            'node_index': self.node_index,
+            'log_level': self.server.watson.log_level,
+        }
+        logger.debug(f"d_client_reply={self.d_client_reply}")
+        client_reply = dict2bytes(self.d_client_reply)
+        return client_reply
 
     def byebye(self):
         logger.info(f"{self}.byebye()")
+        # call StreamRequestHandler.finish()
         super().finish()
 
 class Watson(threading.Thread):

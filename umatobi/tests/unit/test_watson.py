@@ -11,67 +11,89 @@ from umatobi.simulator.watson import WatsonOpenOffice, WatsonTCPOffice
 from umatobi.lib import *
 
 class Req(object):
+    def __init__(self, profess, num_nodes):
+        self.sheep = {
+            'profess': profess,
+            'num_nodes': num_nodes,
+        }
+
     # use self.rfile.readline() in WatsonOffice.handle()
     def makefile(self, mode, rbufsize):
-        sheep = {}
-        sheep['profess'] = 'I am Client.'
-        sheep['num_nodes'] = 333
-        self.sheep = sheep
-        js_sheep = dict2json(sheep)
+        js_sheep = dict2json(self.sheep)
         return io.BytesIO(js_sheep.encode('utf-8'))
 
     def sendall(self, b):
-        pass
+        self._written = b
 
 class WatsonOfficeTests(unittest.TestCase):
 
     def setUp(self):
         self.watson_office_addr = ('localhost', 65530)
         self.start_up_iso8601 = SimulationTime()
-        self.log_level = 'INFO'
         self.log_level = 'DEBUG'
+        self.log_level = 'INFO'
 
         self.watson = Watson(self.watson_office_addr, SIMULATION_SECONDS,
                              self.start_up_iso8601, self.log_level)
 
-    def test_handle(self):
+    def test_watson_office(self):
         watson = self.watson
         watson.touch_simulation_db_on_clients()
         watson.simulation_db.access_db()
         clients = tuple(watson.simulation_db.select('clients'))
         watson.simulation_db.close()
-        self.assertSequenceEqual([], clients)
+        self.assertSequenceEqual(clients, [])
 
         client_address = ('127.0.0.1', 60626)
         server = WatsonTCPOffice(watson)
 
-        request = Req()
+        request = Req('I am Client.', 333)
+        self.assertEqual(request.sheep['profess'], 'I am Client.')
+        self.assertEqual(request.sheep['num_nodes'], 333)
+
+        with self.assertRaises(AttributeError) as cm:
+            request._written
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0],
+                       "'Req' object has no attribute '_written'")
+
         expected_now = SimulationTime()
         with time_machine(expected_now.start_up_orig):
+            # WatsonOffice() indide calls
+            # setup(), handle() and finish()
             watson_office = WatsonOffice(request, client_address, server)
-        self.assertTrue(watson_office.to_client)
+
+        # __init__() ######################################################
+        self.assertEqual(watson_office.request, request)
+        self.assertEqual(watson_office.client_address, client_address)
+        self.assertEqual(watson_office.server, server)
+
+        # setup() #########################################################
+        self.assertEqual(watson_office.professed, 'I am Client.')
+        self.assertEqual(watson_office.num_nodes, 333)
+
+        # handle() ########################################################
+        # profess 'I am Client.'
+        self.assertEqual(watson_office.consult_iso8601,
+                         expected_now)
+        self.assertEqual(watson_office.client_id, 0)
         self.assertEqual(len(watson_office.server.clients), 1)
-        self.assertEqual(watson_office.server.watson.total_nodes,
-                         request.sheep['num_nodes'])
+        self.assertEqual(watson_office.node_index, 0)
+        self.assertEqual(watson_office.server.watson.total_nodes, 333)
+        self.assertIsInstance(watson_office.client_reply, bytes)
 
-        tc = watson_office.to_client
-        set_tc = set(tc)
-        never_contain = set(('simulation_dir_path',
-                             'simulation_db_path',
-                             'simulation_schema_path'))
-        self.assertFalse(set_tc & never_contain)
+        # outsider ########################################################
+        outsider_db = SQL(db_path=watson.simulation_db_path,
+                          schema_path=watson.simulation_schema_path)
+        outsider_db.access_db()
 
-        self.assertEqual(tc['client_id'], 1)
-        self.assertEqual(tc['start_up_iso8601'], \
-                         watson.start_up_iso8601.get_iso8601())
-        self.assertEqual(tc['node_index'], 1)
-        self.assertEqual(tc['log_level'], watson.log_level)
-
-        clients = tuple(watson_office.server.simulation_db.select('clients'))
+        # insert_client_record() in handle() ##############################
+        clients = tuple(outsider_db.select('clients'))
         self.assertEqual(len(clients), 1)
 
         d_client = dict(clients[0])
-        self.assertEqual(d_client['id'], 1)
+        self.assertEqual(d_client['id'], 0)
+
         c_a = client_address
         expected_addr = f'{c_a[0]}:{c_a[1]}'
         self.assertEqual(d_client['addr'], expected_addr)
@@ -79,10 +101,51 @@ class WatsonOfficeTests(unittest.TestCase):
                          expected_now.get_iso8601())
         self.assertEqual(d_client['thanks_iso8601'], None)
         self.assertEqual(d_client['num_nodes'], request.sheep['num_nodes'])
-        self.assertEqual(d_client['node_index'], 1)
+        self.assertEqual(d_client['node_index'], 0)
         self.assertEqual(d_client['log_level'], watson.log_level)
 
+        # make_client_reply() in handle() #################################
+        dcr = watson_office.d_client_reply
+        set_dcr = set(dcr)
+        never_contain = set(('simulation_dir_path',
+                             'simulation_db_path',
+                             'simulation_schema_path'))
+        self.assertFalse(set_dcr & never_contain)
+
+        self.assertEqual(dcr['client_id'], 0)
+        self.assertEqual(dcr['start_up_iso8601'], \
+                         watson.start_up_iso8601.get_iso8601())
+        self.assertEqual(dcr['node_index'], watson_office.node_index)
+        self.assertEqual(dcr['log_level'], watson.log_level)
+
+        self.assertIsInstance(watson_office.client_reply, bytes)
+        self.assertEqual(watson_office.client_reply, dict2bytes(dcr))
+
+        # finish() ########################################################
+        self.assertEqual(request._written,
+                         watson_office.client_reply)
+
+        # cleanup #########################################################
         server.server_close()
+
+    def test_make_client_record(self):
+        pass
+
+    def test_insert_client_record(self):
+        pass
+
+    def test_make_client_reply(self):
+      # with self.assertRaises(AttributeError) as cm:
+      #     watson_office.d_client_reply
+      # the_exception = cm.exception
+      # self.assertEqual(the_exception.args[0], '')
+        pass
+
+    def test_finish(self):
+        pass
+
+    def test_byebye(self):
+        pass
 
 class WatsonTests(unittest.TestCase):
     def setUp(self):
