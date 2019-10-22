@@ -168,7 +168,7 @@ def get_client_db_path(simulation_time, client_id):
     return os.path.join(get_simulation_dir_path(simulation_time), client_n_db)
 
 def get_simulation_dir_path(simulation_time):
-    simulation_dir_path = re.sub(SIMULATION_TIME_ATAT,
+    simulation_dir_path = re.sub(ATAT_SIMULATION_TIME,
                                  simulation_time.get_y15s(),
                                  SIMULATION_DIR_PATH)
     if not os.path.isdir(simulation_dir_path):
@@ -199,7 +199,7 @@ def get_root_path():
 
 def get_master_palm_path(simulation_time):
     y15s = SimulationTime.time_to_y15s(simulation_time)
-    return os.path.join(re.sub(SIMULATION_TIME_ATAT, y15s, SIMULATION_DIR_PATH), MASTER_PALM)
+    return os.path.join(re.sub(ATAT_SIMULATION_TIME, y15s, SIMULATION_DIR_PATH), MASTER_PALM)
 
 def validate_kwargs(st_barrier, kwargs):
     if st_barrier != kwargs.keys():

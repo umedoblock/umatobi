@@ -23,7 +23,7 @@ class LibTests(unittest.TestCase):
     def assert_simulation_dir_path(self, dir_path):
         self.assertTrue(os.path.isdir(os.path.dirname(dir_path)))
         self.assertNotRegex(dir_path,
-                            SIMULATION_TIME_ATAT)
+                            ATAT_SIMULATION_TIME)
         self.assertRegex(dir_path, RE_Y15S)
 
     def setUp(self):
@@ -248,7 +248,7 @@ class LibTests(unittest.TestCase):
         simulation_schema_path = get_simulation_schema_path(simulation_time)
         self.assertTrue(os.path.isfile(simulation_schema_path))
         self.assertNotRegex(simulation_schema_path,
-                            SIMULATION_TIME_ATAT)
+                            ATAT_SIMULATION_TIME)
         self.assertRegex(simulation_schema_path, RE_Y15S)
 
     def test_get_root_path(self):
@@ -518,7 +518,7 @@ class SchemaParserTests(unittest.TestCase):
     def assert_simulation_dir_path(self, dir_path):
         self.assertTrue(os.path.isdir(os.path.dirname(dir_path)))
         self.assertNotRegex(dir_path,
-                            SIMULATION_TIME_ATAT)
+                            ATAT_SIMULATION_TIME)
         self.assertRegex(dir_path, RE_Y15S)
 
     def setUp(self):
