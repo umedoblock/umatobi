@@ -182,6 +182,9 @@ class WatsonOffice(socketserver.StreamRequestHandler):
 class Watson(threading.Thread):
     MAX_NODE_NUM=8
 
+    def __str__(self):
+        return f"Watson{self.watson_office_addr}"
+
     def __init__(self, watson_office_addr, simulation_seconds, start_up_iso8601, log_level):
         '''\
         watson: Cient, Node からの TCP 接続を待つ。
@@ -212,15 +215,6 @@ class Watson(threading.Thread):
         self.watson_office_addr_assigned = threading.Event()
         self.timeout_sec = 1
         self.nodes = []
-
-    def relaxing(self):
-        et_ms = self.start_up_iso8601.passed_ms()
-        et_secs = self.start_up_iso8601.passed_sec()
-        relaxing_time = self.simulation_seconds - et_secs
-
-        logger.info(f"{self}.relaxing(), relaxing_time={relaxing_time}")
-        logger.debug(f"{self}.relaxing(), simulation_seconds={self.simulation_seconds}, start_up_iso8601={self.start_up_iso8601}, et_ms={et_ms}, et_secs={et_secs}")
-        time.sleep(relaxing_time)
 
     def run(self):
         '''simulation 開始'''
@@ -296,6 +290,39 @@ class Watson(threading.Thread):
         # watson.watson_office_addr が決定している。
         return watson_open_office
 
+    def relaxing(self):
+        et_ms = self.start_up_iso8601.passed_ms()
+        et_secs = self.start_up_iso8601.passed_sec()
+        relaxing_time = self.simulation_seconds - et_secs
+
+        logger.info(f"{self}.relaxing(), relaxing_time={relaxing_time}")
+        logger.debug(f"{self}.relaxing(), simulation_seconds={self.simulation_seconds}, start_up_iso8601={self.start_up_iso8601}, et_ms={et_ms}, et_secs={et_secs}")
+        time.sleep(relaxing_time)
+
+    def release_clients(self):
+        '''\
+        watsonが把握しているClientに "break down" を送信し、
+        各Clientに終了処理を行わせる。
+        Clientは、終了処理中に client.N.db を送信してくる。
+        '''
+        logger.info(f"{self}.release_clients(), watson_tcp_office.client={self.watson_tcp_office.clients}")
+        result = b'break down.'
+        for watson_office_client in self.watson_tcp_office.clients:
+            logger.info(f"{self}.release_clients(), watson_office_client={watson_office_client}")
+            watson_office_client.wfile.write(result)
+            watson_office_client.byebye()
+
+    def _wait_client_db(self):
+        logger.info(f"""{self}._wait_client_db(),
+                      {self}, は、client.N.dbの回収に乗り出した。
+                      {self}, なんて言いながら実は待機してるだけ。
+                      {self}, client.N.dbの回収完了。""")
+
+    def _merge_db_to_simulation_db(self):
+        logger.info(f"""{self}._merge_db_to_simulation_db(),
+                              client.N.db の結合開始。
+                              client.N.db の結合終了。""")
+
     def _create_simulation_table(self):
         logger.info(f"{self}._create_simulation_table()")
         self.simulation_db.create_table('simulation')
@@ -326,35 +353,8 @@ class Watson(threading.Thread):
 
         return d_simulation
 
-    def _wait_client_db(self):
-        logger.info(f"""{self}._wait_client_db(),
-                      {self}, は、client.N.dbの回収に乗り出した。
-                      {self}, なんて言いながら実は待機してるだけ。
-                      {self}, client.N.dbの回収完了。""")
-
-    def _merge_db_to_simulation_db(self):
-        logger.info(f"""{self}._merge_db_to_simulation_db(),
-                              client.N.db の結合開始。
-                              client.N.db の結合終了。""")
-
     def join(self):
         '''watson threadがjoin'''
         logger.info(f"{self}.join()")
         threading.Thread.join(self)
         logger.debug('watson thread joined.')
-
-    def release_clients(self):
-        '''\
-        watsonが把握しているClientに "break down" を送信し、
-        各Clientに終了処理を行わせる。
-        Clientは、終了処理中に client.N.db を送信してくる。
-        '''
-        logger.info(f"{self}.release_clients(), watson_tcp_office.client={self.watson_tcp_office.clients}")
-        result = b'break down.'
-        for watson_office_client in self.watson_tcp_office.clients:
-            logger.info(f"{self}.release_clients(), watson_office_client={watson_office_client}")
-            watson_office_client.wfile.write(result)
-            watson_office_client.byebye()
-
-    def __str__(self):
-        return f"Watson{self.watson_office_addr}"

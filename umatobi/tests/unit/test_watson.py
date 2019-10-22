@@ -168,6 +168,9 @@ class WatsonTests(unittest.TestCase):
         # delete dbs, logs...
         shutil.rmtree(self.watson.simulation_dir_path, ignore_errors=True)
 
+    def test___str__(self):
+        pass
+
     def test_watson_basic(self):
         watson = self.watson
         expected_simulation_dir_path = \
@@ -184,33 +187,13 @@ class WatsonTests(unittest.TestCase):
         self.assertEqual(watson.simulation_schema_path, expected_simulation_schema_path)
         self.assertEqual(watson.total_nodes, 0)
 
-    def test_relaxing(self):
-        pass
-
-    def test_run(self):
-        pass
-
-    def test_touch_simulation_db_on_clients(self):
-        pass
-
-    def test_touch_simulation_db(self):
-        pass
-
-    def test_touch_clients_table(self):
-        pass
-
-    @patch('umatobi.simulator.watson.WatsonOpenOffice')
-    def test_open_office(self, mock_WatsonOpenOffice):
-        # woo stands for WatsonOpenOffice.
+    @patch('time.sleep')
+    def test_run(self, mock_sleep):
         watson = self.watson
+        watson.run()
 
-        mock_WatsonOpenOffice.assert_not_called()
-        woo = watson.open_office()
-        mock_WatsonOpenOffice.assert_called()
-        self.assertEqual(woo, watson.watson_open_office)
-
-        watson.watson_open_office.start.assert_called()
-        watson.watson_open_office.in_serve_forever.wait.assert_called()
+    def test_join(self):
+        pass
 
     @patch('time.sleep')
     def test_watson_start(self, mock_sleep):
@@ -234,31 +217,39 @@ class WatsonTests(unittest.TestCase):
         watson._construct_simulation_table()
         watson.simulation_db.close()
 
-    @patch('time.sleep')
-    def test_run(self, mock_sleep):
+    def test_touch_simulation_db_on_clients(self):
+        pass
+
+    def test_touch_simulation_db(self):
+        pass
+
+    def test_touch_clients_table(self):
+        pass
+
+    @patch('umatobi.simulator.watson.WatsonOpenOffice')
+    def test_open_office(self, mock_WatsonOpenOffice):
+        # woo stands for WatsonOpenOffice.
         watson = self.watson
-        watson.run()
 
-    def test__create_simulation_table2(self):
-        watson = self.watson
-        watson.touch_simulation_db_on_clients()
-        watson.simulation_db.access_db()
+        mock_WatsonOpenOffice.assert_not_called()
+        woo = watson.open_office()
+        mock_WatsonOpenOffice.assert_called()
+        self.assertEqual(woo, watson.watson_open_office)
 
-        outsider_db = self.outsider_db
-        outsider_db.access_db()
+        watson.watson_open_office.start.assert_called()
+        watson.watson_open_office.in_serve_forever.wait.assert_called()
 
-        before_tables = set(outsider_db.get_table_names())
-       #print('before_tables =', before_tables)
+    def test_relaxing(self):
+        pass
 
-        # create 'simulation' table
-        watson._create_simulation_table()
+    def test_release_clients(self):
+        pass
 
-        after_tables = set(outsider_db.get_table_names())
-       #print('after_tables =', after_tables)
+    def test__wait_client_db(self):
+        pass
 
-        self.assertEqual(after_tables - before_tables, set(('simulation',)))
-
-        watson.simulation_db.remove_db()
+    def test__merge_db_to_simulation_db(self):
+        pass
 
     def test__create_simulation_table(self):
         watson = self.watson
@@ -306,21 +297,6 @@ class WatsonTests(unittest.TestCase):
         self.assertEqual(tuple(selected_rows[0]), expected_rows)
 
         watson.simulation_db.remove_db()
-
-    def test__wait_client_db(self):
-        pass
-
-    def test__merge_db_to_simulation_db(self):
-        pass
-
-    def test_join(self):
-        pass
-
-    def test_release_clients(self):
-        pass
-
-    def test___str__(self):
-        pass
 
 if __name__ == '__main__':
     unittest.main()
