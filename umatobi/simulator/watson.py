@@ -238,7 +238,7 @@ class Watson(threading.Thread):
         self.watson_tcp_office.shutdown()
 
       # self._wait_tcp_clients()
-        logger.info(f"{self}.run(), {self}.watson_tcp_office.shutdown()")
+        logger.info(f"{self}.run(), {self}._wait_client_db()")
         self._wait_client_db()
 
         # simulation_db に骨格を作成する。
