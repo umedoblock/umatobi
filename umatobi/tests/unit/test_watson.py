@@ -148,6 +148,11 @@ class WatsonOfficeTests(unittest.TestCase):
         pass
 
 class WatsonTests(unittest.TestCase):
+    # grep ^def ./test_.py
+    #   | sed -e 's:def ::' -e 's:(.*$::'
+    #   | awk '{printf "def test_"$0"(self):\n    pass\n\n"}'
+    # :s:|:\r        |:g
+
     def setUp(self):
         self.watson_office_addr = ('localhost', 65530)
         self.log_level = 'INFO'
@@ -179,6 +184,21 @@ class WatsonTests(unittest.TestCase):
         self.assertEqual(watson.simulation_schema_path, expected_simulation_schema_path)
         self.assertEqual(watson.total_nodes, 0)
 
+    def test_relaxing(self):
+        pass
+
+    def test_run(self):
+        pass
+
+    def test_touch_simulation_db_on_clients(self):
+        pass
+
+    def test_touch_simulation_db(self):
+        pass
+
+    def test_touch_clients_table(self):
+        pass
+
     @patch('umatobi.simulator.watson.WatsonOpenOffice')
     def test_open_office(self, mock_WatsonOpenOffice):
         # woo stands for WatsonOpenOffice.
@@ -195,7 +215,7 @@ class WatsonTests(unittest.TestCase):
     @patch('time.sleep')
     def test_watson_start(self, mock_sleep):
         watson = self.watson
-        # 以下では，watson.start() の emulate
+        # 以下では，watson.start(), つまり、 run() の emulate
 
         watson.touch_simulation_db_on_clients()
         watson_open_office = watson.open_office()
@@ -214,7 +234,12 @@ class WatsonTests(unittest.TestCase):
         watson._construct_simulation_table()
         watson.simulation_db.close()
 
-    def test__create_simulation_db(self):
+    @patch('time.sleep')
+    def test_run(self, mock_sleep):
+        watson = self.watson
+        watson.run()
+
+    def test__create_simulation_table2(self):
         watson = self.watson
         watson.touch_simulation_db_on_clients()
         watson.simulation_db.access_db()
@@ -230,6 +255,25 @@ class WatsonTests(unittest.TestCase):
 
         after_tables = set(outsider_db.get_table_names())
        #print('after_tables =', after_tables)
+
+        self.assertEqual(after_tables - before_tables, set(('simulation',)))
+
+        watson.simulation_db.remove_db()
+
+    def test__create_simulation_table(self):
+        watson = self.watson
+        watson.touch_simulation_db_on_clients()
+        watson.simulation_db.access_db()
+
+        outsider_db = self.outsider_db
+        outsider_db.access_db()
+
+        before_tables = set(outsider_db.get_table_names())
+
+        # create 'simulation' table
+        watson._create_simulation_table()
+
+        after_tables = set(outsider_db.get_table_names())
 
         self.assertEqual(after_tables - before_tables, set(('simulation',)))
 
@@ -263,35 +307,20 @@ class WatsonTests(unittest.TestCase):
 
         watson.simulation_db.remove_db()
 
-####if hasattr(selectors, 'PollSelector'):
-####  # _ServerSelector = selectors.PollSelector
-####  # _ServerSelector = <class 'selectors.PollSelector'>
-####    patch_arg = 'selectors.PollSelector.select'
-####else:
-####  # _ServerSelector = selectors.SelectSelector
-####    patch_arg = 'selectors.SelectSelector.select'
+    def test__wait_client_db(self):
+        pass
 
-####@patch(patch_arg, return_value=False)
-####@patch('time.sleep')
-####def test_watson_start2(self, mock_sleep, mock_selector):
-####    watson = self.watson
-####    # 以下では，watson.start() の emulate
+    def test__merge_db_to_simulation_db(self):
+        pass
 
-####    watson.touch_simulation_db_on_clients()
-####    watson_open_office = watson.open_office()
+    def test_join(self):
+        pass
 
-####    mock_sleep.assert_not_called()
-####    watson.relaxing()
-####    mock_sleep.assert_called()
+    def test_release_clients(self):
+        pass
 
-####    watson.release_clients()
-####    watson.watson_tcp_office.shutdown() # heavy
-####    watson._wait_client_db()
-
-####    watson.simulation_db.access_db()
-####    watson._merge_db_to_simulation_db()
-####    watson._construct_simulation_table()
-####    watson.simulation_db.close()
+    def test___str__(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()

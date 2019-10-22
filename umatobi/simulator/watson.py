@@ -246,7 +246,7 @@ class Watson(threading.Thread):
         logger.info(f"{self}.simulation_db.access_db()")
         self.simulation_db.access_db()
         self._merge_db_to_simulation_db()
-        self._create_simulation_db()
+        self._create_simulation_table()
         self._construct_simulation_table()
         logger.info(f"{self}.simulation_db.close()")
         self.simulation_db.close()
