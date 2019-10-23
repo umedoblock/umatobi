@@ -11,7 +11,7 @@ class CoreKeyTests(unittest.TestCase):
         self.assertIsInstance(k.key, bytes)
         self.assertEqual(len(k.key), Key.KEY_OCTETS)
 
-    def test_core_key_plain_hex_to_plain_key(self):
+    def test_plain_hex_to_plain_key(self):
         plain_hex = '31' * Key.KEY_OCTETS
         expected = b'\x31' * Key.KEY_OCTETS
 
@@ -30,7 +30,7 @@ class CoreKeyTests(unittest.TestCase):
     #  cos, sin:  0.0, -1.0 => -1.0, 0.0 =>  -0.001, 0.999
     # scale_rad:   1.0 * pi =>  1.5 * pi =>     1.999 * pi
 
-    def test_core_key_key_to_scale_rad(self):
+    def test_key_to_scale_rad(self):
         plain_hex = b'\x00' + b'\x00' * (Key.KEY_OCTETS - 1)
         scale_rad = Key.key_to_scale_rad(plain_hex)
         self.assertEqual(scale_rad, 0.0 * 2.0 * pi)
@@ -51,7 +51,7 @@ class CoreKeyTests(unittest.TestCase):
         scale_rad = Key.key_to_scale_rad(plain_hex)
         self.assertAlmostEqual(scale_rad, 1.999 * pi, 2)
 
-    def test_core_key_scale_rad_to_math_rad(self):
+    def test_scale_rad_to_math_rad(self):
         scale_rads = (  0.0 * pi, 0.5 * pi,       1.0 * pi,
                         1.0 * pi, 1.5 * pi,     1.999 * pi, 2.0 * pi)
         math_rads  = (1 / 2 * pi,      0.0,     3 / 2 * pi,
@@ -94,7 +94,7 @@ class CoreKeyTests(unittest.TestCase):
         'key0xf': (0xf << (Key.KEY_BITS - 4), (5.890,-0.383, 0.924)),
     }
 
-    def test_core_key_key_to_rxy(self):
+    def test_key_to_rxy(self):
         for name, expected_int_rxy in CoreKeyTests.AROUND_THE_CLOCK.items():
             expected_int, expected_rxy = expected_int_rxy
 
@@ -112,7 +112,7 @@ class CoreKeyTests(unittest.TestCase):
             for rxy, expected_value in zip(rxy, expected_rxy):
                 self.assertAlmostEqual(rxy, expected_value, 3)
 
-    def test_core_key_key_to_int(self):
+    def test_key_to_int(self):
         expected_int = 0
         for i in range(Key.KEY_OCTETS):
             expected_int <<= 8
@@ -121,102 +121,10 @@ class CoreKeyTests(unittest.TestCase):
 
         self.assertEqual(Key.key_to_int(plain_key), expected_int)
 
-    def test_core_key_init_by_regular(self):
-        k = Key(b'o' * Key.KEY_OCTETS)
-        CoreKeyTests.assert_key_initance(self, k)
-        self.assertEqual(k.key, b'o' * Key.KEY_OCTETS)
+    def test_memcmp(self):
+        pass
 
-    def test_core_key_init_by_empty(self):
-        k = Key()
-        CoreKeyTests.assert_key_initance(self, k)
-
-    def test_core_key_get_rxy(self):
-        # key increases from 0x000..000 to 0xfff..fff.
-        #
-        # oclock turns clock wise.
-        # key is on oclock.
-        #
-        # Therefore key share direction of movement and origin with oclock.
-        #
-        # This means that key start at zero oclock to at twelve oclock
-        # like turning a oclock.
-        #
-        # PAY ATTENTION TO BELOW.
-        #
-        # key and clock combine radius.
-        # This means that radius move pi/2, 0, 3*pi/2, pi to pi/2.
-        #
-        # I'll show you above means with below asserts.
-
-        for name, expected_int_rxy in CoreKeyTests.AROUND_THE_CLOCK.items():
-            expected_int, expected_rxy = expected_int_rxy
-
-            an_hex = name.replace('key0x', '')
-            plain_hex = an_hex + '0' * (Key.KEY_HEXES - 1)
-            plain_key = b''
-            for hh in re.findall('..', plain_hex):
-                octet = int(hh, 16)
-                byte = int.to_bytes(octet, 1, 'big')
-                plain_key += byte
-
-          # print('plain_key =', plain_key)
-          # print('len(plain_key) =', len(plain_key))
-            ko = Key(plain_key)
-            #  ko means key object.
-            # kos means key octets.
-            CoreKeyTests.assert_key_initance(self, ko)
-
-            self.assertEqual(int(ko), expected_int)
-            for rxy, expected_value in zip(ko.get_rxy(), expected_rxy):
-                self.assertAlmostEqual(rxy, expected_value, 3)
-
-    def test_core_key_convert(self):
-        octets = b''
-        for i in range(Key.KEY_OCTETS):
-            octets += int.to_bytes(i * 8, 1, 'big')
-        ko = Key(octets)
-        CoreKeyTests.assert_key_initance(self, ko)
-
-        self.assertEqual(int(ko),  0x0008101820283038404850586068707880889098a0a8b0b8c0c8d0d8e0e8f0f8)
-        self.assertEqual(str(ko), '0x0008101820283038404850586068707880889098a0a8b0b8c0c8d0d8e0e8f0f8')
-
-    def test_core_key_update(self):
-        k = Key()
-        CoreKeyTests.assert_key_initance(self, k)
-
-        key0 = k.key
-        k.update()
-        CoreKeyTests.assert_key_initance(self, k)
-        self.assertNotEqual(k.key, key0)
-
-        key_rand = os.urandom(Key.KEY_OCTETS)
-        k.update(key_rand)
-        CoreKeyTests.assert_key_initance(self, k)
-        self.assertEqual(k.key, key_rand)
-
-    def test_core_key_fail_by_incorrect_length(self):
-        with self.assertRaises(ValueError) as cm:
-            Key(b'+' * (Key.KEY_OCTETS + 1))
-        the_exception = cm.exception
-        self.assertEqual(the_exception.args[0], "plain_key length is 33, it must be 32.")
-
-        with self.assertRaises(ValueError) as cm:
-            Key(b'-' * (Key.KEY_OCTETS - 1))
-        the_exception = cm.exception
-        self.assertEqual(the_exception.args[0], "plain_key length is 31, it must be 32.")
-
-    def test_core_key_fail_by_not_bytes(self):
-        with self.assertRaises(ValueError) as cm:
-            Key('0' * Key.KEY_OCTETS)
-        the_exception = cm.exception
-        self.assertEqual(the_exception.args[0], "plain_key must be bytes object but it is <class 'str'> object")
-
-        with self.assertRaises(ValueError) as cm:
-            Key(32 * Key.KEY_OCTETS)
-        the_exception = cm.exception
-        self.assertEqual(the_exception.args[0], "plain_key must be bytes object but it is <class 'int'> object")
-
-    def test_core_key_keycmp_simple(self):
+    def test_key_keycmp_simple(self):
         # b'\xff' * 16
         # int.to_bytes(255, 1, 'big')
         # int.to_bytes(0, 1, 'big')
@@ -267,7 +175,7 @@ class CoreKeyTests(unittest.TestCase):
         self.assertLess(Key.keycmp(key7fff, keyffff), 0)    # + 8000
         self.assertLess(Key.keycmp(keyfffe, keyffff), 0)    # -1
 
-    def test_core_key_keycmp_boundary(self):
+    def test_keycmp_boundary(self):
         key0000 = b'\x00' * Key.KEY_OCTETS
         keyffff = b'\xff' * Key.KEY_OCTETS
 
@@ -337,7 +245,25 @@ class CoreKeyTests(unittest.TestCase):
         self.assertGreater(Key.keycmp(keyffff, keye000), 0) # end    Red
         self.assertGreater(Key.keycmp(key0000, keye000), 0) # zero   Red
 
-    def test_core_key_richcmp_simple(self):
+  # def test___eq__(self):
+  #     pass
+
+  # def test___ne__(self):
+  #     pass
+
+  # def test___gt__(self):
+  #     pass
+
+  # def test___ge__(self):
+  #     pass
+
+  # def test___lt__(self):
+  #     pass
+
+  # def test___le__(self):
+  #     pass
+
+    def test_key_richcmp_simple(self):
         keyffff = Key(b'\xff' * Key.KEY_OCTETS)
         keyfffe = Key(b'\xff' * (Key.KEY_OCTETS-1) + b'\xfe')
         key7fff = Key(b'\x7f' + b'\xff' * (Key.KEY_OCTETS-1))
@@ -375,7 +301,7 @@ class CoreKeyTests(unittest.TestCase):
         self.assertLess(key7fff, keyffff)    # + 8000
         self.assertLess(keyfffe, keyffff)    # -1
 
-    def test_core_key_richcmp_boundary(self):
+    def test_key_richcmp_boundary(self):
         key0000 = Key(b'\x00' * Key.KEY_OCTETS)
         keyffff = Key(b'\xff' * Key.KEY_OCTETS)
 
@@ -428,6 +354,111 @@ class CoreKeyTests(unittest.TestCase):
         self.assertLess(keydfff, keye000)    # - 1    Green
         self.assertGreater(keyffff, keye000) # end    Red
         self.assertGreater(key0000, keye000) # zero   Red
+
+    def test_key_init_by_regular(self):
+        k = Key(b'o' * Key.KEY_OCTETS)
+        CoreKeyTests.assert_key_initance(self, k)
+        self.assertEqual(k.key, b'o' * Key.KEY_OCTETS)
+
+    def test_key_init_by_empty(self):
+        k = Key()
+        CoreKeyTests.assert_key_initance(self, k)
+
+    def test___str__(self):
+        pass
+
+    def test___int__(self):
+        octets = b''
+        for i in range(Key.KEY_OCTETS):
+            octets += int.to_bytes(i * 8, 1, 'big')
+        ko = Key(octets)
+        CoreKeyTests.assert_key_initance(self, ko)
+
+        self.assertEqual(int(ko),  0x0008101820283038404850586068707880889098a0a8b0b8c0c8d0d8e0e8f0f8)
+        self.assertEqual(str(ko), '0x0008101820283038404850586068707880889098a0a8b0b8c0c8d0d8e0e8f0f8')
+
+    def test_value(self):
+        pass
+
+    def test_get_rxy(self):
+        # key increases from 0x000..000 to 0xfff..fff.
+        #
+        # oclock turns clock wise.
+        # key is on oclock.
+        #
+        # Therefore key share direction of movement and origin with oclock.
+        #
+        # This means that key start at zero oclock to at twelve oclock
+        # like turning a oclock.
+        #
+        # PAY ATTENTION TO BELOW.
+        #
+        # key and clock combine radius.
+        # This means that radius move pi/2, 0, 3*pi/2, pi to pi/2.
+        #
+        # I'll show you above means with below asserts.
+
+        for name, expected_int_rxy in CoreKeyTests.AROUND_THE_CLOCK.items():
+            expected_int, expected_rxy = expected_int_rxy
+
+            an_hex = name.replace('key0x', '')
+            plain_hex = an_hex + '0' * (Key.KEY_HEXES - 1)
+            plain_key = b''
+            for hh in re.findall('..', plain_hex):
+                octet = int(hh, 16)
+                byte = int.to_bytes(octet, 1, 'big')
+                plain_key += byte
+
+          # print('plain_key =', plain_key)
+          # print('len(plain_key) =', len(plain_key))
+            ko = Key(plain_key)
+            #  ko means key object.
+            # kos means key octets.
+            CoreKeyTests.assert_key_initance(self, ko)
+
+            self.assertEqual(int(ko), expected_int)
+            for rxy, expected_value in zip(ko.get_rxy(), expected_rxy):
+                self.assertAlmostEqual(rxy, expected_value, 3)
+
+    def test_update(self):
+        k = Key()
+        CoreKeyTests.assert_key_initance(self, k)
+
+        key0 = k.key
+        k.update()
+        CoreKeyTests.assert_key_initance(self, k)
+        self.assertNotEqual(k.key, key0)
+
+        key_rand = os.urandom(Key.KEY_OCTETS)
+        k.update(key_rand)
+        CoreKeyTests.assert_key_initance(self, k)
+        self.assertEqual(k.key, key_rand)
+
+    # done, at least test
+
+    # fail test
+
+    def test_fail_by_incorrect_length(self):
+        with self.assertRaises(ValueError) as cm:
+            Key(b'+' * (Key.KEY_OCTETS + 1))
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "plain_key length is 33, it must be 32.")
+
+        with self.assertRaises(ValueError) as cm:
+            Key(b'-' * (Key.KEY_OCTETS - 1))
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "plain_key length is 31, it must be 32.")
+
+    def test_fail_by_not_bytes(self):
+        with self.assertRaises(ValueError) as cm:
+            Key('0' * Key.KEY_OCTETS)
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "plain_key must be bytes object but it is <class 'str'> object")
+
+        with self.assertRaises(ValueError) as cm:
+            Key(32 * Key.KEY_OCTETS)
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], "plain_key must be bytes object but it is <class 'int'> object")
 
 if __name__ == '__main__':
     unittest.main()
