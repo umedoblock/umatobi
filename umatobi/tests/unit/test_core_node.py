@@ -1,12 +1,33 @@
-import os
-import sys
-import threading, socket
+import os, sys, threading, socket, queue
 import unittest
-import queue
 
 from umatobi.simulator.core.node import Node
 
 class CoreNodeTests(unittest.TestCase):
+
+    def test___init__(self):
+        pass
+
+    def test_release(self):
+        pass
+
+    def test_not_ready(self):
+        pass
+
+    def test_make_udpip(self):
+        pass
+
+    def test_run(self):
+        pass
+
+    def test_appear(self):
+        pass
+
+    def test_disappear(self):
+        pass
+
+    def test_get_status(self):
+        pass
 
     def test_core_node_init_success(self):
         node = Node('localhost', 10000)
@@ -143,4 +164,3 @@ class CoreNodeTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
