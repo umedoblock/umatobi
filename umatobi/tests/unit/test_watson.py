@@ -148,10 +148,6 @@ class WatsonOfficeTests(unittest.TestCase):
         pass
 
 class WatsonTests(unittest.TestCase):
-    # grep ^def ./test_.py
-    #   | sed -e 's:def ::' -e 's:(.*$::'
-    #   | awk '{printf "def test_"$0"(self):\n    pass\n\n"}'
-    # :s:|:\r        |:g
 
     def setUp(self):
         self.watson_office_addr = ('localhost', 65530)
