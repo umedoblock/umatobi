@@ -12,9 +12,32 @@ from umatobi.log import logger
 from umatobi.simulator.core.key import Key
 from umatobi.simulator.node import *
 
-# class NodeOpenOfficeTests(unittest.TestCase):
+class NodeOpenOfficeTests(unittest.TestCase):
+
+    def test___init__(self):
+        pass
+
+    def test_run(self):
+        pass
 
 class NodeUDPOfficeTests(unittest.TestCase):
+
+    def test___init__(self):
+        pass
+
+    def test__determine_node_office_addr(self):
+        node_assets = make_node_assets()
+        node = Node(id=48, host='localhost', **node_assets)
+
+        side_effects = [OSError(22222222, 'Address already in use'), None]
+        with patch('socket.socket.bind', side_effect=side_effects) as mock_bind:
+            server = NodeUDPOffice(node)
+
+        server.server_close()
+
+    def test_serve_forever(self):
+        pass
+
     def test__determine_node_office_addr_every_ports_are_in_use(self):
         node_assets = make_node_assets()
         node = Node(id=48, host='localhost', **node_assets)
@@ -26,16 +49,6 @@ class NodeUDPOfficeTests(unittest.TestCase):
                 server = NodeUDPOffice(node)
         the_exception = cm.exception
         self.assertEqual(the_exception.args[0], 'every ports are in use.')
-
-    def test__determine_node_office_addr(self):
-        node_assets = make_node_assets()
-        node = Node(id=48, host='localhost', **node_assets)
-
-        side_effects = [OSError(22222222, 'Address already in use'), None]
-        with patch('socket.socket.bind', side_effect=side_effects) as mock_bind:
-            server = NodeUDPOffice(node)
-
-        server.server_close()
 
 class NodeOfficeTests(unittest.TestCase):
     def setUp(self):
@@ -81,6 +94,9 @@ class NodeOfficeTests(unittest.TestCase):
         self.assertEqual(d_recved['hop'], d['hop'] * 2)
         self.assertEqual(d_recved['profess'], 'You are Green.')
 
+    def test_finish(self):
+        pass
+
 class NodeTests(unittest.TestCase):
     def assertIsPort(self, port):
         self.assertGreaterEqual(port, 1024)
@@ -105,15 +121,108 @@ class NodeTests(unittest.TestCase):
     def tearDown(self):
         self.node.release()
 
-#   def test_run(self):
-#   def test__open_office(self):
-#   def test__force_shutdown(self):
-#   def test_set_attrs(self):
-#   def test_get_elapsed_time(self):
-#   def test_appear(self):
-#   def test_disappear(self):
-#   def test_release_clients(self):
-#   def test___str__(self):
+    def test___init__(self):
+        pass
+
+    def test_run(self):
+        pass
+
+    def test__open_office(self):
+        pass
+
+    def test_get_info(self):
+        pass
+
+    def test_regist(self):
+        node = self.node
+
+        node.port = 63333
+        self.assertTrue(hasattr(node, 'master_palm_path'))
+
+        self.assertFalse(os.path.exists(node.master_palm_path))
+        self.assertFalse(node.im_ready.is_set())
+        node.regist() # once
+        self.assertTrue(node.im_ready.is_set())
+        self.assertTrue(os.path.isdir(os.path.dirname(node.master_palm_path)))
+        self.assertTrue(os.path.isfile(node.master_palm_path))
+
+        with open(node.master_palm_path) as master_palm:
+            master_palm_on = master_palm.read()
+            self.assertEqual(master_palm_on, node.get_info())
+
+        node.regist() # twice
+        with open(node.master_palm_path) as master_palm:
+            master_palm_on2 = master_palm.read()
+            self.assertEqual(master_palm_on2, node.get_info() * 2)
+
+        os.remove(node.master_palm_path)
+
+
+    def test__steal_a_glance_at_master_palm(self):
+        iso8601 = SimulationTime().get_iso8601()
+        node = self.node
+        node2 = Node(host='localhost', port=11112, iso8601=iso8601)
+        node3 = Node(host='localhost', port=11113, iso8601=iso8601)
+        self.assertTrue(hasattr(node, 'master_palm_path'))
+
+        master_palm_on = node2.get_info() + node3.get_info()
+
+        with open(node.master_palm_path, 'w') as master_palm:
+            print(node2.get_info(), file=master_palm, end='')
+            print(node3.get_info(), file=master_palm, end='')
+
+        node_lines = node._steal_a_glance_at_master_palm()
+        self.assertEqual(node_lines, master_palm_on)
+        os.remove(node.master_palm_path)
+
+        node2.release()
+        node3.release()
+
+    def test__force_shutdown(self):
+        pass
+
+    def test_set_attrs(self):
+        pass
+
+    def test_get_attrs(self):
+        node = self.node
+
+        attrs = node.get_attrs()
+        self.assertSetEqual(set(attrs.keys()), set(Node.ATTRS))
+
+    def test_put_on_darkness(self):
+        node = self.node
+
+        et = node.get_elapsed_time()
+        attrs = node.get_attrs()
+
+        self.assertEqual(node._queue_darkness.qsize(), 0)
+        node.put_on_darkness(attrs, et)
+        self.assertEqual(node._queue_darkness.qsize(), 1)
+
+        got_et, got_pickled = node._queue_darkness.get()
+        self.assertEqual(node._queue_darkness.qsize(), 0)
+        got_d_attrs = pickle.loads(got_pickled)
+        self.assertEqual(got_et, et)
+        self.assertEqual(got_d_attrs, attrs)
+
+    def test_get_elapsed_time(self):
+        pass
+
+    def test_appear(self):
+        pass
+
+    def test_disappear(self):
+        pass
+
+    def test_release_clients(self):
+        pass
+
+    def test___str__(self):
+        pass
+
+    def test_update(self):
+        pass
 
     def test_node_thread(self):
         logger.info(f"")
@@ -182,50 +291,6 @@ class NodeTests(unittest.TestCase):
 
         node.release()
 
-    def test_regist(self):
-        node = self.node
-
-        node.port = 63333
-        self.assertTrue(hasattr(node, 'master_palm_path'))
-
-        self.assertFalse(os.path.exists(node.master_palm_path))
-        self.assertFalse(node.im_ready.is_set())
-        node.regist() # once
-        self.assertTrue(node.im_ready.is_set())
-        self.assertTrue(os.path.isdir(os.path.dirname(node.master_palm_path)))
-        self.assertTrue(os.path.isfile(node.master_palm_path))
-
-        with open(node.master_palm_path) as master_palm:
-            master_palm_on = master_palm.read()
-            self.assertEqual(master_palm_on, node.get_info())
-
-        node.regist() # twice
-        with open(node.master_palm_path) as master_palm:
-            master_palm_on2 = master_palm.read()
-            self.assertEqual(master_palm_on2, node.get_info() * 2)
-
-        os.remove(node.master_palm_path)
-
-    def test__steal_a_glance_at_master_palm(self):
-        iso8601 = SimulationTime().get_iso8601()
-        node = self.node
-        node2 = Node(host='localhost', port=11112, iso8601=iso8601)
-        node3 = Node(host='localhost', port=11113, iso8601=iso8601)
-        self.assertTrue(hasattr(node, 'master_palm_path'))
-
-        master_palm_on = node2.get_info() + node3.get_info()
-
-        with open(node.master_palm_path, 'w') as master_palm:
-            print(node2.get_info(), file=master_palm, end='')
-            print(node3.get_info(), file=master_palm, end='')
-
-        node_lines = node._steal_a_glance_at_master_palm()
-        self.assertEqual(node_lines, master_palm_on)
-        os.remove(node.master_palm_path)
-
-        node2.release()
-        node3.release()
-
     @patch('os.path')
     def test_steal_a_glance_at_master_palm_logger_info(self, mock_path):
         mock_path.isfile.return_value = False
@@ -252,28 +317,6 @@ class NodeTests(unittest.TestCase):
         mock_path.isfile.assert_called_with(node.master_palm_path)
         self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
         patcher.stop()
-
-    def test_get_attrs(self):
-        node = self.node
-
-        attrs = node.get_attrs()
-        self.assertSetEqual(set(attrs.keys()), set(Node.ATTRS))
-
-    def test_put_on_darkness(self):
-        node = self.node
-
-        et = node.get_elapsed_time()
-        attrs = node.get_attrs()
-
-        self.assertEqual(node._queue_darkness.qsize(), 0)
-        node.put_on_darkness(attrs, et)
-        self.assertEqual(node._queue_darkness.qsize(), 1)
-
-        got_et, got_pickled = node._queue_darkness.get()
-        self.assertEqual(node._queue_darkness.qsize(), 0)
-        got_d_attrs = pickle.loads(got_pickled)
-        self.assertEqual(got_et, et)
-        self.assertEqual(got_d_attrs, attrs)
 
     def test_update_key(self):
         node = self.node
