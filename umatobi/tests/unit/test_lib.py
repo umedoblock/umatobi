@@ -468,8 +468,14 @@ class SimulationTimeTests(unittest.TestCase):
     def test_get_y15s(self):
         self.assertRegex(self.simulation_time.get_y15s(), RE_Y15S)
 
-    def test_passed_sec(self):
-        pass
+    def test_passed_seconds(self):
+        simulation_time = SimulationTime()
+        passed_seconds = 123.456
+        passed_time = timedelta(seconds=passed_seconds)
+
+        with time_machine(simulation_time.start_up_orig + passed_time):
+            self.assertEqual(simulation_time.passed_seconds(),
+                             passed_seconds)
 
     def test_passed_ms(self):
         mili555 = timedelta(milliseconds=555)

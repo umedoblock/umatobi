@@ -311,7 +311,7 @@ class SimulationTime(object):
     def get_y15s(self):
         return SimulationTime.time_to_y15s(self)
 
-    def passed_sec(self, now=None):
+    def passed_seconds(self, now=None):
         if not now:
             now = SimulationTime.now()
         return (now - self.start_up_orig).total_seconds()
@@ -323,7 +323,7 @@ class SimulationTime(object):
             now = SimulationTime.now()
         # relativeCreated の時間単位がmsのため、
         # elapsed_time()もms単位となるようにする。
-        return int(self.passed_sec(now) * 1000)
+        return int(self.passed_seconds(now) * 1000)
 
 # def isoformat_to_start_up_orig(isoformat):
 #   # >>> datetime2.fromisoformat('2019-08-27T02:43:20.708976')
