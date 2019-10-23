@@ -239,8 +239,16 @@ class WatsonTests(unittest.TestCase):
         watson.watson_open_office.start.assert_called()
         watson.watson_open_office.in_serve_forever.wait.assert_called()
 
-    def test_relaxing(self):
-        pass
+    @patch('time.sleep')
+    def test_relaxing(self, mock_sleep):
+        watson = self.watson
+
+        expected_relaxing_seconds = 23.456
+        passed_seconds = watson.simulation_seconds - expected_relaxing_seconds
+        with patch.object(watson.start_up_iso8601, 'passed_seconds',
+                          return_value=passed_seconds):
+            watson.relaxing()
+        mock_sleep.assert_called_with(expected_relaxing_seconds)
 
     def test_release_clients(self):
         pass

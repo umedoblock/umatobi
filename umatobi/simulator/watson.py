@@ -291,12 +291,11 @@ class Watson(threading.Thread):
         return watson_open_office
 
     def relaxing(self):
-        passed_ms = self.start_up_iso8601.passed_ms()
-        passed_seconds = self.start_up_iso8601.passed_sec()
+        passed_seconds = self.start_up_iso8601.passed_seconds()
         relaxing_time = self.simulation_seconds - passed_seconds
 
         logger.info(f"{self}.relaxing(), relaxing_time={relaxing_time}")
-        logger.debug(f"{self}.relaxing(), simulation_seconds={self.simulation_seconds}, start_up_iso8601={self.start_up_iso8601}, passed_ms={passed_ms}, passed_seconds={passed_seconds}")
+        logger.debug(f"{self}.relaxing(), simulation_seconds={self.simulation_seconds}, start_up_iso8601={self.start_up_iso8601}, passed_seconds={passed_seconds}")
         time.sleep(relaxing_time)
 
     def release_clients(self):
