@@ -10,20 +10,24 @@ from umatobi.simulator.watson import Watson, WatsonOffice
 from umatobi.simulator.watson import WatsonOpenOffice, WatsonTCPOffice
 from umatobi.lib import *
 
-class Req(object):
-    def __init__(self, profess, num_nodes):
-        self.sheep = {
-            'profess': profess,
-            'num_nodes': num_nodes,
-        }
+class WatsonOpenOfficeTests(unittest.TestCase):
 
-    # use self.rfile.readline() in WatsonOffice.handle()
-    def makefile(self, mode, rbufsize):
-        js_sheep = dict2json(self.sheep)
-        return io.BytesIO(js_sheep.encode('utf-8'))
+    def test___init__(self):
+        pass
 
-    def sendall(self, b):
-        self._written = b
+    def test_run(self):
+        pass
+
+class WatsonTCPOfficeTests(unittest.TestCase):
+
+    def test___init__(self):
+        pass
+
+    def test__determine_office_addr(self):
+        pass
+
+    def test_shutdown_request(self):
+        pass
 
 class WatsonOfficeTests(unittest.TestCase):
 
@@ -36,7 +40,7 @@ class WatsonOfficeTests(unittest.TestCase):
         self.watson = Watson(self.watson_office_addr, SIMULATION_SECONDS,
                              self.start_up_iso8601, self.log_level)
 
-    def test_watson_office(self):
+    def test___init__(self):
         watson = self.watson
         watson.touch_simulation_db_on_clients()
         watson.simulation_db.access_db()
@@ -128,6 +132,15 @@ class WatsonOfficeTests(unittest.TestCase):
         # cleanup #########################################################
         server.server_close()
 
+    def test_setup(self):
+        pass
+
+    def test_handle(self):
+        pass
+
+    def test_finish(self):
+        pass
+
     def test_make_client_record(self):
         pass
 
@@ -139,9 +152,6 @@ class WatsonOfficeTests(unittest.TestCase):
       #     watson_office.d_client_reply
       # the_exception = cm.exception
       # self.assertEqual(the_exception.args[0], '')
-        pass
-
-    def test_finish(self):
         pass
 
     def test_byebye(self):
@@ -167,7 +177,8 @@ class WatsonTests(unittest.TestCase):
     def test___str__(self):
         pass
 
-    def test_watson_basic(self):
+
+    def test___init__(self):
         watson = self.watson
         expected_simulation_dir_path = \
                 get_simulation_dir_path(self.start_up_iso8601)
@@ -188,11 +199,8 @@ class WatsonTests(unittest.TestCase):
         watson = self.watson
         watson.run()
 
-    def test_join(self):
-        pass
-
     @patch('time.sleep')
-    def test_watson_start(self, mock_sleep):
+    def test_start(self, mock_sleep):
         watson = self.watson
         # 以下では，watson.start(), つまり、 run() の emulate
 
@@ -301,6 +309,25 @@ class WatsonTests(unittest.TestCase):
         self.assertEqual(tuple(selected_rows[0]), expected_rows)
 
         watson.simulation_db.remove_db()
+
+    def test_join(self):
+        pass
+
+class Req(object):
+
+    def __init__(self, profess, num_nodes):
+        self.sheep = {
+            'profess': profess,
+            'num_nodes': num_nodes,
+        }
+
+    # use self.rfile.readline() in WatsonOffice.handle()
+    def makefile(self, mode, rbufsize):
+        js_sheep = dict2json(self.sheep)
+        return io.BytesIO(js_sheep.encode('utf-8'))
+
+    def sendall(self, b):
+        self._written = b
 
 if __name__ == '__main__':
     unittest.main()
