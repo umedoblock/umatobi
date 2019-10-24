@@ -69,22 +69,6 @@ class LibTests(unittest.TestCase):
         self.assertEqual(sock.type, socket.SOCK_DGRAM)
         sock.close()
 
-    def test_sock_create_fail(self):
-        with self.assertLogs('umatobi', level='ERROR') as cm:
-            sock = sock_create('raw', 'tcp')
-        self.assertIsNone(sock)
-        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"raw" is inappropriate as v4_v6.')
-
-        with self.assertLogs('umatobi', level='ERROR') as cm:
-            sock = sock_create('ipsec', 'tcp')
-        self.assertIsNone(sock)
-        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"ipsec" is inappropriate as v4_v6.')
-
-        with self.assertLogs('umatobi', level='ERROR') as cm:
-            sock = sock_create('v4', 'dccp')
-        self.assertIsNone(sock)
-        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"dccp" is inappropriate as tcp_udp.')
-
     def test_sock_send_ok_tcp(self):
         with patch('umatobi.lib.socket', spec_set=True, new_callable=MagicMock):
             tcp_sock = sock_create('v4', 'tcp')
@@ -131,6 +115,9 @@ class LibTests(unittest.TestCase):
         with patch.object(udp_sock, 'recv', side_effect=socket.timeout):
             recved_data = sock_recv(udp_sock, 1024)
         self.assertIsNone(recved_data)
+
+    def test_are_on_the_same_network_endpoint(self):
+        pass
 
     def test_get_host_port(self):
         host_port = 'localhost:8888'
@@ -225,6 +212,13 @@ class LibTests(unittest.TestCase):
         self.assertIsNone(converter_null((1, 2, 3)))
         self.assertIsNone(converter_null('any arg'))
 
+    def test_some_PATHs(self):
+        self.assertRegex(UMATOBI_ROOT_PATH, f"^{TESTS_PATH}")
+        self.assertRegex(SIMULATION_ROOT_PATH, f"^{TESTS_PATH}")
+
+        self.assertRegex(SIMULATION_DIR_PATH, r'/@@SIMULATION_TIME@@$')
+        self.assertRegex(SIMULATION_SCHEMA_PATH, r'/tests/')
+
     def test_get_client_db_path(self):
         client_id = 8
         client_db_path = get_client_db_path(self.simulation_time,
@@ -264,29 +258,10 @@ class LibTests(unittest.TestCase):
                          simulation_time.get_y15s(),
                          MASTER_PALM))
 
-    def test_some_PATHes(self):
-        self.assertRegex(UMATOBI_ROOT_PATH, f"^{TESTS_PATH}")
-        self.assertRegex(SIMULATION_ROOT_PATH, f"^{TESTS_PATH}")
+    def test_validate_kwargs(self):
+        pass
 
-        self.assertRegex(SIMULATION_DIR_PATH, r'/@@SIMULATION_TIME@@$')
-        self.assertRegex(SIMULATION_SCHEMA_PATH, r'/tests/')
-
-    def test_dict2json_and_json2dict(self):
-        d = {
-            'port': 1000,
-            'host': 'localhost',
-            'key': '0x' + '1234567890abcedf' * 4,
-        }
-
-        self.assertIsInstance(d, dict)
-        j = dict2json(d)
-        self.assertIsInstance(j, str)
-        d2 = json2dict(j)
-        self.assertIsInstance(d2, dict)
-        self.assertNotEqual(id(d2), id(d))
-        self.assertEqual(d2, d)
-
-    def test_dict2bytes_and_bytes2dict(self):
+    def test_dict2bytes(self):
         d = {
             'port': 1000,
             'host': 'localhost',
@@ -296,44 +271,52 @@ class LibTests(unittest.TestCase):
         self.assertIsInstance(d, dict)
         b = dict2bytes(d)
         self.assertIsInstance(b, bytes)
+        self.assertEqual(b, b'{"port": 1000, "host": "localhost", "key": "0x1234567890abcedf1234567890abcedf1234567890abcedf1234567890abcedf"}\n')
+
+    def test_bytes2dict(self):
+        d = {
+            'port': 1000,
+            'host': 'localhost',
+            'key': '0x' + '1234567890abcedf' * 4,
+        }
+        expected_d = d
+
+        b = dict2bytes(d)
         d2 = bytes2dict(b)
         self.assertIsInstance(d2, dict)
         self.assertNotEqual(id(d2), id(d))
-        self.assertEqual(d2, d)
+        self.assertEqual(d2, expected_d)
 
-    def test_make_log_dir(self):
-        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
-        self.assertFalse(os.path.isdir(special_dir))
-        tlogger = make_logger(log_dir=special_dir, name='special', id_=None, level="INFO")
-        self.assertTrue(os.path.isdir(special_dir))
-        shutil.rmtree(special_dir)
+    def test_dict2json(self):
+        d = {
+            'port': 1000,
+            'host': 'localhost',
+            'key': '0x' + '1234567890abcedf' * 4,
+        }
 
-        self.assertFalse(os.path.isdir(special_dir))
-        tlogger = make_logger(log_dir=special_dir, name='special', id_=10, level="INFO")
-        self.assertTrue(os.path.isdir(special_dir))
-        shutil.rmtree(special_dir)
+        self.assertIsInstance(d, dict)
+        j = dict2json(d)
+        self.assertIsInstance(j, str)
+        self.assertEqual(j, '{"port": 1000, "host": "localhost", "key": "0x1234567890abcedf1234567890abcedf1234567890abcedf1234567890abcedf"}\n')
 
-        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
-        self.assertFalse(os.path.isdir(special_dir))
-        tlogger = make_logger(log_dir=special_dir, name='', id_=None, level="INFO")
-        self.assertTrue(os.path.isdir(special_dir))
-        shutil.rmtree(special_dir)
+    def test_json2dict(self):
+        d = {
+            'port': 1000,
+            'host': 'localhost',
+            'key': '0x' + '1234567890abcedf' * 4,
+        }
+        expected_d = d
 
-        self.assertFalse(os.path.isdir(special_dir))
-        tlogger = make_logger(log_dir=special_dir, name='', id_=10, level="INFO")
-        self.assertTrue(os.path.isdir(special_dir))
-        shutil.rmtree(special_dir)
+        j = dict2json(d)
+        d2 = json2dict(j)
+        self.assertIsInstance(d2, dict)
+        self.assertNotEqual(id(d2), id(d))
+        self.assertEqual(d2, expected_d)
 
-    def test_log_path(self):
-        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
-        tlogger = make_logger(log_dir=special_dir, name='test_logger', id_=None, level="INFO")
-        self.assertEqual(tlogger.log_path, os.path.join(special_dir, 'test_logger.log', ))
+    def test_tell_shutdown_time(self):
+        pass
 
-        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
-        tlogger = make_logger(log_dir=special_dir, name='test_logger', id_=888, level="INFO")
-        self.assertEqual(tlogger.log_path, os.path.join(special_dir, 'test_logger.888.log', ))
-
-    def test_load_yaml1(self):
+    def test_load_yaml(self):
         y = load_yaml(TEST_YAML_PATH.replace(ATAT_N, '1'))
         expected_obj = {'a': 1}
         self.assertEqual(y, expected_obj)
@@ -407,6 +390,80 @@ val_text: text context
 '''
         self.assertEqual(dumped_yaml, expected_dump)
 
+    # DONE, at least
+
+    # logger.py
+
+    def test_make_log_dir(self):
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
+        self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='special', id_=None, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+        self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='special', id_=10, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
+        self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='', id_=None, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+        self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='', id_=10, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+    def test_log_path(self):
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
+        tlogger = make_logger(log_dir=special_dir, name='test_logger', id_=None, level="INFO")
+        self.assertEqual(tlogger.log_path, os.path.join(special_dir, 'test_logger.log', ))
+
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
+        tlogger = make_logger(log_dir=special_dir, name='test_logger', id_=888, level="INFO")
+        self.assertEqual(tlogger.log_path, os.path.join(special_dir, 'test_logger.888.log', ))
+
+    # fail test
+
+    def test_sock_create_fail(self):
+        with self.assertLogs('umatobi', level='ERROR') as cm:
+            sock = sock_create('raw', 'tcp')
+        self.assertIsNone(sock)
+        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"raw" is inappropriate as v4_v6.')
+
+        with self.assertLogs('umatobi', level='ERROR') as cm:
+            sock = sock_create('ipsec', 'tcp')
+        self.assertIsNone(sock)
+        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"ipsec" is inappropriate as v4_v6.')
+
+        with self.assertLogs('umatobi', level='ERROR') as cm:
+            sock = sock_create('v4', 'dccp')
+        self.assertIsNone(sock)
+        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"dccp" is inappropriate as tcp_udp.')
+
+class PollingTests(unittest.TestCase):
+
+    def test_sleep(self):
+        pass
+
+    def test___init__(self):
+        pass
+
+    def test_polling(self):
+        pass
+
+    def test_is_continue(self):
+        pass
+
+    def test__polling(self):
+        pass
+
+    def test_run(self):
+        pass
+
 class SimulationTimeTests(unittest.TestCase):
 
     def setUp(self):
@@ -417,7 +474,7 @@ class SimulationTimeTests(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(os.path.dirname(get_master_palm_path(self.simulation_time)), ignore_errors=True)
 
-    def test_simulation_time(self):
+    def test_time_machine_now(self):
         start_up_orig = SimulationTime.now()
 
         with time_machine(start_up_orig):
@@ -456,10 +513,16 @@ class SimulationTimeTests(unittest.TestCase):
         self.assertIsInstance(y15s, str)
         self.assertRegex(y15s, r"\A\d{4}-\d{2}-\d{2}T\d{6}\Z")
 
-    def test_init(self):
+    def test___init__(self):
+        self.assertIsInstance(self.simulation_time.start_up_orig, datetime)
+
+    def test___str__(self):
         pass
 
-    def test_eq(self):
+    def test___repr__(self):
+        pass
+
+    def test___eq__(self):
         pass
 
     def test_get_iso8601(self):
@@ -485,12 +548,6 @@ class SimulationTimeTests(unittest.TestCase):
             passed_ms = simulation_time.passed_ms(SimulationTime().start_up_orig)
         self.assertEqual(passed_ms, 555)
 
-    # 以下は必要ない？
-    # no need to below tests ?
-    def test_make_start_up_orig(self):
-        simulation_time = self.simulation_time
-        self.assertIsInstance(simulation_time.start_up_orig, datetime)
-
     def test_make_start_up_orig_with_time_machine(self):
         start_up_orig = self.simulation_time.start_up_orig
 
@@ -507,13 +564,6 @@ class SimulationTimeTests(unittest.TestCase):
 
         with time_machine(future):
             self.assertEqual(SimulationTime().start_up_orig, future)
-
-    # class timedelta(builtins.object)
-    #  |  Difference between two datetime values.
-    #  |
-    #  |  timedelta(days=0, seconds=0, microseconds=0, milliseconds=0,
-    #               minutes=0, hours=0, weeks=0)
-
 
 class SchemaParserTests(unittest.TestCase):
 
@@ -534,6 +584,18 @@ class SchemaParserTests(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(os.path.dirname(get_master_palm_path(self.simulation_time)), ignore_errors=True)
+
+    def test___init__(self):
+        simulation_time = self.simulation_time
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        self.assert_simulation_schema_path(simulation_schema_path)
+
+        schema_parser = SchemaParser(simulation_schema_path)
+
+        self.assertEqual(schema_parser.table_names(), ['simulation', 'clients', 'growings', 'nodes'])
+        self.assertIsInstance(schema_parser.converter_tables, dict)
+        # see test_construct_converter_tables()
+        # if you hope to make sense about converter_tables structure
 
     def test_data_type_converter(self):
         d_schema = {
@@ -563,18 +625,6 @@ class SchemaParserTests(unittest.TestCase):
           # print('data_type =', data_type)
             self.assertEqual(converter(d_values[column_name]),
                              expected_values[column_name])
-
-    def test_schema_parser(self):
-        simulation_time = self.simulation_time
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
-        self.assert_simulation_schema_path(simulation_schema_path)
-
-        schema_parser = SchemaParser(simulation_schema_path)
-
-        self.assertEqual(schema_parser.table_names(), ['simulation', 'clients', 'growings', 'nodes'])
-        self.assertIsInstance(schema_parser.converter_tables, dict)
-        # see test_construct_converter_tables()
-        # if you hope to make sense about converter_tables structure
 
     def test_construct_converter_tables(self):
         # tests/fixtures/test.schema
@@ -610,17 +660,6 @@ class SchemaParserTests(unittest.TestCase):
         self.assertEqual(schema_parser.converter_tables['test_table'],
                          expected_tables['test_table'])
 
-    def test_get_db_from_schema(self):
-        simulation_time = self.simulation_time
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
-        self.assert_simulation_schema_path(simulation_schema_path)
-
-        schema_parser = SchemaParser(simulation_schema_path)
-
-        expected_table_names = ('simulation', 'clients', 'growings', 'nodes')
-        self.assertSequenceEqual(schema_parser.get_table_names(),
-                                 expected_table_names)
-
     def test_get_table_names(self):
         expected_items = {
             'simulation': (
@@ -648,6 +687,17 @@ class SchemaParserTests(unittest.TestCase):
         schema_parser = SchemaParser(simulation_schema_path)
         self.assertSequenceEqual(schema_parser.get_table_names(),
                            tuple(expected_items.keys()))
+
+    def test_get_table_names_from_schema(self):
+        simulation_time = self.simulation_time
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        self.assert_simulation_schema_path(simulation_schema_path)
+
+        schema_parser = SchemaParser(simulation_schema_path)
+
+        expected_table_names = ('simulation', 'clients', 'growings', 'nodes')
+        self.assertSequenceEqual(schema_parser.get_table_names(),
+                                 expected_table_names)
 
     def test_get_columns(self):
         expected_items = {

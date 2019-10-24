@@ -6,33 +6,6 @@ import yaml
 from umatobi.constants import *
 from umatobi.log import *
 
-class Polling(threading.Thread):
-
-    @classmethod
-    def sleep(cls, secs):
-        logger.info(f'Polling.sleep(secs={secs})')
-        time.sleep(secs)
-
-    def __init__(self, polling_secs):
-        threading.Thread.__init__(self)
-        self.polling_secs = polling_secs
-        self._sche = sched.scheduler(timefunc=time.time, delayfunc=Polling.sleep)
-#       self._sche.enter(self.polling_secs, 1, self._polling, ()) # 犯人
-
-    def polling(self):
-        raise NotImplementedError()
-
-    def is_continue(self):
-        raise NotImplementedError()
-
-    def _polling(self):
-        if self.is_continue():
-            self.polling()
-            self._sche.enter(self.polling_secs, 1, self._polling, ())
-
-    def run(self):
-        self._sche.run()
-
 def sock_create(v4_v6, tcp_udp):
     #  import socket;help(socket)
 
@@ -131,9 +104,6 @@ def make_fixture(yaml_path, index):
     fixture = schema_parser.parse_record(component, table_name)
     return fixture
 
-class Records(object):
-    pass
-
 def converter_blob(b64_encoded_string):
     return base64.b64decode(b64_encoded_string)
 
@@ -230,36 +200,40 @@ def tell_shutdown_time():
     shutdown_time = datetime_now()
     return shutdown_time
 
-def get_passed_ms(start_up_orig):
-    '''simulation 開始から現在までに経過したmilli秒数。'''
-    now = datetime_now()
-    # relativeCreated の時間単位がmsのため、
-    # elapsed_time()もms単位となるようにする。
-    return int(((now - start_up_orig) * 1000).total_seconds())
-
-def elapsed_time(start_up_orig, now=None):
-    '''simulation 開始から現在までに経過したmilli秒数。'''
-    if not None:
-        now = datetime_now()
-    # relativeCreated の時間単位がmsのため、
-    # elapsed_time()もms単位となるようにする。
-    return int(((now - start_up_orig) * 1000).total_seconds())
-
-def _normalize_ms(seconds):
-    return int(seconds * 1000)
-
-def get_passed_seconds(orig):
-    e = datetime_now()
-    return (e - orig).total_seconds()
-
-def get_passed_ms(orig):
-    passed_seconds = get_passed_seconds(orig)
-    return _normalize_ms(passed_seconds)
-
 def load_yaml(yaml_path):
     with open(yaml_path) as f:
         y = yaml.load(f, Loader=yaml.SafeLoader)
     return y
+
+class Polling(threading.Thread):
+
+    @classmethod
+    def sleep(cls, secs):
+        logger.info(f'Polling.sleep(secs={secs})')
+        time.sleep(secs)
+
+    def __init__(self, polling_secs):
+        threading.Thread.__init__(self)
+        self.polling_secs = polling_secs
+        self._sche = sched.scheduler(timefunc=time.time, delayfunc=Polling.sleep)
+#       self._sche.enter(self.polling_secs, 1, self._polling, ()) # 犯人
+
+    def polling(self):
+        raise NotImplementedError()
+
+    def is_continue(self):
+        raise NotImplementedError()
+
+    def _polling(self):
+        if self.is_continue():
+            self.polling()
+            self._sche.enter(self.polling_secs, 1, self._polling, ())
+
+    def run(self):
+        self._sche.run()
+
+class Records(object):
+    pass
 
 class SimulationTime(object):
     Y15S_FORMAT='%Y-%m-%dT%H%M%S'
