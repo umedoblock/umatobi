@@ -34,9 +34,9 @@ umatobi/theater.py:
 simulation.db を読み込み、OpenGL を使って、simulation 結果を表示します。
 
 = 実行方法
-$ python3 umatobi/simulation.py
+$ python3 umatobi/tools/simulation.py
 $ python3 umatobi/tools/make_simulation_db.py
-$ python3 umatobi/theater.py
+$ python3 umatobi/tools/theater.py
 
 ctrl-c で終了。
 
