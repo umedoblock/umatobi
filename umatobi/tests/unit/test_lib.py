@@ -234,7 +234,7 @@ class LibTests(unittest.TestCase):
     def test_get_simulation_dir_path(self):
         simulation_time = self.simulation_time
         simulation_dir_path = get_simulation_dir_path(simulation_time)
-        self.assertTrue(os.path.isdir(simulation_dir_path))
+        self.assertFalse(os.path.isdir(simulation_dir_path))
         self.assert_simulation_dir_path(simulation_dir_path)
 
     def test_get_simulation_schema_path(self):
@@ -257,6 +257,33 @@ class LibTests(unittest.TestCase):
             os.path.join(SIMULATION_ROOT_PATH,
                          simulation_time.get_y15s(),
                          MASTER_PALM))
+
+    @patch('os.path.isdir', return_value=False)
+    @patch('os.makedirs')
+    def test_make_simulation_dir(self, mock_makedirs, mock_isdir):
+        simulation_time = SimulationTime()
+        simulation_dir_path = get_simulation_dir_path(simulation_time)
+
+        mock_isdir.assert_not_called()
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            make_simulation_dir(simulation_dir_path)
+        self.assertRegex(cm.output[0], fr"^INFO:umatobi:os.makedirs\('/.+/{RE_Y15S}'\)$")
+        self.assertEqual(cm.output[0], f"INFO:umatobi:os.makedirs('{simulation_dir_path}')")
+        mock_isdir.assert_called_once()
+        mock_makedirs.assert_called_with(simulation_dir_path)
+
+    @patch('os.path.isdir', return_value=True)
+    @patch('os.makedirs')
+    def test_make_simulation_dir_pass(self, mock_makedirs, mock_isdir):
+        simulation_time = SimulationTime()
+        simulation_dir_path = get_simulation_dir_path(simulation_time)
+
+        mock_isdir.assert_not_called()
+
+        make_simulation_dir(simulation_dir_path)
+
+        mock_isdir.assert_called_once()
+        mock_makedirs.assert_not_called()
 
     def test_validate_kwargs(self):
         pass
@@ -572,9 +599,7 @@ class SchemaParserTests(unittest.TestCase):
         self.assertRegex(inspected_path, f"{SIMULATION_SCHEMA}$")
 
     def assert_simulation_dir_path(self, dir_path):
-        self.assertTrue(os.path.isdir(os.path.dirname(dir_path)))
-        self.assertNotRegex(dir_path,
-                            ATAT_SIMULATION_TIME)
+        self.assertNotRegex(dir_path, ATAT_SIMULATION_TIME)
         self.assertRegex(dir_path, RE_Y15S)
 
     def setUp(self):

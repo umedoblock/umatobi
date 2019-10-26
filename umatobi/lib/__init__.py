@@ -141,9 +141,6 @@ def get_simulation_dir_path(simulation_time):
     simulation_dir_path = re.sub(ATAT_SIMULATION_TIME,
                                  simulation_time.get_y15s(),
                                  SIMULATION_DIR_PATH)
-    if not os.path.isdir(simulation_dir_path):
-        os.mkdir(simulation_dir_path)
-        logger.info(f"os.mkdir(simulation_dir_path={simulation_dir_path})")
 
     return simulation_dir_path
 
@@ -170,6 +167,11 @@ def get_root_path():
 def get_master_palm_path(simulation_time):
     y15s = SimulationTime.time_to_y15s(simulation_time)
     return os.path.join(re.sub(ATAT_SIMULATION_TIME, y15s, SIMULATION_DIR_PATH), MASTER_PALM)
+
+def make_simulation_dir(simulation_dir_path):
+    if not os.path.isdir(simulation_dir_path):
+        os.makedirs(simulation_dir_path)
+        logger.info(f"os.makedirs('{simulation_dir_path}')")
 
 def validate_kwargs(st_barrier, kwargs):
     if st_barrier != kwargs.keys():
