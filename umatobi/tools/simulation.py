@@ -49,10 +49,9 @@ def args_():
     return args
 
 if __name__ == '__main__':
-    start_up_orig = make_start_up_orig()
-    start_up_time = y15sformat_time(start_up_orig)
+    start_up_iso8601 = SimulationTime()
 
-    logger.info(f"start_up_time={start_up_time}")
+    logger.info(f"start_up_iso8601={start_up_iso8601}")
     logger.info("simulation start !")
 
     # 引数の解析
@@ -60,13 +59,6 @@ if __name__ == '__main__':
 
     watson_office_addr = get_host_port(args.watson_office_addr)
 
-  # t = datetime.datetime.now()
-  # >>> t
-  # datetime.datetime(2012, 10, 8, 18, 4, 59, 659608)
-  # >>> t.strftime('%Y%m%dT%H%M%S')
-  # '20121008T180459'
-
-  #
   #
   # simulation_dir
   # |-- 20121008T180459 # y15sformat(), dirname = simulation_dir + y15sformat()
@@ -79,21 +71,11 @@ if __name__ == '__main__':
   #     |-- client.0.db # client_db
   #     `-- client.1.db # client_db
 
-    simulation_dir = args.simulation_dir
-
-  # simulation_dir 以下に起動時刻を元にした dir_name を作成する。
-  # dir_name 以下に、simulation結果の生成物、
-  # simulation.db, watson.0.log, client.0.log ...
-  # を作成する。
-    dir_name = os.path.join(simulation_dir, start_up_time)
-
-    if not os.path.isdir(dir_name):
-        os.makedirs(dir_name, exist_ok=True)
+    set_simulation_schema(start_up_iso8601)
 
     # 各 object を作成するなど。
     watson = Watson(watson_office_addr, args.simulation_seconds,
-                    start_up_orig,
-                    dir_name, args.log_level)
+                    start_up_iso8601, args.log_level)
 
     # Watson start!
     watson.start()
