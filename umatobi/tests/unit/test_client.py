@@ -115,7 +115,7 @@ class ClientTests(unittest.TestCase):
         client._hello_watson = mock.MagicMock()
         client._hello_watson.return_value = {
             'client_id': 1,
-            'iso8601': expected_simulation_time.get_iso8601(),
+            'start_up_iso8601': expected_simulation_time.get_iso8601(),
             'node_index': 1,
             'log_level': 'INFO',
         }
@@ -126,7 +126,7 @@ class ClientTests(unittest.TestCase):
                 key_ = 'id'
             else:
                 key_ = key
-            if key == 'iso8601':
+            if key == 'start_up_iso8601':
                 self.assertEqual(client.simulation_time, expected_simulation_time)
             else:
                 self.assertEqual(getattr(client, key_), reply[key])
@@ -162,7 +162,7 @@ class ClientTests(unittest.TestCase):
         client._hello_watson = mock.MagicMock()
         client._hello_watson.return_value = {
             'client_id': 1,
-            'iso8601': expected_simulation_time.get_iso8601(),
+            'start_up_iso8601': expected_simulation_time.get_iso8601(),
             'node_index': 1,
             'log_level': 'INFO',
         }
@@ -173,7 +173,7 @@ class ClientTests(unittest.TestCase):
                 key_ = 'id'
             else:
                 key_ = key
-            if key == 'iso8601':
+            if key == 'start_up_iso8601':
                 self.assertEqual(client.simulation_time, expected_simulation_time)
             else:
                 self.assertEqual(getattr(client, key_), reply[key])

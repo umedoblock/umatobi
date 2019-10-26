@@ -230,12 +230,12 @@ class Client(object):
             raise RuntimeError('client cannot say "I am Client." to watson where is {}'.format(self.watson_office_addr))
 
         self.id = reply['client_id']
-        self.simulation_time = SimulationTime.iso8601_to_time(reply['iso8601'])
+        self.simulation_time = SimulationTime.iso8601_to_time(reply['start_up_iso8601'])
 
         self.client_db_path = self.get_db_path()
         self.node_index = reply['node_index']
         self.log_level = reply['log_level']
-        self.simulation_schema_path = get_simulation_schema_path(self.simulation_time)
+        self.simulation_schema_path = set_simulation_schema(self.simulation_time)
 
         return reply
 
