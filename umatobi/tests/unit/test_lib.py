@@ -257,7 +257,7 @@ class LibTests(unittest.TestCase):
 
         self.assertFalse(os.path.isfile(simulation_schema_path))
         with self.assertLogs('umatobi', level='INFO') as cm:
-            set_simulation_schema(simulation_time)
+            simulation_schema_path = set_simulation_schema(simulation_time)
         self.assertTrue(os.path.isfile(simulation_schema_path))
 
         self.assertEqual(cm.output[0],
@@ -277,7 +277,7 @@ class LibTests(unittest.TestCase):
 
         try:
             with self.assertLogs('umatobi', level='INFO') as cm:
-                set_simulation_schema(simulation_time)
+                simulation_schema_path = set_simulation_schema(simulation_time)
         except AssertionError as err:
             self.assertEqual(err.args[0], 'no logs of level INFO or higher triggered on umatobi')
 
@@ -645,7 +645,7 @@ class SchemaParserTests(unittest.TestCase):
 
     def test___init__(self):
         simulation_time = self.simulation_time
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        simulation_schema_path = set_simulation_schema(simulation_time)
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
@@ -739,7 +739,7 @@ class SchemaParserTests(unittest.TestCase):
         }
 
         simulation_time = self.simulation_time
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        simulation_schema_path = set_simulation_schema(simulation_time)
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
@@ -748,7 +748,7 @@ class SchemaParserTests(unittest.TestCase):
 
     def test_get_table_names_from_schema(self):
         simulation_time = self.simulation_time
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        simulation_schema_path = set_simulation_schema(simulation_time)
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
@@ -778,7 +778,7 @@ class SchemaParserTests(unittest.TestCase):
         }
 
         simulation_time = self.simulation_time
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        simulation_schema_path = set_simulation_schema(simulation_time)
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
@@ -818,7 +818,7 @@ status: active
 # b'\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa'
 
         simulation_time = self.simulation_time
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
+        simulation_schema_path = set_simulation_schema(simulation_time)
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)

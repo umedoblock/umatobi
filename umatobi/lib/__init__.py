@@ -169,6 +169,8 @@ def set_simulation_schema(simulation_time):
         logger.info(f"shutil.copyfile(SIMULATION_SCHEMA_ORIG={SIMULATION_SCHEMA_ORIG}, simulation_schema_path={simulation_schema_path})")
         shutil.copyfile(SIMULATION_SCHEMA_ORIG, simulation_schema_path)
 
+    return simulation_schema_path
+
 def get_master_palm_path(simulation_time):
     y15s = SimulationTime.time_to_y15s(simulation_time)
     return os.path.join(re.sub(ATAT_SIMULATION_TIME, y15s, SIMULATION_DIR_PATH), MASTER_PALM)
