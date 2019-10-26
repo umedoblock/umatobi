@@ -109,7 +109,7 @@ class Darkness(object):
         self.simulation_time = SimulationTime.iso8601_to_time(self.iso8601)
         self.client_db_path = self.get_client_db_path()
         self.simulation_schema_path = \
-                get_simulation_schema_path(self.simulation_time)
+                set_simulation_schema(self.simulation_time)
         self.client_db = sql.SQL(db_path=self.client_db_path,
                              schema_path=self.simulation_schema_path)
 
