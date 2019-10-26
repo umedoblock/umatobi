@@ -250,6 +250,39 @@ class LibTests(unittest.TestCase):
         self.assertEqual(re.sub(TESTS_PATH, '', UMATOBI_ROOT_PATH), os.sep + 'umatobi-root')
         self.assertRegex(get_root_path(), UMATOBI_ROOT_PATH)
 
+    def test_set_simulation_schema(self):
+        simulation_time = SimulationTime()
+        simulation_dir_path = get_simulation_dir_path(simulation_time)
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+
+        self.assertFalse(os.path.isfile(simulation_schema_path))
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            set_simulation_schema(simulation_time)
+        self.assertTrue(os.path.isfile(simulation_schema_path))
+
+        self.assertEqual(cm.output[0],
+                f"INFO:umatobi:os.makedirs('{simulation_dir_path}')")
+        self.assertRegex(cm.output[0],
+                fr"^INFO:umatobi:os.makedirs\('/.+/{RE_Y15S}'\)$")
+        self.assertEqual(cm.output[1],
+                f"INFO:umatobi:shutil.copyfile(SIMULATION_SCHEMA_ORIG={SIMULATION_SCHEMA_ORIG}, simulation_schema_path={simulation_schema_path})")
+        self.assertRegex(cm.output[1],
+                fr"^INFO:umatobi:shutil.copyfile\(SIMULATION_SCHEMA_ORIG=.+, simulation_schema_path=.+\)$")
+
+    @patch('os.path.isfile', return_value=True)
+    def test_set_simulation_schema_pass(self, mock_isfile):
+        simulation_time = SimulationTime()
+        simulation_dir_path = get_simulation_dir_path(simulation_time)
+        simulation_schema_path = get_simulation_schema_path(simulation_time)
+
+        try:
+            with self.assertLogs('umatobi', level='INFO') as cm:
+                set_simulation_schema(simulation_time)
+        except AssertionError as err:
+            self.assertEqual(err.args[0], 'no logs of level INFO or higher triggered on umatobi')
+
+        mock_isfile.assert_called_once_with(simulation_schema_path)
+
     def test_get_master_palm_path(self):
         simulation_time = self.simulation_time
         self.assertEqual(
