@@ -240,7 +240,7 @@ class LibTests(unittest.TestCase):
     def test_get_simulation_schema_path(self):
         simulation_time = self.simulation_time
         simulation_schema_path = get_simulation_schema_path(simulation_time)
-        self.assertTrue(os.path.isfile(simulation_schema_path))
+        self.assertFalse(os.path.isfile(simulation_schema_path))
         self.assertNotRegex(simulation_schema_path,
                             ATAT_SIMULATION_TIME)
         self.assertRegex(simulation_schema_path, RE_Y15S)
