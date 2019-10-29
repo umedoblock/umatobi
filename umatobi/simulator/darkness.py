@@ -153,7 +153,7 @@ class Darkness(object):
             }
             node = Node(**d_node)
             logger.info('{} created {}.'.format(self, node))
-            node.start()
+            node.appear()
             self.nodes.append(node)
 
         self.made_nodes.value = len(self.nodes)
@@ -178,9 +178,14 @@ class Darkness(object):
         self.byebye_nodes.set()
 
         for node in self.nodes:
-            logger.info('{} wait thread join.'.format(node))
-            node.join()
-            logger.info('{} thread joined.'.format(node))
+            logger.info(f'{self} give {node} an honor.')
+            node.disappear()
+
+        if self.made_nodes.value == 1:
+            msg = f'{self} assembles a node.'
+        else:
+            msg = f'{self} assembles {self.made_nodes.value} nodes.'
+        logger.info(msg)
 
         # 全てのnodeが不活性となった後、queueにobjを追加するnodeは存在しない。
         # また、不活性となった後、_exhale_queue sched は自動的に停止する。
