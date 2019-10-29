@@ -81,7 +81,7 @@ class DarknessTests(unittest.TestCase):
     def tearDown(self):
         self.darkness.byebye_nodes.set()
 
-    def test_darkess___init__(self):
+    def test___init__(self):
         darkness_d_config = self.darkness_d_config
         darkness = self.darkness
 
@@ -114,7 +114,7 @@ class DarknessTests(unittest.TestCase):
         darkness = self.darkness
         self.assertRegex(darkness.get_client_db_path(), RE_CLIENT_N_DB)
 
-    def test_darkess_start(self):
+    def test_start(self):
         darkness_d_config = self.darkness_d_config
         darkness = self.darkness
 
