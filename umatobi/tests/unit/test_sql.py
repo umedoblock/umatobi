@@ -35,6 +35,18 @@ def insert_test_table_n_records(db, n_records):
 
 class SQLTests(unittest.TestCase):
 
+    def test_construct_insert_by_dict(self):
+        pass
+
+    def test___init__(self):
+        pass
+
+    def test_read_schema(self):
+        pass
+
+    def test_access_db(self):
+        pass
+
     def test_create_db_and_table(self):
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
         self.assertFalse(os.path.isfile(sql.db_path))
@@ -56,6 +68,20 @@ class SQLTests(unittest.TestCase):
         self.assertIsInstance(sql._conn, MagicMock)
         self.assertEqual(sql._conn.row_factory, sqlite3.Row)
         self.assertIsInstance(sql._cur, MagicMock)
+
+    def test_create_db_and_table_on_memory(self):
+        sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(sql.db_path))
+        sql.create_db()
+        self.assertFalse(os.path.isfile(sql.db_path))
+
+        sql.create_table('test_table')
+
+      # print(sql._create_table['test_table'])
+
+        self.assertFalse(os.path.isfile(sql.db_path))
+        sql.remove_db()
+        self.assertFalse(os.path.isfile(sql.db_path))
 
     def test_remove_db(self):
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
@@ -92,6 +118,78 @@ class SQLTests(unittest.TestCase):
                 self.assertFalse(os.path.isfile(sql.db_path))
         mock_isfile.assert_called_with(sql.db_path)
         self.assertRegex(cm.output[0], r'INFO:umatobi:SQL\(db_path="{}", schema_path=".+/test.schema"\) not found db_path={}\.$'.format(not_found_path, not_found_path))
+
+    def test_create_table(self):
+        # see test_create_db_and_table()
+        pass
+
+    def test_select_one(self):
+        pass
+
+    def test_drop_table(self):
+        pass
+
+    def test_init_table(self):
+        pass
+
+    def test_take_table(self):
+        db = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(db.db_path))
+        db.create_db()
+        self.assertTrue(os.path.isfile(db.db_path))
+        db.create_table('test_table')
+
+        n_records = 100
+        inserts = insert_test_table_n_records(db, n_records)
+
+#       print('-------------------------------------')
+        records = \
+            db.select('test_table', conditions='order by id')
+#       print('len(records)=', len(records))
+#       print('records=', records)
+#       print(records)
+#       print('-------------------------------------')
+        memory_db = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        self.assertFalse(os.path.isfile(memory_db.db_path))
+        memory_db.create_db()
+        self.assertFalse(os.path.isfile(memory_db.db_path))
+        memory_db.take_table(db, 'test_table')
+
+        db.remove_db()
+        self.assertFalse(os.path.isfile(db.db_path))
+
+        memory_records = \
+            memory_db.select('test_table', conditions='order by id')
+#       print('len(memory_records)=', len(memory_records))
+#       print('memory_records =')
+#       print(memory_records)
+#       print('-------------------------------------')
+        for i in range(n_records):
+#           print(i)
+#           print(dir(memory_records[i]))
+            self.assertEqual(list(inserts[i].keys()).sort(), \
+                             memory_records[i].keys().sort())
+            for key in memory_records[i].keys():
+                self.assertEqual(inserts[i][key], memory_records[i][key])
+
+        self.assertFalse(os.path.isfile(memory_db.db_path))
+        memory_db.remove_db()
+        self.assertFalse(os.path.isfile(memory_db.db_path))
+
+    def test_take_db(self):
+        pass
+
+    def test_commit(self):
+        pass
+
+    def test_execute(self):
+        pass
+
+    def test_close(self):
+        pass
+
+    def test_inserts(self):
+        pass
 
     def test_insert_and_select(self):
         s = datetime.datetime.now()
@@ -140,50 +238,6 @@ class SQLTests(unittest.TestCase):
         self.assertTrue(os.path.isfile(sql.db_path))
         sql.remove_db()
         self.assertFalse(os.path.isfile(sql.db_path))
-
-    def test_take_table(self):
-        db = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
-        self.assertFalse(os.path.isfile(db.db_path))
-        db.create_db()
-        self.assertTrue(os.path.isfile(db.db_path))
-        db.create_table('test_table')
-
-        n_records = 100
-        inserts = insert_test_table_n_records(db, n_records)
-
-#       print('-------------------------------------')
-        records = \
-            db.select('test_table', conditions='order by id')
-#       print('len(records)=', len(records))
-#       print('records=', records)
-#       print(records)
-#       print('-------------------------------------')
-        memory_db = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
-        self.assertFalse(os.path.isfile(memory_db.db_path))
-        memory_db.create_db()
-        self.assertFalse(os.path.isfile(memory_db.db_path))
-        memory_db.take_table(db, 'test_table')
-
-        db.remove_db()
-        self.assertFalse(os.path.isfile(db.db_path))
-
-        memory_records = \
-            memory_db.select('test_table', conditions='order by id')
-#       print('len(memory_records)=', len(memory_records))
-#       print('memory_records =')
-#       print(memory_records)
-#       print('-------------------------------------')
-        for i in range(n_records):
-#           print(i)
-#           print(dir(memory_records[i]))
-            self.assertEqual(list(inserts[i].keys()).sort(), \
-                             memory_records[i].keys().sort())
-            for key in memory_records[i].keys():
-                self.assertEqual(inserts[i][key], memory_records[i][key])
-
-        self.assertFalse(os.path.isfile(memory_db.db_path))
-        memory_db.remove_db()
-        self.assertFalse(os.path.isfile(memory_db.db_path))
 
     def test_insert_and_insert(self):
         s = datetime.datetime.now()
@@ -315,19 +369,20 @@ class SQLTests(unittest.TestCase):
         sql.remove_db()
         self.assertFalse(os.path.isfile(sql.db_path))
 
-    def test_create_db_and_table_on_memory(self):
-        sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
-        self.assertFalse(os.path.isfile(sql.db_path))
-        sql.create_db()
-        self.assertFalse(os.path.isfile(sql.db_path))
+    def test_select(self):
+        pass
 
-        sql.create_table('test_table')
+    def test_get_table_names(self):
+        pass
 
-      # print(sql._create_table['test_table'])
+    def test_get_table_schema(self):
+        pass
 
-        self.assertFalse(os.path.isfile(sql.db_path))
-        sql.remove_db()
-        self.assertFalse(os.path.isfile(sql.db_path))
+    def test_get_column_names(self):
+        pass
+
+    def test___str__(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main(exit=False)
