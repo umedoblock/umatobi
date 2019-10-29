@@ -130,9 +130,13 @@ class DarknessTests(unittest.TestCase):
 
         self.assertEqual(darkness.nodes, [])
 
+        self.assertEqual(threading.active_count(), 1)
+
     def test_get_client_db_path(self):
         darkness = self.darkness
         self.assertRegex(darkness.get_client_db_path(), RE_CLIENT_N_DB)
+
+        self.assertEqual(threading.active_count(), 1)
 
     def test_start(self):
         darkness_d_config = self.darkness_d_config
@@ -194,6 +198,9 @@ class DarknessTests(unittest.TestCase):
         for node in darkness.nodes:
             self.assertTrue(node.im_ready.is_set())
 
+        darkness._leave_here()
+        self.assertEqual(threading.active_count(), 1)
+
     def test__sleeping(self):
         darkness = self.darkness
         darkness.num_nodes = 0
@@ -206,6 +213,8 @@ class DarknessTests(unittest.TestCase):
       # darkness._sleeping()       # darkness.im_sleeping.set()
       # self.assertTrue(darkness.leave_there.is_set())
       # self.assertTrue(darkness.im_sleeping.is_set())
+
+        self.assertEqual(threading.active_count(), 1)
 
   # Pay attention to call order setUp() and @patch().
   # TestCase call setUp() before call @patch()
@@ -245,15 +254,7 @@ class DarknessTests(unittest.TestCase):
             self.assertFalse(node.is_alive())
         self.assertFalse(darkness._exhale_queue.is_alive())
 
-    def test__stop(self):
-        darkness = self.darkness
-        darkness._spawn_nodes()
-
-        self.assertEqual(len(darkness.nodes), darkness.num_nodes)
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            darkness._stop()
-        self.assertEqual(len(cm.output), darkness.num_nodes)
-        self.assertRegex(cm.output[0], r'^INFO:umatobi:Darkness\(id=\d+\)._stop\(\) Node\(id=\d+, addr=\(\'localhost\', 10001\)\)')
+        self.assertEqual(threading.active_count(), 1)
 
 if __name__ == '__main__':
     unittest.main()

@@ -141,8 +141,12 @@ class Darkness(object):
 
         self._spawn_nodes()
         self._sleeping()
+
+        # set all_nodes_inactive in _leave_here() to finish _exhale_queue.
         self._leave_here()
-        self._stop()
+
+        # wait to stop _exhale_queue thread.
+        self._exhale_queue.join()
 
     def _spawn_nodes(self):
         for i in range(self.num_nodes):
@@ -193,6 +197,8 @@ class Darkness(object):
         # 全てのnodeが不活性となった後、queueにobjを追加するnodeは存在しない。
         # また、不活性となった後、_exhale_queue sched は自動的に停止する。
         self.all_nodes_inactive.set()
+        # darkness will finish below here.
+
         # よって、ここより下でも上でも、inhole_queues_from_nodes()を
         # 実行する必要はない。
         # ただし、_queue_darkness内のqueueを取りこぼさないために、
@@ -200,13 +206,3 @@ class Darkness(object):
         # ExhaleQueue() 内の sched thread の終了を保証する必要がある。
         for node in self.nodes:
             logger.info('{} wait _exhale_queue thread join.'.format(node))
-        self._exhale_queue.join()
-
-    def _stop(self):
-        '''simulation 終了'''
-        for node in self.nodes:
-            d = {
-                'self': self,
-                'node': node,
-            }
-            logger.info('{self}._stop() {node}'.format(**d))
