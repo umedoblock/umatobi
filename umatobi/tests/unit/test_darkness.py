@@ -162,7 +162,7 @@ class DarknessTests(unittest.TestCase):
         self.assertTrue(darkness.byebye_nodes.is_set())
         self.assertEqual(threading.active_count(), 1)
 
-    def test_darkness__spawn_nodes(self):
+    def test__spawn_nodes(self):
         darkness = self.darkness
 
         for node in darkness.nodes:
@@ -174,7 +174,7 @@ class DarknessTests(unittest.TestCase):
         for node in darkness.nodes:
             self.assertTrue(node.im_ready.is_set())
 
-    def test_darkness__sleeping(self):
+    def test__sleeping(self):
         darkness = self.darkness
         darkness.num_nodes = 0
         self.assertFalse(darkness.leave_there.is_set())
@@ -192,7 +192,7 @@ class DarknessTests(unittest.TestCase):
   # @patch.object(Polling, 'sleep', return_value=None)
   # @patch('umatobi.lib.Polling.sleep', return_value=None)
   # @patch.object(umatobi.lib.Polling, 'sleep', return_value=None)
-    def test_darkness__leave_here(self):
+    def test__leave_here(self):
         darkness = self.darkness
 
         with patch.object(Polling, 'sleep') as mock_sleep:
@@ -225,7 +225,7 @@ class DarknessTests(unittest.TestCase):
             self.assertFalse(node.is_alive())
         self.assertFalse(darkness._exhale_queue.is_alive())
 
-    def test_darkness__stop(self):
+    def test__stop(self):
         darkness = self.darkness
         darkness._spawn_nodes()
 
