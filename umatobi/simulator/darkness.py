@@ -84,6 +84,9 @@ class Darkness(object):
     POLLING_EXHALEQUEUE = 5.0
     NODES_PER_DARKNESS = 5
 
+    def __str__(self):
+        return 'Darkness(id={})'.format(self.id)
+
     def __init__(self, **kwargs):
         '''\
         Darkness process 内で 多数の node thread を作成する。
@@ -207,6 +210,3 @@ class Darkness(object):
                 'node': node,
             }
             logger.info('{self}._stop() {node}'.format(**d))
-
-    def __str__(self):
-        return 'Darkness(id={})'.format(self.id)

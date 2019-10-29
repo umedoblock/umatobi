@@ -9,6 +9,23 @@ from umatobi.lib import *
 from umatobi.simulator.darkness import Darkness, ExhaleQueue
 from umatobi.simulator import sql
 
+class ExhaleQueueTests(unittest.TestCase):
+
+    def test___init__(self):
+        pass
+
+    def test_run(self):
+        pass
+
+    def test_is_continue(self):
+        pass
+
+    def test_polling(self):
+        pass
+
+    def test_inhole_queues_from_nodes(self):
+        pass
+
 class DarknessAsClient(threading.Thread):
     def __init__(self, darkness_tests, darkness):
         threading.Thread.__init__(self)
@@ -80,6 +97,9 @@ class DarknessTests(unittest.TestCase):
 
     def tearDown(self):
         self.darkness.byebye_nodes.set()
+
+    def test___str__(self):
+        pass
 
     def test___init__(self):
         darkness_d_config = self.darkness_d_config
