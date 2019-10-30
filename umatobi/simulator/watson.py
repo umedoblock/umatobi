@@ -209,7 +209,7 @@ class Watson(threading.Thread):
         os.makedirs(self.simulation_dir_path, exist_ok=True)
 
         self.simulation_db_path = get_simulation_db_path(self.start_up_iso8601)
-        self.simulation_schema_path = get_simulation_schema_path(self.start_up_iso8601)
+        self.simulation_schema_path = set_simulation_schema(self.start_up_iso8601)
         logger.info(f"Watson(self={self}, simulation_dir_path={self.simulation_dir_path}, simulation_db_path={self.simulation_db_path}, simulation_schema_path={self.simulation_schema_path})")
 
         self.watson_office_addr_assigned = threading.Event()
