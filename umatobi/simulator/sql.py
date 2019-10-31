@@ -28,7 +28,7 @@ class SQL(object):
         self._create_table = {}
         self._schema = None
 
-        if self.schema_path:
+        if self.schema_path and os.path.isfile(self.schema_path):
             self.read_schema()
 
     def read_schema(self):

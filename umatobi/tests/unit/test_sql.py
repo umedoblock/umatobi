@@ -35,11 +35,40 @@ def insert_test_table_n_records(db, n_records):
 
 class SQLTests(unittest.TestCase):
 
+    def deleteTestDb(self):
+        if os.path.isfile(TEST_DB_PATH):
+            os.remove(TEST_DB_PATH)
+
+    def setUp(self):
+        self.addCleanup(self.deleteTestDb)
+
     def test_construct_insert_by_dict(self):
         pass
 
     def test___init__(self):
         pass
+
+    def test___init___schema_is_True_by_db_path1(self):
+        sql = SQL(db_path='', schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
+
+    def test___init___schema_is_True_by_db_path2(self):
+        sql = SQL(schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
+
+    def test___init___fail_by_schema_path_not_exist(self):
+        sql = SQL(db_path=TEST_DB_PATH, schema_path='/not/exist/file')
+        self.assertFalse(sql._schema)
+
+    def test___init___fail_by_schema_path1(self):
+        sql = SQL(db_path=TEST_DB_PATH, schema_path='')
+        self.assertFalse(sql._schema)
+
+    def test___init___fail_by_schema_path2(self):
+        sql = SQL(db_path=TEST_DB_PATH)
+        self.assertFalse(sql._schema)
 
     def test_read_schema(self):
         pass
@@ -49,6 +78,8 @@ class SQLTests(unittest.TestCase):
 
     def test_create_db_and_table(self):
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
         self.assertTrue(os.path.isfile(sql.db_path))
@@ -61,6 +92,8 @@ class SQLTests(unittest.TestCase):
     @patch.object(sqlite3, 'connect')
     def test_create_db_db_dir_name_empty(self, mock_sqlite3_connect):
         sql = SQL(db_path='fixture.db', schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
         mock_sqlite3_connect.called_with(sql.db_path)
@@ -71,6 +104,8 @@ class SQLTests(unittest.TestCase):
 
     def test_create_db_and_table_on_memory(self):
         sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
         self.assertFalse(os.path.isfile(sql.db_path))
@@ -85,6 +120,8 @@ class SQLTests(unittest.TestCase):
 
     def test_remove_db(self):
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
         self.assertTrue(os.path.isfile(sql.db_path))
@@ -95,6 +132,8 @@ class SQLTests(unittest.TestCase):
 
     def test_remove_db_memory(self):
         sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
         self.assertFalse(os.path.isfile(sql.db_path))
@@ -109,6 +148,7 @@ class SQLTests(unittest.TestCase):
     def test_remove_db_not_memory(self):
         not_found_path = '/not/found/db_path'
         sql = SQL(db_path=not_found_path, schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
 
         with self.assertLogs('umatobi', level='INFO') as cm:
             with patch('umatobi.simulator.sql.os.path.isfile',
@@ -121,7 +161,18 @@ class SQLTests(unittest.TestCase):
 
     def test_create_table(self):
         # see test_create_db_and_table()
-        pass
+        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
+        self.assertFalse(os.path.isfile(sql.db_path))
+        sql.create_db()
+        self.assertTrue(os.path.isfile(sql.db_path))
+        sql.create_table('test_table')
+
+        self.assertTrue(os.path.isfile(sql.db_path))
+        sql.remove_db()
+        self.assertFalse(os.path.isfile(sql.db_path))
+
 
     def test_select_one(self):
         pass
@@ -134,6 +185,8 @@ class SQLTests(unittest.TestCase):
 
     def test_take_table(self):
         db = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(db._schema)
+        self.assertIsInstance(db._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(db.db_path))
         db.create_db()
         self.assertTrue(os.path.isfile(db.db_path))
@@ -150,6 +203,8 @@ class SQLTests(unittest.TestCase):
 #       print(records)
 #       print('-------------------------------------')
         memory_db = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(memory_db._schema)
+        self.assertIsInstance(memory_db._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(memory_db.db_path))
         memory_db.create_db()
         self.assertFalse(os.path.isfile(memory_db.db_path))
@@ -194,6 +249,8 @@ class SQLTests(unittest.TestCase):
     def test_insert_and_select(self):
         s = datetime.datetime.now()
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
         self.assertTrue(os.path.isfile(sql.db_path))
@@ -252,6 +309,8 @@ class SQLTests(unittest.TestCase):
         d['elapsed_time'] = 7
 
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
         self.assertTrue(os.path.isfile(sql.db_path))
@@ -312,6 +371,8 @@ class SQLTests(unittest.TestCase):
         d['elapsed_time'] = 7
 
         sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
         sql.create_db()
         self.assertTrue(os.path.isfile(sql.db_path))
