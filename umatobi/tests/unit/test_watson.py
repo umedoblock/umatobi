@@ -31,9 +31,17 @@ class WatsonTCPOfficeTests(unittest.TestCase):
 
 class WatsonOfficeTests(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        cls.start_up_iso8601 = SimulationTime()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.start_up_iso8601 = None
+
     def setUp(self):
         self.watson_office_addr = ('localhost', 65530)
-        self.start_up_iso8601 = SimulationTime()
+        self.start_up_iso8601 = WatsonOfficeTests.start_up_iso8601
         self.log_level = 'DEBUG'
         self.log_level = 'INFO'
 
