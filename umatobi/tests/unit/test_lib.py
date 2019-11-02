@@ -450,6 +450,44 @@ val_text: text context
 '''
         self.assertEqual(dumped_yaml, expected_dump)
 
+    def test_allot_numbers(self):
+        total = 100
+        an_allotment = 7
+        # 14 = 100 // 7
+        #  2 = 100  % 7
+        heads, assigned_num, last = allot_numbers(total, an_allotment)
+        self.assertEqual(heads, 15)
+        self.assertEqual(assigned_num, 7)
+        self.assertEqual(last, 2)
+
+        total = 100
+        an_allotment = 10
+        heads, assigned_num, last = allot_numbers(total, an_allotment)
+        self.assertEqual(heads, 10)
+        self.assertEqual(assigned_num, 10)
+        self.assertEqual(last, 10)
+
+        total = 99
+        an_allotment = 100
+        heads, assigned_num, last = allot_numbers(total, an_allotment)
+        self.assertEqual(heads, 1)
+        self.assertEqual(assigned_num, total)
+        self.assertEqual(last, total)
+
+        total = 100
+        an_allotment = 100
+        heads, assigned_num, last = allot_numbers(total, an_allotment)
+        self.assertEqual(heads, 1)
+        self.assertEqual(assigned_num, total)
+        self.assertEqual(last, total)
+
+        total = 101
+        an_allotment = 100
+        heads, assigned_num, last = allot_numbers(total, an_allotment)
+        self.assertEqual(heads, 2)
+        self.assertEqual(assigned_num, an_allotment)
+        self.assertEqual(last, 1)
+
     # DONE, at least
 
     # logger.py

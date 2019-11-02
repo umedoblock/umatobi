@@ -214,6 +214,24 @@ def load_yaml(yaml_path):
         y = yaml.load(f, Loader=yaml.SafeLoader)
     return y
 
+def allot_numbers(total, an_allotment):
+    # assign number equality
+    if total <= an_allotment:
+        heads = 1
+        assigned_num = total
+        last = total
+    else:
+        div, mod = divmod(total, an_allotment)
+        if mod == 0:
+            mod = an_allotment
+        else:
+            div += 1
+        heads = div
+        assigned_num = an_allotment
+        last = mod
+
+    return heads, assigned_num, last
+
 class Polling(threading.Thread):
 
     @classmethod
