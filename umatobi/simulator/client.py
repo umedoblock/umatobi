@@ -93,10 +93,33 @@ class Client(object):
         self.client_db.create_db()
         self.client_db.create_table('growings')
 
+    def _make_darkness_d_config(self,
+                                darkness_id,
+                                n_darkness_makes_nodes,
+                                first_node_id):
+        client_id = self.id
+
+        # client と darkness process が DarknessConfig を介して通信する。
+        darkness_d_config = {
+            'id':  darkness_id,
+            'client_id':  client_id,
+            'start_up_iso8601':  self.start_up_orig.get_iso8601(),
+            'log_level':  self.log_level,
+            'n_darkness_makes_nodes':  n_darkness_makes_nodes,
+            'first_node_id':  first_node_id,
+            'num_darkness': self.num_darkness,
+            # share with client and darkness
+            'made_nodes':  multiprocessing.Value('i', 0),
+            # share with client and another darkness
+            'leave_there':  self.leave_there,
+        }
+
+        return darkness_d_config
+
     def _confesses_darkness(self):
         logger.info(f"{self}._confesses_darkness()")
         # Darkness が作成する node の数を設定する。
-        nodes_per_darkness = self.nodes_per_darkness
+        n_darkness_makes_nodes = self.nodes_per_darkness
 
         # for 内で darkness_process を作成し、
         # 順に darkness_processes に追加していく。
@@ -105,25 +128,13 @@ class Client(object):
                             darkness_id * self.nodes_per_darkness
             if darkness_id == self.num_darkness - 1:
                 # 最後に端数を作成？
-                nodes_per_darkness = self.last_darkness_make_nodes
-            logger.info(f"client_id={self.id}, darkness id={darkness_id}, num_darkness={self.num_darkness}, num_nodes={nodes_per_darkness}, first_node_id={first_node_id}")
-            client_id = self.id
+                n_darkness_makes_nodes = self.last_darkness_make_nodes
+            logger.info(f"client_id={self.id}, darkness id={darkness_id}, num_darkness={self.num_darkness}, num_nodes={n_darkness_makes_nodes}, first_node_id={first_node_id}")
+            darkness_d_config = self._make_darkness_d_config(
+                                    darkness_id,
+                                    n_darkness_makes_nodes,
+                                    first_node_id)
 
-            # client と darkness process が DarknessConfig を介して通信する。
-            darkness_d_config = {
-                'id':  darkness_id,
-                'client_id':  client_id,
-                'start_up_orig':  self.start_up_orig,
-                'dir_name':  self.dir_name,
-                'log_level':  self.log_level,
-                'num_nodes':  nodes_per_darkness,
-                'first_node_id':  first_node_id,
-                'num_darkness': self.num_darkness,
-                # share with client and darkness
-                'made_nodes':  multiprocessing.Value('i', 0),
-                # share with client and another darkness
-                'leave_there':  self.leave_there,
-            }
             darkness_process = \
                 multiprocessing.Process(
                     target=make_darkness,
@@ -203,7 +214,7 @@ class Client(object):
         self._say_good_bye()
 
     def get_db_path(self):
-        return get_client_db_path(self.simulation_time, self.id)
+        return get_client_db_path(self.start_up_orig, self.id)
 
     ########################################################################
     # action of detail
@@ -230,12 +241,12 @@ class Client(object):
             raise RuntimeError('client cannot say "I am Client." to watson where is {}'.format(self.watson_office_addr))
 
         self.id = reply['client_id']
-        self.simulation_time = SimulationTime.iso8601_to_time(reply['start_up_iso8601'])
+        self.start_up_orig = SimulationTime.iso8601_to_time(reply['start_up_iso8601'])
 
         self.client_db_path = self.get_db_path()
         self.node_index = reply['node_index']
         self.log_level = reply['log_level']
-        self.simulation_schema_path = set_simulation_schema(self.simulation_time)
+        self.simulation_schema_path = set_simulation_schema(self.start_up_orig)
 
         return reply
 

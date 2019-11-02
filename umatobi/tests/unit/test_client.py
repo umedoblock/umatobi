@@ -1,5 +1,5 @@
 import re, os, io, importlib
-import sys, shutil, sqlite3
+import sys, shutil, sqlite3, multiprocessing
 from unittest import mock
 from unittest.mock import MagicMock
 import unittest
@@ -11,6 +11,13 @@ from umatobi.simulator.client import Client
 from umatobi.simulator.sql import SQL
 
 class ClientTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.start_up_orig = SimulationTime()
+
+    def setUp(self):
+        self.start_up_orig = ClientTests.start_up_orig
 
     @patch('socket.getdefaulttimeout', side_effect=[None, Client.SOCKET_TIMEOUT_SEC])
     @patch('socket.setdefaulttimeout')
@@ -106,7 +113,7 @@ class ClientTests(unittest.TestCase):
                        {'mock_key': 'mock_value'})
 
     def test__has_a_lot_on_mind(self):
-        expected_simulation_time = SimulationTime()
+        expected_start_up_orig = SimulationTime()
 
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
@@ -115,7 +122,7 @@ class ClientTests(unittest.TestCase):
         client._hello_watson = mock.MagicMock()
         client._hello_watson.return_value = {
             'client_id': 1,
-            'start_up_iso8601': expected_simulation_time.get_iso8601(),
+            'start_up_iso8601': expected_start_up_orig.get_iso8601(),
             'node_index': 1,
             'log_level': 'INFO',
         }
@@ -127,11 +134,11 @@ class ClientTests(unittest.TestCase):
             else:
                 key_ = key
             if key == 'start_up_iso8601':
-                self.assertEqual(client.simulation_time, expected_simulation_time)
+                self.assertEqual(client.start_up_orig, expected_start_up_orig)
             else:
                 self.assertEqual(getattr(client, key_), reply[key])
-        self.assertEqual(getattr(client, 'client_db_path'), get_client_db_path(client.simulation_time, client.id))
-        self.assertEqual(getattr(client, 'simulation_schema_path'), get_simulation_schema_path(client.simulation_time))
+        self.assertEqual(getattr(client, 'client_db_path'), get_client_db_path(client.start_up_orig, client.id))
+        self.assertEqual(getattr(client, 'simulation_schema_path'), get_simulation_schema_path(client.start_up_orig))
 
         with self.assertRaises(AttributeError) as cm:
             getattr(client, 'client_db')
@@ -153,7 +160,7 @@ class ClientTests(unittest.TestCase):
         client.client_db.remove_db()
 
     def test__has_a_lot_on_mind2(self):
-        expected_simulation_time = SimulationTime()
+        expected_start_up_orig = SimulationTime()
 
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
@@ -162,7 +169,7 @@ class ClientTests(unittest.TestCase):
         client._hello_watson = mock.MagicMock()
         client._hello_watson.return_value = {
             'client_id': 1,
-            'start_up_iso8601': expected_simulation_time.get_iso8601(),
+            'start_up_iso8601': expected_start_up_orig.get_iso8601(),
             'node_index': 1,
             'log_level': 'INFO',
         }
@@ -174,11 +181,11 @@ class ClientTests(unittest.TestCase):
             else:
                 key_ = key
             if key == 'start_up_iso8601':
-                self.assertEqual(client.simulation_time, expected_simulation_time)
+                self.assertEqual(client.start_up_orig, expected_start_up_orig)
             else:
                 self.assertEqual(getattr(client, key_), reply[key])
-        self.assertEqual(getattr(client, 'client_db_path'), get_client_db_path(client.simulation_time, client.id))
-        self.assertEqual(getattr(client, 'simulation_schema_path'), get_simulation_schema_path(client.simulation_time))
+        self.assertEqual(getattr(client, 'client_db_path'), get_client_db_path(client.start_up_orig, client.id))
+        self.assertEqual(getattr(client, 'simulation_schema_path'), get_simulation_schema_path(client.start_up_orig))
 
         with self.assertRaises(AttributeError) as cm:
             getattr(client, 'client_db')
@@ -198,6 +205,52 @@ class ClientTests(unittest.TestCase):
         the_exception = cm.exception
         self.assertEqual(the_exception.args[0], "Cannot operate on a closed cursor.")
         client.client_db.remove_db()
+
+    def test__make_darkness_d_config(self):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 10
+
+        client = Client(watson_office_addr, num_nodes)
+        # below four attr usually take from _hello_watson() as reply values
+        client.id = 3
+        client.start_up_orig = self.start_up_orig
+        client.node_index = 10
+        client.log_level = 'INFO'
+
+        client.client_db_path = client.get_db_path()
+        client.simulation_schema_path = \
+                set_simulation_schema(client.start_up_orig)
+
+        darkness_id = 0
+        n_darkness_makes_nodes = client.nodes_per_darkness
+        first_node_id = client.node_index + \
+                        darkness_id * client.nodes_per_darkness
+        darkness_d_config = \
+            client._make_darkness_d_config(darkness_id,
+                                           n_darkness_makes_nodes,
+                                           first_node_id)
+        expected_d = {
+            'client_id': client.id,
+            'first_node_id': client.node_index,
+            'id': darkness_id,
+            'leave_there': client.leave_there,
+            'log_level': client.log_level,
+            'made_nodes':  0,
+            'n_darkness_makes_nodes': 4,
+            'num_darkness': 3,
+            'start_up_iso8601': client.start_up_orig.get_iso8601(),
+        }
+
+        self.assertEqual(darkness_d_config.keys(), expected_d.keys())
+        for expected_k in expected_d:
+            if expected_k == 'made_nodes':
+                self.assertIsInstance(darkness_d_config[expected_k],
+                                      multiprocessing.sharedctypes.Synchronized)
+                self.assertEqual(darkness_d_config[expected_k].value,
+                                 expected_d[expected_k])
+            else:
+                self.assertEqual(darkness_d_config[expected_k],
+                                 expected_d[expected_k])
 
     def test__confesses_darkness(self):
         pass
