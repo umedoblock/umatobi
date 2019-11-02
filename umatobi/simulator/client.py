@@ -33,15 +33,11 @@ class Client(object):
         self.num_nodes = num_nodes
         # Client set positive integer to id in self._init_attrs().
         self.id = -1
-        self.nodes_per_darkness = self.NODES_PER_DARKNESS
         self.node_index = -1
-        div, mod = divmod(self.num_nodes, self.nodes_per_darkness)
-        if mod == 0:
-            mod = self.nodes_per_darkness
-        else:
-            div += 1
-        self.num_darkness = div
-        self.last_darkness_make_nodes = mod
+
+        self.num_darkness, self.nodes_per_darkness, self.last_darkness_make_nodes = \
+            allot_numbers(self.num_nodes, self.NODES_PER_DARKNESS)
+
         self.total_created_nodes = 0
         self.darkness_processes = []
 
@@ -95,7 +91,7 @@ class Client(object):
 
     def _make_darkness_d_config(self,
                                 darkness_id,
-                                n_darkness_makes_nodes,
+                                darkness_makes_nodes,
                                 first_node_id):
         client_id = self.id
 
@@ -105,7 +101,7 @@ class Client(object):
             'client_id':  client_id,
             'start_up_iso8601':  self.start_up_orig.get_iso8601(),
             'log_level':  self.log_level,
-            'n_darkness_makes_nodes':  n_darkness_makes_nodes,
+            'darkness_makes_nodes':  darkness_makes_nodes,
             'first_node_id':  first_node_id,
             'num_darkness': self.num_darkness,
             # share with client and darkness
@@ -118,21 +114,22 @@ class Client(object):
 
     def _confesses_darkness(self):
         logger.info(f"{self}._confesses_darkness()")
-        # Darkness が作成する node の数を設定する。
-        n_darkness_makes_nodes = self.nodes_per_darkness
 
         # for 内で darkness_process を作成し、
         # 順に darkness_processes に追加していく。
         for darkness_id in range(0, self.num_darkness):
             first_node_id = self.node_index + \
                             darkness_id * self.nodes_per_darkness
+            if darkness_id < self.num_darkness - 1:
+                # Darkness が作成する node の数を設定する。
+                darkness_makes_nodes = self.nodes_per_darkness
             if darkness_id == self.num_darkness - 1:
-                # 最後に端数を作成？
-                n_darkness_makes_nodes = self.last_darkness_make_nodes
-            logger.info(f"client_id={self.id}, darkness id={darkness_id}, num_darkness={self.num_darkness}, num_nodes={n_darkness_makes_nodes}, first_node_id={first_node_id}")
+                # 最後に端数を作成
+                darkness_makes_nodes = self.last_darkness_makes_nodes
+            logger.info(f"client_id={self.id}, darkness id={darkness_id}, num_darkness={self.num_darkness}, num_nodes={darkness_makes_nodes}, first_node_id={first_node_id}")
             darkness_d_config = self._make_darkness_d_config(
                                     darkness_id,
-                                    n_darkness_makes_nodes,
+                                    darkness_makes_nodes,
                                     first_node_id)
 
             darkness_process = \

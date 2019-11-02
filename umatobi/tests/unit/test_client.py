@@ -222,12 +222,12 @@ class ClientTests(unittest.TestCase):
                 set_simulation_schema(client.start_up_orig)
 
         darkness_id = 0
-        n_darkness_makes_nodes = client.nodes_per_darkness
+        darkness_makes_nodes = client.nodes_per_darkness
         first_node_id = client.node_index + \
                         darkness_id * client.nodes_per_darkness
         darkness_d_config = \
             client._make_darkness_d_config(darkness_id,
-                                           n_darkness_makes_nodes,
+                                           darkness_makes_nodes,
                                            first_node_id)
         expected_d = {
             'client_id': client.id,
@@ -236,7 +236,7 @@ class ClientTests(unittest.TestCase):
             'leave_there': client.leave_there,
             'log_level': client.log_level,
             'made_nodes':  0,
-            'n_darkness_makes_nodes': 4,
+            'darkness_makes_nodes': 4,
             'num_darkness': 3,
             'start_up_iso8601': client.start_up_orig.get_iso8601(),
         }
