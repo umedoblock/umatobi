@@ -748,6 +748,9 @@ class SchemaParserTests(unittest.TestCase):
 
                 # float
                 'elapsed_time':    converter_real,
+
+                # text
+                'iso8601':    converter_text,
             }
         }
 
