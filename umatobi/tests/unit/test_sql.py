@@ -25,6 +25,7 @@ def insert_test_table_n_records(db, n_records):
         test['now'] = SimulationTime().get_y15s()
         e = datetime.datetime.now()
         test['elapsed_time'] = (e - s).total_seconds()
+        test['iso8601'] = None
         db.insert('test_table', test)
         inserts[i] = test
     #   print('[{}]'.format(i))
@@ -40,6 +41,16 @@ class SQLTests(unittest.TestCase):
             os.remove(TEST_DB_PATH)
 
     def setUp(self):
+        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        self.assertTrue(sql._schema)
+        self.assertIsInstance(sql._schema, configparser.ConfigParser)
+        self.assertFalse(os.path.isfile(sql.db_path))
+        sql.create_db()
+        self.assertTrue(os.path.isfile(sql.db_path))
+        sql.create_table('test_table')
+
+        self.sql = sql
+
         self.addCleanup(self.deleteTestDb)
 
     def test_construct_insert_by_dict(self):
@@ -77,17 +88,7 @@ class SQLTests(unittest.TestCase):
         pass
 
     def test_create_db_and_table(self):
-        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
-        self.assertTrue(sql._schema)
-        self.assertIsInstance(sql._schema, configparser.ConfigParser)
-        self.assertFalse(os.path.isfile(sql.db_path))
-        sql.create_db()
-        self.assertTrue(os.path.isfile(sql.db_path))
-        sql.create_table('test_table')
-
-        self.assertTrue(os.path.isfile(sql.db_path))
-        sql.remove_db()
-        self.assertFalse(os.path.isfile(sql.db_path))
+        sql = self.sql
 
     @patch.object(sqlite3, 'connect')
     def test_create_db_db_dir_name_empty(self, mock_sqlite3_connect):
@@ -119,12 +120,7 @@ class SQLTests(unittest.TestCase):
         self.assertFalse(os.path.isfile(sql.db_path))
 
     def test_remove_db(self):
-        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
-        self.assertTrue(sql._schema)
-        self.assertIsInstance(sql._schema, configparser.ConfigParser)
-        self.assertFalse(os.path.isfile(sql.db_path))
-        sql.create_db()
-        self.assertTrue(os.path.isfile(sql.db_path))
+        sql = self.sql
 
         self.assertTrue(os.path.isfile(sql.db_path))
         sql.remove_db()
@@ -161,18 +157,7 @@ class SQLTests(unittest.TestCase):
 
     def test_create_table(self):
         # see test_create_db_and_table()
-        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
-        self.assertTrue(sql._schema)
-        self.assertIsInstance(sql._schema, configparser.ConfigParser)
-        self.assertFalse(os.path.isfile(sql.db_path))
-        sql.create_db()
-        self.assertTrue(os.path.isfile(sql.db_path))
-        sql.create_table('test_table')
-
-        self.assertTrue(os.path.isfile(sql.db_path))
-        sql.remove_db()
-        self.assertFalse(os.path.isfile(sql.db_path))
-
+        sql = self.sql
 
     def test_select_one(self):
         pass
@@ -184,13 +169,7 @@ class SQLTests(unittest.TestCase):
         pass
 
     def test_take_table(self):
-        db = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
-        self.assertTrue(db._schema)
-        self.assertIsInstance(db._schema, configparser.ConfigParser)
-        self.assertFalse(os.path.isfile(db.db_path))
-        db.create_db()
-        self.assertTrue(os.path.isfile(db.db_path))
-        db.create_table('test_table')
+        db = self.sql
 
         n_records = 100
         inserts = insert_test_table_n_records(db, n_records)
@@ -226,7 +205,6 @@ class SQLTests(unittest.TestCase):
                              memory_records[i].keys().sort())
             for key in memory_records[i].keys():
                 self.assertEqual(inserts[i][key], memory_records[i][key])
-
         self.assertFalse(os.path.isfile(memory_db.db_path))
         memory_db.remove_db()
         self.assertFalse(os.path.isfile(memory_db.db_path))
@@ -248,13 +226,8 @@ class SQLTests(unittest.TestCase):
 
     def test_insert_and_select(self):
         s = datetime.datetime.now()
-        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
-        self.assertTrue(sql._schema)
-        self.assertIsInstance(sql._schema, configparser.ConfigParser)
-        self.assertFalse(os.path.isfile(sql.db_path))
-        sql.create_db()
-        self.assertTrue(os.path.isfile(sql.db_path))
-        sql.create_table('test_table')
+        simulation_time = SimulationTime()
+        sql = self.sql
 
         d_insert = {}
         d_insert['id'] = None # integer primary key
@@ -267,6 +240,7 @@ class SQLTests(unittest.TestCase):
         d_insert['now'] = SimulationTime().get_y15s()
         e = datetime.datetime.now()
         d_insert['elapsed_time'] = (e - s).total_seconds()
+        d_insert['iso8601'] = str(simulation_time)
         sql.insert('test_table', d_insert)
         sql.commit()
 
@@ -278,43 +252,18 @@ class SQLTests(unittest.TestCase):
       # print('d_selected =')
       # print(d_selected)
 
-        d = {}
-        d['id'] = 0
-        d['val_null'] = 1
-        d['val_integer'] = 2
-        d['val_real'] = 3
-        d['val_text'] = 4
-        d['val_blob'] = 5
-        d['now'] = 6
-        d['elapsed_time'] = 7
+        d = sql.get_dict_of_columns('test_table')
 
         d_insert['id'] = 1 # auto increment
         for column, index in d.items():
             self.assertEqual(d_insert[column], d_selected[0][index])
 
-        self.assertTrue(os.path.isfile(sql.db_path))
-        sql.remove_db()
-        self.assertFalse(os.path.isfile(sql.db_path))
-
     def test_insert_and_insert(self):
         s = datetime.datetime.now()
-        d = {}
-        d['id'] = 0
-        d['val_null'] = 1
-        d['val_integer'] = 2
-        d['val_real'] = 3
-        d['val_text'] = 4
-        d['val_blob'] = 5
-        d['now'] = 6
-        d['elapsed_time'] = 7
 
-        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
-        self.assertTrue(sql._schema)
-        self.assertIsInstance(sql._schema, configparser.ConfigParser)
-        self.assertFalse(os.path.isfile(sql.db_path))
-        sql.create_db()
-        self.assertTrue(os.path.isfile(sql.db_path))
-        sql.create_table('test_table')
+        sql = self.sql
+
+        d = sql.get_dict_of_columns('test_table')
 
         d_insert = {}
         d_insert['id'] = None # integer primary key
@@ -327,6 +276,7 @@ class SQLTests(unittest.TestCase):
         d_insert['now'] = SimulationTime().get_y15s()
         e = SimulationTime.now()
         d_insert['elapsed_time'] = (e - s).total_seconds()
+        d_insert['iso8601'] = str(SimulationTime())
         sql.insert('test_table', d_insert)
         sql.commit()
 
@@ -335,6 +285,7 @@ class SQLTests(unittest.TestCase):
         d_insert['id'] = 1
         for column, index in d.items():
             self.assertEqual(d_insert[column], d_selected[0][index])
+        self.assertEqual(len(d_insert.keys()), len(d_selected[0]))
 
         d_update = {}
         d_update['val_null'] = 'None None'
@@ -347,6 +298,8 @@ class SQLTests(unittest.TestCase):
         d_update['now'] = SimulationTime(t).get_y15s()
         e = datetime.datetime.now()
         d_update['elapsed_time'] = (e - s).total_seconds()
+        simulation_time = SimulationTime()
+        d_update['iso8601'] = str(simulation_time)
 
         d_update['id'] = 1
         with self.assertRaises(sqlite3.IntegrityError) as raiz:
@@ -354,29 +307,12 @@ class SQLTests(unittest.TestCase):
         args = raiz.exception.args
         self.assertEqual('UNIQUE constraint failed: test_table.id', args[0])
 
-        self.assertTrue(os.path.isfile(sql.db_path))
-        sql.remove_db()
-        self.assertFalse(os.path.isfile(sql.db_path))
-
     def test_update_and_select(self):
         s = datetime.datetime.now()
-        d = {}
-        d['id'] = 0
-        d['val_null'] = 1
-        d['val_integer'] = 2
-        d['val_real'] = 3
-        d['val_text'] = 4
-        d['val_blob'] = 5
-        d['now'] = 6
-        d['elapsed_time'] = 7
 
-        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
-        self.assertTrue(sql._schema)
-        self.assertIsInstance(sql._schema, configparser.ConfigParser)
-        self.assertFalse(os.path.isfile(sql.db_path))
-        sql.create_db()
-        self.assertTrue(os.path.isfile(sql.db_path))
-        sql.create_table('test_table')
+        sql = self.sql
+
+        d = sql.get_dict_of_columns('test_table')
 
         d_insert = {}
         d_insert['id'] = None # integer primary key
@@ -386,6 +322,7 @@ class SQLTests(unittest.TestCase):
         d_insert['val_real'] = 10.0
         d_insert['val_text'] = 'text'
         d_insert['val_blob'] = b'bytes'
+        d_insert['iso8601'] = None
         s = datetime.datetime.now()
         now = s
         d_insert['now'] = SimulationTime(now).get_y15s()
@@ -409,6 +346,8 @@ class SQLTests(unittest.TestCase):
         d_update['now'] = SimulationTime(now + datetime.timedelta(0, 200)).get_y15s()
         e = s + datetime.timedelta(0, 200, 0)
         d_update['elapsed_time'] = (e - s).total_seconds()
+        updated_simulation_time = SimulationTime()
+        d_update['iso8601'] = str(updated_simulation_time)
 
         d_where = {'id': 1}
         sql.update('test_table', d_update, d_where)
@@ -426,9 +365,49 @@ class SQLTests(unittest.TestCase):
             self.assertEqual(d_update[column], d_selected[0][index])
             self.assertNotEqual(d_insert[column], d_selected[0][index])
 
-        self.assertTrue(os.path.isfile(sql.db_path))
-        sql.remove_db()
-        self.assertFalse(os.path.isfile(sql.db_path))
+    def test_update_None(self):
+        s = datetime.datetime.now()
+
+        sql = self.sql
+
+        d = sql.get_dict_of_columns('test_table')
+
+        d_insert = {}
+        d_insert['id'] = None # integer primary key
+                              # autoincrement unique not null
+        d_insert['val_text'] = None
+        sql.insert('test_table', d_insert)
+        sql.commit()
+
+        d_selected = sql.select('test_table')
+
+        d_insert['id'] = 1
+        for column, index in d.items():
+            if not column in d_insert:
+                continue
+            self.assertEqual(d_insert[column], d_selected[0][index])
+
+        d_update = {
+            'val_text': 'None',
+        }
+
+        d_where = {'id': 1}
+        sql.update('test_table', d_update, d_where)
+
+        d_selected = sql.select('test_table', conditions='where id = 1')
+
+        self.assertNotEqual(d_update, d_selected)
+        for column, index in d.items():
+          # print()
+          # print(f'column={column}, index={index}')
+            if column == 'id':
+                self.assertEqual(d_insert[column], d_selected[0][index])
+                continue
+          # print(f'not column{column} in d_insert{tuple(d_insert)} is {not column in tuple(d_insert)}')
+            if not column in d_update:
+                continue
+            self.assertEqual(d_update[column], d_selected[0][index])
+            self.assertNotEqual(d_insert[column], d_selected[0][index])
 
     def test_select(self):
         pass
@@ -440,7 +419,32 @@ class SQLTests(unittest.TestCase):
         pass
 
     def test_get_column_names(self):
-        pass
+        sql = self.sql
+
+        expected_column_names = (
+            'id', 'val_null', 'val_integer', 'val_real', 'val_text',
+            'val_blob', 'now', 'elapsed_time', 'iso8601'
+        )
+        self.assertEqual(sql.get_column_names('test_table'),
+                         expected_column_names)
+
+    def test_get_dict_of_columns(self):
+        sql = self.sql
+
+        d = sql.get_dict_of_columns('test_table')
+
+        expected_d = {
+            'id':           0,
+            'val_null':     1,
+            'val_integer':  2,
+            'val_real':     3,
+            'val_text':     4,
+            'val_blob':     5,
+            'now':          6,
+            'elapsed_time': 7,
+            'iso8601':      8,
+        }
+        self.assertEqual(d, expected_d)
 
     def test___str__(self):
         pass

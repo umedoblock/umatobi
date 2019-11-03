@@ -259,6 +259,14 @@ class SQL(object):
         column_names = tuple(map(lambda x: x[0], self._cur.description))
         return column_names
 
+    def get_dict_of_columns(self, table_name):
+        column_names = self.get_column_names(table_name)
+      # print('column_names =', column_names)
+        d = {}
+        for i, column_name in enumerate(column_names):
+            d[column_name] = i
+        return d
+
     def __str__(self):
         message = 'SQL(db_path="{}", schema_path="{}")'. \
                    format(self.db_path, self.schema_path)
