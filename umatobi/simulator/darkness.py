@@ -94,7 +94,7 @@ class Darkness(object):
         '''
         st_barrier = set([
             'id', 'client_id', 'first_node_id',
-            'num_nodes', 'log_level', 'iso8601',
+            'darkness_makes_nodes', 'log_level', 'start_up_orig',
             'made_nodes', # share with client and darknesses
             'leave_there', # share with client and another darknesses
             'num_darkness',
@@ -106,13 +106,12 @@ class Darkness(object):
             setattr(self, attr, value)
 
         logger.info(('{} initilized, '
-                          'num_nodes={}.').format(self, self.num_nodes))
+                          'darkness_makes_nodes={}.').format(self, self.darkness_makes_nodes))
         logger.debug('{} debug log test.'.format(self))
 
-        self.simulation_time = SimulationTime.iso8601_to_time(self.iso8601)
         self.client_db_path = self.get_client_db_path()
         self.simulation_schema_path = \
-                set_simulation_schema(self.simulation_time)
+                set_simulation_schema(self.start_up_orig)
         self.client_db = sql.SQL(db_path=self.client_db_path,
                              schema_path=self.simulation_schema_path)
 
@@ -126,7 +125,7 @@ class Darkness(object):
         self.nodes = []
 
     def get_client_db_path(self):
-        return get_client_db_path(self.simulation_time, self.client_id)
+        return get_client_db_path(self.start_up_orig, self.client_id)
 
     def start(self):
         '''\
@@ -149,12 +148,12 @@ class Darkness(object):
         self._exhale_queue.join()
 
     def _spawn_nodes(self):
-        for i in range(self.num_nodes):
+        for i in range(self.darkness_makes_nodes):
             id = self.first_node_id + i
             host, port = 'localhost', 10000 + id
             d_node = {
                 'host': host, 'port': port, 'id': id,
-                'iso8601': self.simulation_time.get_iso8601(),
+                'start_up_orig': self.start_up_orig,
                 'byebye_nodes': self.byebye_nodes,
                 '_queue_darkness': self._queue_darkness
             }
@@ -163,6 +162,8 @@ class Darkness(object):
             node.appear()
             self.nodes.append(node)
 
+      # num_nodes => 'darkness_makes_nodes'
+      # self.made_nodes.value)
         self.made_nodes.value = len(self.nodes)
         if self.made_nodes.value == 1:
             msg = '{} spawns a node.'.format(self)

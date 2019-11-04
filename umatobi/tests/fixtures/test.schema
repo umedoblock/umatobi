@@ -22,6 +22,8 @@ now:    text
 # float
 elapsed_time: real
 
+iso8601: text
+
 [take_table]
 id: integer primary key autoincrement unique not null
 

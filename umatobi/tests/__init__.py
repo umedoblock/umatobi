@@ -16,14 +16,15 @@ D_TIMEDELTA = {
 }
 TD_ZERO = timedelta(0, 0, 0)
 
-def make_node_assets():
+def make_node_assets(start_up_orig=None):
     byebye_nodes = threading.Event()
-    iso8601 = SimulationTime().get_iso8601()
+    if not start_up_orig:
+        start_up_orig = SimulationTime()
     _queue_darkness = queue.Queue()
 
     d = {
         'byebye_nodes': byebye_nodes,
-        'iso8601': iso8601,
+        'start_up_orig': start_up_orig,
         '_queue_darkness': _queue_darkness,
     }
 

@@ -118,7 +118,7 @@ class NodeOffice(socketserver.DatagramRequestHandler):
 
 class Node(node.Node):
 
-    ATTRS = ('id', 'office_addr', 'key', 'status', 'simulation_time')
+    ATTRS = ('id', 'office_addr', 'key', 'status', 'start_up_orig')
 
     def __init__(self, **kwargs):
         '''\
@@ -136,13 +136,12 @@ class Node(node.Node):
         self.key = Key()
         self.status = 'active'
 
-        self.simulation_time = SimulationTime.iso8601_to_time(self.iso8601)
-
         self.nodes = []
         self.im_ready = threading.Event()
         self.office_door = threading.Lock()
         self.office_addr_assigned = threading.Event()
-        self.master_palm_path = get_master_palm_path(self.simulation_time)
+
+        self.master_palm_path = get_master_palm_path(self.start_up_orig)
 
     def run(self):
         self._open_office()
@@ -226,7 +225,7 @@ class Node(node.Node):
         self._queue_darkness.put(tup)
 
     def get_elapsed_time(self):
-        return self.simulation_time.passed_ms()
+        return self.start_up_orig.passed_ms()
 
     def appear(self):
         super().appear()

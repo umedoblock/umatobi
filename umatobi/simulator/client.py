@@ -99,7 +99,7 @@ class Client(object):
         darkness_d_config = {
             'id':  darkness_id,
             'client_id':  client_id,
-            'start_up_iso8601':  self.start_up_orig.get_iso8601(),
+            'start_up_orig':  self.start_up_orig,
             'log_level':  self.log_level,
             'darkness_makes_nodes':  darkness_makes_nodes,
             'first_node_id':  first_node_id,
@@ -125,7 +125,7 @@ class Client(object):
                 darkness_makes_nodes = self.nodes_per_darkness
             if darkness_id == self.num_darkness - 1:
                 # 最後に端数を作成
-                darkness_makes_nodes = self.last_darkness_makes_nodes
+                darkness_makes_nodes = self.last_darkness_make_nodes
             logger.info(f"client_id={self.id}, darkness id={darkness_id}, num_darkness={self.num_darkness}, num_nodes={darkness_makes_nodes}, first_node_id={first_node_id}")
             darkness_d_config = self._make_darkness_d_config(
                                     darkness_id,

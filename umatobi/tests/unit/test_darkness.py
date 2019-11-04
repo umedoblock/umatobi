@@ -37,9 +37,9 @@ class DarknessAsClient(threading.Thread):
         self.darkness_tests.assertFalse(self.darkness.byebye_nodes.is_set())
         self.darkness_tests.assertFalse(self.darkness.all_nodes_inactive.is_set())
 
-        incremented_threads = 2 * self.darkness.num_nodes
-        # increment incremented_threads num_nodes for node threads
-        # increment incremented_threads num_nodes for open_office_node threads
+        incremented_threads = 2 * self.darkness.made_nodes.value
+        # increment incremented_threads darkness_makes_nodes for node threads
+        # increment incremented_threads darkness_makes_nodes for open_office_node threads
         # Because each node has an open_office_node thread
         if self.darkness._exhale_queue.is_alive():
             # increment incremented_threads 1 for Polling if it is alive
@@ -52,20 +52,28 @@ class DarknessAsClient(threading.Thread):
         #       left 1     means of cource main thread.
         #      right     1 means this DarknessAsClient thread.
         # Therefore   "+ 1" must be there. right ?
+
         self.darkness_tests.assertEqual(self.darkness.made_nodes.value,
-                                        self.darkness.num_nodes)
+                                        self.darkness.darkness_makes_nodes)
 
         # Originally client set leave_there event.
         self.darkness.leave_there.set()
         # client become leave mode.
 
 class DarknessTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.start_up_orig = SimulationTime()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.start_up_orig = None
+
     def setUp(self):
         darkness_id = 1
         client_id = 1
-        self.now = SimulationTime.now()
-        with time_machine(self.now):
-            self.simulation_time = SimulationTime()
+        self.start_up_orig = DarknessTests.start_up_orig
         log_level = 'INFO'
         nodes_per_darkness = Darkness.NODES_PER_DARKNESS
         first_node_id = 1
@@ -78,9 +86,9 @@ class DarknessTests(unittest.TestCase):
         self.darkness_d_config = {
             'id':  darkness_id,
             'client_id':  client_id,
-            'iso8601':  self.simulation_time.get_iso8601(),
+            'start_up_orig':  self.start_up_orig,
             'log_level':  log_level,
-            'num_nodes':  nodes_per_darkness,
+            'darkness_makes_nodes':  nodes_per_darkness,
             'first_node_id':  first_node_id,
             'num_darkness': num_darkness,
             # share with client and darknesses
@@ -106,18 +114,15 @@ class DarknessTests(unittest.TestCase):
         darkness = self.darkness
 
         leave_there = darkness_d_config['leave_there']
-        client_id = darkness_d_config['client_id']
-        iso8601 = darkness_d_config['iso8601']
-        simulation_time = SimulationTime.iso8601_to_time(iso8601)
 
-        self.assertEqual(darkness.simulation_time.start_up_orig, self.now)
+        self.assertEqual(darkness.start_up_orig, self.start_up_orig)
         self.assertEqual(darkness.leave_there, leave_there)
         self.assertFalse(darkness.leave_there.is_set())
 
         self.assertEqual(darkness.client_db.db_path,
                          darkness.get_client_db_path())
         self.assertEqual(darkness.simulation_schema_path,
-                         get_simulation_schema_path(simulation_time))
+                         get_simulation_schema_path(self.start_up_orig))
         self.assertIsInstance(darkness.client_db, sql.SQL)
         self.assertRegex(darkness.client_db_path, RE_CLIENT_N_DB)
         self.assertFalse(os.path.isfile(darkness.client_db_path))
@@ -143,8 +148,6 @@ class DarknessTests(unittest.TestCase):
         darkness = self.darkness
 
         leave_there = darkness_d_config['leave_there']
-        iso8601 = darkness_d_config['iso8601']
-        simulation_time = SimulationTime.iso8601_to_time(iso8601)
         client_id = darkness_d_config['client_id']
 
         self.assertFalse(darkness.byebye_nodes.is_set())
@@ -158,7 +161,7 @@ class DarknessTests(unittest.TestCase):
 
         self.assertFalse(os.path.isfile(darkness.client_db_path))
         client_db = sql.SQL(db_path=darkness.client_db_path,
-                            schema_path=get_simulation_schema_path(simulation_time))
+                            schema_path=get_simulation_schema_path(self.start_up_orig))
         self.assertFalse(os.path.isfile(darkness.client_db_path))
         client_db.create_db()
         self.assertTrue(os.path.isfile(darkness.client_db_path))
@@ -193,8 +196,8 @@ class DarknessTests(unittest.TestCase):
             self.assertFalse(node.im_ready.is_set())
         self.assertEqual(len(darkness.nodes), 0)
         darkness._spawn_nodes()
-        self.assertEqual(len(darkness.nodes), darkness.num_nodes)
-        self.assertEqual(darkness.made_nodes.value, darkness.num_nodes)
+        self.assertEqual(len(darkness.nodes), darkness.made_nodes.value)
+        self.assertEqual(darkness.made_nodes.value, darkness.darkness_makes_nodes)
         for node in darkness.nodes:
             self.assertTrue(node.im_ready.is_set())
 
@@ -203,7 +206,7 @@ class DarknessTests(unittest.TestCase):
 
     def test__sleeping(self):
         darkness = self.darkness
-        darkness.num_nodes = 0
+        darkness.darkness_makes_nodes = 0
         self.assertFalse(darkness.leave_there.is_set())
         self.assertFalse(darkness.im_sleeping.is_set())
 
@@ -230,7 +233,7 @@ class DarknessTests(unittest.TestCase):
         darkness._spawn_nodes()
 
         client_db = sql.SQL(db_path=darkness.client_db_path,
-                        schema_path=get_simulation_schema_path(darkness.simulation_time))
+                        schema_path=get_simulation_schema_path(darkness.start_up_orig))
         client_db.create_db()
         client_db.create_table('growings')
         client_db.close()
@@ -239,7 +242,7 @@ class DarknessTests(unittest.TestCase):
         self.assertFalse(darkness.byebye_nodes.is_set())
         self.assertFalse(darkness.all_nodes_inactive.is_set())
         self.assertNotEqual(len(darkness.nodes), 0)
-        self.assertEqual(len(darkness.nodes), darkness.num_nodes)
+        self.assertEqual(len(darkness.nodes), darkness.made_nodes.value)
         for node in darkness.nodes:
             self.assertTrue(node.is_alive())
         self.assertTrue(darkness._exhale_queue.is_alive())
@@ -249,7 +252,7 @@ class DarknessTests(unittest.TestCase):
         self.assertTrue(darkness.byebye_nodes.is_set())
         self.assertTrue(darkness.all_nodes_inactive.is_set())
         self.assertNotEqual(len(darkness.nodes), 0)
-        self.assertEqual(len(darkness.nodes), darkness.num_nodes)
+        self.assertEqual(len(darkness.nodes), darkness.made_nodes.value)
         for node in darkness.nodes:
             self.assertFalse(node.is_alive())
         self.assertFalse(darkness._exhale_queue.is_alive())

@@ -10,6 +10,18 @@ from umatobi.lib import *
 from umatobi.simulator.client import Client
 from umatobi.simulator.sql import SQL
 
+def force_to_terminate_processes(processes):
+    for process in processes:
+        process.terminate()
+      # process.kill()
+
+    for process in processes:
+        process.join()
+       #self.assertFalse(process.is_alive())
+
+    for process in processes:
+        process.close()
+
 class ClientTests(unittest.TestCase):
 
     @classmethod
@@ -238,7 +250,7 @@ class ClientTests(unittest.TestCase):
             'made_nodes':  0,
             'darkness_makes_nodes': 4,
             'num_darkness': 3,
-            'start_up_iso8601': client.start_up_orig.get_iso8601(),
+            'start_up_orig': client.start_up_orig,
         }
 
         self.assertEqual(darkness_d_config.keys(), expected_d.keys())
@@ -253,7 +265,29 @@ class ClientTests(unittest.TestCase):
                                  expected_d[expected_k])
 
     def test__confesses_darkness(self):
-        pass
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 100
+
+        client = Client(watson_office_addr, num_nodes)
+        client.id = 3
+        client.start_up_orig = self.start_up_orig
+        client.node_index = 25
+        client.log_level = 'INFO'
+
+        self.assertEqual(client.num_nodes, num_nodes)
+#       self.assertEqual(client.node_index, )
+#       self.assertEqual(client.nodes_per_darkness, )
+#       self.assertEqual(client.num_darkness, )
+#               darkness_makes_nodes = self.last_darkness_makes_nodes
+
+       #backup_node_index = client.node_index
+
+        client._confesses_darkness()
+
+       #self.assertEqual(client.node_index, backup_node_index)
+
+        self.assertEqual(len(client.darkness_processes), client.num_darkness)
+        force_to_terminate_processes(client.darkness_processes)
 
     def test__waits_to_break_down(self):
         watson_office_addr = ('localhost', 11111)
