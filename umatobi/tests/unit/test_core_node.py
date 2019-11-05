@@ -12,7 +12,20 @@ class CoreNodeTests(unittest.TestCase):
         pass
 
     def test_not_ready(self):
-        pass
+        node = Node()
+        self.assertIsNone(node.udp_sock)
+
+    def test_not_ready1(self):
+        node = Node(host='127.0.0.1')
+        self.assertIsNone(node.udp_sock)
+
+    def test_not_ready2(self):
+        node = Node(host='localhost')
+        self.assertIsNone(node.udp_sock)
+
+    def test_not_ready3(self):
+        node = Node(port=None)
+        self.assertIsNone(node.udp_sock)
 
     def test_make_udpip(self):
         pass
@@ -30,8 +43,8 @@ class CoreNodeTests(unittest.TestCase):
         pass
 
     def test_core_node_init_success(self):
-        node = Node('localhost', 10000)
-        self.assertEqual(node.udp_ip, ('localhost', 10000))
+        node = Node('localhost', 20000)
+        self.assertEqual(node.udp_ip, ('localhost', 20000))
         self.assertIsInstance(node._last_moment, threading.Event)
         self.assertIsInstance(node._status, dict)
         self.assertIsInstance(node.udp_sock, socket.socket)
