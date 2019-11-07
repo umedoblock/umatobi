@@ -76,7 +76,7 @@ class DarknessTests(unittest.TestCase):
         self.start_up_orig = DarknessTests.start_up_orig
         log_level = 'INFO'
         nodes_per_darkness = Darkness.NODES_PER_DARKNESS
-        first_node_id = 1
+        first_node_id = 0
         num_darkness = 8
         # share with client and darknesses
         made_nodes = multiprocessing.Value('i', 0)

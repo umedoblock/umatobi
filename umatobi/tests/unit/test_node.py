@@ -130,7 +130,7 @@ class NodeTests(unittest.TestCase):
     @patch('umatobi.simulator.node.threading.Lock')
     def test___init__(self, mock_lock):
         node_assets = make_node_assets(NodeTests.start_up_orig)
-        node = Node(host='localhost', id=1, **node_assets)
+        node = Node(addr='localhost', id=0, **node_assets)
 
         self.assertIsInstance(node.key, Key)
         self.assertEqual(node.status, 'active')
