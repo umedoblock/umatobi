@@ -192,14 +192,21 @@ class DarknessTests(unittest.TestCase):
     def test__spawn_nodes(self):
         darkness = self.darkness
 
-        for node in darkness.nodes:
-            self.assertFalse(node.im_ready.is_set())
+        self.assertEqual(threading.active_count(), 1)
+
         self.assertEqual(len(darkness.nodes), 0)
         darkness._spawn_nodes()
         self.assertEqual(len(darkness.nodes), darkness.made_nodes.value)
         self.assertEqual(darkness.made_nodes.value, darkness.darkness_makes_nodes)
-        for node in darkness.nodes:
+        for i, node in enumerate(darkness.nodes):
+            self.assertEqual(node.id, i)
+            self.assertEqual(node.udp_ip, ('localhost', 10000 + i))
+            self.assertEqual(node.start_up_orig, DarknessTests.start_up_orig)
+            # syncevent is im_ready
             self.assertTrue(node.im_ready.is_set())
+            self.assertFalse(node.byebye_nodes.is_set())
+        self.assertEqual(threading.active_count(),
+                         2 * darkness.darkness_makes_nodes + 1)
 
         darkness._leave_here()
         self.assertEqual(threading.active_count(), 1)
