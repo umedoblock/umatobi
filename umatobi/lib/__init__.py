@@ -67,7 +67,7 @@ def sock_create(v4_v6, tcp_udp):
 
     return sock
 
-def sock_are_appropriate(host, port):
+def sock_make_addr(host, port):
 
     if not host or not port:
         return None
@@ -76,7 +76,7 @@ def sock_are_appropriate(host, port):
 
 def sock_make(sock, host, port, v4_v6=None, tcp_udp=None):
 
-    addr = sock_are_appropriate(host, port)
+    addr = sock_make_addr(host, port)
     if not addr:
         return None
 
@@ -89,7 +89,7 @@ def sock_make(sock, host, port, v4_v6=None, tcp_udp=None):
 
 def sock_bind(sock, host, port, v4_v6=None, tcp_udp=None):
 
-    addr = sock_are_appropriate(host, port)
+    addr = sock_make_addr(host, port)
     if not addr:
         return None
 
@@ -105,7 +105,7 @@ def sock_bind(sock, host, port, v4_v6=None, tcp_udp=None):
 
 def sock_connect(sock, host, port, v4_v6=None, tcp_udp=None):
 
-    addr = sock_are_appropriate(host, port)
+    addr = sock_make_addr(host, port)
     if not addr:
         return None
 

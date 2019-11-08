@@ -69,15 +69,15 @@ class LibTests(unittest.TestCase):
         self.assertEqual(sock.type, socket.SOCK_DGRAM)
         sock.close()
 
-    def test_sock_are_appropriate(self):
-        self.assertIsNotNone(sock_are_appropriate('localhost', 1222))
-        self.assertIsNotNone(sock_are_appropriate('127.0.0.1', 1222))
+    def test_sock_make_addr(self):
+        self.assertIsNotNone(sock_make_addr('localhost', 1222))
+        self.assertIsNotNone(sock_make_addr('127.0.0.1', 1222))
 
-        self.assertIsNone(sock_are_appropriate('localhost', 0))
-        self.assertIsNone(sock_are_appropriate('localhost', None))
-        self.assertIsNone(sock_are_appropriate(None, 1222))
-        self.assertIsNone(sock_are_appropriate(0, 0))
-        self.assertIsNone(sock_are_appropriate(None, None))
+        self.assertIsNone(sock_make_addr('localhost', 0))
+        self.assertIsNone(sock_make_addr('localhost', None))
+        self.assertIsNone(sock_make_addr(None, 1222))
+        self.assertIsNone(sock_make_addr(0, 0))
+        self.assertIsNone(sock_make_addr(None, None))
 
     def test_sock_make(self):
         host, port, v4_v6, tcp_udp = 'localhost', 22222, 'v4', 'tcp'
