@@ -27,44 +27,6 @@ class CoreNodeTests(unittest.TestCase):
         node = Node(port=None)
         self.assertIsNone(node.udp_sock)
 
-    def test_make_udpip(self):
-        pass
-
-    def test_run(self):
-        pass
-
-    def test_appear(self):
-        pass
-
-    def test_disappear(self):
-        pass
-
-    def test_get_status(self):
-        pass
-
-    def test_core_node_init_success(self):
-        node = Node('localhost', 20000)
-        self.assertEqual(node.udp_ip, ('localhost', 20000))
-        self.assertIsInstance(node._last_moment, threading.Event)
-        self.assertIsInstance(node._status, dict)
-        self.assertIsInstance(node.udp_sock, socket.socket)
-
-        node.release()
-
-    def test_core_node_not_ready(self):
-        node = Node()
-        self.assertTrue(node.not_ready())
-
-    def test_core_node_init_fail(self):
-        pairs_of_host_port = [('', 10000), ('localhost', None)]
-        for host, port in pairs_of_host_port:
-            node = Node(host, port)
-            self.assertTrue(node.not_ready())
-            self.assertEqual(node.udp_ip, (host, port))
-            self.assertIsInstance(node._last_moment, threading.Event)
-            self.assertIsInstance(node._status, dict)
-            self.assertIsNone(node.udp_sock)
-
     def test_make_udpip_success(self):
         node = Node()
         self.assertIsNone(node.udp_sock)
@@ -132,6 +94,41 @@ class CoreNodeTests(unittest.TestCase):
             self.assertEqual(node.udp_ip, ('localhost', invalid_port))
             # except OverflowError で、範囲外と理解しているので、
             # invalid_port が設定されていても OK.
+
+    def test_run(self):
+        pass
+
+    def test_appear(self):
+        pass
+
+    def test_disappear(self):
+        pass
+
+    def test_get_status(self):
+        pass
+
+    def test_core_node_init_success(self):
+        node = Node('localhost', 20000)
+        self.assertEqual(node.udp_ip, ('localhost', 20000))
+        self.assertIsInstance(node._last_moment, threading.Event)
+        self.assertIsInstance(node._status, dict)
+        self.assertIsInstance(node.udp_sock, socket.socket)
+
+        node.release()
+
+    def test_core_node_not_ready(self):
+        node = Node()
+        self.assertTrue(node.not_ready())
+
+    def test_core_node_init_fail(self):
+        pairs_of_host_port = [('', 10000), ('localhost', None)]
+        for host, port in pairs_of_host_port:
+            node = Node(host, port)
+            self.assertTrue(node.not_ready())
+            self.assertEqual(node.udp_ip, (host, port))
+            self.assertIsInstance(node._last_moment, threading.Event)
+            self.assertIsInstance(node._status, dict)
+            self.assertIsNone(node.udp_sock)
 
     def test_core_node_release(self):
         node = Node('localhost', 55555)
