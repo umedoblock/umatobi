@@ -86,6 +86,25 @@ class LibTests(unittest.TestCase):
         mock_socket.assert_called_with(ADDRESS_FAMILY['v4'],
                                        SOCKET_KIND['tcp'])
 
+    def test_sock_make_retry(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 22222, 'v4', 'tcp'
+        with patch('umatobi.lib.socket.socket') as mock_socket:
+            sock = sock_make(None, host, port, v4_v6, tcp_udp)
+        mock_socket.assert_called_with(ADDRESS_FAMILY['v4'],
+                                       SOCKET_KIND['tcp'])
+
+        host, port, v4_v6, tcp_udp = 'localhost', 22223, 'v4', 'tcp'
+        with patch('umatobi.lib.socket.socket') as mock_socket:
+            sock = sock_make(sock, host, port, v4_v6, tcp_udp)
+        mock_socket.assert_not_called()
+
+    def test_sock_make_real(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 55555, 'v4', 'tcp'
+        sock = sock_make(None, host, port, v4_v6, tcp_udp)
+        self.assertIsInstance(sock, socket.socket)
+
+        sock.close()
+
     def test_sock_bind(self):
         host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcp'
         addr = host, port
@@ -96,6 +115,25 @@ class LibTests(unittest.TestCase):
         self.assertIsInstance(sock, MagicMock)
         sock.bind.assert_called_with(addr)
 
+    def test_sock_bind_real(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcp'
+        expected_ip = socket.gethostbyname(host)
+        # expected_ip = \
+        #        socket.getaddrinfo(host, port,
+        #                           ADDRESS_FAMILY[v4_v6], SOCKET_KIND['tcp'])
+        # (family, type, proto, canonname, sockaddr)
+
+        addr = host, port
+        sock = sock_bind(None, host, port, v4_v6, tcp_udp)
+
+        self.assertIsInstance(sock, socket.socket)
+
+        got_ip, got_port = sock.getsockname()
+        sock.close()
+
+        self.assertEqual(got_ip, expected_ip)
+        self.assertEqual(got_port, port)
+
     def test_sock_connect(self):
         host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcp'
         addr = host, port
@@ -105,6 +143,48 @@ class LibTests(unittest.TestCase):
                                        SOCKET_KIND['tcp'])
         self.assertIsInstance(sock, MagicMock)
         sock.connect.assert_called_with(addr)
+
+    def test_sock_connect_fail_by_refused(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 65535, 'v4', 'tcp'
+
+        sock = sock_connect(None, host, port, v4_v6, tcp_udp)
+        self.assertIsInstance(sock, socket.socket)
+        sock.close()
+
+    def test_sock_connect_fail_by_refused2(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 65535, 'v4', 'tcp'
+
+        cre = ConnectionRefusedError(61, 'Connection refused')
+        with patch('umatobi.lib.socket.socket.connect',
+                    side_effect=cre) as mock_connect:
+            sock = sock_connect(None, host, port, v4_v6, tcp_udp)
+        mock_connect.assert_called_with((host, port))
+        self.assertIsInstance(sock, socket.socket)
+        sock.close()
+
+    def test_sock_connect_fail_by_refused3(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 65535, 'v4', 'tcp'
+
+        cre = ConnectionRefusedError(6666666666, 'Connection refused')
+        with patch('umatobi.lib.socket.socket.connect',
+                    side_effect=cre) as mock_connect:
+            sock = sock_connect(None, host, port, v4_v6, tcp_udp)
+        mock_connect.assert_called_with((host, port))
+        self.assertIsInstance(sock, socket.socket)
+        sock.close()
+
+    def test_sock_connect_fail_by_refused4(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 65535, 'v4', 'tcp'
+
+        cre = ConnectionRefusedError(61, 'unexpected message')
+        with patch('umatobi.lib.socket.socket.connect',
+                    side_effect=cre) as mock_connect:
+            try:
+                sock = sock_connect(None, host, port, v4_v6, tcp_udp)
+            except ConnectionRefusedError as err:
+                self.assertEqual(err.args[1], 'unexpected message')
+
+        mock_connect.assert_called_with((host, port))
 
     def test_sock_send_ok_tcp(self):
         with patch('umatobi.lib.socket', spec_set=True):

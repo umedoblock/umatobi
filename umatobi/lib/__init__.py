@@ -114,8 +114,15 @@ def sock_connect(sock, host, port, v4_v6=None, tcp_udp=None):
         if not sock:
             return None
 
-    sock.connect(addr)
-   #server_address = sock.getsockname()
+    try:
+        sock.connect(addr)
+    except ConnectionRefusedError as err:
+        # err.args[0] ==  61
+        if err.args[1] == 'Connection refused':
+            pass
+        else:
+            sock.close()
+            raise err
 
     return sock
 
