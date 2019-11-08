@@ -6,6 +6,18 @@ import yaml
 from umatobi.constants import *
 from umatobi.log import *
 
+ADDRESS_FAMILY = {
+    'v4': socket.AF_INET,
+    'v6': socket.AF_INET6,
+# 'file': socket.AF_UNIX,
+}
+
+SOCKET_KIND = {
+    'tcp': socket.SOCK_STREAM,
+    'udp': socket.SOCK_DGRAM,
+#   'raw': socket.SOCK_RAW,
+}
+
 def sock_create(v4_v6, tcp_udp):
     #  import socket;help(socket)
 
@@ -14,15 +26,10 @@ def sock_create(v4_v6, tcp_udp):
     #  AF_INET6 = <AddressFamily.AF_INET6: 30>
     #  AF_UNIX = <AddressFamily.AF_UNIX: 1>
 
-    address_family = {
-        'v4': socket.AF_INET,
-        'v6': socket.AF_INET6,
-#     'file': socket.AF_UNIX,
-    }
     v4_v6 = v4_v6.lower()
 
     try:
-        af = address_family[v4_v6]
+        af = ADDRESS_FAMILY[v4_v6]
     except KeyError as err:
         if err.args[0] != v4_v6:
             raise err
@@ -32,12 +39,6 @@ def sock_create(v4_v6, tcp_udp):
     #  SocketKind(value, names=None, *, module=None, qualname=None, type=None, start=1)
     #  SOCK_DGRAM = <SocketKind.SOCK_DGRAM: 2>
     #  SOCK_STREAM = <SocketKind.SOCK_STREAM: 1>
-
-    socket_kind = {
-        'tcp': socket.SOCK_STREAM,
-        'udp': socket.SOCK_DGRAM,
-#       'raw': socket.SOCK_RAW,
-    }
 
     #  Data descriptors defined here:
     #  family
@@ -55,16 +56,68 @@ def sock_create(v4_v6, tcp_udp):
     tcp_udp = tcp_udp.lower()
 
     try:
-        sk = socket_kind[tcp_udp]
+        sk = SOCKET_KIND[tcp_udp]
     except KeyError as err:
         if err.args[0] != tcp_udp:
             raise err
         logger.error(f"\"{tcp_udp}\" is inappropriate as tcp_udp.")
         return None
 
-    tcp_sock = socket.socket(af, sk)
+    sock = socket.socket(af, sk)
 
-    return tcp_sock
+    return sock
+
+def sock_are_appropriate(host, port):
+
+    if not host or not port:
+        return None
+
+    return (host, port)
+
+def sock_make(sock, host, port, v4_v6=None, tcp_udp=None):
+
+    addr = sock_are_appropriate(host, port)
+    if not addr:
+        return None
+
+    if not sock:
+        sock = sock_create(v4_v6, tcp_udp)
+        if not sock:
+            return None
+
+    return sock
+
+def sock_bind(sock, host, port, v4_v6=None, tcp_udp=None):
+
+    addr = sock_are_appropriate(host, port)
+    if not addr:
+        return None
+
+    if not sock:
+        sock = sock_create(v4_v6, tcp_udp)
+        if not sock:
+            return None
+
+    sock.bind(addr)
+   #server_address = sock.getsockname()
+
+    return sock
+
+def sock_connect(sock, host, port, v4_v6=None, tcp_udp=None):
+
+    addr = sock_are_appropriate(host, port)
+    if not addr:
+        return None
+
+    if not sock:
+        sock = sock_create(v4_v6, tcp_udp)
+        if not sock:
+            return None
+
+    sock.connect(addr)
+   #server_address = sock.getsockname()
+
+    return sock
 
 def sock_send(tcp_sock, data):
     try:
