@@ -70,8 +70,8 @@ class LibTests(unittest.TestCase):
         sock.close()
 
     def test_sock_make_addr(self):
-        self.assertIsNotNone(sock_make_addr('localhost', 1222))
-        self.assertIsNotNone(sock_make_addr('127.0.0.1', 1222))
+        self.assertEqual(sock_make_addr('localhost', 1222), ('localhost', 1222))
+        self.assertEqual(sock_make_addr('127.0.0.1', 1222), ('127.0.0.1', 1222))
 
         self.assertIsNone(sock_make_addr('localhost', 0))
         self.assertIsNone(sock_make_addr('localhost', None))
