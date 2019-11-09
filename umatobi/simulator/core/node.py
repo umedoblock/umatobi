@@ -46,12 +46,14 @@ class Node(threading.Thread):
             self.udp_ip = (self.udp_ip[0], port)
 
         if self.not_ready():
-            return
+            return False
 
         self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+        ret = False
         try:
             self.udp_sock.bind(self.udp_ip)
+            ret = True
         except socket.error as raiz:
             self.udp_sock.close()
             self.udp_sock = None
@@ -63,11 +65,13 @@ class Node(threading.Thread):
                         format(*self.udp_ip))
             elif raiz.args == (13, 'Permission denied'):
                 pass
+
         except OverflowError as raiz:
           # getsockaddrarg: port must be 0-65535.
             self.udp_sock.close()
             self.udp_sock = None
             logger.error('cannot bind({}). reason={}'.format(self.udp_ip, raiz.args))
+        return ret
 
     def run(self):
         self._last_moment.wait()

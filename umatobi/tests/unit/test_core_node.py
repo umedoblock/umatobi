@@ -31,7 +31,8 @@ class CoreNodeTests(unittest.TestCase):
         node = Node()
         self.assertIsNone(node.udp_sock)
         self.assertEqual(node.udp_ip, (None, None))
-        node.make_udpip('localhost', 4444)
+        ret = node.make_udpip('localhost', 4444)
+        self.assertTrue(ret)
         self.assertIsInstance(node.udp_sock, socket.socket)
         self.assertEqual(node.udp_ip, ('localhost', 4444))
 
@@ -44,7 +45,8 @@ class CoreNodeTests(unittest.TestCase):
             node = Node()
             self.assertIsNone(node.udp_sock)
             self.assertEqual(node.udp_ip, (None, None))
-            node.make_udpip(host, port)
+            ret = node.make_udpip(host, port)
+            self.assertFalse(ret)
             self.assertIsNone(node.udp_sock)
             self.assertEqual(node.udp_ip, (host, port))
 
@@ -53,7 +55,8 @@ class CoreNodeTests(unittest.TestCase):
             node = Node()
             self.assertIsNone(node.udp_sock)
             self.assertEqual(node.udp_ip, (None, None))
-            node.make_udpip('localhost', on_the_boundary_port)
+            ret = node.make_udpip('localhost', on_the_boundary_port)
+            self.assertTrue(ret)
             self.assertIsInstance(node.udp_sock, socket.socket)
             self.assertEqual(node.udp_ip, ('localhost', on_the_boundary_port))
 
@@ -66,8 +69,8 @@ class CoreNodeTests(unittest.TestCase):
             self.assertIsNone(node.udp_sock)
             self.assertEqual(node.udp_ip, (None, None))
             with self.subTest(sensitive_port=sensitive_port):
-                node.make_udpip('localhost', sensitive_port)
-                if node.udp_sock:
+                ret = node.make_udpip('localhost', sensitive_port)
+                if ret:
                     # Really !!! You can bind a sensitive port.
                     # Are you root ?
                     # You must study security.
@@ -89,7 +92,8 @@ class CoreNodeTests(unittest.TestCase):
             node = Node()
             self.assertIsNone(node.udp_sock)
             self.assertEqual(node.udp_ip, (None, None))
-            node.make_udpip('localhost', invalid_port)
+            ret = node.make_udpip('localhost', invalid_port)
+            self.assertFalse(ret)
             self.assertIsNone(node.udp_sock)
             self.assertEqual(node.udp_ip, ('localhost', invalid_port))
             # except OverflowError で、範囲外と理解しているので、
