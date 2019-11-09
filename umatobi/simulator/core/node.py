@@ -20,7 +20,6 @@ class Node(threading.Thread):
 
         self.udp_sock = None
         self.udp_ip = (host, port)
-        self.make_udpip()
 
         self._status = {}
         self.key = Key()

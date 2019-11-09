@@ -116,6 +116,8 @@ class CoreNodeTests(unittest.TestCase):
         self.assertEqual(node.udp_ip, ('localhost', 20000))
         self.assertIsInstance(node._last_moment, threading.Event)
         self.assertIsInstance(node._status, dict)
+
+        node.make_udpip()
         self.assertIsInstance(node.udp_sock, socket.socket)
 
         node.release()
@@ -138,6 +140,7 @@ class CoreNodeTests(unittest.TestCase):
         node = Node('localhost', 55555)
         self.assertEqual(node.udp_ip, ('localhost', 55555))
 
+        node.make_udpip()
         self.assertIsInstance(node.udp_sock, socket.socket)
         self.assertFalse(node.udp_sock._closed)
         node.release()
@@ -147,6 +150,7 @@ class CoreNodeTests(unittest.TestCase):
     def test_core_node_turn_on_off(self):
         self.assertEqual(1, threading.active_count())
         node = Node('localhost', 55555)
+        node.make_udpip()
         self.assertEqual(node.udp_ip, ('localhost', 55555))
         self.assertEqual(1, threading.active_count())
         self.assertFalse(node._last_moment.is_set())
@@ -167,6 +171,7 @@ class CoreNodeTests(unittest.TestCase):
 
     def test_core_node_status(self):
         node = Node('localhost', 55555)
+        node.make_udpip()
         self.assertIsInstance(node.udp_sock, socket.socket)
         self.assertEqual(node.udp_ip, ('localhost', 55555))
 
