@@ -98,8 +98,25 @@ def sock_bind(sock, host, port, v4_v6=None, tcp_udp=None):
         if not sock:
             return None
 
-    sock.bind(addr)
-   #server_address = sock.getsockname()
+    error = None
+    try:
+        sock.bind(addr)
+        ret = True
+    except socket.error as err:
+        if err.args == (98, 'Address already in use'):
+            logger.error('指定した host(={}), port(={}) は使用済みでした。'.
+                    format(*udp_ip))
+        elif err.args == (13, 'Permission denied'):
+            pass
+        error = err
+    except socket.timeout as err:
+        error = err
+    except OverflowError as err:
+      # getsockaddrarg: port must be 0-65535.
+        error = err
+
+    if error:
+        logger.error(f'cannot bind{addr}. reason={error.args}')
 
     return sock
 
@@ -141,6 +158,47 @@ def sock_recv(tcp_sock, buf_size):
         recved_data = None
 
     return recved_data
+
+# def sock_not_ready(self):
+#     return not all(self.udp_ip)
+#
+# def make_udpip(host=None, port=None):
+#     if not hasattr( 'udp_ip'):
+#        udp_ip = (None, None)
+#
+#     if host is not None:
+#         udp_ip = (host, udp_ip[1])
+#     if port is not None:
+#         udp_ip = (udp_ip[0], port)
+#
+#     if not_ready():
+#         return False
+#
+#     udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+#
+#     ret = False
+#     try:
+#         udp_sock.bind(udp_ip)
+#         ret = True
+#     except socket.error as raiz:
+#         udp_sock.close()
+#         udp_sock = None
+#         logger.error('cannot bind({}). reason={}'.format(udp_ip, raiz.args))
+#
+#       # print('raiz.args =', raiz.args)
+#         if raiz.args == (98, 'Address already in use'):
+#             logger.error('指定した host(={}), port(={}) は使用済みでした。'.
+#                     format(*udp_ip))
+#         elif raiz.args == (13, 'Permission denied'):
+#             pass
+#
+#     except OverflowError as raiz:
+#       # getsockaddrarg: port must be 0-65535.
+#         udp_sock.close()
+#         udp_sock = None
+#         logger.error('cannot bind({}). reason={}'.format(udp_ip, raiz.args))
+#     return ret
+#
 
 def are_on_the_same_network_endpoint(You, I):
     if You[0] == I[0]:
@@ -395,7 +453,7 @@ class SimulationTime(object):
 # def y15sformat_time(t):
 #     "'return time format '2012-11-02T232227'"
 #     return t.strftime(Y15S_FORMAT)
-# 
+#
 # def current_y15sformat_time():
 #     now = datetime_now()
 #     return y15sformat_time(now)

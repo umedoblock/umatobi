@@ -32,46 +32,6 @@ class Node(threading.Thread):
           # bind() に成功し、有効に利用されていたudp_sockなのだから、
           # udp_sock に None を代入しない。
 
-    def not_ready(self):
-        return not all(self.udp_ip)
-
-    def make_udpip(self, host=None, port=None):
-        if not hasattr(self, 'udp_ip'):
-           self.udp_ip = (None, None)
-
-        if host is not None:
-            self.udp_ip = (host, self.udp_ip[1])
-        if port is not None:
-            self.udp_ip = (self.udp_ip[0], port)
-
-        if self.not_ready():
-            return False
-
-        self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-        ret = False
-        try:
-            self.udp_sock.bind(self.udp_ip)
-            ret = True
-        except socket.error as raiz:
-            self.udp_sock.close()
-            self.udp_sock = None
-            logger.error('cannot bind({}). reason={}'.format(self.udp_ip, raiz.args))
-
-          # print('raiz.args =', raiz.args)
-            if raiz.args == (98, 'Address already in use'):
-                logger.error('指定した host(={}), port(={}) は使用済みでした。'.
-                        format(*self.udp_ip))
-            elif raiz.args == (13, 'Permission denied'):
-                pass
-
-        except OverflowError as raiz:
-          # getsockaddrarg: port must be 0-65535.
-            self.udp_sock.close()
-            self.udp_sock = None
-            logger.error('cannot bind({}). reason={}'.format(self.udp_ip, raiz.args))
-        return ret
-
     def run(self):
         self._last_moment.wait()
 

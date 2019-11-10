@@ -134,6 +134,21 @@ class LibTests(unittest.TestCase):
         self.assertEqual(got_ip, expected_ip)
         self.assertEqual(got_port, port)
 
+    def test_sock_bind_fail_by_socket_error(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcp'
+        # expected_ip = \
+        #        socket.getaddrinfo(host, port,
+        #                           ADDRESS_FAMILY[v4_v6], SOCKET_KIND['tcp'])
+        # (family, type, proto, canonname, sockaddr)
+
+        addr = host, port
+        with patch('umatobi.lib.socket.socket.bind',
+                    side_effect=socket.timeout) as mock_bind:
+            sock = sock_bind(None, host, port, v4_v6, tcp_udp)
+
+        self.assertIsInstance(sock, socket.socket)
+        sock.close()
+
     def test_sock_connect(self):
         host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcp'
         addr = host, port
