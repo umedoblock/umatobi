@@ -2,6 +2,7 @@ import threading, socket, os, sys
 
 from umatobi.simulator.core.key import Key
 from umatobi.log import *
+from umatobi.lib import *
 
 class Node(threading.Thread):
     '''Node class'''
@@ -19,10 +20,15 @@ class Node(threading.Thread):
         self._last_moment = threading.Event()
 
         self.udp_sock = None
-        self.udp_ip = (host, port)
+        self.udp_addr = (host, port)
 
         self._status = {}
         self.key = Key()
+
+    def bind_udp(self, host, port):
+        self.udp_sock, self.udp_addr, result = \
+            sock_bind(self.udp_sock, host, port, 'v4', 'udp')
+        return result
 
     def release(self):
         if self.udp_sock:
@@ -47,7 +53,7 @@ class Node(threading.Thread):
 
     def get_status(self, type_='dict'):
         'node の各種情報を表示。'
-        self._status['host'] = self.udp_ip[0]
-        self._status['port'] = self.udp_ip[1]
+        self._status['host'] = self.udp_addr[0]
+        self._status['port'] = self.udp_addr[1]
         self._status['key'] = self.key.value()
         return self._status

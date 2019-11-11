@@ -69,10 +69,10 @@ def sock_create(v4_v6, tcp_udp):
 
 def sock_make_addr(host, port):
 
-    if not host or not port:
-        return None
+    if host and port in range(1, 65535 + 1):
+        return (host, port)
 
-    return (host, port)
+    return None
 
 def sock_make(sock, host, port, v4_v6=None, tcp_udp=None):
 
@@ -88,28 +88,39 @@ def sock_make(sock, host, port, v4_v6=None, tcp_udp=None):
     return sock
 
 def sock_bind(sock, host, port, v4_v6=None, tcp_udp=None):
+    result = False
 
-    addr = sock_make_addr(host, port)
-    if not addr:
-        return None
-
-    if not sock:
+    if sock is None:
         sock = sock_create(v4_v6, tcp_udp)
-        if not sock:
-            return None
+        if sock is None:
+            return (None, None, result)
+
+    addr = (host, port)
 
     error = None
     try:
         sock.bind(addr)
-        ret = True
+        result = True
     except socket.error as err:
-        if err.args == (98, 'Address already in use'):
-            logger.error('指定した host(={}), port(={}) は使用済みでした。'.
-                    format(*udp_ip))
-        elif err.args == (13, 'Permission denied'):
+        if err.args in (
+            (98, 'Address already in use',),
+            (13, 'Permission denied',),
+            ('getsockaddrarg: port must be 0-65535.',),
+            ):
             pass
+        else:
+            raise err
         error = err
     except socket.timeout as err:
+        error = err
+    except TypeError as err:
+        if err.args in (
+            ('str, bytes or bytearray expected, not NoneType',),
+            ('an integer is required (got type NoneType)',),
+            ):
+            pass
+        else:
+            raise err
         error = err
     except OverflowError as err:
       # getsockaddrarg: port must be 0-65535.
@@ -118,7 +129,7 @@ def sock_bind(sock, host, port, v4_v6=None, tcp_udp=None):
     if error:
         logger.error(f'cannot bind{addr}. reason={error.args}')
 
-    return sock
+    return (sock, addr, result)
 
 def sock_connect(sock, host, port, v4_v6=None, tcp_udp=None):
 
@@ -158,47 +169,6 @@ def sock_recv(tcp_sock, buf_size):
         recved_data = None
 
     return recved_data
-
-# def sock_not_ready(self):
-#     return not all(self.udp_ip)
-#
-# def make_udpip(host=None, port=None):
-#     if not hasattr( 'udp_ip'):
-#        udp_ip = (None, None)
-#
-#     if host is not None:
-#         udp_ip = (host, udp_ip[1])
-#     if port is not None:
-#         udp_ip = (udp_ip[0], port)
-#
-#     if not_ready():
-#         return False
-#
-#     udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#
-#     ret = False
-#     try:
-#         udp_sock.bind(udp_ip)
-#         ret = True
-#     except socket.error as raiz:
-#         udp_sock.close()
-#         udp_sock = None
-#         logger.error('cannot bind({}). reason={}'.format(udp_ip, raiz.args))
-#
-#       # print('raiz.args =', raiz.args)
-#         if raiz.args == (98, 'Address already in use'):
-#             logger.error('指定した host(={}), port(={}) は使用済みでした。'.
-#                     format(*udp_ip))
-#         elif raiz.args == (13, 'Permission denied'):
-#             pass
-#
-#     except OverflowError as raiz:
-#       # getsockaddrarg: port must be 0-65535.
-#         udp_sock.close()
-#         udp_sock = None
-#         logger.error('cannot bind({}). reason={}'.format(udp_ip, raiz.args))
-#     return ret
-#
 
 def are_on_the_same_network_endpoint(You, I):
     if You[0] == I[0]:
