@@ -239,7 +239,7 @@ class Node(node.Node):
             node_office_client.byebye()
 
     def __str__(self):
-        return 'Node(id={}, addr={})'.format(self.id, self.udp_ip)
+        return 'Node(id={}, addr={})'.format(self.id, self.udp_addr)
 
     def update(self, k=b''):
         self.key.update(k)
