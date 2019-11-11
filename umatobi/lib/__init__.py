@@ -90,17 +90,19 @@ def sock_make(sock, host, port, v4_v6=None, tcp_udp=None):
 def sock_bind(sock, host, port, v4_v6=None, tcp_udp=None):
     result = False
 
+    addr = (host, port)
+
     if sock is None:
         sock = sock_create(v4_v6, tcp_udp)
         if sock is None:
-            return (None, None, result)
-
-    addr = (host, port)
+            return (None, addr, result)
 
     error = None
     try:
         sock.bind(addr)
         result = True
+    except socket.timeout as err:
+        error = err
     except socket.error as err:
         if err.args in (
             (98, 'Address already in use',),
@@ -110,8 +112,6 @@ def sock_bind(sock, host, port, v4_v6=None, tcp_udp=None):
             pass
         else:
             raise err
-        error = err
-    except socket.timeout as err:
         error = err
     except TypeError as err:
         if err.args in (

@@ -105,14 +105,16 @@ class LibTests(unittest.TestCase):
 
         sock.close()
 
-    def test_sock_bind(self):
+    def test_sock_bind_by_mock(self):
         host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcp'
         addr = host, port
-        with patch('umatobi.lib.socket.socket') as mock_socket:
-            sock = sock_bind(None, host, port, v4_v6, tcp_udp)
+        with patch('umatobi.lib.socket.socket', autospec=socket.socket) as mock_socket:
+            sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
+        self.assertIsInstance(sock, socket.socket)
+        self.assertEqual(addr, (host, port))
+        self.assertTrue(result)
         mock_socket.assert_called_with(ADDRESS_FAMILY['v4'],
                                        SOCKET_KIND['tcp'])
-        self.assertIsInstance(sock, MagicMock)
         sock.bind.assert_called_with(addr)
 
     def test_sock_bind_real(self):
@@ -123,10 +125,10 @@ class LibTests(unittest.TestCase):
         #                           ADDRESS_FAMILY[v4_v6], SOCKET_KIND['tcp'])
         # (family, type, proto, canonname, sockaddr)
 
-        addr = host, port
-        sock = sock_bind(None, host, port, v4_v6, tcp_udp)
-
+        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
         self.assertIsInstance(sock, socket.socket)
+        self.assertEqual(addr, (host, port))
+        self.assertTrue(result)
 
         got_ip, got_port = sock.getsockname()
         sock.close()
@@ -134,19 +136,18 @@ class LibTests(unittest.TestCase):
         self.assertEqual(got_ip, expected_ip)
         self.assertEqual(got_port, port)
 
-    def test_sock_bind_fail_by_socket_error(self):
+    def test_sock_bind_fail_by_socket_timeout_error(self):
         host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcp'
-        # expected_ip = \
-        #        socket.getaddrinfo(host, port,
-        #                           ADDRESS_FAMILY[v4_v6], SOCKET_KIND['tcp'])
-        # (family, type, proto, canonname, sockaddr)
 
-        addr = host, port
         with patch('umatobi.lib.socket.socket.bind',
                     side_effect=socket.timeout) as mock_bind:
-            sock = sock_bind(None, host, port, v4_v6, tcp_udp)
-
+            sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
         self.assertIsInstance(sock, socket.socket)
+        self.assertEqual(addr, (host, port))
+        self.assertFalse(result)
+
+        mock_bind.assert_called_with((host, port))
+
         sock.close()
 
     def test_sock_connect(self):
@@ -625,29 +626,39 @@ val_text: text context
 
     def test_sock_bind_fail1(self):
         host, port, v4_v6, tcp_udp = None, 44444, 'v4', 'tcp'
-        addr = host, port
-        with patch('umatobi.lib.socket.socket') as mock_socket:
-            self.assertIsNone(sock_bind(None, host, port, v4_v6, tcp_udp))
-        mock_socket.assert_not_called()
+
+        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
+        self.assertIsInstance(sock, socket.socket)
+        self.assertEqual(addr, (host, port))
+        self.assertFalse(result)
+
+        sock.close()
 
     def test_sock_bind_fail2(self):
         host, port, v4_v6, tcp_udp = 'localhost', None, 'v4', 'tcp'
-        addr = host, port
-        with patch('umatobi.lib.socket.socket') as mock_socket:
-            self.assertIsNone(sock_bind(None, host, port, v4_v6, tcp_udp))
-        mock_socket.assert_not_called()
+
+        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
+        self.assertIsInstance(sock, socket.socket)
+        self.assertEqual(addr, (host, port))
+        self.assertFalse(result)
+
+        sock.close()
 
     def test_sock_bind_fail3(self):
         host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v444444', 'tcp'
-        addr = host, port
-        sock = sock_bind(None, host, port, v4_v6, tcp_udp)
+
+        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
         self.assertIsNone(sock)
+        self.assertEqual(addr, (host, port))
+        self.assertFalse(result)
 
     def test_sock_bind_fail4(self):
         host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcppppp'
-        addr = host, port
-        sock = sock_bind(None, host, port, v4_v6, tcp_udp)
+
+        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
         self.assertIsNone(sock)
+        self.assertEqual(addr, (host, port))
+        self.assertFalse(result)
 
     def test_sock_connect_fail1(self):
         host, port, v4_v6, tcp_udp = None, 44444, 'v4', 'tcp'
