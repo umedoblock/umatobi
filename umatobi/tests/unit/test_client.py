@@ -303,22 +303,6 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(recved_mail, b'break down.')
         self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
 
-    @mock.patch.object(umatobi.simulator.client.Client, '_watch_mailbox', autospec=True)
-    def test__waits_to_break_down2(self, mock_client):
-        mock_client.return_value = b'break down.'
-        watson_office_addr = ('localhost', 11111)
-        num_nodes = 10
-
-        client = Client(watson_office_addr, num_nodes)
-
-        client._tcp_sock = mock.MagicMock()
-        client._tcp_sock.recv.return_value = b'break down.'
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            recved_mail = client._waits_to_break_down()
-        self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
-        self.assertEqual(recved_mail, b'break down.')
-      # self.assertRegex(cm.output[1], r'^INFO:umatobi:.*\._waits_to_break_down\(\), .* got break down from \.*')
-
     def test__run_a_way(self):
         pass
 
