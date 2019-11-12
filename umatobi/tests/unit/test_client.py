@@ -299,6 +299,7 @@ class ClientTests(unittest.TestCase):
         client._tcp_sock.recv.return_value = b'break down.'
         with self.assertLogs('umatobi', level='INFO') as cm:
             recved_mail = client._waits_to_break_down()
+        client._tcp_sock.recv.assert_called_with(client.LETTER_SIZE)
         self.assertEqual(recved_mail, b'break down.')
         self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
 

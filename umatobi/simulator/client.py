@@ -151,7 +151,7 @@ class Client(object):
         recved_mail = b''
         while True:
             logger.debug(f"{self}._waits_to_break_down(), _tcp_sock={self._tcp_sock}, tries={tries}")
-            recved_mail = self._watch_mailbox(self._tcp_sock)
+            recved_mail = self._watch_mailbox()
             logger.info(f"{self}._waits_to_break_down(), got mail={recved_mail} from {self._tcp_sock}, tries={tries}.")
             if not recved_mail:
                 continue
