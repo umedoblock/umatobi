@@ -216,11 +216,20 @@ class LibTests(unittest.TestCase):
         mock_sock.socket.assert_called_once_with(ADDRESS_FAMILY['v4'],
                                                  SOCKET_KIND['tcp'])
 
-        with patch.object(tcp_sock, 'sendall', side_effect=socket.timeout):
-            with self.assertLogs('umatobi', level='INFO') as cm:
-                result = sock_send(tcp_sock, send_data)
-        self.assertRegex(cm.output[0], r".+ got timeout\.")
+    def test_sock_sendall_fail_by_socket_timeout(self):
+        with patch('umatobi.lib.socket.socket', autospec=socket.socket):
+            tcp_sock = sock_create('v4', 'tcp')
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with patch.object(tcp_sock, 'sendall',
+                              side_effect=socket.timeout) as mock_sendall:
+                result = sock_send(tcp_sock, b'timeout!')
+        self.assertEqual(cm.output[0],
+            fr'INFO:umatobi:{tcp_sock}.sendall() got timeout.')
         self.assertFalse(result)
+        mock_sendall.assert_called_with(b'timeout!')
+
+        tcp_sock.close()
 
     def test_sock_recv_ok_tcp(self):
         with patch('umatobi.lib.socket', autospec=True, spec_set=True):

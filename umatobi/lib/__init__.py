@@ -158,7 +158,7 @@ def sock_send(tcp_sock, data):
     try:
         result = tcp_sock.sendall(data)
     except socket.timeout as e:
-        logger.info(f"{tcp_sock} got timeout.")
+        logger.info(f"{tcp_sock}.sendall() got timeout.")
         return False
     return True
 
