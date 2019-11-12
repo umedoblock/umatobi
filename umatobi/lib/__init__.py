@@ -166,6 +166,7 @@ def sock_recv(tcp_sock, buf_size):
     try:
         recved_data = tcp_sock.recv(buf_size)
     except socket.timeout:
+        logger.info(f"{tcp_sock}.recv({buf_size}) got timeout.")
         recved_data = None
 
     return recved_data

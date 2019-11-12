@@ -246,9 +246,18 @@ class LibTests(unittest.TestCase):
             recved_data = sock_recv(udp_sock, 1024)
         self.assertEqual(recved_data, expected_recv)
 
-        with patch.object(udp_sock, 'recv', side_effect=socket.timeout):
-            recved_data = sock_recv(udp_sock, 1024)
+    def test_sock_recv_fail_by_socket_timeout(self):
+        with patch('umatobi.lib.socket.socket', autospec=socket.socket):
+            tcp_sock = sock_create('v4', 'tcp')
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with patch.object(tcp_sock, 'recv', side_effect=socket.timeout):
+                recved_data = sock_recv(tcp_sock, 1024)
+        self.assertEqual(cm.output[0],
+            fr'INFO:umatobi:{tcp_sock}.recv(1024) got timeout.')
         self.assertIsNone(recved_data)
+
+        tcp_sock.close()
 
     def test_are_on_the_same_network_endpoint(self):
         pass
