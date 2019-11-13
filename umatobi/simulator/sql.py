@@ -27,6 +27,7 @@ class SQL(object):
         self._cur = None
         self._create_table = {}
         self._schema = None
+        self._closed = True
 
         if self.schema_path and os.path.isfile(self.schema_path):
             self.read_schema()
@@ -52,6 +53,7 @@ class SQL(object):
                 os.makedirs(db_dir_name, exist_ok=True)
         try:
             self._conn = sqlite3.connect(self.db_path)
+            self._closed = False
         except sqlite3.OperationalError as e:
             if e.args[0] != 'unable to open database file':
                 raise(e)
@@ -166,6 +168,10 @@ class SQL(object):
         self.commit()
         self._cur.close()
         self._conn.close()
+        self._closed = True
+
+    def closed(self):
+        return self._closed
 
     def inserts(self, table_name, tups):
       # print('tups =', tups)
