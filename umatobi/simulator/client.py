@@ -313,7 +313,10 @@ class Client(object):
     def _watch_mailbox(self, letter_size=LETTER_SIZE):
         logger.debug(f"{self}._watch_mailbox(letter_size={letter_size})")
         recved_mail = sock_recv(self._tcp_sock, letter_size)
-        logger.info(f"{self}._watch_mailbox() returns {recved_mail.decode()}.")
+        if recved_mail is None:
+            logger.info(f"{self}._watch_mailbox() returns None.")
+        else:
+            logger.info(f"{self}._watch_mailbox() returns a mail length of {len(recved_mail)}.")
         return recved_mail
 
     def _say_good_bye(self):

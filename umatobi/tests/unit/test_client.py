@@ -384,7 +384,39 @@ class ClientTests(unittest.TestCase):
         pass
 
     def test__watch_mailbox(self):
-        pass
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 100
+        client = Client(watson_office_addr, num_nodes)
+        client._tcp_sock = MagicMock()
+
+        recved_data = b'_watch_mailbox() got a binary message'
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with patch.object(client._tcp_sock, 'recv',
+                 return_value=recved_data) as mock_tcp_sock:
+                recved_mail = client._watch_mailbox()
+        self.assertEqual(recved_mail, recved_data)
+        self.assertEqual(cm.output[0], f"INFO:umatobi:{client}._watch_mailbox() returns a mail length of {len(recved_data)}.")
+
+        client._tcp_sock.close()
+
+    def test__watch_mailbox_fail_by_socket_timeout(self):
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 100
+        client = Client(watson_office_addr, num_nodes)
+        client._tcp_sock = MagicMock()
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with patch.object(client._tcp_sock,
+                    'recv', side_effect=socket.timeout) as mock_tcp_sock:
+                recved_mail = client._watch_mailbox()
+        mock_tcp_sock.assert_called_with(client.LETTER_SIZE)
+        self.assertIsNone(recved_mail)
+        self.assertEqual(cm.output[0],
+            f"INFO:umatobi:{client._tcp_sock}.recv(1024) got timeout.")
+        self.assertEqual(cm.output[1],
+            f"INFO:umatobi:{client}._watch_mailbox() returns None.")
+
+        client._tcp_sock.close()
 
     def test__say_good_bye(self):
         pass
