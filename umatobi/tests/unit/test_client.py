@@ -1,5 +1,5 @@
 import re, os, io, importlib
-import sys, shutil, sqlite3, multiprocessing
+import sys, shutil, sqlite3, multiprocessing, signal
 from unittest import mock
 from unittest.mock import MagicMock
 import unittest
@@ -304,7 +304,44 @@ class ClientTests(unittest.TestCase):
         self.assertRegex(cm.output[0], r'^INFO:umatobi:.*\._waits_to_break_down\(\)')
 
     def test__run_a_way(self):
-        pass
+        # prepare ... start !
+        watson_office_addr = ('localhost', 11111)
+        num_nodes = 10
+        client = Client(watson_office_addr, num_nodes)
+        client.client_db = MagicMock(autospec=SQL)
+        mocked_start_up_orig = SimulationTime()
+        mocked_reply = {
+            'client_id': 0,
+            'start_up_iso8601': mocked_start_up_orig.get_iso8601(),
+            'node_index': 0,
+            'log_level': 'INFO',
+        }
+        with patch('umatobi.simulator.client.socket.socket', autospec=socket.socket) as mock_socket:
+            with patch.object(client, '_hello_watson', return_value=mocked_reply) as mock_hello_watson:
+                client._consult_watson()
+        client._confesses_darkness()
+
+        # prepare ... DONE !
+
+#       self.assertFalse(client.client_db.closed())
+        self.assertGreaterEqual(client.num_darkness, 1)
+        self.assertEqual(len(client.darkness_processes), client.num_darkness)
+        self.assertFalse(client.leave_there.is_set())
+        for darkness_p in client.darkness_processes:
+            self.assertTrue(darkness_p.is_alive())
+        self.assertEqual(client.total_created_nodes, 0)
+
+        # main test
+        client._run_a_way()
+
+#       self.assertTrue(client.client_db.closed())
+        self.assertGreaterEqual(client.num_darkness, 1)
+        self.assertEqual(len(client.darkness_processes), client.num_darkness)
+        self.assertTrue(client.leave_there.is_set())
+        for darkness_p in client.darkness_processes:
+            self.assertFalse(darkness_p.is_alive())
+            self.assertEqual(darkness_p.exitcode(), -signal.SIGTERM)
+        self.assertEqual(client.total_created_nodes, num_nodes)
 
     def test__come_to_a_bad_end(self):
         pass
