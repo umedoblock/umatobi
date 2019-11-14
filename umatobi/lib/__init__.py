@@ -171,12 +171,12 @@ def sock_recv(tcp_sock, buf_size):
 
     return recved_data
 
-def are_on_the_same_network_endpoint(You, I):
-    if You[0] == I[0]:
-        logger.info(f"You(={You}) and I(={I}) refer to the same network endpoint.")
+def addr_on_localhost(addr):
+    if addr[0] in ('localhost', '127.0.0.1'):
+        logger.info(f'addr{addr} is on localhost.')
         return True
     else:
-        logger.info(f"You(={You}) and I(={I}) refer to the same network endpoint.")
+        logger.info(f'addr{addr} is not on localhost.')
         return False
 
 def get_host_port(host_port):

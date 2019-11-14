@@ -268,8 +268,27 @@ class LibTests(unittest.TestCase):
 
         tcp_sock.close()
 
-    def test_are_on_the_same_network_endpoint(self):
-        pass
+    def test_addr_on_localhost(self):
+        addr = ('localhost', 8888)
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            self.assertTrue(addr_on_localhost(addr))
+        self.assertEqual(cm.output[0], f'INFO:umatobi:addr={addr} is on localhost.')
+
+        addr = ('127.0.0.1', 8888)
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            self.assertTrue(addr_on_localhost(addr))
+        self.assertEqual(cm.output[0], f'INFO:umatobi:addr={addr} is on localhost.')
+
+    def test_addr_on_localhost_fail(self):
+        addr = ('umatobi.com', 8888)
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            self.assertFalse(addr_on_localhost(addr))
+        self.assertEqual(cm.output[0], f'INFO:umatobi:addr={addr} is not on localhost.')
+
+        addr = ('192.168.1.1', 8888)
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            self.assertFalse(addr_on_localhost(addr))
+        self.assertEqual(cm.output[0], f'INFO:umatobi:addr={addr} is not on localhost.')
 
     def test_get_host_port(self):
         host_port = 'localhost:8888'
