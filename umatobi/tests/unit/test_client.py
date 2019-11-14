@@ -340,7 +340,7 @@ class ClientTests(unittest.TestCase):
         self.assertTrue(client.leave_there.is_set())
         for darkness_p in client.darkness_processes:
             self.assertFalse(darkness_p.is_alive())
-            self.assertEqual(darkness_p.exitcode(), -signal.SIGTERM)
+            self.assertEqual(darkness_p.exitcode, 0)
         self.assertEqual(client.total_created_nodes, num_nodes)
 
     def test__come_to_a_bad_end(self):

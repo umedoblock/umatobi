@@ -181,9 +181,8 @@ class Client(object):
 
         # host のみ比較、 compare only host
         # "on the same network endpoint" stands for otsne
-        otsne = are_on_the_same_network_endpoint(self.watson_office_addr,
-                                                     self._tcp_sock)
-        if otsne:
+        on_localhost = addr_on_localhost(self.watson_office_addr)
+        if on_localhost:
             send_or_not = 'send'
         else:
             send_or_not = 'doesn\'t send'

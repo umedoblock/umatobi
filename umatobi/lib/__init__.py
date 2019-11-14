@@ -173,10 +173,10 @@ def sock_recv(tcp_sock, buf_size):
 
 def addr_on_localhost(addr):
     if addr[0] in ('localhost', '127.0.0.1'):
-        logger.info(f'addr{addr} is on localhost.')
+        logger.info(f'addr={addr} is on localhost.')
         return True
     else:
-        logger.info(f'addr{addr} is not on localhost.')
+        logger.info(f'addr={addr} is not on localhost.')
         return False
 
 def get_host_port(host_port):
