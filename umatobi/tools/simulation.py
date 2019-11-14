@@ -49,9 +49,9 @@ def args_():
     return args
 
 if __name__ == '__main__':
-    start_up_iso8601 = SimulationTime()
+    start_up_orig = SimulationTime()
 
-    logger.info(f"start_up_iso8601={start_up_iso8601}")
+    logger.info(f"start_up_orig={start_up_orig}")
     logger.info("simulation start !")
 
     # 引数の解析
@@ -71,11 +71,11 @@ if __name__ == '__main__':
   #     |-- client.0.db # client_db
   #     `-- client.1.db # client_db
 
-    set_simulation_schema(start_up_iso8601)
+    set_simulation_schema(start_up_orig)
 
     # 各 object を作成するなど。
     watson = Watson(watson_office_addr, args.simulation_seconds,
-                    start_up_iso8601, args.log_level)
+                    start_up_orig, args.log_level)
 
     # Watson start!
     watson.start()
