@@ -100,10 +100,8 @@ if __name__ == '__main__':
     watson.join()
 
     logger.info("simulation end !")
-    shutdown_time = tell_shutdown_time()
-    logger.info(f"shutdown_time={shutdown_time}")
-
-    logger.info(f"shutdown_time={shutdown_time}")
+    shutdown_orig = SimulationTime()
+    logger.info(f"shutdown_orig={shutdown_orig}")
 
     logger.info(f"watson_make_simulation_db() start.")
     simulation_db = sql.SQL(db_path=watson.simulation_db_path,
