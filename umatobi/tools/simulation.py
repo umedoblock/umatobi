@@ -11,7 +11,6 @@ from umatobi.simulator import sql
 def make_client(watson_office_addr, num_nodes):
     client = Client(watson_office_addr, num_nodes)
     client.start()
-    client.join()
 
 def args_():
     parser = argparse.ArgumentParser(description='simulation.')
@@ -105,7 +104,7 @@ if __name__ == '__main__':
 
     logger.info(f"watson_make_simulation_db() start.")
     simulation_db = sql.SQL(db_path=watson.simulation_db_path,
-                            schema_path=watson.schema_path)
+                            schema_path=watson.simulation_schema_path)
     simulation_db.simulation_db_path = watson.simulation_db_path
     watson_make_simulation_db(simulation_db)
     logger.info(f"watson_make_simulation_db() done.")
