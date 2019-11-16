@@ -1,10 +1,15 @@
+import unittest
+
+from umatobi.lib import *
+
 class MakeSimulationDbTests(unittest.TestCase):
 
+    @classmethod
     def setUpClass(cls):
         cls.start_up_orig = SimulationTime()
 
     def setUp(self):
-        self.start_up_orig = ClientTests.start_up_orig
+        self.start_up_orig = MakeSimulationDbTests.start_up_orig
 
     def test_collect_client_dbs(self):
         pass
