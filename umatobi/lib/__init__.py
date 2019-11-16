@@ -187,10 +187,10 @@ def get_host_port(host_port):
 
 def make_fixture(yaml_path, index):
     yaml_dir = os.path.dirname(yaml_path)
-    schema_path, table_name, component = load_yaml(yaml_path)[index]
+    schema_path, table_name, *components = load_yaml(yaml_path)[index]
     schema_path = os.path.join(yaml_dir, schema_path)
     schema_parser = SchemaParser(schema_path)
-    fixture = schema_parser.parse_record(component, table_name)
+    fixture = [schema_parser.parse_record(component, table_name) for component in components]
     return fixture
 
 def converter_blob(b64_encoded_string):

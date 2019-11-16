@@ -23,3 +23,24 @@ test_id_is_null:
 # b'YmFzZTY0IGVuY29kZWQgYmxvYg=='
 # echo -n 'id is null' | python3 -m base64 -e -
 # aWQgaXMgbnVsbA==
+
+test_double:
+- ../fixtures/test.schema
+- test_table
+- id: 0
+  val_null:    'null'
+  val_integer: '0'
+  val_real:    '0.0'
+  val_text:    'id is zero'
+  val_blob:    'aWQgaXMgemVybw=='
+- id: 1
+  val_null:    'null'
+  val_integer: '1'
+  val_real:    '1.0'
+  val_text:    'id is one'
+  val_blob:    'aWQgaXMgb25l'
+# :!echo -n 'id is zero' | python3 -m base64 -e -
+# aWQgaXMgemVybw==
+#
+# :!echo -n 'id is one' | python3 -m base64 -e -
+# aWQgaXMgb25l

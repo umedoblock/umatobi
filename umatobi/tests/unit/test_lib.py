@@ -310,17 +310,17 @@ class LibTests(unittest.TestCase):
       # print('yaml_path =', yaml_path)
         qwer = make_fixture(yaml_path, 'qwer')
 
-        self.assertEqual(qwer, expected_qwer)
+        self.assertEqual(qwer, [expected_qwer])
 
     def test_make_fixture_normal(self):
-        expected_id_is_null = {
+        expected_id_is_null = [{
             'id': 111,
             'val_null': None,
             'val_integer': 10,
             'val_real': 7.5,
             'val_text': 'test area',
             'val_blob': b'base64 encoded blob',
-        }
+        }]
 
         fixture_id_is_null = \
                 make_fixture(TEST_YAML_PATH.replace(ATAT_N, '_schema'),
@@ -328,19 +328,40 @@ class LibTests(unittest.TestCase):
         self.assertEqual(fixture_id_is_null, expected_id_is_null)
 
     def test_make_fixture_id_is_null(self):
-        expected_id_is_null = {
+        expected_id_is_null = [{
             'id': None,
             'val_null': None,
             'val_integer': 0,
             'val_real': 0.0,
             'val_text': 'id is null',
             'val_blob': b'id is null',
-        }
+        }]
 
         fixture_id_is_null = \
                 make_fixture(TEST_YAML_PATH.replace(ATAT_N, '_schema'),
                             'test_id_is_null')
         self.assertEqual(fixture_id_is_null, expected_id_is_null)
+
+    def test_make_fixture_double(self):
+        expected_double = [ {
+            'id': 0,
+            'val_null':    None,
+            'val_integer': 0,
+            'val_real':    0.0,
+            'val_text':    'id is zero',
+            'val_blob':    b'id is zero',
+        }, {
+            'id': 1,
+            'val_null':    None,
+            'val_integer': 1,
+            'val_real':    1.0,
+            'val_text':    'id is one',
+            'val_blob':    b'id is one',
+        } ]
+        double = \
+                make_fixture(TEST_YAML_PATH.replace(ATAT_N, '_schema'),
+                            'test_double')
+        self.assertEqual(double, expected_double)
 
     def test_converter_blob(self):
       # $ echo -n 'converter_blob' | python3 -m base64 -e -
