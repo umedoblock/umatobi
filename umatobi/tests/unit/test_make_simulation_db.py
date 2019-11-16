@@ -11,15 +11,20 @@ class MakeSimulationDbTests(unittest.TestCase):
     def setUpClass(cls):
         cls.start_up_orig = SimulationTime()
 
-        cls.outsider_db = SQL(db_path=TEST_SIMULATION_DB_PATH,
-                              schema_path=SIMULATION_SCHEMA_PATH)
-       #cls.outsider_db.create_db()
-       #cls.outsider_db.access_db()
+        cls.simulation_db = SQL(db_path=TEST_SIMULATION_DB_PATH,
+                                schema_path=SIMULATION_SCHEMA_PATH)
+        cls.simulation_db.create_db()
+
+        cls.outsider_db = SQL(db_path=cls.simulation_db.db_path,
+                              schema_path=cls.simulation_db.schema_path)
+        cls.outsider_db.access_db()
 
     @classmethod
     def tearDownClass(cls):
         cls.outsider_db.close()
-        cls.outsider_db.remove_db()
+
+        cls.simulation_db.close()
+        cls.simulation_db.remove_db()
 
     def setUp(self):
         self.start_up_orig = MakeSimulationDbTests.start_up_orig
