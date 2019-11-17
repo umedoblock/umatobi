@@ -29,11 +29,14 @@ class SQL(object):
         self._schema = None
         self._closed = True
 
+       #print(f'self.schema_path and os.path.isfile(self.schema_path)')
+       #print(f'schema_path={self.schema_path} and os.path.isfile(self.schema_path={self.schema_path})={os.path.isfile(self.schema_path)}')
         if self.schema_path and os.path.isfile(self.schema_path):
             self.read_schema()
 
     def read_schema(self):
         logger.info(f"{self}.read_schema(), schema_path={self.schema_path}")
+       #print(f"{self}.read_schema(), schema_path={self.schema_path}")
         self._schema = configparser.ConfigParser()
         with open(self.schema_path, encoding='utf-8') as f:
             self._schema.read_file(f)
@@ -184,6 +187,16 @@ class SQL(object):
         logger.debug("values=")
         logger.debug(tups[1:])
         self._conn.executemany(static_part + hatenas, tups[1:])
+
+    def inserts_via_dict(self, table_name, seq_contain_dicts):
+        columns = tuple(seq_contain_dicts[0].keys())
+        static_part = f'insert into {table_name} {columns} values '
+        hatenas = '({})'.format(', '.join('?' * len(columns)))
+
+        logger.debug('static_part + hatenas =')
+        logger.debug(static_part + hatenas)
+        self._conn.executemany(static_part + hatenas,
+                              [tuple(d.values()) for d in seq_contain_dicts])
 
     def insert(self, table_name, d):
         sql, values = SQL.construct_insert_by_dict(table_name, d)
