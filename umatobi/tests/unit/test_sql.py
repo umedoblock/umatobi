@@ -249,7 +249,58 @@ class SQLTests(unittest.TestCase):
         self.assertTrue(db.closed())
 
     def test_inserts(self):
-        pass
+        s = datetime.datetime.now()
+        simulation_time = SimulationTime()
+        sql = self.sql
+
+        e = datetime.datetime.now()
+        d_expected = [{
+            'id': 0,
+            'val_null': None,
+            'val_integer': 111,
+            'val_real': 11.1,
+            'val_text': 'text',
+            'val_blob': b'bytes',
+            'now': str(simulation_time),
+            'elapsed_time': (e - s).total_seconds(),
+            'iso8601': str(simulation_time),
+        }, {
+            'id': 1,
+            'val_null': None,
+            'val_integer': 222,
+            'val_real': 22.2,
+            'val_text': 'text',
+            'val_blob': b'bytes',
+            'now': str(simulation_time),
+            'elapsed_time': (e - s).total_seconds(),
+            'iso8601': str(simulation_time),
+        }]
+        sql.inserts_via_dict('test_table', d_expected)
+        sql.commit()
+
+      # d_select = {}
+      # d_select['id'] = 1, d_select
+        d_selected = sql.select('test_table')
+       #print('type(d_selected) =')
+       #print(type(d_selected))
+       #print('d_selected =')
+       #print(d_selected)
+       #tuple(tup) for tup in
+        L = []
+        for obj in d_selected:
+       #    print('obj =', obj)
+       #    print('tuple(obj) =', tuple(obj))
+            L.append(tuple(obj))
+       #print('--')
+
+        L_expected = []
+        for obj in d_expected:
+       #    print('obj2 =', obj)
+       #    print('tuple(obj2.values()) =', tuple(obj.values()))
+            L_expected.append(tuple(obj.values()))
+       #print('--')
+
+        self.assertEqual(L, L_expected)
 
     def test_insert_and_select(self):
         s = datetime.datetime.now()
