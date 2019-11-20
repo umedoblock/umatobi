@@ -298,52 +298,60 @@ class LibTests(unittest.TestCase):
 
     def test_make_fixture(self):
         expected_qwer = \
-            {
+            ({
                 'id': 4,
                 'now_iso8601': '2011-12-22T11:11:44.901234',
                 'addr': '127.0.0.1:22222',
                 'key': b'\xaa' * Key.KEY_OCTETS,
                 'status': 'inactive'
-            }
+            },)
 
         yaml_path = TEST_FIXTURES_PATH.replace(ATAT_N, '')
       # print('yaml_path =', yaml_path)
-        qwer = make_fixture(yaml_path, 'qwer')
+        schema_parser, table_name, qwer = make_fixture(yaml_path, 'qwer')
 
-        self.assertEqual(qwer, [expected_qwer])
+        self.assertEqual(schema_parser.schema_path,
+                         os.path.join(FIXTURES_DIR_PATH,
+                             '../../simulator/simulation.schema'))
+        self.assertEqual(table_name, 'nodes')
+        self.assertEqual(qwer, (expected_qwer))
 
     def test_make_fixture_normal(self):
-        expected_id_is_null = [{
+        expected_id_is_null = (
+            {
             'id': 111,
             'val_null': None,
             'val_integer': 10,
             'val_real': 7.5,
             'val_text': 'test area',
             'val_blob': b'base64 encoded blob',
-        }]
+        },)
 
-        fixture_id_is_null = \
+        schema_parser, table_name, fixture_id_is_null = \
                 make_fixture(TEST_YAML_PATH.replace(ATAT_N, '_schema'),
                             'test_normal')
-        self.assertEqual(fixture_id_is_null, expected_id_is_null)
+        self.assertEqual(table_name, 'test_table')
+        self.assertSequenceEqual(fixture_id_is_null, expected_id_is_null)
 
     def test_make_fixture_id_is_null(self):
-        expected_id_is_null = [{
+        expected_id_is_null = ({
             'id': None,
             'val_null': None,
             'val_integer': 0,
             'val_real': 0.0,
             'val_text': 'id is null',
             'val_blob': b'id is null',
-        }]
+        },)
 
-        fixture_id_is_null = \
+        schema_parser, table_name, fixture_id_is_null = \
                 make_fixture(TEST_YAML_PATH.replace(ATAT_N, '_schema'),
                             'test_id_is_null')
+        self.assertEqual(schema_parser.schema_path, os.path.join(YAML_DIR_PATH, '../fixtures/test.schema'))
+        self.assertEqual(table_name, 'test_table')
         self.assertEqual(fixture_id_is_null, expected_id_is_null)
 
     def test_make_fixture_double(self):
-        expected_double = [ {
+        expected_double = ( {
             'id': 0,
             'val_null':    None,
             'val_integer': 0,
@@ -357,10 +365,12 @@ class LibTests(unittest.TestCase):
             'val_real':    1.0,
             'val_text':    'id is one',
             'val_blob':    b'id is one',
-        } ]
-        double = \
+        } )
+        schema_parser, table_name, double = \
                 make_fixture(TEST_YAML_PATH.replace(ATAT_N, '_schema'),
                             'test_double')
+        self.assertEqual(schema_parser.schema_path, os.path.join(YAML_DIR_PATH, '../fixtures/test.schema'))
+        self.assertEqual(table_name, 'test_table')
         self.assertEqual(double, expected_double)
 
     def test_converter_blob(self):
@@ -941,7 +951,9 @@ class SchemaParserTests(unittest.TestCase):
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
+        self.assertEqual(schema_parser.schema_path, simulation_schema_path)
 
+        self.assertEqual(schema_parser.schema_path, simulation_schema_path)
         self.assertEqual(schema_parser.table_names(), ['simulation', 'clients', 'growings', 'nodes'])
         self.assertIsInstance(schema_parser.converter_tables, dict)
         # see test_construct_converter_tables()
@@ -1009,6 +1021,7 @@ class SchemaParserTests(unittest.TestCase):
         }
 
         schema_parser = SchemaParser(TEST_SCHEMA_PATH)
+        self.assertEqual(schema_parser.schema_path, TEST_SCHEMA_PATH)
 
         self.assertEqual(schema_parser.converter_tables['test_table'],
                          expected_tables['test_table'])
@@ -1038,6 +1051,7 @@ class SchemaParserTests(unittest.TestCase):
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
+        self.assertEqual(schema_parser.schema_path, simulation_schema_path)
         self.assertSequenceEqual(schema_parser.get_table_names(),
                            tuple(expected_items.keys()))
 
@@ -1047,6 +1061,7 @@ class SchemaParserTests(unittest.TestCase):
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
+        self.assertEqual(schema_parser.schema_path, simulation_schema_path)
 
         expected_table_names = ('simulation', 'clients', 'growings', 'nodes')
         self.assertSequenceEqual(schema_parser.get_table_names(),
@@ -1077,6 +1092,7 @@ class SchemaParserTests(unittest.TestCase):
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
+        self.assertEqual(schema_parser.schema_path, simulation_schema_path)
         for table_name in schema_parser.table_names():
             self.assertSequenceEqual(tuple(schema_parser.get_columns(table_name).keys()),
                                            expected_items[table_name])
@@ -1117,6 +1133,7 @@ status: active
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
+        self.assertEqual(schema_parser.schema_path, simulation_schema_path)
         config = configparser.ConfigParser()
         config.read_string(simulation_conf_str)
       # print('config.sections =', tuple(config.sections()))
@@ -1144,6 +1161,7 @@ status: active
 
     def test_set_converter(self):
         sp = schema_parser = SchemaParser(TEST_SCHEMA_PATH)
+        self.assertEqual(schema_parser.schema_path, TEST_SCHEMA_PATH)
 
         with self.assertRaises(KeyError):
             schema_parser.converter_tables['test_table']['blob_column']
@@ -1172,6 +1190,7 @@ status: active
 
     def test_get_converter(self):
         sp = schema_parser = SchemaParser(TEST_SCHEMA_PATH)
+        self.assertEqual(schema_parser.schema_path, TEST_SCHEMA_PATH)
         self.assertEqual(sp.get_converter('test_table', 'id'),
                          converter_integer)
         self.assertEqual(sp.get_converter('test_table', 'val_null'),

@@ -29,8 +29,8 @@ class SQL(object):
         self._schema = None
         self._closed = True
 
-       #print(f'self.schema_path and os.path.isfile(self.schema_path)')
-       #print(f'schema_path={self.schema_path} and os.path.isfile(self.schema_path={self.schema_path})={os.path.isfile(self.schema_path)}')
+       #print(f'schema_path={self.schema_path} and')
+       #print(f'os.path.isfile(self.schema_path={self.schema_path})={os.path.isfile(self.schema_path)}')
         if self.schema_path and os.path.isfile(self.schema_path):
             self.read_schema()
 
@@ -176,17 +176,25 @@ class SQL(object):
     def closed(self):
         return self._closed
 
-    def inserts(self, table_name, tups):
-      # print('tups =', tups)
-        columns = tups[0]
+    def inserts(self, table_name, listed_dict):
+#       print('listed_dict =', listed_dict)
+        columns = listed_dict[0]
         static_part = 'insert into {} {} values '.format(table_name, columns)
         hatenas = '({})'.format(', '.join('?' * len(columns)))
 
-        logger.debug('static_part + hatenas =')
-        logger.debug(static_part + hatenas)
-        logger.debug("values=")
-        logger.debug(tups[1:])
-        self._conn.executemany(static_part + hatenas, tups[1:])
+       #print('static_part + hatenas =')
+       #print(static_part + hatenas)
+       #print("values=")
+       #print(listed_dict[1:])
+#       tupled_values = f"{listed_dict[1:]}"
+       #print('tupled_values =')
+       #print(tupled_values)
+        self._conn.executemany(static_part + hatenas, listed_dict[1:])
+     ###for tup in listed_dict[1:]:
+     ###    print('tup =', tup)
+     ###    print('tup2 =', f'{tup}')
+#    ###    self._conn.executemany(static_part + hatenas, f'{tup}')
+     ###   #self._conn.execute(static_part + hatenas, tup) # OK !
 
     def inserts_via_dict(self, table_name, seq_contain_dicts):
         columns = tuple(seq_contain_dicts[0].keys())

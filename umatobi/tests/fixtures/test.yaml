@@ -63,3 +63,22 @@ asdf:
   addr: '127.0.0.1:22222'
   key: '0x8888888888888888888888888888888888888888888888888888888888888888'
   status: 'inactive'
+
+test_set_nodes:
+- ../../simulator/simulation.schema
+- clients
+- id: 0
+  addr: localhost:10000
+  consult_iso8601: '2011-12-22T11:11:44.901234'
+  thanks_iso8601: '2011-12-22T11:12:20.901234'
+  num_nodes: 10
+  node_index: 0
+  log_level: INFO
+- id: 1
+  addr: localhost:10001
+  consult_iso8601: '2011-12-22T11:11:44.901234'
+  thanks_iso8601: '2011-12-22T11:12:20.901234'
+  num_nodes: 10
+  node_index: 10
+  log_level: INFO
+
