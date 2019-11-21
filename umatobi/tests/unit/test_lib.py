@@ -9,8 +9,34 @@ from umatobi.tests import *
 from umatobi.log import make_logger
 from umatobi.lib import *
 from umatobi.simulator.core.key import Key
+from umatobi.simulator.sql import SQL
 
 class LibTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.start_up_orig = SimulationTime()
+        set_simulation_schema(cls.start_up_orig)
+
+        # yaml_path = 'tests/fixtures/test.yaml'
+        cls.YAML = load_yaml(TEST_FIXTURES_PATH.replace(ATAT_N, ''))
+
+        cls.test_db_path = TEST_DB_PATH
+        cls.test_yaml_path = TEST_FIXTURES_PATH.replace(ATAT_N, '')
+        cls.test_schema_path = TEST_SCHEMA_PATH
+       #print('cls.test_db_path =', cls.test_db_path)
+       #print('cls.test_yaml_path =', cls.test_yaml_path)
+       #print('cls.test_schema_path =', cls.test_schema_path)
+        cls.test_db = SQL(db_path=cls.test_db_path,
+                          schema_path=cls.test_schema_path)
+        cls.test_db.create_db()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.YAML = ''
+
+        cls.test_db.close()
+        cls.test_db.remove_db()
 
     def assert_client_db_path(self, client_db_path):
         self.assertRegex(client_db_path, RE_CLIENT_N_DB)
@@ -372,6 +398,49 @@ class LibTests(unittest.TestCase):
         self.assertEqual(schema_parser.schema_path, os.path.join(YAML_DIR_PATH, '../fixtures/test.schema'))
         self.assertEqual(table_name, 'test_table')
         self.assertEqual(double, expected_double)
+
+    def test_inserts_fixture_multiple_times(self):
+        expected_multiple = ( {
+            'id': 0,
+            'val_null':    None,
+            'val_integer': 0,
+            'val_real':    0.0,
+            'val_text':    'multiple inserts 0',
+            'val_blob':    b'multiple inserts 0',
+            'now':          '2002-11-02T23:22:00.000',
+            'elapsed_time': 100.000,
+            'iso8601':      '2002-11-02T23:22:00.000000',
+        }, {
+            'id': 1,
+            'val_null':    None,
+            'val_integer': 1,
+            'val_real':    1.1,
+            'val_text':    'multiple inserts 1',
+            'val_blob':    b'multiple inserts 1',
+            'now':          '2112-11-12T23:22:11.111',
+            'elapsed_time': 111.111,
+            'iso8601':      '2112-11-12T23:22:11.111111',
+        } )
+
+        db = LibTests.test_db
+        for i in range(2):
+            schema_parser, table_name, fixture = \
+                    inserts_fixture(db, LibTests.test_yaml_path,
+                                f'test_multiple_inserts_{i}')
+            self.assertEqual(schema_parser.schema_path, os.path.join(FIXTURES_DIR_PATH, '../fixtures/test.schema'))
+            self.assertEqual(table_name, 'test_table')
+            self.assertEqual(fixture, (expected_multiple[i],))
+
+            rows = db.select('test_table')
+           #print('rows =', rows)
+           #print('rows[0] =', rows[0])
+           #print('tuple(rows[0]) =', tuple(rows[0]))
+            expected_tuple = [tuple(em.values()) for em in expected_multiple[:i+1]]
+            self.assertEqual(len(rows), len(expected_multiple[:i+1]))
+            inspect_tuple = [tuple(row) for row in rows]
+           #print(' inspect_tuple =', inspect_tuple)
+           #print('expected_tuple =', expected_tuple)
+            self.assertEqual(inspect_tuple, expected_tuple)
 
     def test_converter_blob(self):
       # $ echo -n 'converter_blob' | python3 -m base64 -e -

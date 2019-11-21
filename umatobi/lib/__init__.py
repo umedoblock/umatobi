@@ -195,12 +195,13 @@ def make_fixture(yaml_path, index):
 
 def inserts_fixture(db, yaml_path, index):
     schema_parser, table_name, fixture = make_fixture(yaml_path, index)
-   #print('table_name, fixture =')
-   #print(table_name, fixture)
+   #print('table_name =',table_name)
+   #print('fixture =', fixture)
     if not table_name in db.get_table_names():
         db.create_table(table_name)
     listed_fixture = [tuple(fixture[0].keys())]
     listed_fixture.extend([tuple(x.values()) for x in fixture])
+   #print('listed_fixture =', listed_fixture)
 
    #>>> L = [d.keys()]
    #>>> L

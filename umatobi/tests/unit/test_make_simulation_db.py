@@ -4,6 +4,7 @@ import umatobi
 from umatobi.tests import *
 from umatobi.lib import *
 from umatobi.simulator.sql import SQL
+from umatobi.tools.make_simulation_db import *
 
 class MakeSimulationDbTests(unittest.TestCase):
 
@@ -11,9 +12,13 @@ class MakeSimulationDbTests(unittest.TestCase):
     def setUpClass(cls):
         cls.start_up_orig = SimulationTime()
 
-        cls.simulation_db = SQL(db_path=TEST_SIMULATION_DB_PATH,
+        simulation_db_path = get_simulation_db_path(cls.start_up_orig)
+        schema_path = get_simulation_schema_path(cls.start_up_orig)
+        cls.simulation_db = SQL(db_path=simulation_db_path,
                                 schema_path=SIMULATION_SCHEMA_PATH)
         cls.simulation_db.create_db()
+#       set_simulation_schema(cls.start_up_orig)
+#       cls.simulation_db.create_table('clients')
 
         cls.outsider_db = SQL(db_path=cls.simulation_db.db_path,
                               schema_path=cls.simulation_db.schema_path)
@@ -28,9 +33,11 @@ class MakeSimulationDbTests(unittest.TestCase):
 
     def setUp(self):
         self.start_up_orig = MakeSimulationDbTests.start_up_orig
+        self.simulation_db = MakeSimulationDbTests.simulation_db
+        self.outsider_db = MakeSimulationDbTests.outsider_db
 
-    def test_collect_client_dbs(self):
-        pass
+#   def test_collect_client_dbs(self):
+#       client_dbs = collect_client_dbs(self.simulation_db)
 
     def test_count_nodes(self):
         pass
