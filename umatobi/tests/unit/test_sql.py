@@ -89,7 +89,59 @@ class SQLTests(unittest.TestCase):
         self.assertTrue(sql.closed())
 
     def test_read_schema(self):
-        pass
+        sql = SQL(db_path=':memory:')
+        self.assertEqual(sql.db_path, ':memory:')
+        self.assertFalse(os.path.isfile(sql.db_path))
+        self.assertEqual(sql.schema_path, '')
+
+        self.assertIsNone(sql._conn)
+        self.assertIsNone(sql._cur)
+        self.assertDictEqual(sql._create_table, {})
+
+        self.assertIsNone(sql._schema)
+        self.assertTrue(sql.closed())
+
+        sql.read_schema(TEST_SCHEMA_PATH)
+        self.assertIsNotNone(sql._schema)
+        self.assertTrue(sql.closed())
+        self.assertFalse(os.path.isfile(sql.db_path))
+
+    def test_read_schema_override(self):
+        sql = SQL(db_path=':memory:', schema_path='/not/exist/schema')
+        self.assertEqual(sql.db_path, ':memory:')
+        self.assertFalse(os.path.isfile(sql.db_path))
+        self.assertEqual(sql.schema_path, '/not/exist/schema')
+
+        self.assertIsNone(sql._conn)
+        self.assertIsNone(sql._cur)
+        self.assertDictEqual(sql._create_table, {})
+
+        self.assertIsNone(sql._schema)
+        self.assertTrue(sql.closed())
+
+        sql.read_schema(TEST_SCHEMA_PATH)
+        self.assertEqual(sql.schema_path, TEST_SCHEMA_PATH)
+        self.assertIsNotNone(sql._schema)
+        self.assertTrue(sql.closed())
+
+    def test_read_schema_fail_by_not_found_schema_path(self):
+        sql = SQL(db_path=':memory:', schema_path='/not/found/schema/path')
+        self.assertEqual(sql.db_path, ':memory:')
+        self.assertFalse(os.path.isfile(sql.db_path))
+        self.assertEqual(sql.schema_path, '/not/found/schema/path')
+
+        self.assertIsNone(sql._conn)
+        self.assertIsNone(sql._cur)
+        self.assertDictEqual(sql._create_table, {})
+
+        self.assertIsNone(sql._schema)
+        self.assertTrue(sql.closed())
+
+        with self.assertRaises(FileNotFoundError) as assert_error:
+            sql.read_schema()
+        args = assert_error.exception.args
+        self.assertEqual(args[0], 2)
+        self.assertEqual(args[1], 'No such file or directory')
 
     def test_access_db(self):
         pass
