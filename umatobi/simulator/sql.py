@@ -34,7 +34,9 @@ class SQL(object):
         if self.schema_path and os.path.isfile(self.schema_path):
             self.read_schema()
 
-    def read_schema(self):
+    def read_schema(self, schema_path=None):
+        if schema_path is not None:
+            self.schema_path = schema_path
         logger.info(f"{self}.read_schema(), schema_path={self.schema_path}")
        #print(f"{self}.read_schema(), schema_path={self.schema_path}")
         self._schema = configparser.ConfigParser()
@@ -81,8 +83,11 @@ class SQL(object):
         # ここまで頑張ったところで力尽きました。
         # もう，logger を入れるのは辞めます。
         if self._conn is None:
-            raise RuntimeError('you must call read_table_schema() before call create_table().')
+            raise RuntimeError('you must call create_db() before call create_table().')
 
+        if self._schema is None:
+            logger.error(f'os.path.isfile(schema_path=\'{self.schema_path}\') must return True and')
+            logger.error(f'must call sql.read_schema()')
         table_info = self._schema[table_name]
 
         columns = []

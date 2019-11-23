@@ -173,8 +173,34 @@ class SQLTests(unittest.TestCase):
         self.assertRegex(cm.output[0], r'INFO:umatobi:SQL\(db_path="{}", schema_path=".+/test.schema"\) not found db_path={}\.$'.format(not_found_path, not_found_path))
 
     def test_create_table(self):
-        # see test_create_db_and_table()
-        sql = self.sql
+        sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        sql.create_db()
+
+        self.assertNotIn('test_table', sql.get_table_names())
+        sql.create_table('test_table')
+        self.assertIn('test_table', sql.get_table_names())
+
+    def test_create_table_fail_by__conn_is_None(self):
+        sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+
+        with self.assertRaises(RuntimeError) as assert_error:
+            sql.create_table('test_table')
+        args = assert_error.exception.args
+        self.assertEqual(args[0], 'you must call create_db() before call create_table().')
+
+    def test_create_table_fail_by__schema_is_None(self):
+        sql = SQL(db_path=':memory:')
+        sql.create_db()
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with self.assertRaises(TypeError) as assert_error:
+                sql.create_table('test_table')
+        args = assert_error.exception.args
+
+        self.assertEqual(cm.output[0], f'INFO:umatobi:{sql}.create_table(table_name=test_table)')
+        self.assertEqual(cm.output[1], f'ERROR:umatobi:os.path.isfile(schema_path=\'{sql.schema_path}\') must return True and')
+        self.assertEqual(cm.output[2], 'ERROR:umatobi:must call sql.read_schema()')
+        self.assertEqual(args[0], "'NoneType' object is not subscriptable")
 
     def test_select_one(self):
         pass
