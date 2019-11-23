@@ -11,14 +11,14 @@ class MakeSimulationDbTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.start_up_orig = SimulationTime()
+        set_simulation_schema(cls.start_up_orig)
 
         simulation_db_path = get_simulation_db_path(cls.start_up_orig)
         schema_path = get_simulation_schema_path(cls.start_up_orig)
         cls.simulation_db = SQL(db_path=simulation_db_path,
-                                schema_path=SIMULATION_SCHEMA_PATH)
+                                schema_path=schema_path)
         cls.simulation_db.create_db()
-#       set_simulation_schema(cls.start_up_orig)
-#       cls.simulation_db.create_table('clients')
+        cls.simulation_db.create_table('clients')
 
         cls.outsider_db = SQL(db_path=cls.simulation_db.db_path,
                               schema_path=cls.simulation_db.schema_path)
