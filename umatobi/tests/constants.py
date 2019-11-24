@@ -28,6 +28,10 @@ TEST_DB = 'test.db'
 TEST_YAML = f'test{ATAT_N}.yaml'
 YAML_DIR = 'yaml'
 FIXTURES_DIR = 'fixtures'
+
+TESTS_UNIT_PATH = os.path.join(TESTS_PATH, 'unit')
+TESTS_INTEGRATION_PATH = os.path.join(TESTS_PATH, 'integration')
+
 FIXTURES_DIR_PATH = os.path.join(TESTS_PATH, FIXTURES_DIR)
 YAML_DIR_PATH = os.path.join(TESTS_PATH, YAML_DIR)
 TEST_SCHEMA_PATH = os.path.join(FIXTURES_DIR_PATH, TEST_SCHEMA)
