@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import call
 
 import umatobi
 from umatobi.tests import *
@@ -36,8 +37,37 @@ class MakeSimulationDbTests(unittest.TestCase):
         self.simulation_db = MakeSimulationDbTests.simulation_db
         self.outsider_db = MakeSimulationDbTests.outsider_db
 
-#   def test_collect_client_dbs(self):
-#       client_dbs = collect_client_dbs(self.simulation_db)
+    @patch('os.path.exists', return_value=True)
+    def test_collect_client_dbs(self, mock_exists):
+        yaml_path = TEST_FIXTURES_PATH.replace(ATAT_N, '')
+        simulation_db = MakeSimulationDbTests.simulation_db
+        schema_parser, table_name, fixture = \
+            inserts_fixture(simulation_db,
+                            yaml_path,
+                           'test_collect_client_dbs')
+        expected = []
+        for i in range(len(fixture)):
+            expected.append(call(get_client_db_path(MakeSimulationDbTests.start_up_orig, i)))
+
+        client_dbs = collect_client_dbs(simulation_db,
+                                        MakeSimulationDbTests.start_up_orig)
+
+        self.assertEqual(len(client_dbs), len(fixture))
+        self.assertTrue(all([isinstance(client_db, SQL) for client_db in client_dbs]))
+        mock_exists.assert_called()
+        self.assertEqual(mock_exists.call_count, len(fixture))
+
+       #print()
+       #print('mock_exists.call_args_list =')
+       #print(mock_exists.call_args_list)
+       #print('expected =')
+       #print(expected)
+       #print()
+       #print('mock_exists.method_calls =')
+       #print(mock_exists.method_calls)
+       #print('mock_exists.mock_calls =')
+       #print(mock_exists.mock_calls)
+        self.assertEqual(mock_exists.call_args_list, expected)
 
     def test_count_nodes(self):
         pass

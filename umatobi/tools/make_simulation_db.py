@@ -6,18 +6,24 @@ import sqlite3
 
 from umatobi.log import *
 from umatobi.constants import *
+from umatobi.lib import *
 from umatobi.lib.args import args_make_simulation_db
 from umatobi.simulator.sql import SQL
 
-def collect_client_dbs(simulation_db):
+def collect_client_dbs(simulation_db, start_up_orig):
     client_dbs = []
     client_rows = simulation_db.select('clients', conditions='order by id')
+
+    set_simulation_schema(start_up_orig)
+    simulation_schema_path = get_simulation_schema_path(start_up_orig)
+
     for client_row in client_rows:
         id_, num_nodes_ = (client_row['id'], client_row['num_nodes'])
         logger.debug('id={}, num_nodes_={}'.format(id_, num_nodes_))
-        simulation_db_dir = os.path.dirname(simulation_db.simulation_db_path)
+        simulation_db_dir = os.path.dirname(simulation_db.db_path)
         client_db_path = os.path.join(simulation_db_dir, f"client.{id_}.db")
-        client_db = SQL(db_path=client_db_path)
+        client_db = SQL(db_path=client_db_path,
+                        schema_path=simulation_schema_path)
         client_db.id, client_db.num_nodes = id_, num_nodes_
         logger.debug(f'client_db={client_db}')
         client_db.access_db()
