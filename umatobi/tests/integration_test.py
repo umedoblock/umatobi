@@ -1,7 +1,7 @@
 import unittest
 from test.support import run_unittest
 
-# from umatobi.tests.integration.test_client_with_watson import ClientStoryTests
+from umatobi.tests.integration.test_client_with_watson import ClientStoryTests
 from umatobi.tests.integration.test_make_simulation_db import MakeSimulationDbTests
 
 def test_main():
