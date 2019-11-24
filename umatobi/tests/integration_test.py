@@ -1,7 +1,8 @@
 import unittest
 from test.support import run_unittest
 
-from umatobi.tests.integration.test_client_with_watson import ClientStoryTests
+# from umatobi.tests.integration.test_client_with_watson import ClientStoryTests
+from umatobi.tests.integration.test_make_simulation_db import MakeSimulationDbTests
 
 def test_main():
     # see: Lib/test/test_math.py
@@ -11,6 +12,7 @@ def test_main():
     # suite.addTests(tests)
     # failed
     integration_suite.addTest(unittest.makeSuite(ClientStoryTests))
+    integration_suite.addTest(unittest.makeSuite(MakeSimulationDbTests))
 
     run_unittest(integration_suite)
 

@@ -18,8 +18,6 @@ from umatobi.tests.unit.test_logger import LoggerNodeTests, LoggerClientTests
 from umatobi.tests.unit.test_mock_call_order import MockClientTests
 from umatobi.tests.unit.test_fixture import FixtureTests
 
-from umatobi.tests.unit.test_make_simulation_db import MakeSimulationDbTests
-
 def test_main():
     # see: Lib/test/test_math.py
     unit_suite = unittest.TestSuite()
