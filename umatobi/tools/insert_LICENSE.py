@@ -9,8 +9,7 @@ import os, re
 
 from umatobi.constants import *
 
-LICENSE_c = """
-/* umatobi simulator
+LICENSE_c = """/* umatobi simulator
  *
  * Copyright (c) 2012-2019 梅濁酒(=umedoblock)
  *
