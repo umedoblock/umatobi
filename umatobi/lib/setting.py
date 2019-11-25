@@ -1,3 +1,10 @@
+# umatobi simulator
+#
+# Copyright (c) 2012-2019 梅濁酒(=umedoblock)
+#
+# This software is released under the MIT License.
+# https://github.com/umedoblock/umatobi
+
 class Setting(object):
     def __init__(self, args, conf, attrs):
         # 優先順位は args の方が高い。

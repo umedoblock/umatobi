@@ -1,3 +1,10 @@
+/* umatobi simulator
+ *
+ * Copyright (c) 2012-2019 梅濁酒(=umedoblock)
+ *
+ * This software is released under the MIT License.
+ * https://github.com/umedoblock/umatobi
+ */
 /* tes8.c
  * Copyright (C) 2008 梅濁酒 umedoblock
  */

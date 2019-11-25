@@ -1,3 +1,10 @@
+# umatobi simulator
+#
+# Copyright (c) 2012-2019 梅濁酒(=umedoblock)
+#
+# This software is released under the MIT License.
+# https://github.com/umedoblock/umatobi
+
 # 気になって気になってしょうがないので作成。
 # 10 thread で 10000 件ずつ、計100000の書き込みをする。
 # 書き込み先は それぞれ sqlite, logger。

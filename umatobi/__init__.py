@@ -1,3 +1,10 @@
+# umatobi simulator
+#
+# Copyright (c) 2012-2019 梅濁酒(=umedoblock)
+#
+# This software is released under the MIT License.
+# https://github.com/umedoblock/umatobi
+
 __all__ = ['simulator', 'screen']
 
 __version__ = '0.0'     # See also below and setup.py

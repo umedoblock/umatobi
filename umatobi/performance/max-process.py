@@ -1,3 +1,10 @@
+# umatobi simulator
+#
+# Copyright (c) 2012-2019 梅濁酒(=umedoblock)
+#
+# This software is released under the MIT License.
+# https://github.com/umedoblock/umatobi
+
 # 16.3. multiprocessing — Process-based parallelism
 # 16.3.1.1. The Process class
 
