@@ -15,9 +15,9 @@ from umatobi import lib
 
 class LoggerNodeTests(unittest.TestCase):
     def setUp(self):
-        self.the_moment = lib.make_start_up_orig()
+        self.the_moment = SimulationTime()
         with time_machine(self.the_moment):
-            node_assets = Node.make_node_assets()
+            node_assets = make_node_assets(self.the_moment)
         node = Node(host='localhost', id=1, **node_assets)
         key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
         node.key.update(key)
@@ -33,12 +33,12 @@ class LoggerNodeTests(unittest.TestCase):
 
         node = self.node
 
-        self.master_hand_path = '/tmp/none'
+        node.master_palm_path = '/tmp/none'
         with self.assertLogs('umatobi', level='DEBUG') as cm:
-            ret = node._steal_master_palm()
+            ret = node._steal_a_glance_at_master_palm()
         self.assertIsNone(ret)
-        mock_path.isfile.assert_called_with(node.master_hand_path)
-        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_hand_path={node.master_hand_path}'")
+        mock_path.isfile.assert_called_with(node.master_palm_path)
+        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
 
     def test_steal_master_palm_logger_info2(self):
         node = self.node
@@ -48,10 +48,10 @@ class LoggerNodeTests(unittest.TestCase):
         mock_path.isfile.return_value = False
 
         with self.assertLogs('umatobi', level='INFO') as cm:
-            ret = node._steal_master_palm()
+            ret = node._steal_a_glance_at_master_palm()
         self.assertIsNone(ret)
-        mock_path.isfile.assert_called_with(node.master_hand_path)
-        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_hand_path={node.master_hand_path}'")
+        mock_path.isfile.assert_called_with(node.master_palm_path)
+        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
         patcher.stop()
 
 class LoggerClientTests(unittest.TestCase):
