@@ -57,11 +57,11 @@ if __name__ == "__main__":
 
     for candidate_file in candidate_files:
         exts = 'c|h'
-        if re.search(fr'(\.({exts})$)', file_name):
+        if re.search(fr'(\.({exts})$)', candidate_file):
             LICENSE = LICENSE_c
         else:
             LICENSE = LICENSE_py
-        with open(file_name, "r") as f:
+        with open(candidate_file, "r") as f:
             codes = f.read()
-        with open(file_name, "w") as f:
+        with open(candidate_file, "w") as f:
             print(LICENSE + codes, file=f, end="")
