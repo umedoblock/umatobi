@@ -76,7 +76,7 @@ def fixture(yaml_path, key):
         row = db.select('* from table where key=value')
         return row
 
-# @fixture(TEST_YAML_PATH + ".1", 'foo')
+# @fixture(TEST_ATAT_N_YAML_PATH + ".1", 'foo')
 # def test_fixture_yaml_path1(fixture_load1):
 #     with open(yaml_path) as f:
 #         y = yaml.load(f, Loader=yaml.SafeLoader)
@@ -118,5 +118,5 @@ if __name__ == '__main__':
 #   sample()
 
     dump_yaml_test1()
-    load_yaml_test1(TEST_YAML_PATH.replace(ATAT_N, '1'), 'foo')
-#   fixture(TEST_YAML_PATH, 'foo')
+    load_yaml_test1(TEST_ATAT_N_YAML_PATH.replace(ATAT_N, '1'), 'foo')
+#   fixture(TEST_ATAT_N_YAML_PATH, 'foo')

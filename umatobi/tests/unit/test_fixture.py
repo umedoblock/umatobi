@@ -13,7 +13,6 @@ from umatobi.lib import *
 from umatobi.simulator.core.key import Key
 from umatobi.simulator.sql import SQL
 
-pa = TEST_YAML_PATH.replace(ATAT_N, '1')
 class FixtureTests(unittest.TestCase):
 
     YAML = {}
@@ -23,8 +22,8 @@ class FixtureTests(unittest.TestCase):
         cls.start_up_orig = SimulationTime()
         set_simulation_schema(cls.start_up_orig)
 
-        # yaml_path = 'tests/fixtures/test.yaml'
-        cls.YAML = load_yaml(TEST_FIXTURES_PATH.replace(ATAT_N, ''))
+        # yaml_path = 'tests/assets/test.yaml'
+        cls.YAML = load_yaml(TEST_ATAT_N_YAML_PATH.replace(ATAT_N, ''))
 
         simulation_db_path = get_simulation_db_path(cls.start_up_orig)
         schema_path = get_simulation_schema_path(cls.start_up_orig)
@@ -75,7 +74,7 @@ class FixtureTests(unittest.TestCase):
             },)
 
         db = FixtureTests.simulation_db
-        inserts_fixture(db, TEST_FIXTURES_PATH.replace(ATAT_N, ''),
+        inserts_fixture(db, TEST_ATAT_N_YAML_PATH.replace(ATAT_N, ''),
                        'test_set_nodes')
       # select(self, table_name, select_columns='*', conditions=''):
         rows = db.select('clients', 'id,addr')

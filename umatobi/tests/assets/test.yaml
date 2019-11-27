@@ -1,6 +1,6 @@
 # YAML structure
 # Zero   line        => component key
-# First  line        => relative path of schema from TESTS_PATH
+# First  line        => relative path of schema from TESTS_ASSETS_PATH
 # Second line        => table name
 # Third  line to end => YAML components that correspond to table schema
 
@@ -83,7 +83,7 @@ test_set_nodes:
   log_level: INFO
 
 test_multiple_inserts_0:
-- ../fixtures/test.schema
+- test.schema
 - test_table
 - id: 0
   val_null:     'null'
@@ -96,7 +96,7 @@ test_multiple_inserts_0:
   iso8601:      '2002-11-02T23:22:00.000000'
 
 test_multiple_inserts_1:
-- ../fixtures/test.schema
+- test.schema
 - test_table
 - id: 1
   val_null:    'null'

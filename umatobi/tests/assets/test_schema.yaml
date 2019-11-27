@@ -1,5 +1,5 @@
 test_normal:
-- ../fixtures/test.schema
+- test.schema
 - test_table
 - id: 111
   val_null:    'null'
@@ -11,7 +11,7 @@ test_normal:
 # b'YmFzZTY0IGVuY29kZWQgYmxvYg=='
 
 test_id_is_null:
-- ../fixtures/test.schema
+- test.schema
 - test_table
 - id: 'null'
   val_null:    'null'
@@ -25,7 +25,7 @@ test_id_is_null:
 # aWQgaXMgbnVsbA==
 
 test_double:
-- ../fixtures/test.schema
+- test.schema
 - test_table
 - id: 0
   val_null:    'null'

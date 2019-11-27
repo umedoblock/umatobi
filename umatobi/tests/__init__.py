@@ -62,10 +62,3 @@ def time_machine(the_era):
             yield
         finally:
             pass
-
-def fixtures(f):
-    @functools.wraps(f)
-    def wrapper(self, *args, **kwargs):
-        ret = f(self, *args, **kwargs)
-        return ret
-    return wrapper
