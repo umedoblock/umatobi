@@ -14,7 +14,7 @@ def test_main():
     integration_suite = unittest.TestSuite()
 
     test_loader = unittest.TestLoader()
-    integration_tests = test_loader.discover(TESTS_INTEGRATION_PATH)
+    integration_tests = test_loader.discover(TESTS_INTEGRATION_DIR)
     integration_suite.addTests(integration_tests)
     run_unittest(integration_suite)
 

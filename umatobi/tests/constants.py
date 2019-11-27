@@ -34,14 +34,14 @@ TEST_SCHEMA = 'test.schema'
 TEST_DB = 'test.db'
 TEST_ATAT_N_YAML = f'test{ATAT_N}.yaml'
 
-TESTS_UNIT_PATH = os.path.join(TESTS_PATH, 'unit')
-TESTS_INTEGRATION_PATH = os.path.join(TESTS_PATH, 'integration')
-TESTS_ASSETS_PATH = os.path.join(TESTS_PATH, 'assets')
+TESTS_UNIT_DIR = os.path.join(TESTS_PATH, 'unit')
+TESTS_INTEGRATION_DIR = os.path.join(TESTS_PATH, 'integration')
+TESTS_ASSETS_DIR = os.path.join(TESTS_PATH, 'assets')
 
-TEST_SCHEMA_PATH = os.path.join(TESTS_ASSETS_PATH, TEST_SCHEMA)
-TEST_DB_PATH = os.path.join(TESTS_ASSETS_PATH, TEST_DB)
-TEST_SIMULATION_DB_PATH = os.path.join(TESTS_ASSETS_PATH, SIMULATION_DB)
-TEST_ATAT_N_YAML_PATH = os.path.join(TESTS_ASSETS_PATH, TEST_ATAT_N_YAML)
+TESTS_SCHEMA_PATH = os.path.join(TESTS_ASSETS_DIR, TEST_SCHEMA)
+TESTS_DB_PATH = os.path.join(TESTS_ASSETS_DIR, TEST_DB)
+TESTS_SIMULATION_DB_PATH = os.path.join(TESTS_ASSETS_DIR, SIMULATION_DB)
+TESTS_ATAT_N_YAML_PATH = os.path.join(TESTS_ASSETS_DIR, TEST_ATAT_N_YAML)
 
 RE_Y15S = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d[0-5]\d[0-5]\d'
 RE_ISO8601 = r'20\d{2}-[01]\d{1}-[0123]\dT[012]\d:[0-5]\d:[0-5]\d\.\d{6}'

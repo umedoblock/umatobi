@@ -46,7 +46,7 @@ class MakeSimulationDbTests(unittest.TestCase):
 
     @patch('os.path.exists', return_value=True)
     def test_collect_client_dbs(self, mock_exists):
-        yaml_path = TEST_ATAT_N_YAML_PATH.replace(ATAT_N, '')
+        yaml_path = replace_atat_n('')
         simulation_db = MakeSimulationDbTests.simulation_db
         schema_parser, table_name, fixture = \
             inserts_fixture(simulation_db,

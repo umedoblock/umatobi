@@ -26,11 +26,11 @@ class LibTests(unittest.TestCase):
         set_simulation_schema(cls.start_up_orig)
 
         # yaml_path = 'tests/assets/test.yaml'
-        cls.YAML = load_yaml(TEST_ATAT_N_YAML_PATH.replace(ATAT_N, ''))
+        cls.YAML = load_yaml(replace_atat_n(''))
 
-        cls.test_db_path = TEST_DB_PATH
-        cls.test_yaml_path = TEST_ATAT_N_YAML_PATH.replace(ATAT_N, '')
-        cls.test_schema_path = TEST_SCHEMA_PATH
+        cls.test_db_path = TESTS_DB_PATH
+        cls.test_yaml_path = replace_atat_n('')
+        cls.test_schema_path = TESTS_SCHEMA_PATH
        #print('cls.test_db_path =', cls.test_db_path)
        #print('cls.test_yaml_path =', cls.test_yaml_path)
        #print('cls.test_schema_path =', cls.test_schema_path)
@@ -339,12 +339,12 @@ class LibTests(unittest.TestCase):
                 'status': 'inactive'
             },)
 
-        yaml_path = TEST_ATAT_N_YAML_PATH.replace(ATAT_N, '')
+        yaml_path = replace_atat_n('')
       # print('yaml_path =', yaml_path)
         schema_parser, table_name, qwer = make_fixture(yaml_path, 'qwer')
 
         self.assertEqual(schema_parser.schema_path,
-                         os.path.join(TESTS_ASSETS_PATH,
+                         os.path.join(TESTS_ASSETS_DIR,
                              '../../simulator/simulation.schema'))
         self.assertEqual(table_name, 'nodes')
         self.assertEqual(qwer, (expected_qwer))
@@ -361,7 +361,7 @@ class LibTests(unittest.TestCase):
         },)
 
         schema_parser, table_name, fixture_id_is_null = \
-                make_fixture(TEST_ATAT_N_YAML_PATH.replace(ATAT_N, '_schema'),
+                make_fixture(replace_atat_n('_schema'),
                             'test_normal')
         self.assertEqual(table_name, 'test_table')
         self.assertSequenceEqual(fixture_id_is_null, expected_id_is_null)
@@ -377,9 +377,9 @@ class LibTests(unittest.TestCase):
         },)
 
         schema_parser, table_name, fixture_id_is_null = \
-                make_fixture(TEST_ATAT_N_YAML_PATH.replace(ATAT_N, '_schema'),
+                make_fixture(replace_atat_n('_schema'),
                             'test_id_is_null')
-        self.assertEqual(schema_parser.schema_path, os.path.join(TESTS_ASSETS_PATH, 'test.schema'))
+        self.assertEqual(schema_parser.schema_path, os.path.join(TESTS_ASSETS_DIR, 'test.schema'))
         self.assertEqual(table_name, 'test_table')
         self.assertEqual(fixture_id_is_null, expected_id_is_null)
 
@@ -400,9 +400,9 @@ class LibTests(unittest.TestCase):
             'val_blob':    b'id is one',
         } )
         schema_parser, table_name, double = \
-                make_fixture(TEST_ATAT_N_YAML_PATH.replace(ATAT_N, '_schema'),
+                make_fixture(replace_atat_n('_schema'),
                             'test_double')
-        self.assertEqual(schema_parser.schema_path, os.path.join(TESTS_ASSETS_PATH, 'test.schema'))
+        self.assertEqual(schema_parser.schema_path, os.path.join(TESTS_ASSETS_DIR, 'test.schema'))
         self.assertEqual(table_name, 'test_table')
         self.assertEqual(double, expected_double)
 
@@ -434,7 +434,7 @@ class LibTests(unittest.TestCase):
             schema_parser, table_name, fixture = \
                     inserts_fixture(db, LibTests.test_yaml_path,
                                 f'test_multiple_inserts_{i}')
-            self.assertEqual(schema_parser.schema_path, os.path.join(TESTS_ASSETS_PATH, 'test.schema'))
+            self.assertEqual(schema_parser.schema_path, os.path.join(TESTS_ASSETS_DIR, 'test.schema'))
             self.assertEqual(table_name, 'test_table')
             self.assertEqual(fixture, (expected_multiple[i],))
 
@@ -655,17 +655,17 @@ class LibTests(unittest.TestCase):
         pass
 
     def test_load_yaml(self):
-        y = load_yaml(TEST_ATAT_N_YAML_PATH.replace(ATAT_N, '1'))
+        y = load_yaml(replace_atat_n('1'))
         expected_obj = {'a': 1}
         self.assertEqual(y, expected_obj)
 
     def test_load_yaml2(self):
-        y = load_yaml(TEST_ATAT_N_YAML_PATH.replace(ATAT_N, '2'))
+        y = load_yaml(replace_atat_n('2'))
         expected_obj = {'b': {'c': 3, 'd': 4}}
         self.assertEqual(y, expected_obj)
 
     def test_load_yaml3(self):
-        y = load_yaml(TEST_ATAT_N_YAML_PATH.replace(ATAT_N, '3'))
+        y = load_yaml(replace_atat_n('3'))
         expected_obj = {
             'e': {
                 'id': 1,
@@ -681,7 +681,7 @@ class LibTests(unittest.TestCase):
         self.assertEqual(y, expected_obj)
 
     def test_load_yaml4(self):
-        y = load_yaml(TEST_ATAT_N_YAML_PATH.replace(ATAT_N, '4'))
+        y = load_yaml(replace_atat_n('4'))
         expected_obj = {
             'foo': [
                 'schema_path',
@@ -1096,8 +1096,8 @@ class SchemaParserTests(unittest.TestCase):
             }
         }
 
-        schema_parser = SchemaParser(TEST_SCHEMA_PATH)
-        self.assertEqual(schema_parser.schema_path, TEST_SCHEMA_PATH)
+        schema_parser = SchemaParser(TESTS_SCHEMA_PATH)
+        self.assertEqual(schema_parser.schema_path, TESTS_SCHEMA_PATH)
 
         self.assertEqual(schema_parser.converter_tables['test_table'],
                          expected_tables['test_table'])
@@ -1236,8 +1236,8 @@ status: active
         self.assertEqual(records.nodes['status'], 'active')
 
     def test_set_converter(self):
-        sp = schema_parser = SchemaParser(TEST_SCHEMA_PATH)
-        self.assertEqual(schema_parser.schema_path, TEST_SCHEMA_PATH)
+        sp = schema_parser = SchemaParser(TESTS_SCHEMA_PATH)
+        self.assertEqual(schema_parser.schema_path, TESTS_SCHEMA_PATH)
 
         with self.assertRaises(KeyError):
             schema_parser.converter_tables['test_table']['blob_column']
@@ -1265,8 +1265,8 @@ status: active
         self.assertEqual(schema_parser.converter_tables['test_table']['null_column'], converter_null)
 
     def test_get_converter(self):
-        sp = schema_parser = SchemaParser(TEST_SCHEMA_PATH)
-        self.assertEqual(schema_parser.schema_path, TEST_SCHEMA_PATH)
+        sp = schema_parser = SchemaParser(TESTS_SCHEMA_PATH)
+        self.assertEqual(schema_parser.schema_path, TESTS_SCHEMA_PATH)
         self.assertEqual(sp.get_converter('test_table', 'id'),
                          converter_integer)
         self.assertEqual(sp.get_converter('test_table', 'val_null'),

@@ -23,7 +23,7 @@ class FixtureTests(unittest.TestCase):
         set_simulation_schema(cls.start_up_orig)
 
         # yaml_path = 'tests/assets/test.yaml'
-        cls.YAML = load_yaml(TEST_ATAT_N_YAML_PATH.replace(ATAT_N, ''))
+        cls.YAML = load_yaml(replace_atat_n(''))
 
         simulation_db_path = get_simulation_db_path(cls.start_up_orig)
         schema_path = get_simulation_schema_path(cls.start_up_orig)
@@ -74,7 +74,7 @@ class FixtureTests(unittest.TestCase):
             },)
 
         db = FixtureTests.simulation_db
-        inserts_fixture(db, TEST_ATAT_N_YAML_PATH.replace(ATAT_N, ''),
+        inserts_fixture(db, replace_atat_n(''),
                        'test_set_nodes')
       # select(self, table_name, select_columns='*', conditions=''):
         rows = db.select('clients', 'id,addr')

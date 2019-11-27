@@ -23,6 +23,9 @@ D_TIMEDELTA = {
 }
 TD_ZERO = timedelta(0, 0, 0)
 
+def replace_atat_n(new):
+    return  TESTS_ATAT_N_YAML_PATH.replace(ATAT_N, new)
+
 def make_node_assets(start_up_orig=None):
     byebye_nodes = threading.Event()
     if not start_up_orig:

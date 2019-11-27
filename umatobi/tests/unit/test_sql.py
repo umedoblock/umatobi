@@ -44,11 +44,11 @@ def insert_test_table_n_records(db, n_records):
 class SQLTests(unittest.TestCase):
 
     def deleteTestDb(self):
-        if os.path.isfile(TEST_DB_PATH):
-            os.remove(TEST_DB_PATH)
+        if os.path.isfile(TESTS_DB_PATH):
+            os.remove(TESTS_DB_PATH)
 
     def setUp(self):
-        sql = SQL(db_path=TEST_DB_PATH, schema_path=TEST_SCHEMA_PATH)
+        sql = SQL(db_path=TESTS_DB_PATH, schema_path=TESTS_SCHEMA_PATH)
         self.assertTrue(sql._schema)
         self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
@@ -69,29 +69,29 @@ class SQLTests(unittest.TestCase):
         pass
 
     def test___init___schema_is_True_by_db_path1(self):
-        sql = SQL(db_path='', schema_path=TEST_SCHEMA_PATH)
+        sql = SQL(db_path='', schema_path=TESTS_SCHEMA_PATH)
         self.assertTrue(sql._schema)
         self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertTrue(sql.closed())
 
     def test___init___schema_is_True_by_db_path2(self):
-        sql = SQL(schema_path=TEST_SCHEMA_PATH)
+        sql = SQL(schema_path=TESTS_SCHEMA_PATH)
         self.assertTrue(sql._schema)
         self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertTrue(sql.closed())
 
     def test___init___fail_by_schema_path_not_exist(self):
-        sql = SQL(db_path=TEST_DB_PATH, schema_path='/not/exist/file')
+        sql = SQL(db_path=TESTS_DB_PATH, schema_path='/not/exist/file')
         self.assertFalse(sql._schema)
         self.assertTrue(sql.closed())
 
     def test___init___fail_by_schema_path1(self):
-        sql = SQL(db_path=TEST_DB_PATH, schema_path='')
+        sql = SQL(db_path=TESTS_DB_PATH, schema_path='')
         self.assertFalse(sql._schema)
         self.assertTrue(sql.closed())
 
     def test___init___fail_by_schema_path2(self):
-        sql = SQL(db_path=TEST_DB_PATH)
+        sql = SQL(db_path=TESTS_DB_PATH)
         self.assertFalse(sql._schema)
         self.assertTrue(sql.closed())
 
@@ -108,7 +108,7 @@ class SQLTests(unittest.TestCase):
         self.assertIsNone(sql._schema)
         self.assertTrue(sql.closed())
 
-        sql.read_schema(TEST_SCHEMA_PATH)
+        sql.read_schema(TESTS_SCHEMA_PATH)
         self.assertIsNotNone(sql._schema)
         self.assertTrue(sql.closed())
         self.assertFalse(os.path.isfile(sql.db_path))
@@ -126,8 +126,8 @@ class SQLTests(unittest.TestCase):
         self.assertIsNone(sql._schema)
         self.assertTrue(sql.closed())
 
-        sql.read_schema(TEST_SCHEMA_PATH)
-        self.assertEqual(sql.schema_path, TEST_SCHEMA_PATH)
+        sql.read_schema(TESTS_SCHEMA_PATH)
+        self.assertEqual(sql.schema_path, TESTS_SCHEMA_PATH)
         self.assertIsNotNone(sql._schema)
         self.assertTrue(sql.closed())
 
@@ -158,7 +158,7 @@ class SQLTests(unittest.TestCase):
 
     @patch.object(sqlite3, 'connect')
     def test_create_db_db_dir_name_empty(self, mock_sqlite3_connect):
-        sql = SQL(db_path='fixture.db', schema_path=TEST_SCHEMA_PATH)
+        sql = SQL(db_path='fixture.db', schema_path=TESTS_SCHEMA_PATH)
         self.assertTrue(sql._schema)
         self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
@@ -172,7 +172,7 @@ class SQLTests(unittest.TestCase):
         self.assertIsInstance(sql._cur, MagicMock)
 
     def test_create_db_and_table_on_memory(self):
-        sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        sql = SQL(db_path=':memory:', schema_path=TESTS_SCHEMA_PATH)
         self.assertTrue(sql._schema)
         self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
@@ -199,7 +199,7 @@ class SQLTests(unittest.TestCase):
         self.assertFalse(sql.closed())
 
     def test_remove_db_memory(self):
-        sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        sql = SQL(db_path=':memory:', schema_path=TESTS_SCHEMA_PATH)
         self.assertTrue(sql._schema)
         self.assertIsInstance(sql._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(sql.db_path))
@@ -217,7 +217,7 @@ class SQLTests(unittest.TestCase):
 
     def test_remove_db_not_memory(self):
         not_found_path = '/not/found/db_path'
-        sql = SQL(db_path=not_found_path, schema_path=TEST_SCHEMA_PATH)
+        sql = SQL(db_path=not_found_path, schema_path=TESTS_SCHEMA_PATH)
         self.assertTrue(sql._schema)
         self.assertTrue(sql.closed())
 
@@ -232,7 +232,7 @@ class SQLTests(unittest.TestCase):
         self.assertRegex(cm.output[0], r'INFO:umatobi:SQL\(db_path="{}", schema_path=".+/test.schema"\) not found db_path={}\.$'.format(not_found_path, not_found_path))
 
     def test_create_table(self):
-        sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        sql = SQL(db_path=':memory:', schema_path=TESTS_SCHEMA_PATH)
         sql.create_db()
 
         self.assertNotIn('test_table', sql.get_table_names())
@@ -240,7 +240,7 @@ class SQLTests(unittest.TestCase):
         self.assertIn('test_table', sql.get_table_names())
 
     def test_create_table_fail_by__conn_is_None(self):
-        sql = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        sql = SQL(db_path=':memory:', schema_path=TESTS_SCHEMA_PATH)
 
         with self.assertRaises(RuntimeError) as assert_error:
             sql.create_table('test_table')
@@ -283,7 +283,7 @@ class SQLTests(unittest.TestCase):
 #       print('records=', records)
 #       print(records)
 #       print('-------------------------------------')
-        memory_db = SQL(db_path=':memory:', schema_path=TEST_SCHEMA_PATH)
+        memory_db = SQL(db_path=':memory:', schema_path=TESTS_SCHEMA_PATH)
         self.assertTrue(memory_db._schema)
         self.assertIsInstance(memory_db._schema, configparser.ConfigParser)
         self.assertFalse(os.path.isfile(memory_db.db_path))
