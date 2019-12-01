@@ -86,14 +86,14 @@ class SQL(object):
                 logger.info(f"{self} not found db_path={self.db_path}.")
 
     def create_table(self, table_name):
-        logger.info(f"{self}.create_table(table_name={table_name})")
+        logger.info(f'{self}.create_table(table_name="{table_name}")')
         # ここまで頑張ったところで力尽きました。
         # もう，logger を入れるのは辞めます。
         if self._conn is None:
             raise RuntimeError('you must call create_db() before call create_table().')
 
         if self._schema is None:
-            logger.error(f'os.path.isfile(schema_path=\'{self.schema_path}\') must return True and')
+            logger.error(f'os.path.isfile(schema_path="{self.schema_path}") must return True and')
             logger.error(f'must call sql.read_schema()')
         table_info = self._schema[table_name]
 
@@ -103,7 +103,7 @@ class SQL(object):
             sp = explain.split('#')
             column = ' '.join([column_name, sp[0]])
             columns += [column]
-        sql = 'create table {} ({})'.format(table_name, ', '.join(columns))
+        sql = f'create table {table_name}({", ".join(columns)})'
         self._create_table[table_name] = sql
         self.execute(sql)
 
@@ -113,14 +113,14 @@ class SQL(object):
         return record[column_name]
 
     def drop_table(self, table_name):
-        sql = 'drop table {}'.format(table_name)
+        sql = f'drop table {table_name}'
         self.execute(sql)
 
     def init_table(self, table_name):
         try:
             self.drop_table(table_name)
         except sqlite3.OperationalError as raiz:
-            if raiz.args[0] != 'no such table: {}'.format(table_name):
+            if raiz.args[0] != f'no such table: {table_name}':
                 raise raiz
         self.create_table(table_name)
 
@@ -140,7 +140,7 @@ class SQL(object):
             for record in records:
                 L.append(tuple(record))
         else:
-            message = 'row_factory(={}) is unknown. Therefore fail safe occured.'.format(self._conn.row_factory)
+            message = f'row_factory(="{self._conn.row_factory}") is unknown. Therefore fail safe occured.'
             raise RuntimeError(message)
         tups = tuple(L)
 #       print('tups =')
@@ -171,12 +171,13 @@ class SQL(object):
         # valuesの要素が一つだなんて事はなさそうだよ。
         # でも、せっかく書いた replace()。
         # 消すのはもったいないので残す。
+        logger.info(f'{self}._cur(={self._cur}).execute(sql="{sql}")')
         if values:
-            logger.info(f"{self}._cur(={self._cur}).execute(sql={sql}, values={values})")
+            logger.info(f'values="{values}"')
             rows = self._cur.execute(sql, values)
         else:
+            logger.info(f'values are empty. ')
             rows = self._cur.execute(sql)
-            logger.debug(f"{self}._cur(={self._cur}).execute(sql={sql})")
         return rows
 
     def close(self):
@@ -191,8 +192,8 @@ class SQL(object):
     def inserts(self, table_name, listed_dict):
 #       print('listed_dict =', listed_dict)
         columns = listed_dict[0]
-        static_part = 'insert into {} {} values '.format(table_name, columns)
-        hatenas = '({})'.format(', '.join('?' * len(columns)))
+        static_part = f'insert into {table_name} {columns} values '
+        hatenas = f'({", ".join("?" * len(columns))})'
 
        #print('static_part + hatenas =')
        #print(static_part + hatenas)
@@ -221,13 +222,13 @@ class SQL(object):
     def insert(self, table_name, d):
         sql, values = SQL.construct_insert_by_dict(table_name, d)
 
-        logger.debug(f'sql={sql} in SQL.insert()')
-        logger.debug(f'values={values} in SQL.insert()')
+        logger.debug(f'sql="{sql}" in SQL.insert()')
+        logger.debug(f'values="{values}" in SQL.insert()')
         self.execute(sql, values)
         return sql, values
 
     def update(self, table_name, d, where):
-        static_part = 'update {} set '.format(table_name)
+        static_part = 'update {table_name} set '
         logger.debug(f'tuple(d.keys()) = {tuple(d.keys())}')
         set_part = ', '.join(['{} = ?'.format(column) for column in d.keys()])
         set_part += ' '
@@ -235,14 +236,14 @@ class SQL(object):
         where_clause = 'where {}'.format(s)
         values = tuple(d.values())
 
-        logger.debug(f'static_part = {static_part}')
-        logger.debug(f'set_part ={set_part}')
-        logger.debug(f's = {s}')
-        logger.debug(f'where_clause = {where_clause}')
+        logger.debug(f'static_part = "{static_part}"')
+        logger.debug(f'set_part = "{set_part}"')
+        logger.debug(f's = "{s}"')
+        logger.debug(f'where_clause = "{where_clause}"')
         sql = static_part + set_part + where_clause
-        logger.debug('update sql=')
+        logger.debug('update sql =')
         logger.debug(sql)
-        logger.debug('values=')
+        logger.debug('values =')
         logger.debug(values)
         self.execute(sql, values)
         return static_part + str(values)
@@ -251,10 +252,9 @@ class SQL(object):
   #     logger.info('called __getattr__() with name={}'.format(name))
 
     def select(self, table_name, select_columns='*', conditions=''):
-        sql = 'select {} from {}'. \
-               format(select_columns, table_name)
+        sql = f'select {select_columns} from {table_name}'
         if conditions:
-            sql += f" {conditions}"
+            sql += f' {conditions}'
         sql += ';'
         logger.debug(f'select sql=')
         logger.debug(sql)
@@ -289,7 +289,7 @@ class SQL(object):
                 schema = row[4]
                 break
         else:
-            schema = 'cannot find "{}" table.'.format(table_name)
+            schema = f'cannot find "{table_name}" table.'
         return schema
 
     def get_column_names(self, table_name):
@@ -307,6 +307,22 @@ class SQL(object):
         return d
 
     def __str__(self):
-        message = 'SQL(db_path="{}", schema_path="{}")'. \
-                   format(self.db_path, self.schema_path)
+        message = (f'SQL('
+                   f'\n'
+                   f'   db_path="{self.db_path}"'
+                   f', \n'
+                   f'   schema_path="{self.schema_path}"'
+                   f', \n'
+                   f'   _schema={self._schema}'
+                   f', \n'
+                   f'   _conn={self._conn}'
+                   f', \n'
+                   f'   _cur={self._cur}'
+                   f', \n'
+                   f'   _closed={self._closed}'
+                   f', \n'
+                   f'   _create_table={self._create_table}'
+                   f')'
+                   f'\n')
+
         return message
