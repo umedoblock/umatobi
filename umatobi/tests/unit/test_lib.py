@@ -439,7 +439,7 @@ class LibTests(unittest.TestCase):
 
         db = LibTests.simulation_db
         schema_parser, table_name, fixture = \
-        inserts_fixture(db, replace_atat_n(''), 'test_set_nodes')
+            inserts_fixture(db, replace_atat_n(''), 'test_set_nodes')
       # select(self, table_name, select_columns='*', conditions=''):
        #print('rows =')
        #print(rows)
