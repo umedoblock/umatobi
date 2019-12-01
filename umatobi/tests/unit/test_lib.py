@@ -26,7 +26,6 @@ class LibTests(unittest.TestCase):
         set_simulation_schema(cls.start_up_orig)
 
         # yaml_path = 'tests/assets/test.yaml'
-        cls.YAML = load_yaml(replace_atat_n(''))
 
         cls.test_db_path = TESTS_DB_PATH
         cls.test_yaml_path = replace_atat_n('')
@@ -38,9 +37,17 @@ class LibTests(unittest.TestCase):
                           schema_path=cls.test_schema_path)
         cls.test_db.create_db()
 
+        simulation_db_path = get_simulation_db_path(cls.start_up_orig)
+        schema_path = get_simulation_schema_path(cls.start_up_orig)
+        cls.simulation_db = SQL(db_path=simulation_db_path,
+                                schema_path=schema_path)
+        cls.simulation_db.create_db()
+
     @classmethod
     def tearDownClass(cls):
-        cls.YAML = ''
+
+        cls.simulation_db.close()
+        cls.simulation_db.remove_db()
 
         cls.test_db.close()
         cls.test_db.remove_db()
@@ -405,6 +412,53 @@ class LibTests(unittest.TestCase):
         self.assertEqual(schema_parser.schema_path, os.path.join(TESTS_ASSETS_DIR, 'test.schema'))
         self.assertEqual(table_name, 'test_table')
         self.assertEqual(double, expected_double)
+
+    def test_inserts_fixture_single(self):
+        expected_schema_path, \
+        expected_table_name, \
+        expected_test_set_nodes = \
+            '../../simulator/simulation.schema', \
+            'clients', \
+            ({
+                'id': 0,
+                'addr': 'localhost:10000',
+                'consult_iso8601': '2011-12-22T11:11:44.901234',
+                'thanks_iso8601': '2011-12-22T11:12:20.901234',
+                'num_nodes': 10,
+                'node_index': 0,
+                'log_level': 'INFO',
+             }, {
+                'id': 1,
+                'addr': 'localhost:10001',
+                'consult_iso8601': '2011-12-22T11:11:44.901234',
+                'thanks_iso8601': '2011-12-22T11:12:20.901234',
+                'num_nodes': 10,
+                'node_index': 10,
+                'log_level': 'INFO',
+            })
+
+        db = LibTests.simulation_db
+        schema_parser, table_name, fixture = \
+        inserts_fixture(db, replace_atat_n(''), 'test_set_nodes')
+      # select(self, table_name, select_columns='*', conditions=''):
+       #print('rows =')
+       #print(rows)
+
+#       self.assertEqual(schema_parser.schema_path, get_simulation_schema_path(LibTests.start_up_orig))
+        self.assertEqual(table_name, 'clients')
+        self.assertEqual(fixture, expected_test_set_nodes)
+
+        rows = db.select('clients')
+
+       #print('rows =', rows)
+       #print('rows[0] =', rows[0])
+       #print('tuple(rows[0]) =', tuple(rows[0]))
+        expected_tuple = [tuple(em.values()) for em in expected_test_set_nodes]
+        self.assertEqual(len(rows), len(expected_test_set_nodes))
+        inspect_tuple = [tuple(row) for row in rows]
+       #print(' inspect_tuple =', inspect_tuple)
+       #print('expected_tuple =', expected_tuple)
+        self.assertEqual(inspect_tuple, expected_tuple)
 
     def test_inserts_fixture_multiple_times(self):
         expected_multiple = ( {
