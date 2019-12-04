@@ -28,7 +28,6 @@ CLIENT_N_DB = f'client.{ATAT_N}.db'
 # These paths are relative to UMATOBI_ROOT_PATH..
 UMATOBI_ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 SIMULATION_SCHEMA_PATH = os.path.join(UMATOBI_ROOT_PATH, SIMULATOR_DIR, SIMULATION_SCHEMA)
-SIMULATION_SCHEMA_ORIG = os.path.join(UMATOBI_ROOT_PATH, SIMULATOR_DIR, SIMULATION_SCHEMA)
 
 # These paths are relative to SIMULATOR_DIR.
 SIMULATION_ROOT_PATH = os.path.join(os.path.expanduser('~'), SIMULATION_DIR)

@@ -282,8 +282,8 @@ def set_simulation_schema(simulation_time):
 
     if not os.path.isfile(simulation_schema_path):
         make_simulation_dir(simulation_dir_path)
-        logger.info(f"shutil.copyfile(SIMULATION_SCHEMA_ORIG={SIMULATION_SCHEMA_ORIG}, simulation_schema_path={simulation_schema_path})")
-        shutil.copyfile(SIMULATION_SCHEMA_ORIG, simulation_schema_path)
+        logger.info(f"shutil.copyfile(SIMULATION_SCHEMA_PATH={SIMULATION_SCHEMA_PATH}, simulation_schema_path={simulation_schema_path})")
+        shutil.copyfile(SIMULATION_SCHEMA_PATH, simulation_schema_path)
 
     return simulation_schema_path
 

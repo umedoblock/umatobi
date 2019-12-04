@@ -558,7 +558,7 @@ class LibTests(unittest.TestCase):
         self.assertRegex(SIMULATION_ROOT_PATH, f"^{TESTS_PATH}")
 
         self.assertRegex(SIMULATION_DIR_PATH, r'/@@SIMULATION_TIME@@$')
-        self.assertRegex(SIMULATION_SCHEMA_PATH, r'/tests/')
+        self.assertNotRegex(SIMULATION_SCHEMA_PATH, r'/tests/')
 
     def test_get_client_db_path(self):
         client_id = 8
@@ -603,7 +603,7 @@ class LibTests(unittest.TestCase):
 
       # self.assertEqual(cm.output[0], f"INFO:umatobi:os.makedirs('{simulation_dir_path}')")
         self.assertEqual(cm.output[0],
-                f"INFO:umatobi:shutil.copyfile(SIMULATION_SCHEMA_ORIG={SIMULATION_SCHEMA_ORIG}, simulation_schema_path={simulation_schema_path})")
+                f"INFO:umatobi:shutil.copyfile(SIMULATION_SCHEMA_PATH={SIMULATION_SCHEMA_PATH}, simulation_schema_path={simulation_schema_path})")
 
     @patch('os.path.isfile', return_value=True)
     def test_set_simulation_schema_pass(self, mock_isfile):
