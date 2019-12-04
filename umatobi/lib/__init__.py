@@ -217,7 +217,7 @@ def inserts_fixture(db, yaml_path, index):
    #>>> L
    #[dict_keys(['a', 'b', 'c']), dict_values([1, 2, 3]), dict_values([4, 5, 6])]
     db.inserts(table_name, listed_fixture)
-    db._conn.commit()
+    db.commit()
     return schema_parser, table_name, fixture
 
 def converter_blob(b64_encoded_string):

@@ -80,10 +80,11 @@ class SQL(object):
         logger.debug(f"{self}.remove_db(), db_path={self.db_path}")
         if self.db_path != ":memory:":
             if os.path.isfile(self.db_path):
-                logger.info(f"{self} os.remove(db_path={self.db_path})")
+                logger.info(f'{self} os.remove(db_path={self.db_path})')
                 os.remove(self.db_path)
             else:
-                logger.info(f"{self} not found db_path={self.db_path}.")
+                logger.error(f'{self} not found db_path={self.db_path}.')
+                raise RuntimeError(f'{self} not found db_path={self.db_path}.')
 
     def create_table(self, table_name):
         logger.info(f'{self}.create_table(table_name="{table_name}")')
@@ -95,6 +96,7 @@ class SQL(object):
         if self._schema is None:
             logger.error(f'os.path.isfile(schema_path="{self.schema_path}") must return True and')
             logger.error(f'must call sql.read_schema()')
+            raise RuntimeError(f'{self}._schema is None.')
         table_info = self._schema[table_name]
 
         columns = []
@@ -181,7 +183,7 @@ class SQL(object):
         return rows
 
     def close(self):
-        self.commit()
+        self._conn.commit()
         self._cur.close()
         self._conn.close()
         self._closed = True
@@ -228,7 +230,7 @@ class SQL(object):
         return sql, values
 
     def update(self, table_name, d, where):
-        static_part = 'update {table_name} set '
+        static_part = f'update {table_name} set '
         logger.debug(f'tuple(d.keys()) = {tuple(d.keys())}')
         set_part = ', '.join(['{} = ?'.format(column) for column in d.keys()])
         set_part += ' '

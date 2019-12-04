@@ -19,6 +19,45 @@ from umatobi.tests import *
 from umatobi.simulator.client import Client
 from umatobi.simulator.node import Node
 from umatobi import lib
+from umatobi.log import make_logger
+
+class LoggerTests(unittest.TestCase):
+
+    def setUp(self):
+        self.simulation_time = SimulationTime()
+
+    def test_make_log_dir(self):
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
+       #self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='special', id_=None, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+        self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='special', id_=10, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
+        self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='', id_=None, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+        self.assertFalse(os.path.isdir(special_dir))
+        tlogger = make_logger(log_dir=special_dir, name='', id_=10, level="INFO")
+        self.assertTrue(os.path.isdir(special_dir))
+        shutil.rmtree(special_dir)
+
+    def test_log_path(self):
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
+        tlogger = make_logger(log_dir=special_dir, name='test_logger', id_=None, level="INFO")
+        self.assertEqual(tlogger.log_path, os.path.join(special_dir, 'test_logger.log', ))
+
+        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
+        tlogger = make_logger(log_dir=special_dir, name='test_logger', id_=888, level="INFO")
+        self.assertEqual(tlogger.log_path, os.path.join(special_dir, 'test_logger.888.log', ))
+
 
 class LoggerNodeTests(unittest.TestCase):
     def setUp(self):

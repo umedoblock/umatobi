@@ -221,15 +221,18 @@ class SQLTests(unittest.TestCase):
         self.assertTrue(sql._schema)
         self.assertTrue(sql.closed())
 
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            with patch('umatobi.simulator.sql.os.path.isfile',
-                        return_value=False) as mock_isfile:
-                self.assertFalse(os.path.isfile(sql.db_path))
-                sql.remove_db()
-                self.assertFalse(os.path.isfile(sql.db_path))
+        with self.assertRaises(RuntimeError) as err:
+            with self.assertLogs('umatobi', level='ERROR') as cm:
+                with patch('umatobi.simulator.sql.os.path.isfile',
+                            return_value=False) as mock_isfile:
+                    self.assertFalse(os.path.isfile(sql.db_path))
+                    sql.remove_db()
+                    self.assertFalse(os.path.isfile(sql.db_path))
         self.assertTrue(sql.closed())
         mock_isfile.assert_called_with(sql.db_path)
-        self.assertRegex(cm.output[0], r'INFO:umatobi:SQL\(db_path="{}", schema_path=".+/test.schema"\) not found db_path={}\.$'.format(not_found_path, not_found_path))
+        args = err.exception.args
+        self.assertEqual(cm.output[0], f'ERROR:umatobi:{sql} not found db_path={sql.db_path}.')
+        self.assertEqual(args[0], f'{sql} not found db_path={sql.db_path}.')
 
     def test_create_table(self):
         sql = SQL(db_path=':memory:', schema_path=TESTS_SCHEMA_PATH)
@@ -252,14 +255,14 @@ class SQLTests(unittest.TestCase):
         sql.create_db()
 
         with self.assertLogs('umatobi', level='INFO') as cm:
-            with self.assertRaises(TypeError) as assert_error:
+            with self.assertRaises(RuntimeError) as assert_error:
                 sql.create_table('test_table')
         args = assert_error.exception.args
 
-        self.assertEqual(cm.output[0], f'INFO:umatobi:{sql}.create_table(table_name=test_table)')
-        self.assertEqual(cm.output[1], f'ERROR:umatobi:os.path.isfile(schema_path=\'{sql.schema_path}\') must return True and')
+        self.assertEqual(cm.output[0], f'INFO:umatobi:{sql}.create_table(table_name="test_table")')
+        self.assertEqual(cm.output[1], f'ERROR:umatobi:os.path.isfile(schema_path="{sql.schema_path}") must return True and')
         self.assertEqual(cm.output[2], 'ERROR:umatobi:must call sql.read_schema()')
-        self.assertEqual(args[0], "'NoneType' object is not subscriptable")
+        self.assertEqual(args[0], f'{sql}._schema is None.')
 
     def test_select_one(self):
         pass

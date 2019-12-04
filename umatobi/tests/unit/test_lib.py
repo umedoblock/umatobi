@@ -5,7 +5,7 @@
 # This software is released under the MIT License.
 # https://github.com/umedoblock/umatobi
 
-import os, sys, re, shutil, socket
+import os, sys, re, shutil, socket, pathlib
 import unittest
 from unittest.mock import patch, MagicMock
 from io import StringIO
@@ -13,7 +13,6 @@ from datetime import datetime, timedelta
 
 import yaml
 from umatobi.tests import *
-from umatobi.log import make_logger
 from umatobi.lib import *
 from umatobi.simulator.core.key import Key
 from umatobi.simulator.sql import SQL
@@ -33,12 +32,16 @@ class LibTests(unittest.TestCase):
        #print('cls.test_db_path =', cls.test_db_path)
        #print('cls.test_yaml_path =', cls.test_yaml_path)
        #print('cls.test_schema_path =', cls.test_schema_path)
+        if os.path.isfile(cls.test_db_path):
+            os.remove(cls.test_db_path)
         cls.test_db = SQL(db_path=cls.test_db_path,
                           schema_path=cls.test_schema_path)
         cls.test_db.create_db()
 
         simulation_db_path = get_simulation_db_path(cls.start_up_orig)
         schema_path = get_simulation_schema_path(cls.start_up_orig)
+        if os.path.isfile(simulation_db_path):
+            os.remove(simulation_db_path)
         cls.simulation_db = SQL(db_path=simulation_db_path,
                                 schema_path=schema_path)
         cls.simulation_db.create_db()
@@ -72,7 +75,13 @@ class LibTests(unittest.TestCase):
         self.simulation_time = SimulationTime()
 
     def tearDown(self):
-        shutil.rmtree(os.path.dirname(get_master_palm_path(self.simulation_time)), ignore_errors=True)
+        cleanup_file_paths = []
+        cleanup_file_paths.append(get_simulation_schema_path(LibTests.start_up_orig))
+        cleanup_file_paths.append(get_master_palm_path(self.simulation_time))
+        for cleanup_file_path in cleanup_file_paths:
+            p = pathlib.Path(cleanup_file_path)
+            if p.is_file():
+                p.unlink()
 
     def test_sock_create_ok(self):
         sock = sock_create('v4', 'tcp')
@@ -566,7 +575,7 @@ class LibTests(unittest.TestCase):
     def test_get_simulation_dir_path(self):
         simulation_time = self.simulation_time
         simulation_dir_path = get_simulation_dir_path(simulation_time)
-        self.assertFalse(os.path.isdir(simulation_dir_path))
+        self.assertTrue(os.path.isdir(simulation_dir_path))
         self.assert_simulation_dir_path(simulation_dir_path)
 
     def test_get_simulation_schema_path(self):
@@ -592,14 +601,9 @@ class LibTests(unittest.TestCase):
             simulation_schema_path = set_simulation_schema(simulation_time)
         self.assertTrue(os.path.isfile(simulation_schema_path))
 
+      # self.assertEqual(cm.output[0], f"INFO:umatobi:os.makedirs('{simulation_dir_path}')")
         self.assertEqual(cm.output[0],
-                f"INFO:umatobi:os.makedirs('{simulation_dir_path}')")
-        self.assertRegex(cm.output[0],
-                fr"^INFO:umatobi:os.makedirs\('/.+/{RE_Y15S}'\)$")
-        self.assertEqual(cm.output[1],
                 f"INFO:umatobi:shutil.copyfile(SIMULATION_SCHEMA_ORIG={SIMULATION_SCHEMA_ORIG}, simulation_schema_path={simulation_schema_path})")
-        self.assertRegex(cm.output[1],
-                fr"^INFO:umatobi:shutil.copyfile\(SIMULATION_SCHEMA_ORIG=.+, simulation_schema_path=.+\)$")
 
     @patch('os.path.isfile', return_value=True)
     def test_set_simulation_schema_pass(self, mock_isfile):
@@ -883,40 +887,6 @@ val_text: text context
         addr = host, port
         sock = sock_connect(None, host, port, v4_v6, tcp_udp)
         self.assertIsNone(sock)
-
-    # logger.py
-
-    def test_make_log_dir(self):
-        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
-        self.assertFalse(os.path.isdir(special_dir))
-        tlogger = make_logger(log_dir=special_dir, name='special', id_=None, level="INFO")
-        self.assertTrue(os.path.isdir(special_dir))
-        shutil.rmtree(special_dir)
-
-        self.assertFalse(os.path.isdir(special_dir))
-        tlogger = make_logger(log_dir=special_dir, name='special', id_=10, level="INFO")
-        self.assertTrue(os.path.isdir(special_dir))
-        shutil.rmtree(special_dir)
-
-        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
-        self.assertFalse(os.path.isdir(special_dir))
-        tlogger = make_logger(log_dir=special_dir, name='', id_=None, level="INFO")
-        self.assertTrue(os.path.isdir(special_dir))
-        shutil.rmtree(special_dir)
-
-        self.assertFalse(os.path.isdir(special_dir))
-        tlogger = make_logger(log_dir=special_dir, name='', id_=10, level="INFO")
-        self.assertTrue(os.path.isdir(special_dir))
-        shutil.rmtree(special_dir)
-
-    def test_log_path(self):
-        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
-        tlogger = make_logger(log_dir=special_dir, name='test_logger', id_=None, level="INFO")
-        self.assertEqual(tlogger.log_path, os.path.join(special_dir, 'test_logger.log', ))
-
-        special_dir = os.path.dirname(get_master_palm_path(self.simulation_time))
-        tlogger = make_logger(log_dir=special_dir, name='test_logger', id_=888, level="INFO")
-        self.assertEqual(tlogger.log_path, os.path.join(special_dir, 'test_logger.888.log', ))
 
     # fail test
 
