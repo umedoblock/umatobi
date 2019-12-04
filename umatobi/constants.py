@@ -41,5 +41,5 @@ SIMULATION_DIR_PATH = os.path.join(SIMULATION_ROOT_PATH, ATAT_SIMULATION_TIME)
 
 #   %(relativeCreated)d Time in ms when the LogRecord was created,
 LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(filename)s %(funcName)s() - %(message)s'
-LOGGER_SUFFIX = f" - process_id=%(process)d therad_id=%(thread)d"
+LOGGER_SUFFIX = f" - process_id=%(process)d thread_id=%(thread)d"
 LOGGER_STREAM = sys.stdout
