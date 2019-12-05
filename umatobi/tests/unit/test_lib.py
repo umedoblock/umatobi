@@ -575,7 +575,6 @@ class LibTests(unittest.TestCase):
     def test_get_simulation_dir_path(self):
         simulation_time = self.simulation_time
         simulation_dir_path = get_simulation_dir_path(simulation_time)
-        self.assertTrue(os.path.isdir(simulation_dir_path))
         self.assert_simulation_dir_path(simulation_dir_path)
 
     def test_get_simulation_schema_path(self):
@@ -639,7 +638,7 @@ class LibTests(unittest.TestCase):
         self.assertRegex(cm.output[0], fr"^INFO:umatobi:os.makedirs\('/.+/{RE_Y15S}'\)$")
         self.assertEqual(cm.output[0], f"INFO:umatobi:os.makedirs('{simulation_dir_path}')")
         mock_isdir.assert_called_once()
-        mock_makedirs.assert_called_with(simulation_dir_path)
+        mock_makedirs.assert_called_with(simulation_dir_path, exist_ok=True)
 
     @patch('os.path.isdir', return_value=True)
     @patch('os.makedirs')

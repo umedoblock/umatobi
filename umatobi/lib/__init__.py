@@ -293,8 +293,8 @@ def get_master_palm_path(simulation_time):
 
 def make_simulation_dir(simulation_dir_path):
     if not os.path.isdir(simulation_dir_path):
-        os.makedirs(simulation_dir_path)
         logger.info(f"os.makedirs('{simulation_dir_path}')")
+        os.makedirs(simulation_dir_path, exist_ok=True)
 
 def validate_kwargs(st_barrier, kwargs):
     if st_barrier != kwargs.keys():
