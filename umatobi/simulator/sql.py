@@ -7,6 +7,7 @@
 
 import sqlite3, configparser, os, sys, logging
 
+from umatobi.lib import *
 from umatobi.log import *
 
 # print("__name__ =", __name__)
@@ -21,8 +22,8 @@ class SQL(object):
         _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
         part_keys = f"('{_key_names}')"
 
-        hatenas = '({})'.format(', '.join('?' * len(d)))
-        sql = "insert into " + table_name + part_keys + " values" + hatenas
+        qms = make_question_marks(len(d))
+        sql = "insert into " + table_name + part_keys + " values" + qms
         values = tuple(d.values())
         return sql, values
 
@@ -195,7 +196,7 @@ class SQL(object):
 #       print('listed_dict =', listed_dict)
         columns = listed_dict[0]
         static_part = f'insert into {table_name} {columns} values '
-        hatenas = f'({", ".join("?" * len(columns))})'
+        qms = make_question_marks(len(columns))
 
        #print('static_part + hatenas =')
        #print(static_part + hatenas)
@@ -204,7 +205,7 @@ class SQL(object):
 #       tupled_values = f"{listed_dict[1:]}"
        #print('tupled_values =')
        #print(tupled_values)
-        self._conn.executemany(static_part + hatenas, listed_dict[1:])
+        self._conn.executemany(static_part + qms, listed_dict[1:])
      ###for tup in listed_dict[1:]:
      ###    print('tup =', tup)
      ###    print('tup2 =', f'{tup}')
@@ -214,11 +215,11 @@ class SQL(object):
     def inserts_via_dict(self, table_name, seq_contain_dicts):
         columns = tuple(seq_contain_dicts[0].keys())
         static_part = f'insert into {table_name} {columns} values '
-        hatenas = '({})'.format(', '.join('?' * len(columns)))
+        qms = make_question_marks(len(columns))
 
-        logger.debug('static_part + hatenas =')
-        logger.debug(static_part + hatenas)
-        self._conn.executemany(static_part + hatenas,
+        logger.debug('static_part + question_marks =')
+        logger.debug(static_part + qms)
+        self._conn.executemany(static_part + qms,
                               [tuple(d.values()) for d in seq_contain_dicts])
 
     def insert(self, table_name, d):

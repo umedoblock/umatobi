@@ -348,6 +348,10 @@ def allot_numbers(total, an_allotment):
 
     return heads, assigned_num, last
 
+def make_question_marks(n_questions):
+    hatenas = '({})'.format(', '.join('?' * n_questions))
+    return hatenas
+
 class Polling(threading.Thread):
 
     @classmethod

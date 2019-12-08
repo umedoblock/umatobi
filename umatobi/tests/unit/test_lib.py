@@ -823,6 +823,14 @@ val_text: text context
         self.assertEqual(assigned_num, an_allotment)
         self.assertEqual(last, 1)
 
+    def test_make_question_marks(self):
+        L = ((1, '(?)'), (2, '(?, ?)'),
+            (18, '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'))
+
+        for n_questions, expected_question_marks in L:
+            self.assertEqual(make_question_marks(n_questions),
+                             expected_question_marks)
+
     # DONE, at least
 
     def test_sock_bind_fail1(self):
