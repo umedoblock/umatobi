@@ -132,7 +132,7 @@ class WatsonOfficeTests(unittest.TestCase):
         self.assertFalse(set_dcr & never_contain)
 
         self.assertEqual(dcr['client_id'], 0)
-        self.assertEqual(dcr['start_up_iso8601'], str(watson.start_up_orig))
+        self.assertEqual(dcr['start_up_iso8601'], str(watson.simulation_time))
         self.assertEqual(dcr['node_index'], watson_office.node_index)
         self.assertEqual(dcr['log_level'], watson.log_level)
 
@@ -176,10 +176,10 @@ class WatsonTests(unittest.TestCase):
     def setUp(self):
         self.watson_office_addr = ('localhost', 65530)
         self.log_level = 'INFO'
-        self.start_up_orig = SimulationTime()
+        self.simulation_time = SimulationTime()
 
         self.watson = Watson(self.watson_office_addr, SIMULATION_SECONDS,
-                             self.start_up_orig, self.log_level)
+                             self.simulation_time, self.log_level)
 
         self.outsider_db = SQL(db_path=self.watson.simulation_db_path,
                                schema_path=self.watson.simulation_schema_path)
@@ -263,7 +263,7 @@ class WatsonTests(unittest.TestCase):
 
         expected_relaxing_seconds = 23.456
         passed_seconds = watson.simulation_seconds - expected_relaxing_seconds
-        with patch.object(watson.start_up_orig, 'passed_seconds',
+        with patch.object(watson.simulation_time, 'passed_seconds',
                           return_value=passed_seconds):
             watson.relaxing()
         mock_sleep.assert_called_with(expected_relaxing_seconds)

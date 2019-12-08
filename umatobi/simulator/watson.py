@@ -44,7 +44,7 @@ class WatsonTCPOffice(socketserver.TCPServer):
         self.watson = watson
         self.clients = []
     #   self.server in WatsonOffice class means WatsonTCPOffice instance.
-        self.start_up_orig = watson.start_up_orig
+        self.simulation_time = watson.simulation_time
         self.simulation_db = simulator.sql.SQL(db_path=watson.simulation_db_path)
         logger.info(f"{self}.simulation_db.access_db(), db_path={watson.simulation_db_path}")
         self.simulation_db.access_db()
@@ -173,7 +173,7 @@ class WatsonOffice(socketserver.StreamRequestHandler):
     def make_client_reply(self):
         self.d_client_reply = {
             'client_id': self.client_id,
-            'start_up_iso8601': self.server.start_up_orig.get_iso8601(),
+            'start_up_iso8601': self.server.simulation_time.get_iso8601(),
             'node_index': self.node_index,
             'log_level': self.server.watson.log_level,
         }
@@ -192,15 +192,15 @@ class Watson(threading.Thread):
     def __str__(self):
         return f"Watson{self.watson_office_addr}"
 
-    def __init__(self, watson_office_addr, simulation_seconds, start_up_orig, log_level):
+    def __init__(self, watson_office_addr, simulation_seconds, simulation_time, log_level):
         '''\
         watson: Cient, Node からの TCP 接続を待つ。
         起動時刻を start_up_time と名付けて記録する。
         '''
         threading.Thread.__init__(self)
 
-        self.start_up_orig = start_up_orig
-        self.path_maker = PathMaker(self.start_up_orig)
+        self.simulation_time = simulation_time
+        self.path_maker = PathMaker(self.simulation_time)
         self.open_office_orig = None
         self.close_office_orig = None
         self.end_up_orig = None
@@ -211,7 +211,7 @@ class Watson(threading.Thread):
 
         self.log_level = log_level
 
-        logger.info(f"Watson(self={self}, watson_office_addr={watson_office_addr}, simulation_seconds={simulation_seconds}, start_up_orig={start_up_orig}, log_level={log_level}))")
+        logger.info(f"Watson(self={self}, watson_office_addr={watson_office_addr}, simulation_seconds={simulation_seconds}, simulation_time={simulation_time}, log_level={log_level}))")
 
         self.path_maker.make_simulation_dir()
 
@@ -299,11 +299,11 @@ class Watson(threading.Thread):
         return watson_open_office
 
     def relaxing(self):
-        passed_seconds = self.start_up_orig.passed_seconds()
+        passed_seconds = self.simulation_time.passed_seconds()
         relaxing_time = self.simulation_seconds - passed_seconds
 
         logger.info(f"{self}.relaxing(), relaxing_time={relaxing_time}")
-        logger.debug(f"{self}.relaxing(), simulation_seconds={self.simulation_seconds}, start_up_iso8601={self.start_up_orig.get_iso8601()}, passed_seconds={passed_seconds}")
+        logger.debug(f"{self}.relaxing(), simulation_seconds={self.simulation_seconds}, start_up_iso8601={self.simulation_time.get_iso8601()}, passed_seconds={passed_seconds}")
         time.sleep(relaxing_time)
 
     def release_clients(self):
@@ -339,7 +339,7 @@ class Watson(threading.Thread):
         d_simulation = {}
         d_simulation['title'] = SIMULATION_DIR
 
-        d_simulation['start_up_iso8601'] = str(self.start_up_orig)
+        d_simulation['start_up_iso8601'] = str(self.simulation_time)
         d_simulation['close_office_iso8601'] = str(self.close_office_orig)
         d_simulation['end_up_iso8601'] = str(self.end_up_orig)
         d_simulation['open_office_iso8601'] = str(self.open_office_orig)
