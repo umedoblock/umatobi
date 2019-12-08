@@ -200,6 +200,7 @@ class Watson(threading.Thread):
         threading.Thread.__init__(self)
 
         self.start_up_orig = start_up_orig
+        self.path_maker = PathMaker(self.start_up_orig)
         self.open_office_orig = None
         self.close_office_orig = None
         self.end_up_orig = None
@@ -212,11 +213,11 @@ class Watson(threading.Thread):
 
         logger.info(f"Watson(self={self}, watson_office_addr={watson_office_addr}, simulation_seconds={simulation_seconds}, start_up_orig={start_up_orig}, log_level={log_level}))")
 
-        self.simulation_dir_path = get_simulation_dir_path(self.start_up_orig)
-        os.makedirs(self.simulation_dir_path, exist_ok=True)
+        self.path_maker.make_simulation_dir()
 
-        self.simulation_db_path = get_simulation_db_path(self.start_up_orig)
-        self.simulation_schema_path = set_simulation_schema(self.start_up_orig)
+        self.simulation_dir_path = self.path_maker.get_simulation_dir_path()
+        self.simulation_db_path = self.path_maker.get_simulation_db_path()
+        self.simulation_schema_path = self.path_maker.set_simulation_schema()
         logger.info(f"Watson(self={self}, simulation_dir_path={self.simulation_dir_path}, simulation_db_path={self.simulation_db_path}, simulation_schema_path={self.simulation_schema_path})")
 
         self.watson_office_addr_assigned = threading.Event()

@@ -469,9 +469,12 @@ class PathMaker(object):
     def make_simulation_dir(self, simulation_dir_path=None):
         if not simulation_dir_path:
             simulation_dir_path = self.get_simulation_dir_path()
+
         if not os.path.isdir(simulation_dir_path):
             logger.info(f"os.makedirs('{simulation_dir_path}')")
             os.makedirs(simulation_dir_path, exist_ok=True)
+
+        return simulation_dir_path
 
 class SchemaParser(configparser.ConfigParser):
 

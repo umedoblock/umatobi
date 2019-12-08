@@ -195,11 +195,11 @@ class WatsonTests(unittest.TestCase):
     def test___init__(self):
         watson = self.watson
         expected_simulation_dir_path = \
-                get_simulation_dir_path(self.start_up_orig)
+                watson.path_maker.get_simulation_dir_path()
         expected_simulation_db_path = \
-                get_simulation_db_path(self.start_up_orig)
+                watson.path_maker.get_simulation_db_path()
         expected_simulation_schema_path = \
-                get_simulation_schema_path(self.start_up_orig)
+                watson.path_maker.get_simulation_schema_path()
 
         self.assertTrue(os.path.isdir(watson.simulation_dir_path))
         self.assertEqual(watson.watson_office_addr, self.watson_office_addr)
