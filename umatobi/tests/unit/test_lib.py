@@ -1035,7 +1035,7 @@ class PathMakerTests(unittest.TestCase):
         mock_copyfile.assert_called_once_with(SIMULATION_SCHEMA_PATH, simulation_schema_path)
 
     @patch('os.path.isfile', return_value=True)
-    def test_set_simulation_schema_pass(self, mock_isfile):
+    def test_set_simulation_schema_path(self, mock_isfile):
         path_maker = self.path_maker
 
         try:
@@ -1070,7 +1070,7 @@ class PathMakerTests(unittest.TestCase):
 
     @patch('os.path.isdir', return_value=True)
     @patch('os.makedirs')
-    def test_make_simulation_dir_pass(self, mock_makedirs, mock_isdir):
+    def test_make_simulation_dir_path(self, mock_makedirs, mock_isdir):
         path_maker = self.path_maker
         simulation_dir_path = path_maker.get_simulation_dir_path()
 
