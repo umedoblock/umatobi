@@ -831,6 +831,19 @@ val_text: text context
             self.assertEqual(make_question_marks(n_questions),
                              expected_question_marks)
 
+    def test_make_question_marks_fail_by_invalid_num(self):
+        for n_questions in (1.0, '1'):
+            with self.assertRaises(TypeError) as cm:
+                make_question_marks(n_questions)
+            err_args = cm.exception.args
+            self.assertEqual(err_args[0], f'make_question_marks(="{n_questions}") argument must be an integer.')
+
+        for n_questions in (0, -1):
+            with self.assertRaises(ValueError) as cm:
+                make_question_marks(n_questions)
+            err_args = cm.exception.args
+            self.assertEqual(err_args[0], f'n_questions(={n_questions}) must be greater than or equal to one.')
+
     # DONE, at least
 
     def test_sock_bind_fail1(self):

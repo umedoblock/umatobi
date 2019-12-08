@@ -349,6 +349,10 @@ def allot_numbers(total, an_allotment):
     return heads, assigned_num, last
 
 def make_question_marks(n_questions):
+    if not isinstance(n_questions, int):
+        raise TypeError(f'make_question_marks(="{n_questions}") argument must be an integer.')
+    if n_questions <= 0:
+        raise ValueError(f'n_questions(={n_questions}) must be greater than or equal to one.')
     hatenas = '({})'.format(', '.join('?' * n_questions))
     return hatenas
 
