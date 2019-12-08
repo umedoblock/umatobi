@@ -118,6 +118,22 @@ class LibTests(unittest.TestCase):
         self.assertEqual(sock.type, socket.SOCK_DGRAM)
         sock.close()
 
+    def test_sock_create_fail(self):
+        with self.assertLogs('umatobi', level='ERROR') as cm:
+            sock = sock_create('raw', 'tcp')
+        self.assertIsNone(sock)
+        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"raw" is inappropriate as v4_v6.')
+
+        with self.assertLogs('umatobi', level='ERROR') as cm:
+            sock = sock_create('ipsec', 'tcp')
+        self.assertIsNone(sock)
+        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"ipsec" is inappropriate as v4_v6.')
+
+        with self.assertLogs('umatobi', level='ERROR') as cm:
+            sock = sock_create('v4', 'dccp')
+        self.assertIsNone(sock)
+        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"dccp" is inappropriate as tcp_udp.')
+
     def test_sock_make_addr(self):
         self.assertEqual(sock_make_addr('localhost', 1222), ('localhost', 1222))
         self.assertEqual(sock_make_addr('127.0.0.1', 1222), ('127.0.0.1', 1222))
@@ -185,6 +201,42 @@ class LibTests(unittest.TestCase):
         self.assertEqual(got_ip, expected_ip)
         self.assertEqual(got_port, port)
 
+    def test_sock_bind_fail1(self):
+        host, port, v4_v6, tcp_udp = None, 44444, 'v4', 'tcp'
+
+        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
+        self.assertIsInstance(sock, socket.socket)
+        self.assertEqual(addr, (host, port))
+        self.assertFalse(result)
+
+        sock.close()
+
+    def test_sock_bind_fail2(self):
+        host, port, v4_v6, tcp_udp = 'localhost', None, 'v4', 'tcp'
+
+        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
+        self.assertIsInstance(sock, socket.socket)
+        self.assertEqual(addr, (host, port))
+        self.assertFalse(result)
+
+        sock.close()
+
+    def test_sock_bind_fail3(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v444444', 'tcp'
+
+        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
+        self.assertIsNone(sock)
+        self.assertEqual(addr, (host, port))
+        self.assertFalse(result)
+
+    def test_sock_bind_fail4(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcppppp'
+
+        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
+        self.assertIsNone(sock)
+        self.assertEqual(addr, (host, port))
+        self.assertFalse(result)
+
     def test_sock_bind_fail_by_socket_timeout_error(self):
         host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcp'
 
@@ -208,6 +260,32 @@ class LibTests(unittest.TestCase):
                                        SOCKET_KIND['tcp'])
         self.assertIsInstance(sock, MagicMock)
         sock.connect.assert_called_with(addr)
+
+    def test_sock_connect_fail1(self):
+        host, port, v4_v6, tcp_udp = None, 44444, 'v4', 'tcp'
+        addr = host, port
+        with patch('umatobi.lib.socket.socket') as mock_socket:
+            self.assertIsNone(sock_connect(None, host, port, v4_v6, tcp_udp))
+        mock_socket.assert_not_called()
+
+    def test_sock_connect_fail2(self):
+        host, port, v4_v6, tcp_udp = 'localhost', None, 'v4', 'tcp'
+        addr = host, port
+        with patch('umatobi.lib.socket.socket') as mock_socket:
+            self.assertIsNone(sock_connect(None, host, port, v4_v6, tcp_udp))
+        mock_socket.assert_not_called()
+
+    def test_sock_connect_fail3(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v444444', 'tcp'
+        addr = host, port
+        sock = sock_connect(None, host, port, v4_v6, tcp_udp)
+        self.assertIsNone(sock)
+
+    def test_sock_connect_fail4(self):
+        host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcppppp'
+        addr = host, port
+        sock = sock_connect(None, host, port, v4_v6, tcp_udp)
+        self.assertIsNone(sock)
 
     def test_sock_connect_fail_by_refused(self):
         host, port, v4_v6, tcp_udp = 'localhost', 65535, 'v4', 'tcp'
@@ -843,88 +921,6 @@ val_text: text context
                 make_question_marks(n_questions)
             err_args = cm.exception.args
             self.assertEqual(err_args[0], f'n_questions(={n_questions}) must be greater than or equal to one.')
-
-    # DONE, at least
-
-    def test_sock_bind_fail1(self):
-        host, port, v4_v6, tcp_udp = None, 44444, 'v4', 'tcp'
-
-        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
-        self.assertIsInstance(sock, socket.socket)
-        self.assertEqual(addr, (host, port))
-        self.assertFalse(result)
-
-        sock.close()
-
-    def test_sock_bind_fail2(self):
-        host, port, v4_v6, tcp_udp = 'localhost', None, 'v4', 'tcp'
-
-        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
-        self.assertIsInstance(sock, socket.socket)
-        self.assertEqual(addr, (host, port))
-        self.assertFalse(result)
-
-        sock.close()
-
-    def test_sock_bind_fail3(self):
-        host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v444444', 'tcp'
-
-        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
-        self.assertIsNone(sock)
-        self.assertEqual(addr, (host, port))
-        self.assertFalse(result)
-
-    def test_sock_bind_fail4(self):
-        host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcppppp'
-
-        sock, addr, result = sock_bind(None, host, port, v4_v6, tcp_udp)
-        self.assertIsNone(sock)
-        self.assertEqual(addr, (host, port))
-        self.assertFalse(result)
-
-    def test_sock_connect_fail1(self):
-        host, port, v4_v6, tcp_udp = None, 44444, 'v4', 'tcp'
-        addr = host, port
-        with patch('umatobi.lib.socket.socket') as mock_socket:
-            self.assertIsNone(sock_connect(None, host, port, v4_v6, tcp_udp))
-        mock_socket.assert_not_called()
-
-    def test_sock_connect_fail2(self):
-        host, port, v4_v6, tcp_udp = 'localhost', None, 'v4', 'tcp'
-        addr = host, port
-        with patch('umatobi.lib.socket.socket') as mock_socket:
-            self.assertIsNone(sock_connect(None, host, port, v4_v6, tcp_udp))
-        mock_socket.assert_not_called()
-
-    def test_sock_connect_fail3(self):
-        host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v444444', 'tcp'
-        addr = host, port
-        sock = sock_connect(None, host, port, v4_v6, tcp_udp)
-        self.assertIsNone(sock)
-
-    def test_sock_connect_fail4(self):
-        host, port, v4_v6, tcp_udp = 'localhost', 44444, 'v4', 'tcppppp'
-        addr = host, port
-        sock = sock_connect(None, host, port, v4_v6, tcp_udp)
-        self.assertIsNone(sock)
-
-    # fail test
-
-    def test_sock_create_fail(self):
-        with self.assertLogs('umatobi', level='ERROR') as cm:
-            sock = sock_create('raw', 'tcp')
-        self.assertIsNone(sock)
-        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"raw" is inappropriate as v4_v6.')
-
-        with self.assertLogs('umatobi', level='ERROR') as cm:
-            sock = sock_create('ipsec', 'tcp')
-        self.assertIsNone(sock)
-        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"ipsec" is inappropriate as v4_v6.')
-
-        with self.assertLogs('umatobi', level='ERROR') as cm:
-            sock = sock_create('v4', 'dccp')
-        self.assertIsNone(sock)
-        self.assertRegex(cm.output[0], r'^ERROR:umatobi:"dccp" is inappropriate as tcp_udp.')
 
 class PollingTests(unittest.TestCase):
 
