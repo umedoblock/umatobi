@@ -26,15 +26,15 @@ TD_ZERO = timedelta(0, 0, 0)
 def replace_atat_n(new):
     return  TESTS_ATAT_N_YAML_PATH.replace(ATAT_N, new)
 
-def make_node_assets(start_up_orig=None):
+def make_node_assets(simulation_time=None):
     byebye_nodes = threading.Event()
-    if not start_up_orig:
-        start_up_orig = SimulationTime()
+    if not simulation_time:
+        simulation_time = SimulationTime()
     _queue_darkness = queue.Queue()
 
     d = {
         'byebye_nodes': byebye_nodes,
-        'start_up_orig': start_up_orig,
+        'simulation_time': simulation_time,
         '_queue_darkness': _queue_darkness,
     }
 

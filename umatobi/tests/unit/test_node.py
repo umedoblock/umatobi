@@ -10,7 +10,7 @@ import sys, shutil
 import threading, socket
 import unittest, time
 import math, pickle
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, mock_open
 
 import umatobi
 from umatobi.lib import *
@@ -111,20 +111,16 @@ class NodeTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.start_up_orig = SimulationTime()
+        cls.simulation_time = SimulationTime()
 
     @classmethod
     def tearDownClass(cls):
-        cls.start_up_orig = None
+        cls.simulation_time = None
 
 
     def setUp(self):
-        self.simulation_dir_path = \
-                get_simulation_dir_path(NodeTests.start_up_orig)
+        node_assets = make_node_assets(NodeTests.simulation_time)
 
-        os.makedirs(self.simulation_dir_path, exist_ok=True)
-
-        node_assets = make_node_assets(NodeTests.start_up_orig)
         node = Node(host='localhost', id=1, **node_assets)
         key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
         node.key.update(key)
@@ -136,7 +132,7 @@ class NodeTests(unittest.TestCase):
 
     @patch('umatobi.simulator.node.threading.Lock')
     def test___init__(self, mock_lock):
-        node_assets = make_node_assets(NodeTests.start_up_orig)
+        node_assets = make_node_assets(NodeTests.simulation_time)
         node = Node(addr='localhost', id=0, **node_assets)
 
         self.assertIsInstance(node.key, Key)
@@ -149,7 +145,7 @@ class NodeTests(unittest.TestCase):
         self.assertFalse(node.office_addr_assigned.is_set())
 
         self.assertEqual(node.master_palm_path,
-                         get_master_palm_path(node.start_up_orig))
+                         node.path_maker.get_master_palm_path())
 
     def test_run(self):
         pass
@@ -184,21 +180,23 @@ class NodeTests(unittest.TestCase):
         os.remove(node.master_palm_path)
 
 
-    def test__steal_a_glance_at_master_palm(self):
+    @patch('os.path.isfile', return_value=True)
+    def test__steal_a_glance_at_master_palm(self, mock_isfile):
         node = self.node
-        node2 = Node(host='localhost', port=11112, start_up_orig=self.start_up_orig)
-        node3 = Node(host='localhost', port=11113, start_up_orig=self.start_up_orig)
+        node2 = Node(host='localhost', port=11112, simulation_time=self.simulation_time)
+        node3 = Node(host='localhost', port=11113, simulation_time=self.simulation_time)
         self.assertTrue(hasattr(node, 'master_palm_path'))
 
         master_palm_on = node2.get_info() + node3.get_info()
 
-        with open(node.master_palm_path, 'w') as master_palm:
-            print(node2.get_info(), file=master_palm, end='')
-            print(node3.get_info(), file=master_palm, end='')
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with patch('umatobi.simulator.node.open',
+                        mock_open(read_data=master_palm_on)) as m:
+                node_lines = node._steal_a_glance_at_master_palm()
 
-        node_lines = node._steal_a_glance_at_master_palm()
+        self.assertEqual(cm.output[0], f"INFO:umatobi:found 'master_palm_path={node.master_palm_path}'")
         self.assertEqual(node_lines, master_palm_on)
-        os.remove(node.master_palm_path)
+        mock_isfile.assert_called_once_with(node.master_palm_path)
 
         node2.release()
         node3.release()
@@ -251,7 +249,7 @@ class NodeTests(unittest.TestCase):
 
     def test_node_thread(self):
         logger.info(f"")
-        node_assets = make_node_assets(start_up_orig=NodeTests.start_up_orig)
+        node_assets = make_node_assets(simulation_time=NodeTests.simulation_time)
         node_ = Node(host='localhost', id=1, **node_assets)
 
         logger.info(f"node_.appear()")
@@ -269,11 +267,11 @@ class NodeTests(unittest.TestCase):
         os.remove(node_.master_palm_path)
 
     def test_node_basic(self):
-        node_assets = make_node_assets(start_up_orig=NodeTests.start_up_orig)
+        node_assets = make_node_assets(simulation_time=NodeTests.simulation_time)
         node_ = Node(host='localhost', id=1, **node_assets)
         self.assertFalse(node_.im_ready.is_set())
 
-        attrs = ('id', 'start_up_orig', 'byebye_nodes', '_queue_darkness')
+        attrs = ('id', 'simulation_time', 'byebye_nodes', '_queue_darkness')
         for attr in attrs:
             self.assertTrue(hasattr(node_, attr), attr)
 
