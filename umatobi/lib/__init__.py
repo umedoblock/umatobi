@@ -249,53 +249,6 @@ def converter_text(text):
 def converter_null(any_arg):
     return None
 
-def get_client_db_path(simulation_time, client_id):
-    client_n_db = re.sub(ATAT_N, str(client_id), CLIENT_N_DB)
-    return os.path.join(get_simulation_dir_path(simulation_time), client_n_db)
-
-def get_simulation_dir_path(simulation_time):
-    simulation_dir_path = re.sub(ATAT_SIMULATION_TIME,
-                                 simulation_time.get_y15s(),
-                                 SIMULATION_DIR_PATH)
-
-    return simulation_dir_path
-
-def get_simulation_db_path(simulation_time):
-    simulation_dir_path = get_simulation_dir_path(simulation_time)
-    simulation_db_path = os.path.join(simulation_dir_path,
-                                      SIMULATION_DB)
-    return simulation_db_path
-
-def get_simulation_schema_path(simulation_time):
-    simulation_dir_path = get_simulation_dir_path(simulation_time)
-    simulation_schema_path = os.path.join(simulation_dir_path,
-                                          SIMULATION_SCHEMA)
-
-    return simulation_schema_path
-
-def get_root_path():
-    return UMATOBI_ROOT_PATH
-
-def set_simulation_schema(simulation_time):
-    simulation_dir_path = get_simulation_dir_path(simulation_time)
-    simulation_schema_path = get_simulation_schema_path(simulation_time)
-
-    if not os.path.isfile(simulation_schema_path):
-        make_simulation_dir(simulation_dir_path)
-        logger.info(f"shutil.copyfile(SIMULATION_SCHEMA_PATH={SIMULATION_SCHEMA_PATH}, simulation_schema_path={simulation_schema_path})")
-        shutil.copyfile(SIMULATION_SCHEMA_PATH, simulation_schema_path)
-
-    return simulation_schema_path
-
-def get_master_palm_path(simulation_time):
-    y15s = SimulationTime.time_to_y15s(simulation_time)
-    return os.path.join(re.sub(ATAT_SIMULATION_TIME, y15s, SIMULATION_DIR_PATH), MASTER_PALM)
-
-def make_simulation_dir(simulation_dir_path):
-    if not os.path.isdir(simulation_dir_path):
-        logger.info(f"os.makedirs('{simulation_dir_path}')")
-        os.makedirs(simulation_dir_path, exist_ok=True)
-
 def validate_kwargs(st_barrier, kwargs):
     if st_barrier != kwargs.keys():
         st_unknown = kwargs.keys() - st_barrier
@@ -466,6 +419,59 @@ class SimulationTime(object):
 
 # def y15sformat_parse(s):
 #     return datetime2.strptime(s, Y15S_FORMAT)
+
+class PathMaker(object):
+
+    def __init__(self, simulation_time_or_start_up_orig=None):
+        st_or_suo = simulation_time_or_start_up_orig
+        if isinstance(st_or_suo, SimulationTime):
+            self.simulation_time = st_or_suo
+        else:
+            self.simulation_time = SimulationTime(st_or_suo)
+
+    def get_client_db_path(self, client_id):
+        client_n_db = re.sub(ATAT_N, str(client_id), CLIENT_N_DB)
+        return os.path.join(self.get_simulation_dir_path(), client_n_db)
+
+    def get_simulation_dir_path(self):
+        simulation_dir_path = re.sub(ATAT_SIMULATION_TIME,
+                                     self.simulation_time.get_y15s(),
+                                     SIMULATION_DIR_PATH)
+        return simulation_dir_path
+
+    def get_simulation_db_path(self):
+        simulation_db_path = os.path.join(self.get_simulation_dir_path(),
+                                          SIMULATION_DB)
+        return simulation_db_path
+
+    def get_simulation_schema_path(self):
+        simulation_schema_path = os.path.join(self.get_simulation_dir_path(),
+                                              SIMULATION_SCHEMA)
+
+        return simulation_schema_path
+
+    def get_root_path(self):
+        return UMATOBI_ROOT_PATH
+
+    def set_simulation_schema(self):
+        simulation_schema_path = self.get_simulation_schema_path()
+
+        if not os.path.isfile(simulation_schema_path):
+            self.make_simulation_dir()
+            logger.info(f"shutil.copyfile(SIMULATION_SCHEMA_PATH={SIMULATION_SCHEMA_PATH}, simulation_schema_path={simulation_schema_path})")
+            shutil.copyfile(SIMULATION_SCHEMA_PATH, simulation_schema_path)
+
+        return simulation_schema_path
+
+    def get_master_palm_path(self):
+        return os.path.join(self.get_simulation_dir_path(), MASTER_PALM)
+
+    def make_simulation_dir(self, simulation_dir_path=None):
+        if not simulation_dir_path:
+            simulation_dir_path = self.get_simulation_dir_path()
+        if not os.path.isdir(simulation_dir_path):
+            logger.info(f"os.makedirs('{simulation_dir_path}')")
+            os.makedirs(simulation_dir_path, exist_ok=True)
 
 class SchemaParser(configparser.ConfigParser):
 

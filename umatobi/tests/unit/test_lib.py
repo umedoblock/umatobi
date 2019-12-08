@@ -21,8 +21,9 @@ class LibTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.start_up_orig = SimulationTime()
-        set_simulation_schema(cls.start_up_orig)
+        cls.simulation_time = SimulationTime()
+        cls.path_maker = PathMaker(cls.simulation_time)
+        cls.path_maker.set_simulation_schema()
 
         # yaml_path = 'tests/assets/test.yaml'
 
@@ -38,8 +39,8 @@ class LibTests(unittest.TestCase):
                           schema_path=cls.test_schema_path)
         cls.test_db.create_db()
 
-        simulation_db_path = get_simulation_db_path(cls.start_up_orig)
-        schema_path = get_simulation_schema_path(cls.start_up_orig)
+        simulation_db_path = cls.path_maker.get_simulation_db_path()
+        schema_path = cls.path_maker.get_simulation_schema_path()
         if os.path.isfile(simulation_db_path):
             os.remove(simulation_db_path)
         cls.simulation_db = SQL(db_path=simulation_db_path,
@@ -55,29 +56,14 @@ class LibTests(unittest.TestCase):
         cls.test_db.close()
         cls.test_db.remove_db()
 
-    def assert_client_db_path(self, client_db_path):
-        self.assertRegex(client_db_path, RE_CLIENT_N_DB)
-        self.assertNotRegex(client_db_path, ATAT_N)
-
-    def assert_simulation_schema_path(self, inspected_path):
-        self.assert_simulation_dir_path(inspected_path)
-        self.assertRegex(inspected_path, f"{SIMULATION_SCHEMA}$")
-
-    def assert_simulation_dir_path(self, dir_path):
-        self.assertTrue(os.path.isdir(os.path.dirname(dir_path)))
-        self.assertNotRegex(dir_path,
-                            ATAT_SIMULATION_TIME)
-        self.assertRegex(dir_path, RE_Y15S)
-
     def setUp(self):
-        self.simulation_dir_path = \
-            os.path.join(SIMULATION_ROOT_PATH, SIMULATION_DIR_PATH)
-        self.simulation_time = SimulationTime()
+        self.simulation_time = LibTests.simulation_time
+        self.path_maker = LibTests.path_maker
 
     def tearDown(self):
         cleanup_file_paths = []
-        cleanup_file_paths.append(get_simulation_schema_path(LibTests.start_up_orig))
-        cleanup_file_paths.append(get_master_palm_path(self.simulation_time))
+        cleanup_file_paths.append(self.path_maker.get_simulation_schema_path())
+        cleanup_file_paths.append(self.path_maker.get_master_palm_path())
         for cleanup_file_path in cleanup_file_paths:
             p = pathlib.Path(cleanup_file_path)
             if p.is_file():
@@ -638,99 +624,6 @@ class LibTests(unittest.TestCase):
         self.assertRegex(SIMULATION_DIR_PATH, r'/@@SIMULATION_TIME@@$')
         self.assertNotRegex(SIMULATION_SCHEMA_PATH, r'/tests/')
 
-    def test_get_client_db_path(self):
-        client_id = 8
-        client_db_path = get_client_db_path(self.simulation_time,
-                                            client_id)
-        self.assert_client_db_path(client_db_path)
-
-        client_id = 88888
-        client_db_path = get_client_db_path(self.simulation_time,
-                                            client_id)
-        self.assert_client_db_path(client_db_path)
-
-    # SimulationTime.Y15S_FORMAT='%Y-%m-%dT%H%M%S'
-    def test_get_simulation_dir_path(self):
-        simulation_time = self.simulation_time
-        simulation_dir_path = get_simulation_dir_path(simulation_time)
-        self.assert_simulation_dir_path(simulation_dir_path)
-
-    def test_get_simulation_schema_path(self):
-        simulation_time = self.simulation_time
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
-        self.assertFalse(os.path.isfile(simulation_schema_path))
-        self.assertNotRegex(simulation_schema_path,
-                            ATAT_SIMULATION_TIME)
-        self.assertRegex(simulation_schema_path, RE_Y15S)
-
-    def test_get_root_path(self):
-        self.assertEqual(get_root_path(), UMATOBI_ROOT_PATH)
-        self.assertEqual(re.sub(TESTS_PATH, '', UMATOBI_ROOT_PATH), os.sep + 'umatobi-root')
-        self.assertRegex(get_root_path(), UMATOBI_ROOT_PATH)
-
-    def test_set_simulation_schema(self):
-        simulation_time = SimulationTime()
-        simulation_dir_path = get_simulation_dir_path(simulation_time)
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
-
-        self.assertFalse(os.path.isfile(simulation_schema_path))
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            simulation_schema_path = set_simulation_schema(simulation_time)
-        self.assertTrue(os.path.isfile(simulation_schema_path))
-
-      # self.assertEqual(cm.output[0], f"INFO:umatobi:os.makedirs('{simulation_dir_path}')")
-        self.assertEqual(cm.output[0],
-                f"INFO:umatobi:shutil.copyfile(SIMULATION_SCHEMA_PATH={SIMULATION_SCHEMA_PATH}, simulation_schema_path={simulation_schema_path})")
-
-    @patch('os.path.isfile', return_value=True)
-    def test_set_simulation_schema_pass(self, mock_isfile):
-        simulation_time = SimulationTime()
-        simulation_dir_path = get_simulation_dir_path(simulation_time)
-        simulation_schema_path = get_simulation_schema_path(simulation_time)
-
-        try:
-            with self.assertLogs('umatobi', level='INFO') as cm:
-                simulation_schema_path = set_simulation_schema(simulation_time)
-        except AssertionError as err:
-            self.assertEqual(err.args[0], 'no logs of level INFO or higher triggered on umatobi')
-
-        mock_isfile.assert_called_once_with(simulation_schema_path)
-
-    def test_get_master_palm_path(self):
-        simulation_time = self.simulation_time
-        self.assertEqual(
-            get_master_palm_path(simulation_time),
-            os.path.join(SIMULATION_ROOT_PATH,
-                         simulation_time.get_y15s(),
-                         MASTER_PALM))
-
-    @patch('os.path.isdir', return_value=False)
-    @patch('os.makedirs')
-    def test_make_simulation_dir(self, mock_makedirs, mock_isdir):
-        simulation_time = SimulationTime()
-        simulation_dir_path = get_simulation_dir_path(simulation_time)
-
-        mock_isdir.assert_not_called()
-        with self.assertLogs('umatobi', level='INFO') as cm:
-            make_simulation_dir(simulation_dir_path)
-        self.assertRegex(cm.output[0], fr"^INFO:umatobi:os.makedirs\('/.+/{RE_Y15S}'\)$")
-        self.assertEqual(cm.output[0], f"INFO:umatobi:os.makedirs('{simulation_dir_path}')")
-        mock_isdir.assert_called_once()
-        mock_makedirs.assert_called_with(simulation_dir_path, exist_ok=True)
-
-    @patch('os.path.isdir', return_value=True)
-    @patch('os.makedirs')
-    def test_make_simulation_dir_pass(self, mock_makedirs, mock_isdir):
-        simulation_time = SimulationTime()
-        simulation_dir_path = get_simulation_dir_path(simulation_time)
-
-        mock_isdir.assert_not_called()
-
-        make_simulation_dir(simulation_dir_path)
-
-        mock_isdir.assert_called_once()
-        mock_makedirs.assert_not_called()
-
     def test_validate_kwargs(self):
         pass
 
@@ -948,9 +841,10 @@ class SimulationTimeTests(unittest.TestCase):
         self.simulation_dir_path = \
             os.path.join(SIMULATION_ROOT_PATH, SIMULATION_DIR_PATH)
         self.simulation_time = SimulationTime()
+        self.path_maker = PathMaker(self.simulation_time)
 
     def tearDown(self):
-        shutil.rmtree(os.path.dirname(get_master_palm_path(self.simulation_time)), ignore_errors=True)
+        shutil.rmtree(self.path_maker.get_simulation_schema_path(), ignore_errors=True)
 
     def test_time_machine_now(self):
         start_up_orig = SimulationTime.now()
@@ -1043,7 +937,157 @@ class SimulationTimeTests(unittest.TestCase):
         with time_machine(future):
             self.assertEqual(SimulationTime().start_up_orig, future)
 
+class PathMakerTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.simulation_time = SimulationTime()
+        cls.path_maker = PathMaker(cls.simulation_time)
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    def assert_client_db_path(self, client_db_path):
+        self.assertRegex(client_db_path, RE_CLIENT_N_DB)
+        self.assertNotRegex(client_db_path, ATAT_N)
+
+    def assert_simulation_schema_path(self, inspected_path):
+        self.assert_simulation_dir_path(inspected_path)
+        self.assertRegex(inspected_path, f'{SIMULATION_SCHEMA}$')
+
+    def assert_simulation_dir_path(self, dir_path):
+        self.assertTrue(os.path.isdir(os.path.dirname(dir_path)))
+        self.assertNotRegex(dir_path,
+                            ATAT_SIMULATION_TIME)
+        self.assertRegex(dir_path, RE_Y15S)
+
+    def setUp(self):
+        self.path_maker = PathMakerTests.path_maker
+
+#   def tearDown(self):
+#       cleanup_paths = []
+#       cleanup_paths.append(self.path_maker.get_simulation_schema_path())
+#       cleanup_paths.append(self.path_maker.get_master_palm_path())
+#       for cleanup_path in cleanup_paths:
+#           p = pathlib.Path(cleanup_path)
+#           if p.is_file():
+#               p.unlink()
+
+    def test___init__(self):
+        path_maker = self.path_maker
+        self.assertIsInstance(path_maker, PathMaker)
+        self.assertEqual(path_maker.simulation_time, \
+                         PathMakerTests.simulation_time)
+
+    def test_get_client_db_path(self):
+        path_maker = self.path_maker
+        client_id = 8
+        client_db_path = path_maker.get_client_db_path(client_id)
+
+        self.assertEqual(client_db_path,
+                os.path.join(
+                    re.sub(ATAT_SIMULATION_TIME,
+                    path_maker.simulation_time.get_y15s(),
+                    SIMULATION_DIR_PATH), 'client.8.db'))
+
+        client_id = 88888
+        client_db_path = path_maker.get_client_db_path(client_id)
+        self.assert_client_db_path(client_db_path)
+
+    # SimulationTime.Y15S_FORMAT='%Y-%m-%dT%H%M%S'
+    def test_get_simulation_dir_path(self):
+        path_maker = self.path_maker
+        simulation_dir_path = path_maker.get_simulation_dir_path()
+        self.assert_simulation_dir_path(simulation_dir_path)
+
+    def test_get_simulation_schema_path(self):
+        path_maker = self.path_maker
+        simulation_schema_path = path_maker.get_simulation_schema_path()
+        self.assertFalse(os.path.isfile(simulation_schema_path))
+        self.assertNotRegex(simulation_schema_path,
+                            ATAT_SIMULATION_TIME)
+        self.assertRegex(simulation_schema_path, RE_Y15S)
+
+    def test_get_root_path(self):
+        path_maker = self.path_maker
+        self.assertEqual(path_maker.get_root_path(), UMATOBI_ROOT_PATH)
+        self.assertEqual(re.sub(TESTS_PATH, '', UMATOBI_ROOT_PATH), os.sep + 'umatobi-root')
+
+    @patch('os.makedirs')
+    @patch('os.path.isfile', return_value=False)
+    @patch('os.path.isdir', return_value=False)
+    @patch('shutil.copyfile')
+    def test_set_simulation_schema(self, mock_copyfile, mock_isdir, mock_isfile, mock_makedirs):
+        path_maker = self.path_maker
+        simulation_dir_path = path_maker.get_simulation_dir_path()
+        simulation_schema_path = path_maker.get_simulation_schema_path()
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            simulation_schema_path = path_maker.set_simulation_schema()
+
+        self.assertEqual(cm.output[0], f"INFO:umatobi:os.makedirs('{simulation_dir_path}')")
+        self.assertEqual(cm.output[1],
+                f"INFO:umatobi:shutil.copyfile(SIMULATION_SCHEMA_PATH={SIMULATION_SCHEMA_PATH}, simulation_schema_path={simulation_schema_path})")
+        mock_isfile.assert_called_once_with(path_maker.get_simulation_schema_path())
+        mock_isdir.assert_called_once_with(path_maker.get_simulation_dir_path())
+        mock_makedirs.assert_called_once_with(path_maker.get_simulation_dir_path(), exist_ok=True)
+        mock_copyfile.assert_called_once_with(SIMULATION_SCHEMA_PATH, simulation_schema_path)
+
+    @patch('os.path.isfile', return_value=True)
+    def test_set_simulation_schema_pass(self, mock_isfile):
+        path_maker = self.path_maker
+
+        try:
+            with self.assertLogs('umatobi', level='INFO') as cm:
+                simulation_schema_path = path_maker.set_simulation_schema()
+        except AssertionError as err:
+            self.assertEqual(err.args[0], 'no logs of level INFO or higher triggered on umatobi')
+
+        mock_isfile.assert_called_once_with(simulation_schema_path)
+
+    def test_get_master_palm_path(self):
+        path_maker = self.path_maker
+        self.assertEqual(
+            path_maker.get_master_palm_path(),
+            os.path.join(SIMULATION_ROOT_PATH,
+                         path_maker.simulation_time.get_y15s(),
+                         MASTER_PALM))
+
+    @patch('os.path.isdir', return_value=False)
+    @patch('os.makedirs')
+    def test_make_simulation_dir(self, mock_makedirs, mock_isdir):
+        path_maker = self.path_maker
+        simulation_dir_path = path_maker.get_simulation_dir_path()
+
+        mock_isdir.assert_not_called()
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            path_maker.make_simulation_dir()
+        self.assertRegex(cm.output[0], fr"^INFO:umatobi:os.makedirs\('/.+/{RE_Y15S}'\)$")
+        self.assertEqual(cm.output[0], f"INFO:umatobi:os.makedirs('{simulation_dir_path}')")
+        mock_isdir.assert_called_once()
+        mock_makedirs.assert_called_with(simulation_dir_path, exist_ok=True)
+
+    @patch('os.path.isdir', return_value=True)
+    @patch('os.makedirs')
+    def test_make_simulation_dir_pass(self, mock_makedirs, mock_isdir):
+        path_maker = self.path_maker
+        simulation_dir_path = path_maker.get_simulation_dir_path()
+
+        mock_isdir.assert_not_called()
+
+        path_maker.make_simulation_dir()
+
+        mock_isdir.assert_called_once()
+        mock_makedirs.assert_not_called()
+
 class SchemaParserTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.simulation_time = SimulationTime()
+#       cls.path_maker = PathMaker(cls.simulation_time)
+#       cls.path_maker.set_simulation_schema()
 
     def assert_simulation_schema_path(self, inspected_path):
         self.assert_simulation_dir_path(inspected_path)
@@ -1054,16 +1098,15 @@ class SchemaParserTests(unittest.TestCase):
         self.assertRegex(dir_path, RE_Y15S)
 
     def setUp(self):
-        self.simulation_dir_path = \
-            os.path.join(SIMULATION_ROOT_PATH, SIMULATION_DIR_PATH)
-        self.simulation_time = SimulationTime()
+        self.simulation_time = SchemaParserTests.simulation_time
+        self.path_maker = PathMaker(self.simulation_time)
 
     def tearDown(self):
-        shutil.rmtree(os.path.dirname(get_master_palm_path(self.simulation_time)), ignore_errors=True)
+        shutil.rmtree(os.path.dirname(self.path_maker.get_master_palm_path()), ignore_errors=True)
 
     def test___init__(self):
         simulation_time = self.simulation_time
-        simulation_schema_path = set_simulation_schema(simulation_time)
+        simulation_schema_path = self.path_maker.set_simulation_schema()
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
@@ -1162,8 +1205,7 @@ class SchemaParserTests(unittest.TestCase):
             ),
         }
 
-        simulation_time = self.simulation_time
-        simulation_schema_path = set_simulation_schema(simulation_time)
+        simulation_schema_path = self.path_maker.set_simulation_schema()
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
@@ -1172,8 +1214,7 @@ class SchemaParserTests(unittest.TestCase):
                            tuple(expected_items.keys()))
 
     def test_get_table_names_from_schema(self):
-        simulation_time = self.simulation_time
-        simulation_schema_path = set_simulation_schema(simulation_time)
+        simulation_schema_path = self.path_maker.set_simulation_schema()
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
@@ -1203,8 +1244,7 @@ class SchemaParserTests(unittest.TestCase):
             ),
         }
 
-        simulation_time = self.simulation_time
-        simulation_schema_path = set_simulation_schema(simulation_time)
+        simulation_schema_path = self.path_maker.set_simulation_schema()
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
@@ -1244,8 +1284,7 @@ status: active
 # >>> base64.b64decode(b'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=')
 # b'\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa'
 
-        simulation_time = self.simulation_time
-        simulation_schema_path = set_simulation_schema(simulation_time)
+        simulation_schema_path = self.path_maker.set_simulation_schema()
         self.assert_simulation_schema_path(simulation_schema_path)
 
         schema_parser = SchemaParser(simulation_schema_path)
