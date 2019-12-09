@@ -33,11 +33,10 @@ class ClientTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.start_up_orig = SimulationTime()
-        cls.path_maker = PathMaker(ClientTests.start_up_orig)
+        cls.simulation_time = SimulationTime()
+        cls.path_maker = PathMaker(ClientTests.simulation_time)
 
     def setUp(self):
-        self.start_up_orig = ClientTests.start_up_orig
         self.path_maker = ClientTests.path_maker
 
     @patch('socket.getdefaulttimeout', side_effect=[None, Client.SOCKET_TIMEOUT_SEC])
@@ -134,7 +133,7 @@ class ClientTests(unittest.TestCase):
                        {'mock_key': 'mock_value'})
 
     def test__has_a_lot_on_mind(self):
-        expected_start_up_orig = SimulationTime()
+        expected_simulation_time = SimulationTime()
 
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
@@ -143,7 +142,7 @@ class ClientTests(unittest.TestCase):
         client._hello_watson = mock.MagicMock()
         client._hello_watson.return_value = {
             'client_id': 1,
-            'start_up_iso8601': expected_start_up_orig.get_iso8601(),
+            'start_up_iso8601': expected_simulation_time.get_iso8601(),
             'node_index': 1,
             'log_level': 'INFO',
         }
@@ -155,7 +154,7 @@ class ClientTests(unittest.TestCase):
             else:
                 key_ = key
             if key == 'start_up_iso8601':
-                self.assertEqual(client.start_up_orig, expected_start_up_orig)
+                self.assertEqual(client.path_maker, PathMaker(expected_simulation_time))
             else:
                 self.assertEqual(getattr(client, key_), reply[key])
         self.assertEqual(getattr(client, 'client_db_path'), self.path_maker.get_client_db_path(client.id))
@@ -181,7 +180,7 @@ class ClientTests(unittest.TestCase):
         client.client_db.remove_db()
 
     def test__has_a_lot_on_mind2(self):
-        expected_start_up_orig = SimulationTime()
+        expected_simulation_time = SimulationTime()
 
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
@@ -190,7 +189,7 @@ class ClientTests(unittest.TestCase):
         client._hello_watson = mock.MagicMock()
         client._hello_watson.return_value = {
             'client_id': 1,
-            'start_up_iso8601': expected_start_up_orig.get_iso8601(),
+            'start_up_iso8601': expected_simulation_time.get_iso8601(),
             'node_index': 1,
             'log_level': 'INFO',
         }
@@ -202,7 +201,7 @@ class ClientTests(unittest.TestCase):
             else:
                 key_ = key
             if key == 'start_up_iso8601':
-                self.assertEqual(client.start_up_orig, expected_start_up_orig)
+                self.assertEqual(client.path_maker, PathMaker(expected_simulation_time))
             else:
                 self.assertEqual(getattr(client, key_), reply[key])
         self.assertEqual(client.client_db_path, self.path_maker.get_client_db_path(client.id))
@@ -234,8 +233,8 @@ class ClientTests(unittest.TestCase):
         client = Client(watson_office_addr, num_nodes)
         # below four attr usually take from _hello_watson() as reply values
         client.id = 3
-        client.start_up_orig = self.start_up_orig
-        client.path_maker = PathMaker(self.start_up_orig)
+        client.simulation_time = ClientTests.simulation_time
+        client.path_maker = PathMaker(client.simulation_time)
         client.node_index = 10
         client.log_level = 'INFO'
 
@@ -280,8 +279,7 @@ class ClientTests(unittest.TestCase):
 
         client = Client(watson_office_addr, num_nodes)
         client.id = 3
-        client.start_up_orig = self.start_up_orig
-        client.path_maker = PathMaker(self.start_up_orig)
+        client.path_maker = PathMaker(self.simulation_time)
         client.node_index = 25
         client.log_level = 'INFO'
 

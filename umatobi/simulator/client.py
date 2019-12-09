@@ -244,8 +244,8 @@ class Client(object):
             raise RuntimeError('client cannot say "I am Client." to watson where is {}'.format(self.watson_office_addr))
 
         self.id = reply['client_id']
-        self.start_up_orig = SimulationTime.iso8601_to_time(reply['start_up_iso8601'])
-        self.path_maker = PathMaker(self.start_up_orig)
+        self.simulation_time = SimulationTime.iso8601_to_time(reply['start_up_iso8601'])
+        self.path_maker = PathMaker(self.simulation_time)
 
         self.client_db_path = self.get_db_path()
         self.node_index = reply['node_index']
