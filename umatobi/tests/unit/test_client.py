@@ -133,7 +133,10 @@ class ClientTests(unittest.TestCase):
                        {'mock_key': 'mock_value'})
 
     def test__has_a_lot_on_mind(self):
-        expected_simulation_time = SimulationTime()
+        import datetime
+        with time_machine(SimulationTime().start_up_orig + \
+                          datetime.timedelta(seconds=10)):
+            expected_simulation_time = self.simulation_time
 
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
@@ -180,7 +183,10 @@ class ClientTests(unittest.TestCase):
         client.client_db.remove_db()
 
     def test__has_a_lot_on_mind2(self):
-        expected_simulation_time = SimulationTime()
+        import datetime
+        with time_machine(SimulationTime().start_up_orig + \
+                          datetime.timedelta(seconds=10)):
+            expected_simulation_time = self.simulation_time
 
         watson_office_addr = ('localhost', 11111)
         num_nodes = 10
