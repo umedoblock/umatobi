@@ -422,6 +422,9 @@ class SimulationTime(object):
 
 class PathMaker(object):
 
+    def __eq__(self, other):
+        return self.simulation_time == other.simulation_time
+
     def __init__(self, simulation_time_or_start_up_orig=None):
         st_or_suo = simulation_time_or_start_up_orig
         if isinstance(st_or_suo, SimulationTime):

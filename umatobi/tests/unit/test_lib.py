@@ -974,6 +974,18 @@ class PathMakerTests(unittest.TestCase):
 #           if p.is_file():
 #               p.unlink()
 
+    def test___eq__(self):
+        iso8601 = SimulationTime().get_iso8601()
+        simulation_time_0 = SimulationTime(iso8601)
+        simulation_time_1 = SimulationTime(iso8601)
+        path_maker_0 = PathMaker(simulation_time_0)
+        path_maker_1 = PathMaker(simulation_time_1)
+
+        self.assertEqual(path_maker_0, path_maker_1)
+        self.assertEqual(simulation_time_0, simulation_time_1)
+        self.assertNotEqual(id(path_maker_0.simulation_time),
+                            id(path_maker_1.simulation_time))
+
     def test___init__(self):
         path_maker = self.path_maker
         self.assertIsInstance(path_maker, PathMaker)
