@@ -40,20 +40,20 @@ class WatsonOfficeTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.start_up_orig = SimulationTime()
+        cls.simulation_time = SimulationTime()
 
     @classmethod
     def tearDownClass(cls):
-        cls.start_up_orig = None
+        cls.simulation_time = None
 
     def setUp(self):
         self.watson_office_addr = ('localhost', 65530)
-        self.start_up_orig = WatsonOfficeTests.start_up_orig
+        self.simulation_time = WatsonOfficeTests.simulation_time
         self.log_level = 'DEBUG'
         self.log_level = 'INFO'
 
         self.watson = Watson(self.watson_office_addr, SIMULATION_SECONDS,
-                             self.start_up_orig, self.log_level)
+                             self.simulation_time, self.log_level)
 
     def test___init__(self):
         watson = self.watson
