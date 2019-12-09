@@ -34,9 +34,11 @@ class ClientTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.start_up_orig = SimulationTime()
+        cls.path_maker = PathMaker(ClientTests.start_up_orig)
 
     def setUp(self):
         self.start_up_orig = ClientTests.start_up_orig
+        self.path_maker = ClientTests.path_maker
 
     @patch('socket.getdefaulttimeout', side_effect=[None, Client.SOCKET_TIMEOUT_SEC])
     @patch('socket.setdefaulttimeout')
@@ -156,8 +158,8 @@ class ClientTests(unittest.TestCase):
                 self.assertEqual(client.start_up_orig, expected_start_up_orig)
             else:
                 self.assertEqual(getattr(client, key_), reply[key])
-        self.assertEqual(getattr(client, 'client_db_path'), get_client_db_path(client.start_up_orig, client.id))
-        self.assertEqual(getattr(client, 'simulation_schema_path'), get_simulation_schema_path(client.start_up_orig))
+        self.assertEqual(getattr(client, 'client_db_path'), self.path_maker.get_client_db_path(client.id))
+        self.assertEqual(getattr(client, 'simulation_schema_path'), self.path_maker.get_simulation_schema_path())
 
         with self.assertRaises(AttributeError) as cm:
             getattr(client, 'client_db')
@@ -203,8 +205,8 @@ class ClientTests(unittest.TestCase):
                 self.assertEqual(client.start_up_orig, expected_start_up_orig)
             else:
                 self.assertEqual(getattr(client, key_), reply[key])
-        self.assertEqual(getattr(client, 'client_db_path'), get_client_db_path(client.start_up_orig, client.id))
-        self.assertEqual(getattr(client, 'simulation_schema_path'), get_simulation_schema_path(client.start_up_orig))
+        self.assertEqual(client.client_db_path, self.path_maker.get_client_db_path(client.id))
+        self.assertEqual(client.simulation_schema_path, self.path_maker.get_simulation_schema_path())
 
         with self.assertRaises(AttributeError) as cm:
             getattr(client, 'client_db')
@@ -233,12 +235,13 @@ class ClientTests(unittest.TestCase):
         # below four attr usually take from _hello_watson() as reply values
         client.id = 3
         client.start_up_orig = self.start_up_orig
+        client.path_maker = PathMaker(self.start_up_orig)
         client.node_index = 10
         client.log_level = 'INFO'
 
         client.client_db_path = client.get_db_path()
         client.simulation_schema_path = \
-                set_simulation_schema(client.start_up_orig)
+                client.path_maker.set_simulation_schema()
 
         darkness_id = 0
         darkness_makes_nodes = client.nodes_per_darkness
@@ -257,7 +260,7 @@ class ClientTests(unittest.TestCase):
             'made_nodes':  0,
             'darkness_makes_nodes': 4,
             'num_darkness': 3,
-            'start_up_orig': client.start_up_orig,
+            'path_maker': client.path_maker,
         }
 
         self.assertEqual(darkness_d_config.keys(), expected_d.keys())
@@ -278,6 +281,7 @@ class ClientTests(unittest.TestCase):
         client = Client(watson_office_addr, num_nodes)
         client.id = 3
         client.start_up_orig = self.start_up_orig
+        client.path_maker = PathMaker(self.start_up_orig)
         client.node_index = 25
         client.log_level = 'INFO'
 

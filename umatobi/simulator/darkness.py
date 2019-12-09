@@ -101,7 +101,7 @@ class Darkness(object):
         '''
         st_barrier = set([
             'id', 'client_id', 'first_node_id',
-            'darkness_makes_nodes', 'log_level', 'start_up_orig',
+            'darkness_makes_nodes', 'log_level', 'path_maker',
             'made_nodes', # share with client and darknesses
             'leave_there', # share with client and another darknesses
             'num_darkness',
@@ -118,7 +118,7 @@ class Darkness(object):
 
         self.client_db_path = self.get_client_db_path()
         self.simulation_schema_path = \
-                set_simulation_schema(self.start_up_orig)
+                self.path_maker.set_simulation_schema()
         self.client_db = sql.SQL(db_path=self.client_db_path,
                              schema_path=self.simulation_schema_path)
 
@@ -132,7 +132,7 @@ class Darkness(object):
         self.nodes = []
 
     def get_client_db_path(self):
-        return get_client_db_path(self.start_up_orig, self.client_id)
+        return self.path_maker.get_client_db_path(self.client_id)
 
     def start(self):
         '''\
@@ -160,7 +160,7 @@ class Darkness(object):
             host, port = 'localhost', 10000 + id
             d_node = {
                 'host': host, 'port': port, 'id': id,
-                'start_up_orig': self.start_up_orig,
+                'path_maker': self.path_maker,
                 'byebye_nodes': self.byebye_nodes,
                 '_queue_darkness': self._queue_darkness
             }

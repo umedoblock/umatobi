@@ -106,7 +106,7 @@ class Client(object):
         darkness_d_config = {
             'id':  darkness_id,
             'client_id':  client_id,
-            'start_up_orig':  self.start_up_orig,
+            'path_maker':  self.path_maker,
             'log_level':  self.log_level,
             'darkness_makes_nodes':  darkness_makes_nodes,
             'first_node_id':  first_node_id,
@@ -217,7 +217,7 @@ class Client(object):
         self._say_good_bye()
 
     def get_db_path(self):
-        return get_client_db_path(self.start_up_orig, self.id)
+        return self.path_maker.get_client_db_path(self.id)
 
     ########################################################################
     # action of detail
@@ -233,9 +233,9 @@ class Client(object):
     #   _consult_watson()
     def _init_attrs(self):
         '''\
-        watson に接続し、id, start_up_origを受信する。
+        watson に接続し、id, start_up_iso8601 を受信する。
         id は client.N.log として、log fileを作成するときに使用。
-        start_up_orig は dir_nameを決定する際に使用する。
+        start_up_iso8601 は dir_name を決定する際に使用する。
         '''
         logger.info(f"{self}._hello_watson()")
         reply = self._hello_watson()
@@ -245,18 +245,20 @@ class Client(object):
 
         self.id = reply['client_id']
         self.start_up_orig = SimulationTime.iso8601_to_time(reply['start_up_iso8601'])
+        self.path_maker = PathMaker(self.start_up_orig)
 
         self.client_db_path = self.get_db_path()
         self.node_index = reply['node_index']
         self.log_level = reply['log_level']
-        self.simulation_schema_path = set_simulation_schema(self.start_up_orig)
+        self.simulation_schema_path = self.path_maker.get_simulation_schema_path()
 
         return reply
 
     #   _init_attrs()
     def _hello_watson(self):
         '''\
-        watsonに "I am Client." をTCPで送信し、watson起動時刻(start_up_orig)、
+        watsonに "I am Client." をTCPで送信し、watson起動時刻(start_up_orig)
+        を iso8601 に変換した文字列(start_up_iso8601) と、
         watsonへの接続順位(=id)をTCPで受信する。
         この時、受信するのはjson文字列。
         simulation 結果を格納する dir_name を作成するための情報を得る。

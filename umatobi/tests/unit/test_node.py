@@ -111,15 +111,14 @@ class NodeTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.simulation_time = SimulationTime()
+        cls.path_maker = PathMaker()
 
     @classmethod
     def tearDownClass(cls):
-        cls.simulation_time = None
-
+        cls.path_maker = None
 
     def setUp(self):
-        node_assets = make_node_assets(NodeTests.simulation_time)
+        node_assets = make_node_assets(NodeTests.path_maker)
 
         node = Node(host='localhost', id=1, **node_assets)
         key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
@@ -132,7 +131,7 @@ class NodeTests(unittest.TestCase):
 
     @patch('umatobi.simulator.node.threading.Lock')
     def test___init__(self, mock_lock):
-        node_assets = make_node_assets(NodeTests.simulation_time)
+        node_assets = make_node_assets(NodeTests.path_maker)
         node = Node(addr='localhost', id=0, **node_assets)
 
         self.assertIsInstance(node.key, Key)
@@ -183,8 +182,8 @@ class NodeTests(unittest.TestCase):
     @patch('os.path.isfile', return_value=True)
     def test__steal_a_glance_at_master_palm(self, mock_isfile):
         node = self.node
-        node2 = Node(host='localhost', port=11112, simulation_time=self.simulation_time)
-        node3 = Node(host='localhost', port=11113, simulation_time=self.simulation_time)
+        node2 = Node(host='localhost', port=11112, path_maker=self.path_maker)
+        node3 = Node(host='localhost', port=11113, path_maker=self.path_maker)
         self.assertTrue(hasattr(node, 'master_palm_path'))
 
         master_palm_on = node2.get_info() + node3.get_info()
@@ -249,7 +248,7 @@ class NodeTests(unittest.TestCase):
 
     def test_node_thread(self):
         logger.info(f"")
-        node_assets = make_node_assets(simulation_time=NodeTests.simulation_time)
+        node_assets = make_node_assets(path_maker=NodeTests.path_maker)
         node_ = Node(host='localhost', id=1, **node_assets)
 
         logger.info(f"node_.appear()")
@@ -267,11 +266,11 @@ class NodeTests(unittest.TestCase):
         os.remove(node_.master_palm_path)
 
     def test_node_basic(self):
-        node_assets = make_node_assets(simulation_time=NodeTests.simulation_time)
+        node_assets = make_node_assets(path_maker=NodeTests.path_maker)
         node_ = Node(host='localhost', id=1, **node_assets)
         self.assertFalse(node_.im_ready.is_set())
 
-        attrs = ('id', 'simulation_time', 'byebye_nodes', '_queue_darkness')
+        attrs = ('id', 'path_maker', 'byebye_nodes', '_queue_darkness')
         for attr in attrs:
             self.assertTrue(hasattr(node_, attr), attr)
 

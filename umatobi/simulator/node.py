@@ -125,7 +125,7 @@ class NodeOffice(socketserver.DatagramRequestHandler):
 
 class Node(node.Node):
 
-    ATTRS = ('id', 'office_addr', 'key', 'status', 'simulation_time')
+    ATTRS = ('id', 'office_addr', 'key', 'status', 'path_maker')
 
     def __init__(self, **kwargs):
         '''\
@@ -139,7 +139,7 @@ class Node(node.Node):
             if attr in ('host', 'port'):
                 continue
             setattr(self, attr, value)
-        self.path_maker = PathMaker(self.simulation_time)
+        self.simulation_time = self.path_maker.simulation_time
 
         self.key = Key()
         self.status = 'active'

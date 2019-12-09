@@ -71,16 +71,16 @@ class DarknessTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.start_up_orig = SimulationTime()
+        cls.simulation_time = SimulationTime()
 
     @classmethod
     def tearDownClass(cls):
-        cls.start_up_orig = None
+        cls.simulation_time = None
 
     def setUp(self):
         darkness_id = 1
         client_id = 1
-        self.start_up_orig = DarknessTests.start_up_orig
+        self.path_maker = PathMaker(DarknessTests.simulation_time)
         log_level = 'INFO'
         nodes_per_darkness = Darkness.NODES_PER_DARKNESS
         first_node_id = 0
@@ -93,7 +93,7 @@ class DarknessTests(unittest.TestCase):
         self.darkness_d_config = {
             'id':  darkness_id,
             'client_id':  client_id,
-            'start_up_orig':  self.start_up_orig,
+            'path_maker':  self.path_maker,
             'log_level':  log_level,
             'darkness_makes_nodes':  nodes_per_darkness,
             'first_node_id':  first_node_id,
@@ -122,14 +122,16 @@ class DarknessTests(unittest.TestCase):
 
         leave_there = darkness_d_config['leave_there']
 
-        self.assertEqual(darkness.start_up_orig, self.start_up_orig)
+        self.assertEqual(darkness.path_maker, self.path_maker)
         self.assertEqual(darkness.leave_there, leave_there)
         self.assertFalse(darkness.leave_there.is_set())
 
         self.assertEqual(darkness.client_db.db_path,
-                         darkness.get_client_db_path())
+                         self.path_maker.get_client_db_path(darkness.client_id))
         self.assertEqual(darkness.simulation_schema_path,
-                         get_simulation_schema_path(self.start_up_orig))
+                         self.path_maker.get_simulation_schema_path())
+        self.assertEqual(darkness.client_db_path,
+                         self.path_maker.get_client_db_path(darkness.client_id))
         self.assertIsInstance(darkness.client_db, sql.SQL)
         self.assertRegex(darkness.client_db_path, RE_CLIENT_N_DB)
         self.assertFalse(os.path.isfile(darkness.client_db_path))
@@ -146,7 +148,8 @@ class DarknessTests(unittest.TestCase):
 
     def test_get_client_db_path(self):
         darkness = self.darkness
-        self.assertRegex(darkness.get_client_db_path(), RE_CLIENT_N_DB)
+        self.assertEqual(darkness.get_client_db_path(),
+                         self.path_maker.get_client_db_path(darkness.client_id))
 
         self.assertEqual(threading.active_count(), 1)
 
@@ -168,7 +171,7 @@ class DarknessTests(unittest.TestCase):
 
         self.assertFalse(os.path.isfile(darkness.client_db_path))
         client_db = sql.SQL(db_path=darkness.client_db_path,
-                            schema_path=get_simulation_schema_path(self.start_up_orig))
+                            schema_path=darkness.simulation_schema_path)
         self.assertFalse(os.path.isfile(darkness.client_db_path))
         client_db.create_db()
         self.assertTrue(os.path.isfile(darkness.client_db_path))
@@ -247,7 +250,7 @@ class DarknessTests(unittest.TestCase):
         darkness._spawn_nodes()
 
         client_db = sql.SQL(db_path=darkness.client_db_path,
-                        schema_path=get_simulation_schema_path(darkness.start_up_orig))
+                        schema_path=darkness.simulation_schema_path)
         client_db.create_db()
         client_db.create_table('growings')
         client_db.close()
