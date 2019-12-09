@@ -63,8 +63,9 @@ class LoggerTests(unittest.TestCase):
 class LoggerNodeTests(unittest.TestCase):
     def setUp(self):
         self.the_moment = SimulationTime()
-        with time_machine(self.the_moment):
-            node_assets = make_node_assets(self.the_moment)
+        self.path_maker = PathMaker(self.the_moment)
+        node_assets = make_node_assets(self.path_maker)
+
         node = Node(host='localhost', id=1, **node_assets)
         key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
         node.key.update(key)

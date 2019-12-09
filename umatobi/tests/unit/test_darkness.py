@@ -211,7 +211,7 @@ class DarknessTests(unittest.TestCase):
         for i, node in enumerate(darkness.nodes):
             self.assertEqual(node.id, i)
             self.assertEqual(node.udp_addr, ('localhost', 10000 + i))
-            self.assertEqual(node.start_up_orig, DarknessTests.start_up_orig)
+            self.assertEqual(node.path_maker, self.path_maker)
             # syncevent is im_ready
             self.assertTrue(node.im_ready.is_set())
             self.assertFalse(node.byebye_nodes.is_set())
