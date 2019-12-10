@@ -16,18 +16,17 @@ from umatobi.lib import *
 class ClientStoryTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.start_up_orig = SimulationTime()
-      # set_simulation_schema(cls.start_up_orig)
+        cls.simulation_time = SimulationTime()
 
     def setUp(self):
         watson_office_addr = ('localhost', 0)
         simulation_seconds = 30
         log_level = 'DEBUG'
 
-        start_up_orig = ClientStoryTests.start_up_orig
+        simulation_time = ClientStoryTests.simulation_time
 
         self.watson = Watson(watson_office_addr, simulation_seconds,
-                             start_up_orig, log_level)
+                             simulation_time, log_level)
 
     def tearDown(self):
         pass

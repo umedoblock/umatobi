@@ -18,11 +18,11 @@ class MakeSimulationDbTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.start_up_orig = SimulationTime()
-        set_simulation_schema(cls.start_up_orig)
+        cls.path_maker = PathMaker(SimulationTime())
+        cls.path_maker.set_simulation_schema()
 
-        simulation_db_path = get_simulation_db_path(cls.start_up_orig)
-        schema_path = get_simulation_schema_path(cls.start_up_orig)
+        simulation_db_path = cls.path_maker.get_simulation_db_path()
+        schema_path = cls.path_maker.get_simulation_schema_path()
         cls.simulation_db = SQL(db_path=simulation_db_path,
                                 schema_path=schema_path)
         cls.simulation_db.create_db()
@@ -40,7 +40,6 @@ class MakeSimulationDbTests(unittest.TestCase):
         cls.simulation_db.remove_db()
 
     def setUp(self):
-        self.start_up_orig = MakeSimulationDbTests.start_up_orig
         self.simulation_db = MakeSimulationDbTests.simulation_db
         self.outsider_db = MakeSimulationDbTests.outsider_db
 
@@ -54,10 +53,9 @@ class MakeSimulationDbTests(unittest.TestCase):
                            'test_collect_client_dbs')
         expected = []
         for i in range(len(fixture)):
-            expected.append(call(get_client_db_path(MakeSimulationDbTests.start_up_orig, i)))
+            expected.append(call(self.path_maker.get_client_db_path(i)))
 
-        client_dbs = collect_client_dbs(simulation_db,
-                                        MakeSimulationDbTests.start_up_orig)
+        client_dbs = collect_client_dbs(simulation_db, self.path_maker)
 
         self.assertEqual(len(client_dbs), len(fixture))
         self.assertTrue(all([isinstance(client_db, SQL) for client_db in client_dbs]))

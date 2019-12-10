@@ -17,18 +17,17 @@ from umatobi.lib import *
 from umatobi.lib.args import args_make_simulation_db
 from umatobi.simulator.sql import SQL
 
-def collect_client_dbs(simulation_db, start_up_orig):
+def collect_client_dbs(simulation_db, path_maker):
     client_dbs = []
     client_rows = simulation_db.select('clients', conditions='order by id')
 
-    set_simulation_schema(start_up_orig)
-    simulation_schema_path = get_simulation_schema_path(start_up_orig)
+    path_maker.set_simulation_schema()
+    simulation_schema_path = path_maker.get_simulation_schema_path()
 
     for client_row in client_rows:
         id_, num_nodes_ = (client_row['id'], client_row['num_nodes'])
         logger.debug('id={}, num_nodes_={}'.format(id_, num_nodes_))
-        simulation_db_dir = os.path.dirname(simulation_db.db_path)
-        client_db_path = os.path.join(simulation_db_dir, f"client.{id_}.db")
+        client_db_path = path_maker.get_client_db_path(id_)
         client_db = SQL(db_path=client_db_path,
                         schema_path=simulation_schema_path)
         client_db.id, client_db.num_nodes = id_, num_nodes_
