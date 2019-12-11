@@ -208,9 +208,16 @@ class NodeTests(unittest.TestCase):
 
     def test_get_attrs(self):
         node = self.node
+        expected_attrs = {
+            'id': 1,
+            'office_addr': ('localhost', None),
+            'key': Key(b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4),
+            'status': 'active',
+            'path_maker': NodeTests.path_maker,
+        }
 
         attrs = node.get_attrs()
-        self.assertSetEqual(set(attrs.keys()), set(Node.ATTRS))
+        self.assertEqual(attrs, expected_attrs)
 
     def test_put_on_darkness(self):
         node = self.node
