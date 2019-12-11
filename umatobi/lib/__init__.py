@@ -309,6 +309,16 @@ def make_question_marks(n_questions):
     hatenas = '({})'.format(', '.join('?' * n_questions))
     return hatenas
 
+def make_growing_dict(id_, et, pickle):
+
+    growing = {
+        'id': id_,
+        'elapsed_time': et,
+        'pickle': pickle,
+    }
+
+    return growing
+
 class Polling(threading.Thread):
 
     @classmethod

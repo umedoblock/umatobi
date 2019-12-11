@@ -5,7 +5,7 @@
 # This software is released under the MIT License.
 # https://github.com/umedoblock/umatobi
 
-import os, sys, re, shutil, socket, pathlib
+import os, sys, re, shutil, socket, pathlib, pickle
 import unittest
 from unittest.mock import patch, MagicMock
 from io import StringIO
@@ -16,6 +16,7 @@ from umatobi.tests import *
 from umatobi.lib import *
 from umatobi.simulator.core.key import Key
 from umatobi.simulator.sql import SQL
+from umatobi.simulator.node import Node
 
 class LibTests(unittest.TestCase):
 
@@ -814,6 +815,31 @@ val_text: text context
                 make_question_marks(n_questions)
             err_args = cm.exception.args
             self.assertEqual(err_args[0], f'n_questions(={n_questions}) must be greater than or equal to one.')
+
+    def test_make_growing_dict(self):
+        from datetime import timedelta
+
+        node_assets = make_node_assets()
+
+        node = Node(host='localhost', id=1, **node_assets)
+        key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
+        node.key.update(key)
+        got_attrs = node.get_attrs()
+        pickled_attrs = pickle.dumps(got_attrs)
+        expected_growing_dict = {
+            'id': 100,
+            'elapsed_time': 111,
+            'pickle': pickled_attrs,
+        }
+
+        simulation_time = SimulationTime()
+        with time_machine(simulation_time.start_up_orig + \
+                          timedelta(milliseconds=111)):
+            elapsed_time = simulation_time.passed_ms()
+
+        growing_dict = make_growing_dict(100, elapsed_time, pickled_attrs)
+
+        self.assertEqual(growing_dict, expected_growing_dict)
 
 class PollingTests(unittest.TestCase):
 

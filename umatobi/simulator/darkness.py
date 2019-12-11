@@ -74,8 +74,7 @@ class ExhaleQueue(Polling):
         growing['id'] = None
         for i in range(queue_size):
             et, pickled = self._queue_darkness.get()
-            growing['elapsed_time'] = et
-            growing['pickle'] = pickled
+            growing = make_growing_dict(None, et, pickled)
             self.client_db.insert('growings', growing)
       # client の db.growings へ pickle 情報を commit
         self.client_db.commit()
