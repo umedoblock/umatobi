@@ -125,7 +125,7 @@ class NodeOffice(socketserver.DatagramRequestHandler):
 
 class Node(node.Node):
 
-    ATTRS = ('id', 'office_addr', 'key', 'status', 'path_maker')
+    ATTRS = set(('id', 'office_addr', 'key', 'status', 'path_maker'))
 
     def __init__(self, **kwargs):
         '''\
