@@ -81,7 +81,39 @@ class MakeSimulationDbTests(unittest.TestCase):
         pass
 
     def test_merge_client_dbs(self):
-        pass
+        yaml_path = replace_atat_n('')
+        simulation_db = MakeSimulationDbTests.simulation_db
+        schema_parser, table_name, fixture = \
+            inserts_fixture(simulation_db,
+                            yaml_path,
+                           'test_merge_client_dbs')
+
+        client_dbs = collect_client_dbs(simulation_db, self.path_maker)
+        for client_db in client_dbs:
+            client_db.create_table('growings')
+
+        growing_dicts = [None] * len(client_dbs)
+        for i, client_db in enumerate(client_dbs):
+            growing_dicts[i] = make_growing_dicts(client_db.num_nodes,
+                                                  120,
+                                                  client_db.node_index)
+            client_db.inserts_via_dict('growings', growing_dicts[i])
+            client_db.commit()
+           #rows = client_db.select('growings')
+           #print('len(rows) =', len(rows))
+           #print('rows =')
+           #print([tuple(row) for row in rows])
+           #print()
+
+        sorted_records = merge_client_dbs(client_dbs)
+
+        self.assertEqual(len(sorted_records), 120 * 2)
+        for i, sorted_record in enumerate(sorted_records[:-2]):
+            self.assertLessEqual(sorted_records[i]['elapsed_time'],
+                                 sorted_records[i+1]['elapsed_time'])
+
+        for i, client_db in enumerate(client_dbs):
+            client_db.remove_db()
 
     def test_watson_make_simulation_db(self):
         pass
