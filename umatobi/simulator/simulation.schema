@@ -47,7 +47,7 @@ log_level: text
 # darkness commit to client.N.db database.
 [growings]
 id: integer primary key autoincrement unique not null
-now_iso8601: text not null
+elapsed_time: integer not null
 pickle: blob not null
 
 # watson and client manage nodes.id, so don't set autoincrement
