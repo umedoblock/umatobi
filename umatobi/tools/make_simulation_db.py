@@ -30,9 +30,11 @@ def collect_client_dbs(simulation_db, path_maker):
         client_db_path = path_maker.get_client_db_path(id_)
         client_db = SQL(db_path=client_db_path,
                         schema_path=simulation_schema_path)
-        client_db.id, client_db.num_nodes = id_, num_nodes_
+       #client_db.id, client_db.num_nodes = id_, num_nodes_
+        for key in client_row.keys():
+            setattr(client_db, key, client_row[key])
         logger.debug(f'client_db={client_db}')
-        client_db.access_db()
+        client_db.create_db()
         logger.debug(f'client_db.id={client_db.id}')
         client_dbs.append(client_db)
 

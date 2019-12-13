@@ -97,6 +97,10 @@ class MakeSimulationDbTests(unittest.TestCase):
             growing_dicts[i] = make_growing_dicts(client_db.num_nodes,
                                                   120,
                                                   client_db.node_index)
+            gds = growing_dicts[i]
+            self.assertTrue(any((gds[j]['elapsed_time'] < gds[j+1]['elapsed_time']) for j in range(len(gds))))
+            self.assertEqual(growing_dicts[i][0]['elapsed_time'],
+                             growing_dicts[i][1]['elapsed_time'])
             client_db.inserts_via_dict('growings', growing_dicts[i])
             client_db.commit()
            #rows = client_db.select('growings')

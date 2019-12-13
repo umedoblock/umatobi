@@ -131,3 +131,21 @@ test_collect_client_dbs:
   num_nodes: 50
   node_index: 100
   log_level: INFO
+
+test_merge_client_dbs:
+- ../../simulator/simulation.schema
+- clients
+- id: 0
+  addr: localhost:10000
+  consult_iso8601: '2019-11-22T11:11:44.901234'
+  thanks_iso8601: '2019-11-22T11:12:20.901234'
+  num_nodes: 20
+  node_index: 0
+  log_level: INFO
+- id: 1
+  addr: localhost:10001
+  consult_iso8601: '2019-11-22T11:11:44.901234'
+  thanks_iso8601: '2019-11-22T11:12:20.901234'
+  num_nodes: 30
+  node_index: 20
+  log_level: INFO
