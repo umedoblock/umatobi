@@ -26,7 +26,6 @@ class MakeSimulationDbTests(unittest.TestCase):
         cls.simulation_db = SQL(db_path=simulation_db_path,
                                 schema_path=schema_path)
         cls.simulation_db.create_db()
-        cls.simulation_db.create_table('clients')
 
         cls.outsider_db = SQL(db_path=cls.simulation_db.db_path,
                               schema_path=cls.simulation_db.schema_path)
@@ -41,7 +40,12 @@ class MakeSimulationDbTests(unittest.TestCase):
 
     def setUp(self):
         self.simulation_db = MakeSimulationDbTests.simulation_db
+        self.simulation_db.create_table('clients')
         self.outsider_db = MakeSimulationDbTests.outsider_db
+
+    def tearDown(self):
+        for table_name in self.simulation_db.get_table_names():
+            self.simulation_db.drop_table(table_name)
 
     @patch('os.path.exists', return_value=True)
     def test_collect_client_dbs(self, mock_exists):
@@ -73,6 +77,9 @@ class MakeSimulationDbTests(unittest.TestCase):
        #print('mock_exists.mock_calls =')
        #print(mock_exists.mock_calls)
         self.assertEqual(mock_exists.call_args_list, expected)
+
+        for i, client_db in enumerate(client_dbs):
+            client_db.remove_db()
 
     def test_count_nodes(self):
         pass
