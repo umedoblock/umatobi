@@ -34,7 +34,7 @@ def collect_client_dbs(simulation_db, path_maker):
         for key in client_row.keys():
             setattr(client_db, key, client_row[key])
         logger.debug(f'client_db={client_db}')
-        client_db.create_db()
+        client_db.access_db()
         logger.debug(f'client_db.id={client_db.id}')
         client_dbs.append(client_db)
 
