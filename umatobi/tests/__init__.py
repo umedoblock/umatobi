@@ -5,7 +5,7 @@
 # This software is released under the MIT License.
 # https://github.com/umedoblock/umatobi
 
-import io, os, socket, threading, queue
+import io, os, socket, threading, queue, random, pickle
 from contextlib import contextmanager
 from unittest.mock import patch
 from datetime import timedelta
@@ -13,6 +13,7 @@ import functools
 
 from umatobi.tests.constants import *
 from umatobi.lib import *
+from umatobi.simulator.node import Node
 
 SIMULATION_SECONDS = 30
 D_TIMEDELTA = {
@@ -65,3 +66,24 @@ def time_machine(the_era):
             yield
         finally:
             pass
+
+def make_growing_dicts(num_nodes, n_node_pickled, id_index):
+    node_assets = make_node_assets()
+
+    growing_dicts = [None] * n_node_pickled
+    for i in range(n_node_pickled):
+        node = Node(host='localhost',
+                      id=id_index + (i % num_nodes),
+                       **node_assets)
+        node.key.update()
+        got_attrs = node.get_attrs()
+
+        elapsed_time = random.randint(0, 100 ** 2 - 1)
+        node_pickled = pickle.dumps(got_attrs)
+
+        growing_dicts[i] = \
+            make_growing_dict(None, elapsed_time, node_pickled)
+
+    growing_dicts[0]['elapsed_time'] = growing_dicts[1]['elapsed_time']
+
+    return growing_dicts
