@@ -198,8 +198,8 @@ class SQL(object):
         static_part = f'insert into {table_name} {columns} values '
         qms = make_question_marks(len(columns))
 
-       #print('static_part + hatenas =')
-       #print(static_part + hatenas)
+      # print('static_part + qms =')
+      # print(static_part + qms)
        #print("values=")
        #print(listed_dict[1:])
 #       tupled_values = f"{listed_dict[1:]}"
