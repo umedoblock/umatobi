@@ -87,7 +87,8 @@ class MakeSimulationDbTests(unittest.TestCase):
     def test__select_client_db(self):
         pass
 
-    def test_merge_client_dbs(self):
+    @patch('os.path.exists', return_value=True)
+    def test_merge_client_dbs(self, mock_exists):
         yaml_path = replace_atat_n('')
         simulation_db = MakeSimulationDbTests.simulation_db
         schema_parser, table_name, fixture = \
@@ -96,6 +97,9 @@ class MakeSimulationDbTests(unittest.TestCase):
                            'test_merge_client_dbs')
 
         client_dbs = collect_client_dbs(simulation_db, self.path_maker)
+        mock_exists.assert_called()
+        self.assertEqual(mock_exists.call_count, len(fixture))
+
         for client_db in client_dbs:
             client_db.create_table('growings')
 
@@ -110,11 +114,6 @@ class MakeSimulationDbTests(unittest.TestCase):
                              growing_dicts[i][1]['elapsed_time'])
             client_db.inserts_via_dict('growings', growing_dicts[i])
             client_db.commit()
-           #rows = client_db.select('growings')
-           #print('len(rows) =', len(rows))
-           #print('rows =')
-           #print([tuple(row) for row in rows])
-           #print()
 
         sorted_records = merge_client_dbs(client_dbs)
 
