@@ -53,7 +53,7 @@ pickle: blob not null
 # watson and client manage nodes.id, so don't set autoincrement
 [nodes]
 id: integer primary key unique not null
-now_iso8601: text not null
+elapsed_time: integer
 addr: text not null
 key: blob
 status: text not null

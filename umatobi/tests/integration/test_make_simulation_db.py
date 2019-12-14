@@ -129,7 +129,43 @@ class MakeSimulationDbTests(unittest.TestCase):
         pass
 
     def test_init_nodes_table(self):
-        pass
+        yaml_path = replace_atat_n('')
+        simulation_db = MakeSimulationDbTests.simulation_db
+        outsider_db = self.outsider_db
+
+        expected_tables0 = {'clients'}
+        self.assertEqual(set(outsider_db.get_table_names()), expected_tables0)
+
+        schema_parser, table_name, fixture = \
+            inserts_fixture(simulation_db,
+                            yaml_path,
+                           'test_init_nodes_simulation_db')
+
+        expected_tables1 = {'clients', 'simulation'}
+        self.assertEqual(set(outsider_db.get_table_names()), expected_tables1)
+
+        total_nodes = outsider_db.select_one('simulation', 'total_nodes')
+        self.assertEqual(total_nodes, 30)
+        n_clients = outsider_db.select_one('simulation', 'n_clients')
+        self.assertEqual(n_clients, 2)
+
+        rows = outsider_db.select('simulation')
+
+        with self.assertRaises(sqlite3.OperationalError) as cm:
+            simulation_db.select('nodes')
+        the_exception = cm.exception
+        self.assertEqual(the_exception.args[0], 'no such table: nodes')
+
+        init_nodes_table(simulation_db)
+        self.assertIn('nodes', outsider_db.get_table_names())
+
+        nodes = simulation_db.select('nodes')
+
+        self.assertEqual(len(nodes), total_nodes)
+        expected = [None, -1, '(dummy.host|None)', b'0x dummy', 'dummy status']
+        for i in range(len(nodes)):
+            expected[0] = i + 1
+            self.assertEqual([*nodes[i]], expected)
 
     def test_init_nodes_table2(self):
         pass

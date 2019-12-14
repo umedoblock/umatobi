@@ -127,13 +127,9 @@ def init_nodes_table(simulation_db):
     logger.debug(f'simulation_db.total_nodes={simulation_db.total_nodes}')
     d_node = {
         'id': None,
-        'host': 'dummy host',
-        'port': 0,
-        'keyID': 0x00000000,
+        'elapsed_time': -1,
+        'addr': '(dummy.host|None)',
         'key': b'0x dummy',
-        'rad': 0.0,
-        'x': 0.0,
-        'y': 0.0,
         'status': 'dummy status',
     }
     for i in range(simulation_db.total_nodes):

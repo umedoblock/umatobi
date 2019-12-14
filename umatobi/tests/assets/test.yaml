@@ -149,3 +149,19 @@ test_merge_client_dbs:
   num_nodes: 30
   node_index: 20
   log_level: INFO
+
+test_init_nodes_simulation_db:
+- ../../simulator/simulation.schema
+- simulation
+- title: 'test init_nodes_table(simulation_db)'
+  start_up_iso8601: '2019-11-22T11:12:20.901234'
+  open_office_iso8601: ''
+  close_office_iso8601: ''
+  end_up_iso8601: ''
+  simulation_seconds: 30
+  watson_office_addr: '(localhost:44444)'
+  total_nodes: 30
+  n_clients: 2
+  memo: 'memo memo memo note'
+  log_level: 'INFO'
+  version: '0.0.0'
