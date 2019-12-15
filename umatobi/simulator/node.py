@@ -125,7 +125,7 @@ class NodeOffice(socketserver.DatagramRequestHandler):
 
 class Node(node.Node):
 
-    ATTRS = set(('id', 'office_addr', 'key', 'status', 'path_maker'))
+    TO_DARKNESS = set(('id', 'office_addr', 'key', 'status', 'path_maker'))
 
     def __init__(self, **kwargs):
         '''\
@@ -221,7 +221,7 @@ class Node(node.Node):
 
     def get_attrs(self, keys=()):
         if not keys:
-            keys = self.ATTRS
+            keys = self.TO_DARKNESS
         d = {}
         for key in keys:
             d[key] = getattr(self, key)
