@@ -414,7 +414,7 @@ class LibTests(unittest.TestCase):
         expected_qwer = \
             ({
                 'id': 4,
-                'now_iso8601': '2011-12-22T11:11:44.901234',
+                'elapsed_time': 22222,
                 'addr': '127.0.0.1:22222',
                 'key': b'\xaa' * Key.KEY_OCTETS,
                 'status': 'inactive'
@@ -1275,10 +1275,10 @@ class SchemaParserTests(unittest.TestCase):
                 'num_nodes', 'node_index', 'log_level'
             ),
             'growings': (
-                'id', 'now_iso8601', 'pickle'
+                'id', 'elapsed_time', 'pickle'
             ),
             'nodes': (
-                'id', 'now_iso8601', 'addr', 'key', 'status'
+                'id', 'elapsed_time', 'addr', 'key', 'status'
             ),
         }
 
@@ -1312,7 +1312,7 @@ version: 0.0.0
 
 [nodes]
 id: 100
-now_iso8601: 2011-12-22T11:11:44.901234
+elapsed_time: 15382
 addr: 127.0.0.1:22222
 key: qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=
 status: active
@@ -1347,7 +1347,7 @@ status: active
         self.assertEqual(records.simulation['version'], '0.0.0')
 
         self.assertEqual(records.nodes['id'], 100)
-        self.assertEqual(records.nodes['now_iso8601'], '2011-12-22T11:11:44.901234')
+        self.assertEqual(records.nodes['elapsed_time'], 15382)
         self.assertEqual(records.nodes['addr'], '127.0.0.1:22222')
         self.assertEqual(records.nodes['key'], b'\xaa' * Key.KEY_OCTETS)
         self.assertEqual(records.nodes['status'], 'active')

@@ -45,7 +45,7 @@ qwer:
 - ../../simulator/simulation.schema
 - nodes
 - id: '4'
-  now_iso8601: '2011-12-22T11:11:44.901234'
+  elapsed_time: 22222
   addr: '127.0.0.1:22222'
 # key: '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc'
 # key: !!binary |
