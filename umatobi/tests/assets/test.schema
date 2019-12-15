@@ -19,8 +19,8 @@ val_blob:    blob
 # time.time() in Python time format '2012-11-02T23:22:27.002'
 now:    text
 
-# float
-elapsed_time: real
+# milli seconds
+elapsed_time: integer
 
 iso8601: text
 

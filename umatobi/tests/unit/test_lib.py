@@ -543,7 +543,7 @@ class LibTests(unittest.TestCase):
             'val_text':    'multiple inserts 0',
             'val_blob':    b'multiple inserts 0',
             'now':          '2002-11-02T23:22:00.000',
-            'elapsed_time': 100.000,
+            'elapsed_time': 100,
             'iso8601':      '2002-11-02T23:22:00.000000',
         }, {
             'id': 1,
@@ -553,7 +553,7 @@ class LibTests(unittest.TestCase):
             'val_text':    'multiple inserts 1',
             'val_blob':    b'multiple inserts 1',
             'now':          '2112-11-12T23:22:11.111',
-            'elapsed_time': 111.111,
+            'elapsed_time': 111,
             'iso8601':      '2112-11-12T23:22:11.111111',
         } )
 
@@ -1209,8 +1209,8 @@ class SchemaParserTests(unittest.TestCase):
                 # time.time() in Python time format '2012-11-02T23:22:27.002'
                 'now':    converter_text,
 
-                # float
-                'elapsed_time':    converter_real,
+                # milli seconds
+                'elapsed_time':    converter_integer,
 
                 # text
                 'iso8601':    converter_text,
