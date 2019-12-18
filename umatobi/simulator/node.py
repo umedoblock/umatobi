@@ -191,9 +191,9 @@ class Node(node.Node):
         return f"{':'.join(map(str, self.office_addr))}:{self.key}" + '\n'
 
     def regist(self):
-        logger.info(f"regist(), master_palm_path={self.master_palm_path}")
-        os.makedirs(os.path.dirname(self.master_palm_path), exist_ok=True)
-        with open(self.master_palm_path, 'a') as master:
+        logger.info(f"regist(), master_palm_txt_path={self.master_palm_txt_path}")
+        os.makedirs(os.path.dirname(self.master_palm_txt_path), exist_ok=True)
+        with open(self.master_palm_txt_path, 'a') as master:
             print(self.get_info(), end='', file=master)
       # msg = 'I am Node.'
       # recver_addr = ('localhost', 222)
@@ -202,12 +202,12 @@ class Node(node.Node):
         self.im_ready.set()
 
     def _steal_a_glance_at_master_palm(self):
-        if not os.path.isfile(self.master_palm_path):
-            logger.info(f"not found 'master_palm_path={self.master_palm_path}'")
+        if not os.path.isfile(self.master_palm_txt_path):
+            logger.info(f"not found 'master_palm_txt_path={self.master_palm_txt_path}'")
             return None
 
-        logger.info(f"found 'master_palm_path={self.master_palm_path}'")
-        with open(self.master_palm_path) as master_palm:
+        logger.info(f"found 'master_palm_txt_path={self.master_palm_txt_path}'")
+        with open(self.master_palm_txt_path) as master_palm:
             node_lines = master_palm.read()
         return node_lines
 

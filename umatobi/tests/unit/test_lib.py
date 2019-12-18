@@ -619,10 +619,10 @@ class LibTests(unittest.TestCase):
         self.assertIsNone(converter_null('any arg'))
 
     def test_some_PATHs(self):
-        self.assertRegex(UMATOBI_ROOT_PATH, f"^{TESTS_PATH}")
+        self.assertRegex(UMATOBI_MODULE_PATH, f"^{TESTS_PATH}")
         self.assertRegex(SIMULATION_ROOT_PATH, f"^{TESTS_PATH}")
 
-        self.assertRegex(SIMULATION_DIR_PATH, r'/@@SIMULATION_TIME@@$')
+        self.assertRegex(UMATOBI_SIMULATION_DIR_PATH, r'/@@SIMULATION_TIME@@$')
         self.assertNotRegex(SIMULATION_SCHEMA_PATH, r'/tests/')
 
     def test_validate_kwargs(self):
@@ -865,7 +865,7 @@ class SimulationTimeTests(unittest.TestCase):
 
     def setUp(self):
         self.simulation_dir_path = \
-            os.path.join(SIMULATION_ROOT_PATH, SIMULATION_DIR_PATH)
+            os.path.join(SIMULATION_ROOT_PATH, UMATOBI_SIMULATION_DIR_PATH)
         self.simulation_time = SimulationTime()
         self.path_maker = PathMaker(self.simulation_time)
 
@@ -1027,7 +1027,7 @@ class PathMakerTests(unittest.TestCase):
                 os.path.join(
                     re.sub(ATAT_SIMULATION_TIME,
                     path_maker.simulation_time.get_y15s(),
-                    SIMULATION_DIR_PATH), 'client.8.db'))
+                    UMATOBI_SIMULATION_DIR_PATH), 'client.8.db'))
 
         client_id = 88888
         client_db_path = path_maker.get_client_db_path(client_id)
@@ -1047,10 +1047,10 @@ class PathMakerTests(unittest.TestCase):
                             ATAT_SIMULATION_TIME)
         self.assertRegex(simulation_schema_path, RE_Y15S)
 
-    def test_get_root_path(self):
+    def test_get_module_path(self):
         path_maker = self.path_maker
-        self.assertEqual(path_maker.get_root_path(), UMATOBI_ROOT_PATH)
-        self.assertEqual(re.sub(TESTS_PATH, '', UMATOBI_ROOT_PATH), os.sep + 'umatobi-root')
+        self.assertEqual(path_maker.get_module_path(), UMATOBI_MODULE_PATH)
+        self.assertEqual(re.sub(TESTS_PATH, '', UMATOBI_MODULE_PATH), os.sep + 'umatobi-tests')
 
     @patch('os.makedirs')
     @patch('os.path.isfile', return_value=False)

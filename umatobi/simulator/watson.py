@@ -337,7 +337,7 @@ class Watson(threading.Thread):
     def _construct_simulation_table(self):
         logger.info(f"{self}._construct_simulation_table()")
         d_simulation = {}
-        d_simulation['title'] = SIMULATION_DIR
+        d_simulation['title'] = UMATOBI_SIMULATION_DIR
 
         d_simulation['start_up_iso8601'] = str(self.simulation_time)
         d_simulation['close_office_iso8601'] = str(self.close_office_orig)

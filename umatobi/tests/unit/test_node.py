@@ -143,8 +143,8 @@ class NodeTests(unittest.TestCase):
         mock_lock.assert_called_with()
         self.assertFalse(node.office_addr_assigned.is_set())
 
-        self.assertEqual(node.master_palm_path,
-                         node.path_maker.get_master_palm_path())
+        self.assertEqual(node.master_palm_txt_path,
+                         node.path_maker.get_master_palm_txt_path())
 
     def test_run(self):
         pass
@@ -160,23 +160,23 @@ class NodeTests(unittest.TestCase):
 
         node.port = 63333
 
-        self.assertFalse(os.path.exists(node.master_palm_path))
+        self.assertFalse(os.path.exists(node.master_palm_txt_path))
         self.assertFalse(node.im_ready.is_set())
         node.regist() # once
         self.assertTrue(node.im_ready.is_set())
-        self.assertTrue(os.path.isdir(os.path.dirname(node.master_palm_path)))
-        self.assertTrue(os.path.isfile(node.master_palm_path))
+        self.assertTrue(os.path.isdir(os.path.dirname(node.master_palm_txt_path)))
+        self.assertTrue(os.path.isfile(node.master_palm_txt_path))
 
-        with open(node.master_palm_path) as master_palm:
+        with open(node.master_palm_txt_path) as master_palm:
             master_palm_on = master_palm.read()
             self.assertEqual(master_palm_on, node.get_info())
 
         node.regist() # twice
-        with open(node.master_palm_path) as master_palm:
+        with open(node.master_palm_txt_path) as master_palm:
             master_palm_on2 = master_palm.read()
             self.assertEqual(master_palm_on2, node.get_info() * 2)
 
-        os.remove(node.master_palm_path)
+        os.remove(node.master_palm_txt_path)
 
 
     @patch('os.path.isfile', return_value=True)
@@ -184,7 +184,7 @@ class NodeTests(unittest.TestCase):
         node = self.node
         node2 = Node(host='localhost', port=11112, path_maker=self.path_maker)
         node3 = Node(host='localhost', port=11113, path_maker=self.path_maker)
-        self.assertTrue(hasattr(node, 'master_palm_path'))
+        self.assertTrue(hasattr(node, 'master_palm_txt_path'))
 
         master_palm_on = node2.get_info() + node3.get_info()
 
@@ -193,9 +193,9 @@ class NodeTests(unittest.TestCase):
                         mock_open(read_data=master_palm_on)) as m:
                 node_lines = node._steal_a_glance_at_master_palm()
 
-        self.assertEqual(cm.output[0], f"INFO:umatobi:found 'master_palm_path={node.master_palm_path}'")
+        self.assertEqual(cm.output[0], f"INFO:umatobi:found 'master_palm_txt_path={node.master_palm_txt_path}'")
         self.assertEqual(node_lines, master_palm_on)
-        mock_isfile.assert_called_once_with(node.master_palm_path)
+        mock_isfile.assert_called_once_with(node.master_palm_txt_path)
 
         node2.release()
         node3.release()
@@ -270,7 +270,7 @@ class NodeTests(unittest.TestCase):
         node_.disappear()
         self.assertEqual(1, threading.active_count())
 
-        os.remove(node_.master_palm_path)
+        os.remove(node_.master_palm_txt_path)
 
     def test_node_basic(self):
         node_assets = make_node_assets(path_maker=NodeTests.path_maker)
@@ -307,7 +307,7 @@ class NodeTests(unittest.TestCase):
 
         node_.disappear()
 
-        os.remove(node_.master_palm_path)
+        os.remove(node_.master_palm_txt_path)
 
     def test_node_get_info(self):
         node_assets = make_node_assets()
@@ -325,12 +325,12 @@ class NodeTests(unittest.TestCase):
 
         node = self.node
 
-        self.master_palm_path = '/tmp/none'
+        self.master_palm_txt_path = '/tmp/none'
         with self.assertLogs('umatobi', level='INFO') as cm:
             ret = node._steal_a_glance_at_master_palm()
         self.assertIsNone(ret)
-        mock_path.isfile.assert_called_with(node.master_palm_path)
-        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
+        mock_path.isfile.assert_called_with(node.master_palm_txt_path)
+        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_txt_path={node.master_palm_txt_path}'")
 
     def test_steal_a_glance_at_master_palm_logger_info2(self):
         node = self.node
@@ -342,8 +342,8 @@ class NodeTests(unittest.TestCase):
         with self.assertLogs('umatobi', level='INFO') as cm:
             ret = node._steal_a_glance_at_master_palm()
         self.assertIsNone(ret)
-        mock_path.isfile.assert_called_with(node.master_palm_path)
-        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
+        mock_path.isfile.assert_called_with(node.master_palm_txt_path)
+        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_txt_path={node.master_palm_txt_path}'")
         patcher.stop()
 
     def test_update_key(self):

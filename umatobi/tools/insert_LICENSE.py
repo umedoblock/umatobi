@@ -34,8 +34,8 @@ if __name__ == "__main__":
     import glob
     candidate_files = []
     skipped_files = []
-   #print(os.path.join(UMATOBI_ROOT_PATH, '..'))
-    for file_name in glob.glob(os.path.join(UMATOBI_ROOT_PATH, '../**'), recursive=True):
+   #print(os.path.join(UMATOBI_MODULE_PATH, '..'))
+    for file_name in glob.glob(os.path.join(UMATOBI_MODULE_PATH, '../**'), recursive=True):
         if re.search(r'(tests/umatobi-simulation|__pycache__|mock_studying|umatobi\.egg-info)', file_name):
             continue
         if re.search(r'(LICENSE)', file_name):

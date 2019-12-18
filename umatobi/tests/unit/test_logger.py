@@ -81,12 +81,12 @@ class LoggerNodeTests(unittest.TestCase):
 
         node = self.node
 
-        node.master_palm_path = '/tmp/none'
+        node.master_palm_txt_path = '/tmp/none'
         with self.assertLogs('umatobi', level='DEBUG') as cm:
             ret = node._steal_a_glance_at_master_palm()
         self.assertIsNone(ret)
-        mock_path.isfile.assert_called_with(node.master_palm_path)
-        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
+        mock_path.isfile.assert_called_with(node.master_palm_txt_path)
+        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_txt_path={node.master_palm_txt_path}'")
 
     def test_steal_master_palm_logger_info2(self):
         node = self.node
@@ -98,8 +98,8 @@ class LoggerNodeTests(unittest.TestCase):
         with self.assertLogs('umatobi', level='INFO') as cm:
             ret = node._steal_a_glance_at_master_palm()
         self.assertIsNone(ret)
-        mock_path.isfile.assert_called_with(node.master_palm_path)
-        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_path={node.master_palm_path}'")
+        mock_path.isfile.assert_called_with(node.master_palm_txt_path)
+        self.assertRegex(cm.output[0], f"^INFO:umatobi:not found 'master_palm_txt_path={node.master_palm_txt_path}'")
         patcher.stop()
 
 class LoggerClientTests(unittest.TestCase):

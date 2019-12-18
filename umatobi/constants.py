@@ -18,20 +18,20 @@ ATAT_SIMULATION_TIME = '@@SIMULATION_TIME@@'
 ATAT_N = '@@N@@'
 
 # for simulation
-SIMULATION_DIR = 'umatobi-simulation'
+UMATOBI_SIMULATION_DIR = 'umatobi-simulation'
 SIMULATION_DB = 'simulation.db'
 SIMULATION_SCHEMA = 'simulation.schema'
 WATSON_DB = 'watson.db'
-MASTER_PALM = 'master_palm.txt'
+MASTER_PALM_TXT = 'master_palm.txt'
 CLIENT_N_DB = f'client.{ATAT_N}.db'
 
-# These paths are relative to UMATOBI_ROOT_PATH..
-UMATOBI_ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-SIMULATION_SCHEMA_PATH = os.path.join(UMATOBI_ROOT_PATH, SIMULATOR_DIR, SIMULATION_SCHEMA)
+# These paths are relative to UMATOBI_MODULE_PATH..
+UMATOBI_MODULE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+SIMULATION_SCHEMA_PATH = os.path.join(UMATOBI_MODULE_PATH, SIMULATOR_DIR, SIMULATION_SCHEMA)
 
 # These paths are relative to SIMULATOR_DIR.
-SIMULATION_ROOT_PATH = os.path.join(os.path.expanduser('~'), SIMULATION_DIR)
-SIMULATION_DIR_PATH = os.path.join(SIMULATION_ROOT_PATH, ATAT_SIMULATION_TIME)
+SIMULATION_ROOT_PATH = os.path.join(os.path.expanduser('~'), UMATOBI_SIMULATION_DIR)
+UMATOBI_SIMULATION_DIR_PATH = os.path.join(SIMULATION_ROOT_PATH, ATAT_SIMULATION_TIME)
 
 # ROOT_DIR_PATH/umatobi-simulation/20190919T211132/simulation.schema
 #                                                 /simulation.db

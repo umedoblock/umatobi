@@ -449,7 +449,7 @@ class PathMaker(object):
     def get_simulation_dir_path(self):
         simulation_dir_path = re.sub(ATAT_SIMULATION_TIME,
                                      self.simulation_time.get_y15s(),
-                                     SIMULATION_DIR_PATH)
+                                     UMATOBI_SIMULATION_DIR_PATH)
         return simulation_dir_path
 
     def get_simulation_db_path(self):
@@ -463,8 +463,8 @@ class PathMaker(object):
 
         return simulation_schema_path
 
-    def get_root_path(self):
-        return UMATOBI_ROOT_PATH
+    def get_module_path(self):
+        return UMATOBI_MODULE_PATH
 
     def set_simulation_schema(self):
         simulation_schema_path = self.get_simulation_schema_path()

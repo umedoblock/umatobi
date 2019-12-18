@@ -71,7 +71,7 @@ def _args_parse_basic(description):
                          help='show index and directory timestamps')
     parser.add_argument('--simulation-dir',
                          metavar='N', dest='simulation_dir',
-                         nargs='?', default=SIMULATION_DIR,
+                         nargs='?', default=UMATOBI_SIMULATION_DIR,
                          help='simulation directory.')
     parser.add_argument('--index',
                          metavar='N', dest='index',

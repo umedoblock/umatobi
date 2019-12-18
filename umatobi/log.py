@@ -55,7 +55,7 @@ def _parse_logger_setting(parser):
                          help=f'default INFO, must be in {log_levels}')
     parser.add_argument('--simulation-dir',
                          metavar='N', dest='simulation_dir',
-                         nargs='?', default=SIMULATION_DIR,
+                         nargs='?', default=UMATOBI_SIMULATION_DIR,
                          help='simulation directory.')
     return parser
 
