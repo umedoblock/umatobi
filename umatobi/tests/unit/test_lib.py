@@ -64,7 +64,7 @@ class LibTests(unittest.TestCase):
     def tearDown(self):
         cleanup_file_paths = []
         cleanup_file_paths.append(self.path_maker.get_simulation_schema_path())
-        cleanup_file_paths.append(self.path_maker.get_master_palm_path())
+        cleanup_file_paths.append(self.path_maker.get_master_palm_txt_path())
         for cleanup_file_path in cleanup_file_paths:
             p = pathlib.Path(cleanup_file_path)
             if p.is_file():
@@ -994,7 +994,7 @@ class PathMakerTests(unittest.TestCase):
 #   def tearDown(self):
 #       cleanup_paths = []
 #       cleanup_paths.append(self.path_maker.get_simulation_schema_path())
-#       cleanup_paths.append(self.path_maker.get_master_palm_path())
+#       cleanup_paths.append(self.path_maker.get_master_palm_txt_path())
 #       for cleanup_path in cleanup_paths:
 #           p = pathlib.Path(cleanup_path)
 #           if p.is_file():
@@ -1084,13 +1084,13 @@ class PathMakerTests(unittest.TestCase):
 
         mock_isfile.assert_called_once_with(simulation_schema_path)
 
-    def test_get_master_palm_path(self):
+    def test_get_master_palm_txt_path(self):
         path_maker = self.path_maker
         self.assertEqual(
-            path_maker.get_master_palm_path(),
+            path_maker.get_master_palm_txt_path(),
             os.path.join(SIMULATION_ROOT_PATH,
                          path_maker.simulation_time.get_y15s(),
-                         MASTER_PALM))
+                         MASTER_PALM_TXT))
 
     @patch('os.path.isdir', return_value=False)
     @patch('os.makedirs')
@@ -1140,7 +1140,7 @@ class SchemaParserTests(unittest.TestCase):
         self.path_maker = PathMaker(self.simulation_time)
 
     def tearDown(self):
-        shutil.rmtree(os.path.dirname(self.path_maker.get_master_palm_path()), ignore_errors=True)
+        shutil.rmtree(os.path.dirname(self.path_maker.get_master_palm_txt_path()), ignore_errors=True)
 
     def test___init__(self):
         simulation_time = self.simulation_time

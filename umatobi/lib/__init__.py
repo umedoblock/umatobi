@@ -476,8 +476,8 @@ class PathMaker(object):
 
         return simulation_schema_path
 
-    def get_master_palm_path(self):
-        return os.path.join(self.get_simulation_dir_path(), MASTER_PALM)
+    def get_master_palm_txt_path(self):
+        return os.path.join(self.get_simulation_dir_path(), MASTER_PALM_TXT)
 
     def make_simulation_dir(self, simulation_dir_path=None):
         if not simulation_dir_path:

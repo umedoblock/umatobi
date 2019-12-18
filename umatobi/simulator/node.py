@@ -149,7 +149,7 @@ class Node(node.Node):
         self.office_door = threading.Lock()
         self.office_addr_assigned = threading.Event()
 
-        self.master_palm_path = self.path_maker.get_master_palm_path()
+        self.master_palm_txt_path = self.path_maker.get_master_palm_txt_path()
 
     def run(self):
         self._open_office()

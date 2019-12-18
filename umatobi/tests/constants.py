@@ -12,7 +12,7 @@ from umatobi import constants
 
 TESTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 _UMATOBI_ROOT_PATH = \
-    os.path.join(TESTS_PATH, 'umatobi-root')
+    os.path.join(TESTS_PATH, 'umatobi-tests')
 _SIMULATION_ROOT_PATH = \
     os.path.join(TESTS_PATH, SIMULATION_DIR)
 
