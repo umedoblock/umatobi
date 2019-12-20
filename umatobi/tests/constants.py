@@ -11,17 +11,11 @@ from umatobi.constants import *
 from umatobi import constants
 
 TESTS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-_UMATOBI_MODULE_PATH = \
-    os.path.join(TESTS_PATH, 'umatobi-tests')
-_SIMULATION_ROOT_PATH = \
-    os.path.join(TESTS_PATH, UMATOBI_SIMULATION_DIR)
 
+# replacement
+constants.SIMULATION_ROOT_PATH = os.path.join(TESTS_PATH, UMATOBI_SIMULATION_DIR)
 constants.UMATOBI_SIMULATION_DIR_PATH = \
-    re.sub(SIMULATION_ROOT_PATH, _SIMULATION_ROOT_PATH, UMATOBI_SIMULATION_DIR_PATH)
-
-constants.UMATOBI_MODULE_PATH = _UMATOBI_MODULE_PATH
-constants.SIMULATION_ROOT_PATH = _SIMULATION_ROOT_PATH
-
+    os.path.join(constants.SIMULATION_ROOT_PATH, ATAT_SIMULATION_TIME)
 constants.LOGGER_STREAM = open(os.path.join(TESTS_PATH, 'stdout.log'), 'w')
 
 ATAT_N = '@@N@@'
@@ -46,3 +40,11 @@ RE_CLIENT_N_DB = r'client\.\d+\.db$'
 
 # transform constants for test
 from umatobi.constants import *
+
+if __name__ == '__main__':
+    print('UMATOBI_MODULE_PATH =', UMATOBI_MODULE_PATH)
+    print('SIMULATION_SCHEMA_PATH =', SIMULATION_SCHEMA_PATH)
+
+    # These paths are relative to SIMULATOR_DIR.
+    print('SIMULATION_ROOT_PATH =', SIMULATION_ROOT_PATH)
+    print('UMATOBI_SIMULATION_DIR_PATH =', UMATOBI_SIMULATION_DIR_PATH)

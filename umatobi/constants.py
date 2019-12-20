@@ -43,3 +43,11 @@ UMATOBI_SIMULATION_DIR_PATH = os.path.join(SIMULATION_ROOT_PATH, ATAT_SIMULATION
 LOGGER_FMT = '%(relativeCreated)d %(name)s %(levelname)s %(filename)s %(funcName)s() - %(message)s'
 LOGGER_SUFFIX = f" - process_id=%(process)d thread_id=%(thread)d"
 LOGGER_STREAM = sys.stdout
+
+if __name__ == '__main__':
+    print('UMATOBI_MODULE_PATH =', UMATOBI_MODULE_PATH)
+    print('SIMULATION_SCHEMA_PATH =', SIMULATION_SCHEMA_PATH)
+
+    # These paths are relative to SIMULATOR_DIR.
+    print('SIMULATION_ROOT_PATH =', SIMULATION_ROOT_PATH)
+    print('UMATOBI_SIMULATION_DIR_PATH =', UMATOBI_SIMULATION_DIR_PATH)

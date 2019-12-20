@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 
 import yaml
 from umatobi.tests import *
+from umatobi.tests.constants import *
 from umatobi.lib import *
 from umatobi.simulator.core.key import Key
 from umatobi.simulator.sql import SQL
@@ -619,11 +620,10 @@ class LibTests(unittest.TestCase):
         self.assertIsNone(converter_null('any arg'))
 
     def test_some_PATHs(self):
-        self.assertRegex(UMATOBI_MODULE_PATH, f"^{TESTS_PATH}")
-        self.assertRegex(SIMULATION_ROOT_PATH, f"^{TESTS_PATH}")
-
-        self.assertRegex(UMATOBI_SIMULATION_DIR_PATH, r'/@@SIMULATION_TIME@@$')
-        self.assertNotRegex(SIMULATION_SCHEMA_PATH, r'/tests/')
+        self.assertEqual(UMATOBI_MODULE_PATH, os.path.normpath(os.path.join(TESTS_PATH, '..')))
+        self.assertEqual(SIMULATION_SCHEMA_PATH, os.path.join(UMATOBI_MODULE_PATH, SIMULATOR_DIR, SIMULATION_SCHEMA))
+        self.assertRegex(SIMULATION_ROOT_PATH, r'/tests/umatobi-simulation$')
+        self.assertRegex(UMATOBI_SIMULATION_DIR_PATH, r'/tests/umatobi-simulation/@@SIMULATION_TIME@@$')
 
     def test_validate_kwargs(self):
         pass
@@ -1049,8 +1049,8 @@ class PathMakerTests(unittest.TestCase):
 
     def test_get_module_path(self):
         path_maker = self.path_maker
+        self.assertNotRegex(path_maker.get_module_path(), '/umatobi/tests/')
         self.assertEqual(path_maker.get_module_path(), UMATOBI_MODULE_PATH)
-        self.assertEqual(re.sub(TESTS_PATH, '', UMATOBI_MODULE_PATH), os.sep + 'umatobi-tests')
 
     @patch('os.makedirs')
     @patch('os.path.isfile', return_value=False)
