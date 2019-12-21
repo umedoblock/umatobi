@@ -9,7 +9,7 @@ import os, sys, datetime, shutil
 import unittest
 
 from umatobi.tests import *
-from umatobi.lib import get_host_port
+from umatobi.lib.string_telephone import get_host_port
 
 class SimulationTests(unittest.TestCase):
 

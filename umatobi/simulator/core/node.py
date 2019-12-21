@@ -9,7 +9,7 @@ import threading, socket, os, sys
 
 from umatobi.simulator.core.key import Key
 from umatobi.log import *
-from umatobi.lib import *
+from umatobi.lib.string_telephone import *
 
 class Node(threading.Thread):
     '''Node class'''
