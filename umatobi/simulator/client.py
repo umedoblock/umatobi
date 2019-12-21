@@ -12,6 +12,7 @@ from umatobi.constants import *
 from umatobi.simulator.darkness import Darkness
 from umatobi.simulator import sql
 from umatobi.lib import *
+from umatobi.lib.simulation_time import *
 from umatobi.lib.string_telephone import *
 
 def make_darkness(d_config):

@@ -10,6 +10,7 @@ import sqlite3
 
 from umatobi.log import *
 from umatobi.constants import *
+from umatobi.lib.simulation_time import *
 from umatobi.lib import *
 import umatobi.simulator.sql
 from umatobi import simulator

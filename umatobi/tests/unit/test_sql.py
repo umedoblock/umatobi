@@ -8,12 +8,13 @@
 import sys
 import os
 import time
-import datetime
+import datetime, shutil
 import unittest
 from unittest.mock import MagicMock
 import sqlite3
 
 from umatobi.simulator.core.key import Key
+from umatobi.lib.simulation_time import SimulationTime, PathMaker
 
 from umatobi.tests import *
 from umatobi.simulator.sql import *

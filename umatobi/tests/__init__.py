@@ -13,6 +13,7 @@ import functools
 
 from umatobi.tests.constants import *
 from umatobi.lib import *
+from umatobi.lib.simulation_time import SimulationTime, PathMaker
 from umatobi.simulator.node import Node
 
 SIMULATION_SECONDS = 30
