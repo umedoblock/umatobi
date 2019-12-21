@@ -6,12 +6,12 @@
 # https://github.com/umedoblock/umatobi
 
 import json, time, os, threading, sched, configparser, re, shutil
-import base64
 from datetime import datetime as datetime2
 
 import yaml
 from umatobi.constants import *
 from umatobi.log import *
+from umatobi.simulator.sql import SchemaParser
 
 def make_fixture(yaml_path, index):
     yaml_dir = os.path.dirname(yaml_path)
@@ -40,35 +40,6 @@ def inserts_fixture(db, yaml_path, index):
     db.inserts(table_name, listed_fixture)
     db.commit()
     return schema_parser, table_name, fixture
-
-def converter_blob(b64_encoded_string):
-    return base64.b64decode(b64_encoded_string)
-
-def converter_real(value):
-    try:
-        f = float(value)
-    except ValueError as err:
-        if err.args[0] == f"could not convert string to float: '{value}'":
-            f = None
-        else:
-            raise err
-    return f
-
-def converter_integer(value):
-    try:
-        i = int(value)
-    except ValueError as err:
-        if err.args[0] == f"invalid literal for int() with base 10: '{value}'":
-            i = None
-        else:
-            raise err
-    return i
-
-def converter_text(text):
-    return str(text)
-
-def converter_null(any_arg):
-    return None
 
 def validate_kwargs(st_barrier, kwargs):
     if st_barrier != kwargs.keys():
@@ -122,14 +93,6 @@ def allot_numbers(total, an_allotment):
 
     return heads, assigned_num, last
 
-def make_question_marks(n_questions):
-    if not isinstance(n_questions, int):
-        raise TypeError(f'make_question_marks(="{n_questions}") argument must be an integer.')
-    if n_questions <= 0:
-        raise ValueError(f'n_questions(={n_questions}) must be greater than or equal to one.')
-    hatenas = '({})'.format(', '.join('?' * n_questions))
-    return hatenas
-
 def make_growing_dict(id_, et, pickle):
 
     growing = {
@@ -166,9 +129,6 @@ class Polling(threading.Thread):
 
     def run(self):
         self._sche.run()
-
-class Records(object):
-    pass
 
 class SimulationTime(object):
     Y15S_FORMAT='%Y-%m-%dT%H%M%S'
@@ -309,80 +269,6 @@ class PathMaker(object):
             os.makedirs(simulation_dir_path, exist_ok=True)
 
         return simulation_dir_path
-
-class SchemaParser(configparser.ConfigParser):
-
-    DATA_TYPE_CONVERTER = {
-        'blob': converter_blob,
-        'real': converter_real,
-        'integer': converter_integer,
-        'text': converter_text,
-        'null': converter_null,
-    }
-
-    def __init__(self, schema_path):
-        super().__init__()
-        self.schema_path = schema_path
-        with open(self.schema_path, encoding='utf-8') as schema:
-            self.read_file(schema)
-
-        self.table_names = self.sections
-        self.converter_tables = {}
-
-        self.construct_converter_tables()
-
-    def construct_converter_tables(self):
-        for table_name in self.table_names():
-            self.converter_tables[table_name] = {}
-            for column_name, as_string in self[table_name].items():
-                data_type = as_string.split(' ')[0]
-                self.set_converter(table_name, column_name, data_type)
-
-    def get_table_names(self):
-        return self.table_names()
-
-    def get_columns(self, table_name):
-        return self[table_name]
-
-    def parse_record(self, record, table_name):
-        d = {}
-        for column_name, as_string in record.items():
-            converter = self.get_converter(table_name, column_name)
-            value = converter(as_string)
-          # print('record =')
-          # print(record)
-          # print('table_name =')
-          # print(table_name)
-          # print('column_name =')
-          # print(column_name)
-          # print('converter =')
-          # print(converter)
-          # print('as_string =')
-          # print(as_string)
-          # print('value =')
-          # print(value)
-          # print()
-            d[column_name] = value
-        return d
-
-    def spawn_records(self, config, table_names=tuple()):
-        if not table_names:
-            table_names = config.sections()
-
-        records = Records()
-        for table_name in table_names:
-            record = self.parse_record(config[table_name], table_name)
-            setattr(records, table_name, record)
-
-        return records
-
-    def set_converter(self, table_name, column_name, data_type):
-        converter = self.DATA_TYPE_CONVERTER[data_type]
-        self.converter_tables[table_name][column_name] = converter
-
-    def get_converter(self, table_name, column_name):
-        converter = self.converter_tables[table_name][column_name]
-        return converter
 
 if __name__ == '__main__':
     st = SimulationTime()

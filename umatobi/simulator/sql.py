@@ -5,9 +5,8 @@
 # This software is released under the MIT License.
 # https://github.com/umedoblock/umatobi
 
-import sqlite3, configparser, os, sys, logging
+import sqlite3, configparser, os, sys, logging, base64
 
-from umatobi.lib import *
 from umatobi.log import *
 
 # print("__name__ =", __name__)
@@ -15,14 +14,133 @@ from umatobi.log import *
 # print("__file__ =", __file__)
 # __file__ = umatobi/tools/../simulator/sql.py
 
+def converter_blob(b64_encoded_string):
+    return base64.b64decode(b64_encoded_string)
+
+def converter_real(value):
+    try:
+        f = float(value)
+    except ValueError as err:
+        if err.args[0] == f"could not convert string to float: '{value}'":
+            f = None
+        else:
+            raise err
+    return f
+
+def converter_integer(value):
+    try:
+        i = int(value)
+    except ValueError as err:
+        if err.args[0] == f"invalid literal for int() with base 10: '{value}'":
+            i = None
+        else:
+            raise err
+    return i
+
+def converter_text(text):
+    return str(text)
+
+def converter_null(any_arg):
+    return None
+
+class Records(object):
+    pass
+
+class SchemaParser(configparser.ConfigParser):
+
+    DATA_TYPE_CONVERTER = {
+        'blob': converter_blob,
+        'real': converter_real,
+        'integer': converter_integer,
+        'text': converter_text,
+        'null': converter_null,
+    }
+
+    def __init__(self, schema_path):
+        super().__init__()
+        self.schema_path = schema_path
+        with open(self.schema_path, encoding='utf-8') as schema:
+            self.read_file(schema)
+
+        self.table_names = self.sections
+        self.converter_tables = {}
+
+        self.construct_converter_tables()
+
+    def construct_converter_tables(self):
+        for table_name in self.table_names():
+            self.converter_tables[table_name] = {}
+            for column_name, as_string in self[table_name].items():
+                data_type = as_string.split(' ')[0]
+                self.set_converter(table_name, column_name, data_type)
+
+    def get_table_names(self):
+        return self.table_names()
+
+    def get_columns(self, table_name):
+        return self[table_name]
+
+    def parse_record(self, record, table_name):
+        d = {}
+        for column_name, as_string in record.items():
+            converter = self.get_converter(table_name, column_name)
+            value = converter(as_string)
+          # print('record =')
+          # print(record)
+          # print('table_name =')
+          # print(table_name)
+          # print('column_name =')
+          # print(column_name)
+          # print('converter =')
+          # print(converter)
+          # print('as_string =')
+          # print(as_string)
+          # print('value =')
+          # print(value)
+          # print()
+            d[column_name] = value
+        return d
+
+    def spawn_records(self, config, table_names=tuple()):
+        if not table_names:
+            table_names = config.sections()
+
+        records = Records()
+        for table_name in table_names:
+            record = self.parse_record(config[table_name], table_name)
+            setattr(records, table_name, record)
+
+        return records
+
+    def set_converter(self, table_name, column_name, data_type):
+        converter = self.DATA_TYPE_CONVERTER[data_type]
+        self.converter_tables[table_name][column_name] = converter
+
+    def get_converter(self, table_name, column_name):
+        converter = self.converter_tables[table_name][column_name]
+        return converter
+
+# see: Difference between staticmethod and classmethod
+# https://stackoverflow.com/questions/136097/difference-between-staticmethod-and-classmethod
+
 class SQL(object):
+
+    @staticmethod
+    def make_question_marks(n_questions):
+        if not isinstance(n_questions, int):
+            raise TypeError(f'make_question_marks(="{n_questions}") argument must be an integer.')
+        if n_questions <= 0:
+            raise ValueError(f'n_questions(={n_questions}) must be greater than or equal to one.')
+        hatenas = '({})'.format(', '.join('?' * n_questions))
+        return hatenas
+
     @staticmethod
     def construct_insert_by_dict(table_name, d):
         sql = ""
         _key_names = ("', '".join(['{}'] * len(d))).format(*d.keys())
         part_keys = f"('{_key_names}')"
 
-        qms = make_question_marks(len(d))
+        qms = SQL.make_question_marks(len(d))
         sql = "insert into " + table_name + part_keys + " values" + qms
         values = tuple(d.values())
         return sql, values
@@ -196,7 +314,7 @@ class SQL(object):
 #       print('listed_dict =', listed_dict)
         columns = listed_dict[0]
         static_part = f'insert into {table_name} {columns} values '
-        qms = make_question_marks(len(columns))
+        qms = SQL.make_question_marks(len(columns))
 
       # print('static_part + qms =')
       # print(static_part + qms)
@@ -215,7 +333,7 @@ class SQL(object):
     def inserts_via_dict(self, table_name, seq_contain_dicts):
         columns = tuple(seq_contain_dicts[0].keys())
         static_part = f'insert into {table_name} {columns} values '
-        qms = make_question_marks(len(columns))
+        qms = SQL.make_question_marks(len(columns))
 
         logger.debug('static_part + question_marks =')
         logger.debug(static_part + qms)
