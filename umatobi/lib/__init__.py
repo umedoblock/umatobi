@@ -569,3 +569,8 @@ if __name__ == '__main__':
     print('repr(st) =', repr(st))
   # st = 2019-10-20T13:09:26.307215
   # repr(st) = <__main__.SimulationTime object at 0x1083dd1d0>
+
+    import umatobi
+    print('umatobi.__path__ =', umatobi.__path__)
+    import umatobi.lib
+    print('umatobi.lib.__path__ =', umatobi.lib.__path__)

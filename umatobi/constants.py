@@ -51,3 +51,5 @@ if __name__ == '__main__':
     # These paths are relative to SIMULATOR_DIR.
     print('SIMULATION_ROOT_PATH =', SIMULATION_ROOT_PATH)
     print('UMATOBI_SIMULATION_DIR_PATH =', UMATOBI_SIMULATION_DIR_PATH)
+    import umatobi
+    print('umatobi.__path__ =', umatobi.__path__)
