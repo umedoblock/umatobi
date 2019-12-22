@@ -55,7 +55,7 @@ class NodeUDPOfficeTests(unittest.TestCase):
                                     'Address already in use')) as mock_bind:
                 server = NodeUDPOffice(node)
         the_exception = cm.exception
-        self.assertEqual(the_exception.args[0], 'every ports are in use.')
+        self.assertEqual(the_exception.args[0], 'all ports are in use.')
 
 class NodeOfficeTests(unittest.TestCase):
     def setUp(self):
