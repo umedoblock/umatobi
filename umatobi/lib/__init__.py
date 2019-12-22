@@ -5,12 +5,7 @@
 # This software is released under the MIT License.
 # https://github.com/umedoblock/umatobi
 
-import json, time, os, threading, sched, configparser, re, shutil
-
-import yaml
-from umatobi.constants import *
-from umatobi.log import *
-from umatobi.simulator.sql import SchemaParser
+import json, yaml
 
 def validate_kwargs(st_barrier, kwargs):
     if st_barrier != kwargs.keys():
@@ -73,33 +68,6 @@ def make_growing_dict(id_, et, pickle):
     }
 
     return growing
-
-class Polling(threading.Thread):
-
-    @classmethod
-    def sleep(cls, secs):
-        logger.info(f'Polling.sleep(secs={secs})')
-        time.sleep(secs)
-
-    def __init__(self, polling_secs):
-        threading.Thread.__init__(self)
-        self.polling_secs = polling_secs
-        self._sche = sched.scheduler(timefunc=time.time, delayfunc=Polling.sleep)
-#       self._sche.enter(self.polling_secs, 1, self._polling, ()) # 犯人
-
-    def polling(self):
-        raise NotImplementedError()
-
-    def is_continue(self):
-        raise NotImplementedError()
-
-    def _polling(self):
-        if self.is_continue():
-            self.polling()
-            self._sche.enter(self.polling_secs, 1, self._polling, ())
-
-    def run(self):
-        self._sche.run()
 
 if __name__ == '__main__':
     import umatobi

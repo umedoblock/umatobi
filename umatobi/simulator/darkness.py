@@ -8,10 +8,11 @@
 import sys, os, threading, time, queue, pickle
 
 from umatobi.log import *
+from umatobi.lib import *
+from umatobi.lib.polling import Polling
 from umatobi.constants import *
 from umatobi.simulator.node import Node
-from umatobi.simulator import sql
-from umatobi.lib import *
+from umatobi.simulator.sql import SQL
 
 class ExhaleQueue(Polling):
     def __init__(self, polling_secs, darkness):
@@ -118,8 +119,8 @@ class Darkness(object):
         self.client_db_path = self.get_client_db_path()
         self.simulation_schema_path = \
                 self.path_maker.set_simulation_schema()
-        self.client_db = sql.SQL(db_path=self.client_db_path,
-                             schema_path=self.simulation_schema_path)
+        self.client_db = SQL(db_path=self.client_db_path,
+                         schema_path=self.simulation_schema_path)
 
         self._queue_darkness = queue.Queue()
         self.all_nodes_inactive = threading.Event()

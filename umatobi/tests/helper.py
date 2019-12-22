@@ -8,6 +8,7 @@
 import os
 
 from umatobi.lib import *
+from umatobi.simulator.sql import SchemaParser
 
 def make_fixture(yaml_path, index):
     yaml_dir = os.path.dirname(yaml_path)

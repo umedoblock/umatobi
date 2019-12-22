@@ -226,25 +226,5 @@ val_text: text context
 
         self.assertEqual(growing_dict, expected_growing_dict)
 
-class PollingTests(unittest.TestCase):
-
-    def test_sleep(self):
-        pass
-
-    def test___init__(self):
-        pass
-
-    def test_polling(self):
-        pass
-
-    def test_is_continue(self):
-        pass
-
-    def test__polling(self):
-        pass
-
-    def test_run(self):
-        pass
-
 if __name__ == '__main__':
     unittest.main()

@@ -13,6 +13,7 @@ import queue
 
 from umatobi.tests import *
 from umatobi.lib import *
+from umatobi.lib.polling import Polling
 from umatobi.simulator.darkness import Darkness, ExhaleQueue
 from umatobi.simulator import sql
 
