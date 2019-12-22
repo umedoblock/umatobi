@@ -8,9 +8,9 @@
 import unittest
 from unittest.mock import call
 
-import umatobi
 from umatobi.tests import *
 from umatobi.tests.helper import *
+from umatobi.tests.constants import *
 
 from umatobi.simulator.sql import SQL
 from umatobi.tools.make_simulation_db import *
