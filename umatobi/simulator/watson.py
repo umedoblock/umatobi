@@ -12,6 +12,7 @@ from umatobi.log import *
 from umatobi.constants import *
 from umatobi.lib.simulation_time import *
 from umatobi.lib import *
+from umatobi.lib.string_telephone import *
 import umatobi.simulator.sql
 from umatobi import simulator
 
@@ -52,30 +53,28 @@ class WatsonTCPOffice(socketserver.TCPServer):
 
         self._determine_office_addr()
 
+    def server_bind(self):
+        """copy from
+        python3.7/socketserver.py
+        class TCPServer(BaseServer)
+        """
+        if self.allow_reuse_address:
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        addr = bind_unused_port(self.socket,
+                    self.watson.watson_office_addr[0],
+                    range(1024, 65536),
+                    randomize=True)
+        self.watson.watson_office_addr = addr
+        self.server_address = self.socket.getsockname()
+
     def _determine_office_addr(self):
         logger.info(f"watson_office_addr={self.watson.watson_office_addr}")
         host, port = self.watson.watson_office_addr
-        ports = list(range(1024, 65536))
-        random.shuffle(ports)
-        while True:
-            try:
-                port = ports.pop()
-            except IndexError as e:
-                raise RuntimeError("every ports are in use.")
-            addr = (host, port)
-            try:
-                # 以下で、bind() して帰ってくるので、
-                # self.server_close() を忘れずに。
-                super().__init__(addr, WatsonOffice)
-            except OSError as oe:
-                if oe.errno != 98:
-                    raise(oe)
-                continue
-            break
+
+        super().__init__((host, None), WatsonOffice)
 
         # watson_office_addr が決定されている。
-        logger.info(f"{self}.watson.watson_office_addr={addr}")
-        self.watson.watson_office_addr = addr
+        logger.info(f"{self}.watson.watson_office_addr={self.watson.watson_office_addr}")
 
     def shutdown_request(self, request):
         pass
