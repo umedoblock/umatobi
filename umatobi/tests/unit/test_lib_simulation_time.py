@@ -195,13 +195,14 @@ class PathMakerTests(unittest.TestCase):
         simulation_dir_path = path_maker.get_simulation_dir_path()
         self.assert_simulation_dir_path(simulation_dir_path)
 
-    def test_get_simulation_schema_path(self):
+    @patch('os.path.join')
+    def test_get_simulation_schema_path(self, mock_join):
         path_maker = self.path_maker
+
         simulation_schema_path = path_maker.get_simulation_schema_path()
-        self.assertFalse(os.path.isfile(simulation_schema_path))
-        self.assertNotRegex(simulation_schema_path,
-                            ATAT_SIMULATION_TIME)
-        self.assertRegex(simulation_schema_path, RE_Y15S)
+
+        mock_join.assert_called_once_with(path_maker.get_simulation_dir_path(),
+                                          SIMULATION_SCHEMA)
 
     def test_get_module_path(self):
         path_maker = self.path_maker
