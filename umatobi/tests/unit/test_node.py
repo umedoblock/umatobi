@@ -10,7 +10,7 @@ import sys, shutil
 import threading, socket
 import unittest, time
 import math, pickle
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock, mock_open, call
 
 import umatobi
 from umatobi.lib import *
@@ -32,7 +32,26 @@ class NodeUDPOfficeTests(unittest.TestCase):
     def test___init__(self):
         pass
 
+    def test_server_bind(self):
+        pass
+
     def test__determine_node_office_addr(self):
+        node_assets = make_node_assets()
+        node = Node(id=48, host='localhost', **node_assets)
+
+        server = NodeUDPOffice(node)
+        self.assertEqual(server.node, node)
+        self.assertIsInstance(server.socket, socket.socket)
+        self.assertEqual(server.clients, [])
+        self.assertEqual(server.RequestHandlerClass, NodeOffice)
+        self.assertEqual(server.node.office_addr[0], 'localhost')
+        self.assertEqual(server.server_address[0], '127.0.0.1')
+        # same port
+        self.assertEqual(server.node.office_addr[1], server.server_address[1])
+
+        server.server_close()
+
+    def test__determine_node_office_addr_fail_by_OSError(self):
         node_assets = make_node_assets()
         node = Node(id=48, host='localhost', **node_assets)
 
@@ -45,7 +64,7 @@ class NodeUDPOfficeTests(unittest.TestCase):
     def test_serve_forever(self):
         pass
 
-    def test__determine_node_office_addr_every_ports_are_in_use(self):
+    def test__determine_node_office_addr_all_ports_are_in_use(self):
         node_assets = make_node_assets()
         node = Node(id=48, host='localhost', **node_assets)
 
@@ -158,26 +177,33 @@ class NodeTests(unittest.TestCase):
     def test_regist(self):
         node = self.node
 
-        node.port = 63333
+        node.office_addr = ('localhost', 63333)
 
-        self.assertFalse(os.path.exists(node.master_palm_txt_path))
         self.assertFalse(node.im_ready.is_set())
-        node.regist() # once
-        self.assertTrue(node.im_ready.is_set())
-        self.assertTrue(os.path.isdir(os.path.dirname(node.master_palm_txt_path)))
-        self.assertTrue(os.path.isfile(node.master_palm_txt_path))
 
-        with open(node.master_palm_txt_path) as master_palm:
-            master_palm_on = master_palm.read()
-            self.assertEqual(master_palm_on, node.get_info())
+        m_o = mock_open()
+        with patch('umatobi.simulator.node.open', m_o):
+            node.regist() # once
 
-        node.regist() # twice
-        with open(node.master_palm_txt_path) as master_palm:
-            master_palm_on2 = master_palm.read()
-            self.assertEqual(master_palm_on2, node.get_info() * 2)
+           #print(m_o.mock_calls)
+           #print(node.get_info())
+            m_o.assert_called_once_with(node.master_palm_txt_path, 'a')
+            self.assertEqual(m_o().write.call_args_list,
+                    [call(f'localhost:63333:{node.key}\n'),
+                     call("")])
 
-        os.remove(node.master_palm_txt_path)
+            self.assertTrue(node.im_ready.is_set())
+            self.assertTrue(os.path.isdir(os.path.dirname(node.master_palm_txt_path)))
 
+            with patch('umatobi.simulator.node.open', m_o):
+                node.regist() # twice
+           #print(m_o.mock_calls)
+           #print(m_o().write.call_args_list)
+            self.assertEqual(m_o().write.call_args_list,
+                    [call(f'localhost:63333:{node.key}\n'),
+                     call(""),
+                     call(f'localhost:63333:{node.key}\n'),
+                     call("")])
 
     @patch('os.path.isfile', return_value=True)
     def test__steal_a_glance_at_master_palm(self, mock_isfile):

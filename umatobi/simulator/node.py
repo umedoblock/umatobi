@@ -12,6 +12,7 @@ from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.core import node
 from umatobi.lib import *
+from umatobi.lib.string_telephone import *
 
 # NodeUDPOffice and NodeOpenOffice classes are on different thread.
 class NodeOpenOffice(threading.Thread):
@@ -33,6 +34,7 @@ class NodeOpenOffice(threading.Thread):
         logger.info(f"{self} end!")
 
 class NodeUDPOffice(socketserver.UDPServer):
+
     def __init__(self, node):
         logger.info(f"NodeUDPOffice(self={self}, node={node})")
 
@@ -41,34 +43,29 @@ class NodeUDPOffice(socketserver.UDPServer):
     #   self.server in NodeOffice class means NodeUDPOffice instance.
         self._determine_node_office_addr()
 
+    def server_bind(self):
+        """copy from
+        python3.7/socketserver.py
+        class TCPServer(BaseServer)
+        """
+        if self.allow_reuse_address:
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        addr = bind_unused_port(self.socket,
+                    self.node.office_addr[0],
+                    range(1024, 65536),
+                    randomize=True)
+        with self.node.office_door:
+            self.node.office_addr = addr
+        self.server_address = self.socket.getsockname()
+
     def _determine_node_office_addr(self):
         logger.info(f"START {self}.node.office_addr={self.node.office_addr}")
         host = self.node.office_addr[0]
 
-        ports = list(range(1024, 65536))
-        random.shuffle(ports)
-        while True:
-            try:
-                port = ports.pop()
-            except IndexError as e:
-                raise RuntimeError("every ports are in use.")
-            addr = (host, port)
-
-            try:
-                # 以下で、bind() して帰ってくるので、
-                # self.server_close() を忘れずに。
-                super().__init__(addr, NodeOffice)
-            except OSError as oe:
-              # Address already in use
-                if oe.args[1] == 'Address already in use':
-                    continue
-                else:
-                    raise(oe)
-            break
-
-        # office_addr が決定されている。
-        with self.node.office_door:
-            self.node.office_addr = addr
+        # self.node.office_addr[1] is
+        #   romdomly determined by bind_unused_port()
+        #                       in server_bind()
+        super().__init__((host, None), NodeOffice)
 
         logger.info(f" DONE {self}.node.office_addr={self.node.office_addr}")
 
