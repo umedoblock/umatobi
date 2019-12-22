@@ -10,6 +10,8 @@ import sys, shutil
 import threading, io, selectors
 import unittest
 from unittest.mock import call, MagicMock
+
+from umatobi.tests.constants import *
 from umatobi.simulator.sql import SQL
 
 from umatobi.tests import *
