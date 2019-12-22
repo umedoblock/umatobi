@@ -6,7 +6,7 @@
 # https://github.com/umedoblock/umatobi
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, call
 
 from umatobi.tests.constants import *
 from umatobi.lib.string_telephone import *
@@ -352,6 +352,81 @@ class LibTests(unittest.TestCase):
         self.assertEqual(get_host_port(host_port), ('localhost', 8888))
         host_port = '192.168.1.1:9999'
         self.assertEqual(get_host_port(host_port), ('192.168.1.1', 9999))
+
+    @patch('umatobi.lib.string_telephone.random.shuffle')
+    @patch('umatobi.lib.string_telephone.socket.socket.bind')
+    def test_find_unused_port(self, mock_bind, mock_shuffle):
+        expected_addr = ('localhost', 1024)
+
+        sock = sock_create('v4', 'tcp')
+
+        addr = bind_unused_port(sock, 'localhost', range(1024, 1300))
+        self.assertEqual(addr, expected_addr)
+        mock_bind.assert_called_once_with(('localhost', 1024))
+        mock_shuffle.assert_not_called()
+
+        sock.close()
+
+    @patch('umatobi.lib.string_telephone.random.shuffle')
+    @patch('umatobi.lib.string_telephone.socket.socket.bind')
+    def test_find_unused_port_by_randomized_ports(self,
+                                                  mock_bind, mock_shuffle):
+        expected_addr = ('localhost', 1024)
+
+        sock = sock_create('v4', 'tcp')
+
+        addr = bind_unused_port(sock, 'localhost', range(1024, 1030),
+                                randomize=True)
+        self.assertEqual(addr, expected_addr)
+        mock_bind.assert_called_once_with(('localhost', 1024))
+        mock_shuffle.assert_called()
+
+        sock.close()
+
+    @patch('umatobi.lib.string_telephone.random.shuffle')
+    @patch('umatobi.lib.string_telephone.socket.socket.bind',
+            side_effect=[OSError(11111111, 'Address already in use'), None])
+    def test_find_unused_port_by_OSError(self, mock_bind, mock_shuffle):
+        expected_addr = ('localhost', 1025)
+
+        sock = sock_create('v4', 'tcp')
+
+        addr = bind_unused_port(sock, 'localhost', range(1024, 1030))
+        self.assertEqual(addr, expected_addr)
+        self.assertEqual(mock_bind.call_args_list,
+                         [call(('localhost', 1024)),
+                          call(('localhost', 1025))])
+        mock_shuffle.assert_not_called()
+
+        sock.close()
+
+    @patch('umatobi.lib.string_telephone.random.shuffle')
+    @patch('umatobi.lib.string_telephone.socket.socket.bind',
+            side_effect=[OSError(11111111, 'Address already in use'),
+                         OSError(11111111, 'Address already in use'),
+                         OSError(11111111, 'Address already in use'),
+                         OSError(11111111, 'Address already in use'),
+                         OSError(11111111, 'Address already in use'),
+                         OSError(11111111, 'Address already in use')])
+    def test_find_unused_port_by_RuntimeError(self, mock_bind, mock_shuffle):
+        expected_addr = ('localhost', 1025)
+
+        sock = sock_create('v4', 'tcp')
+
+        with self.assertRaises(RuntimeError) as cm:
+            bind_unused_port(sock, 'localhost', range(1024, 1030))
+        the_exception = cm.exception
+        self.assertEqual(mock_bind.call_args_list,
+                         [call(('localhost', 1024)),
+                          call(('localhost', 1025)),
+                          call(('localhost', 1026)),
+                          call(('localhost', 1027)),
+                          call(('localhost', 1028)),
+                          call(('localhost', 1029))])
+        self.assertEqual(the_exception.args[0], "all ports are in use.")
+        mock_shuffle.assert_not_called()
+
+        sock.close()
 
 class LibStringTelephoneTests(unittest.TestCase):
     pass

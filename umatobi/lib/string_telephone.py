@@ -5,7 +5,7 @@
 # This software is released under the MIT License.
 # https://github.com/umedoblock/umatobi
 
-import socket
+import socket, random
 
 from umatobi.log import *
 
@@ -187,6 +187,29 @@ def get_host_port(host_port):
     host = sp[0]
     port = int(sp[1])
     return host, port
+
+def bind_unused_port(sock, host, port_range, randomize=False):
+
+    ports = [port for port in port_range]
+    if randomize:
+        random.shuffle(ports)
+
+    for port in ports:
+        addr = (host, port)
+
+        try:
+            # 以下で、bind() して帰ってくるので、
+            # self.server_close() or sock.close() を忘れずに。
+            sock.bind(addr)
+        except OSError as oe:
+          # Address already in use
+            if oe.args[1] == 'Address already in use':
+                continue
+            else:
+                raise(oe)
+        return addr
+
+    raise RuntimeError("all ports are in use.")
 
 class StringTelephone(object):
     pass
