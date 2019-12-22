@@ -8,10 +8,8 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from umatobi.lib.string_telephone import *
-
-from umatobi.tests import *
 from umatobi.tests.constants import *
+from umatobi.lib.string_telephone import *
 
 class LibTests(unittest.TestCase):
 
