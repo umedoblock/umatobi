@@ -17,7 +17,7 @@ from umatobi.lib import *
 from umatobi.tests import *
 from umatobi.log import logger
 from umatobi.simulator.key import Key
-from umatobi.simulator.node import *
+from umatobi.simulator.node.umatobi import *
 
 class NodeOpenOfficeTests(unittest.TestCase):
 
@@ -36,7 +36,7 @@ class NodeUDPOfficeTests(unittest.TestCase):
         pass
 
     def test__determine_node_office_addr(self):
-        node_assets = make_node_assets()
+        node_assets = make_node_core_assets()
         node = Node(id=48, host='localhost', **node_assets)
 
         server = NodeUDPOffice(node)
@@ -52,7 +52,7 @@ class NodeUDPOfficeTests(unittest.TestCase):
         server.server_close()
 
     def test__determine_node_office_addr_fail_by_OSError(self):
-        node_assets = make_node_assets()
+        node_assets = make_node_core_assets()
         node = Node(id=48, host='localhost', **node_assets)
 
         side_effects = [OSError(22222222, 'Address already in use'), None]
@@ -65,7 +65,7 @@ class NodeUDPOfficeTests(unittest.TestCase):
         pass
 
     def test__determine_node_office_addr_all_ports_are_in_use(self):
-        node_assets = make_node_assets()
+        node_assets = make_node_core_assets()
         node = Node(id=48, host='localhost', **node_assets)
 
         with self.assertRaises(RuntimeError) as cm:
@@ -78,7 +78,7 @@ class NodeUDPOfficeTests(unittest.TestCase):
 
 class NodeOfficeTests(unittest.TestCase):
     def setUp(self):
-        node_assets = make_node_assets()
+        node_assets = make_node_core_assets()
         node = Node(id=1, host='localhost', **node_assets)
         self.node = node
 
@@ -137,7 +137,7 @@ class NodeTests(unittest.TestCase):
         cls.path_maker = None
 
     def setUp(self):
-        node_assets = make_node_assets(NodeTests.path_maker)
+        node_assets = make_node_core_assets(NodeTests.path_maker)
 
         node = Node(host='localhost', id=1, **node_assets)
         key = b'\x01\x23\x45\x67\x89\xab\xcd\xef' * 4
@@ -148,9 +148,9 @@ class NodeTests(unittest.TestCase):
     def tearDown(self):
         self.node.release()
 
-    @patch('umatobi.simulator.node.threading.Lock')
+    @patch('umatobi.simulator.node.umatobi.threading.Lock')
     def test___init__(self, mock_lock):
-        node_assets = make_node_assets(NodeTests.path_maker)
+        node_assets = make_node_core_assets(NodeTests.path_maker)
         node = Node(addr='localhost', id=0, **node_assets)
 
         self.assertIsInstance(node.key, Key)
@@ -182,7 +182,7 @@ class NodeTests(unittest.TestCase):
         self.assertFalse(node.im_ready.is_set())
 
         m_o = mock_open()
-        with patch('umatobi.simulator.node.open', m_o):
+        with patch('umatobi.simulator.node.umatobi.open', m_o):
             node.regist() # once
 
            #print(m_o.mock_calls)
@@ -195,7 +195,7 @@ class NodeTests(unittest.TestCase):
             self.assertTrue(node.im_ready.is_set())
             self.assertTrue(os.path.isdir(os.path.dirname(node.master_palm_txt_path)))
 
-            with patch('umatobi.simulator.node.open', m_o):
+            with patch('umatobi.simulator.node.umatobi.open', m_o):
                 node.regist() # twice
            #print(m_o.mock_calls)
            #print(m_o().write.call_args_list)
@@ -215,7 +215,7 @@ class NodeTests(unittest.TestCase):
         master_palm_on = node2.get_info() + node3.get_info()
 
         with self.assertLogs('umatobi', level='INFO') as cm:
-            with patch('umatobi.simulator.node.open',
+            with patch('umatobi.simulator.node.umatobi.open',
                         mock_open(read_data=master_palm_on)) as m:
                 node_lines = node._steal_a_glance_at_master_palm()
 
@@ -281,7 +281,7 @@ class NodeTests(unittest.TestCase):
 
     def test_node_thread(self):
         logger.info(f"")
-        node_assets = make_node_assets(path_maker=NodeTests.path_maker)
+        node_assets = make_node_core_assets(path_maker=NodeTests.path_maker)
         node_ = Node(host='localhost', id=1, **node_assets)
 
         logger.info(f"node_.appear()")
@@ -299,7 +299,7 @@ class NodeTests(unittest.TestCase):
         os.remove(node_.master_palm_txt_path)
 
     def test_node_basic(self):
-        node_assets = make_node_assets(path_maker=NodeTests.path_maker)
+        node_assets = make_node_core_assets(path_maker=NodeTests.path_maker)
         node_ = Node(host='localhost', id=1, **node_assets)
         self.assertFalse(node_.im_ready.is_set())
 
@@ -336,7 +336,7 @@ class NodeTests(unittest.TestCase):
         os.remove(node_.master_palm_txt_path)
 
     def test_node_get_info(self):
-        node_assets = make_node_assets()
+        node_assets = make_node_core_assets()
         node = Node(host='localhost', port=55555, **node_assets)
         node_info_line = f"{node.office_addr[0]}:{node.office_addr[1]}:{str(node.key)}" + '\n'
         self.assertEqual(node.office_addr[0], 'localhost')

@@ -14,7 +14,7 @@ import functools
 from umatobi.tests.constants import *
 from umatobi.lib import *
 from umatobi.lib.simulation_time import SimulationTime, PathMaker
-from umatobi.simulator.node import Node
+from umatobi.simulator.node.core import NodeCore
 
 SIMULATION_SECONDS = 30
 D_TIMEDELTA = {
@@ -28,7 +28,7 @@ TD_ZERO = timedelta(0, 0, 0)
 def replace_atat_n(new):
     return  TESTS_ATAT_N_YAML_PATH.replace(ATAT_N, new)
 
-def make_node_assets(path_maker=None):
+def make_node_core_assets(path_maker=None):
     byebye_nodes = threading.Event()
     if not path_maker:
         path_maker = PathMaker()
@@ -69,21 +69,21 @@ def time_machine(the_era):
             pass
 
 def make_growing_dicts(num_nodes, n_node_pickled, id_index):
-    node_assets = make_node_assets()
+    node_core_assets = make_node_core_assets()
 
     growing_dicts = [None] * n_node_pickled
     for i in range(n_node_pickled):
-        node = Node(host='localhost',
+        node_core = NodeCore(host='localhost',
                       id=id_index + (i % num_nodes),
-                       **node_assets)
-        node.key.update()
-        got_attrs = node.get_attrs()
+                       **node_core_assets)
+        node_core.key.update()
+        got_attrs = node_core.get_attrs()
 
         elapsed_time = random.randint(0, 100 ** 2 - 1)
-        node_pickled = pickle.dumps(got_attrs)
+        node_core_pickled = pickle.dumps(got_attrs)
 
         growing_dicts[i] = \
-            make_growing_dict(None, elapsed_time, node_pickled)
+            make_growing_dict(None, elapsed_time, node_core_pickled)
 
     growing_dicts[0]['elapsed_time'] = growing_dicts[1]['elapsed_time']
 

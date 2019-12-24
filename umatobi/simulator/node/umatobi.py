@@ -10,7 +10,7 @@ import sys, os, threading, struct, math, random, pickle, socketserver, datetime
 from umatobi.simulator.key import Key
 from umatobi.log import *
 from umatobi.constants import *
-from umatobi.simulator.core import node
+from umatobi.simulator.node.core import *
 from umatobi.lib import *
 from umatobi.lib.string_telephone import *
 
@@ -120,7 +120,7 @@ class NodeOffice(socketserver.DatagramRequestHandler):
   # def finish(self):
   #     super().finish()
 
-class Node(node.Node):
+class Node(NodeCore):
 
     TO_DARKNESS = set(('id', 'office_addr', 'key', 'status', 'path_maker'))
 

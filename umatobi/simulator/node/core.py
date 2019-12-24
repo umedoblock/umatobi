@@ -11,17 +11,17 @@ from umatobi.simulator.key import Key
 from umatobi.log import *
 from umatobi.lib.string_telephone import *
 
-class Node(threading.Thread):
-    '''Node class'''
+class NodeCore(threading.Thread):
+    '''NodeCore class'''
 
     PACKET_SIZE = 2048
 
-    # Node()        <=> node.release()
-    # node.appear() <=> node.disappear()
+    # NodeCore()        <=> node_core.release()
+    # node_core.appear() <=> node_core.disappear()
 
     def __init__(self, host=None, port=None):
         '''\
-        node を初期化する。
+        node_core を初期化する。
         '''
         threading.Thread.__init__(self)
         self._last_moment = threading.Event()
@@ -59,7 +59,7 @@ class Node(threading.Thread):
         self.join()
 
     def get_status(self, type_='dict'):
-        'node の各種情報を表示。'
+        'node_core の各種情報を表示。'
         self._status['host'] = self.udp_addr[0]
         self._status['port'] = self.udp_addr[1]
         self._status['key'] = self.key.value()
