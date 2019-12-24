@@ -8,9 +8,9 @@
 import os, re, unittest
 from math import pi
 
-from umatobi.simulator.core.key import Key
+from umatobi.simulator.key import Key
 
-class CoreKeyTests(unittest.TestCase):
+class KeyTests(unittest.TestCase):
 
     @classmethod
     def assert_key_initance(cls, self, k):
@@ -102,7 +102,7 @@ class CoreKeyTests(unittest.TestCase):
     }
 
     def test_key_to_rxy(self):
-        for name, expected_int_rxy in CoreKeyTests.AROUND_THE_CLOCK.items():
+        for name, expected_int_rxy in KeyTests.AROUND_THE_CLOCK.items():
             expected_int, expected_rxy = expected_int_rxy
 
             an_hex = name.replace('key0x', '')
@@ -364,12 +364,12 @@ class CoreKeyTests(unittest.TestCase):
 
     def test_key_init_by_regular(self):
         k = Key(b'o' * Key.KEY_OCTETS)
-        CoreKeyTests.assert_key_initance(self, k)
+        KeyTests.assert_key_initance(self, k)
         self.assertEqual(k.key, b'o' * Key.KEY_OCTETS)
 
     def test_key_init_by_empty(self):
         k = Key()
-        CoreKeyTests.assert_key_initance(self, k)
+        KeyTests.assert_key_initance(self, k)
 
     def test___str__(self):
         pass
@@ -379,7 +379,7 @@ class CoreKeyTests(unittest.TestCase):
         for i in range(Key.KEY_OCTETS):
             octets += int.to_bytes(i * 8, 1, 'big')
         ko = Key(octets)
-        CoreKeyTests.assert_key_initance(self, ko)
+        KeyTests.assert_key_initance(self, ko)
 
         self.assertEqual(int(ko),  0x0008101820283038404850586068707880889098a0a8b0b8c0c8d0d8e0e8f0f8)
         self.assertEqual(str(ko), '0x0008101820283038404850586068707880889098a0a8b0b8c0c8d0d8e0e8f0f8')
@@ -405,7 +405,7 @@ class CoreKeyTests(unittest.TestCase):
         #
         # I'll show you above means with below asserts.
 
-        for name, expected_int_rxy in CoreKeyTests.AROUND_THE_CLOCK.items():
+        for name, expected_int_rxy in KeyTests.AROUND_THE_CLOCK.items():
             expected_int, expected_rxy = expected_int_rxy
 
             an_hex = name.replace('key0x', '')
@@ -421,7 +421,7 @@ class CoreKeyTests(unittest.TestCase):
             ko = Key(plain_key)
             #  ko means key object.
             # kos means key octets.
-            CoreKeyTests.assert_key_initance(self, ko)
+            KeyTests.assert_key_initance(self, ko)
 
             self.assertEqual(int(ko), expected_int)
             for rxy, expected_value in zip(ko.get_rxy(), expected_rxy):
@@ -429,16 +429,16 @@ class CoreKeyTests(unittest.TestCase):
 
     def test_update(self):
         k = Key()
-        CoreKeyTests.assert_key_initance(self, k)
+        KeyTests.assert_key_initance(self, k)
 
         key0 = k.key
         k.update()
-        CoreKeyTests.assert_key_initance(self, k)
+        KeyTests.assert_key_initance(self, k)
         self.assertNotEqual(k.key, key0)
 
         key_rand = os.urandom(Key.KEY_OCTETS)
         k.update(key_rand)
-        CoreKeyTests.assert_key_initance(self, k)
+        KeyTests.assert_key_initance(self, k)
         self.assertEqual(k.key, key_rand)
 
     # done, at least test

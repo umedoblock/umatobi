@@ -9,7 +9,7 @@ import os
 import unittest
 
 from umatobi.lib import *
-from umatobi.simulator.core.key import Key
+from umatobi.simulator.key import Key
 from umatobi.simulator.sql import SQL
 
 from umatobi.tests import *

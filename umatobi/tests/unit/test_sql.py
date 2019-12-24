@@ -13,7 +13,7 @@ import unittest
 from unittest.mock import MagicMock
 import sqlite3
 
-from umatobi.simulator.core.key import Key
+from umatobi.simulator.key import Key
 from umatobi.lib.simulation_time import SimulationTime, PathMaker
 
 from umatobi.tests import *

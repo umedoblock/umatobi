@@ -7,7 +7,7 @@
 
 import sys, os, threading, struct, math, random, pickle, socketserver, datetime
 
-from umatobi.simulator.core.key import Key
+from umatobi.simulator.key import Key
 from umatobi.log import *
 from umatobi.constants import *
 from umatobi.simulator.core import node

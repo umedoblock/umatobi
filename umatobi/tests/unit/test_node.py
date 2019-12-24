@@ -16,7 +16,7 @@ import umatobi
 from umatobi.lib import *
 from umatobi.tests import *
 from umatobi.log import logger
-from umatobi.simulator.core.key import Key
+from umatobi.simulator.key import Key
 from umatobi.simulator.node import *
 
 class NodeOpenOfficeTests(unittest.TestCase):
