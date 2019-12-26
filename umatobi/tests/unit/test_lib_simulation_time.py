@@ -68,7 +68,19 @@ class SimulationTimeTests(unittest.TestCase):
         self.assertRegex(y15s, r"\A\d{4}-\d{2}-\d{2}T\d{6}\Z")
 
     def test___init__(self):
-        self.assertIsInstance(self.simulation_time.start_up_orig, datetime)
+        simulation_time = SimulationTime()
+
+        self.assertIsInstance(simulation_time, SimulationTime)
+        self.assertIsInstance(simulation_time.start_up_orig, datetime)
+
+    def test___init___by_start_up_orig(self):
+        expected_now = datetime(2019, 11, 11, 11, 11, 11, 111111)
+        simulation_time = SimulationTime(start_up_orig=expected_now)
+
+        self.assertIsInstance(simulation_time, SimulationTime)
+        self.assertIsInstance(simulation_time.start_up_orig, datetime)
+        self.assertEqual(simulation_time, expected_now)
+        self.assertEqual(simulation_time.start_up_orig, expected_now)
 
     def test___str__(self):
         pass
@@ -77,7 +89,12 @@ class SimulationTimeTests(unittest.TestCase):
         pass
 
     def test___eq__(self):
-        pass
+        manipulated_datetime = datetime(2011, 11, 11, 11, 11, 11, 111111)
+        simulation_time1 = SimulationTime(manipulated_datetime)
+        simulation_time2 = SimulationTime(simulation_time1)
+
+        self.assertEqual(simulation_time1, manipulated_datetime)
+        self.assertEqual(simulation_time1, simulation_time2)
 
     def test_get_iso8601(self):
         self.assertRegex(self.simulation_time.get_iso8601(), RE_ISO8601)

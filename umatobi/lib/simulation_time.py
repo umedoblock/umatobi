@@ -42,7 +42,7 @@ class SimulationTime(object):
         return start_up_orig.strftime(SimulationTime.Y15S_FORMAT)
 
     def __init__(self, start_up_orig=None):
-        if not start_up_orig:
+        if start_up_orig is None:
             self.start_up_orig = SimulationTime.now()
         else:
             self.start_up_orig = start_up_orig
@@ -54,7 +54,10 @@ class SimulationTime(object):
         return self.__str__()
 
     def __eq__(self, other):
-        return self.start_up_orig == other.start_up_orig
+        if isinstance(other, datetime2):
+            return self.start_up_orig == other
+        else:
+            return self.start_up_orig == other.start_up_orig
 
     def get_iso8601(self):
         return SimulationTime.time_to_iso8601(self)
