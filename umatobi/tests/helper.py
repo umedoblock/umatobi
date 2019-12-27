@@ -5,10 +5,15 @@
 # This software is released under the MIT License.
 # https://github.com/umedoblock/umatobi
 
-import os
+import os, pickle
 
 from umatobi.lib import *
 from umatobi.simulator.sql import SchemaParser
+
+def assert_queue(test_case, inspected_queue, expected_now, expected_info):
+    st, info = pickle.loads(inspected_queue)
+    test_case.assertEqual(st, expected_now)
+    test_case.assertEqual(info, expected_info)
 
 def make_fixture(yaml_path, index):
     yaml_dir = os.path.dirname(yaml_path)

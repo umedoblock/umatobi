@@ -5,62 +5,72 @@
 # This software is released under the MIT License.
 # https://github.com/umedoblock/umatobi
 
-import threading, socket, os, sys
+import threading, pickle
 
-from umatobi.simulator.key import Key
 from umatobi.log import *
-from umatobi.lib.string_telephone import *
+from umatobi.lib.simulation_time import SimulationTime
 
 class NodeCore(threading.Thread):
     '''NodeCore class'''
 
-    PACKET_SIZE = 2048
+    TO_DARKNESS = {'id', 'count'}
 
-    # NodeCore()        <=> node_core.release()
-    # node_core.appear() <=> node_core.disappear()
-
-    def __init__(self, host=None, port=None):
+    def __init__(self, id_, break_simulation, waked_up, queue_to_darkness):
         '''\
         node_core を初期化する。
         '''
+        logger.info(f'NodeCore(id_={id_}) is created.')
         threading.Thread.__init__(self)
-        self._last_moment = threading.Event()
+        # A break_simulation event is created by darkness.
+        # darkness shares break_simulation with all nodes that is
+        # create by a darkness.
+        # A node set waked_up event to tell darkness that a node can
+        # start simulation.
+        self.id = id_
+        self.break_simulation = break_simulation
+        self.waked_up = waked_up
+        self.queue_to_darkness = queue_to_darkness
 
-        self.udp_sock = None
-        self.udp_addr = (host, port)
+        self.count = 0
+        logger.info(f'NodeCore(id_={id_}) done.')
 
-        self._status = {}
-        self.key = Key()
+    def __str__(self):
+        return f'NodeCore(id={self.id})'
 
-    def bind_udp(self, host, port):
-        self.udp_sock, self.udp_addr, result = \
-            sock_bind(self.udp_sock, host, port, 'v4', 'udp')
-        return result
+    def get_attrs(self, attrs=None):
+        if attrs is None:
+            attrs = self.TO_DARKNESS
 
-    def release(self):
-        if self.udp_sock:
-            self.udp_sock.close()
-          # self.udp_sock = None
-          # ここで、close() する、udp_sock は、
-          # bind() に成功し、有効に利用されていたudp_sockなのだから、
-          # udp_sock に None を代入しない。
+        return set(attrs)
+
+    def load_queue_by_attrs(self, attrs):
+        info = {}
+        for attr in self.get_attrs(attrs):
+            info[attr] = getattr(self, attr)
+        tup = (SimulationTime(), info)
+        pds = pickle.dumps(tup)
+
+        self.queue_to_darkness.put(pds)
+
+        return pds
 
     def run(self):
-        self._last_moment.wait()
+        self.waked_up.set()
+        logger.info(f'{self} waked up.')
+        got_attrs = self.get_attrs()
+        self.load_queue_by_attrs(got_attrs)
+        self.break_simulation.wait()
+        logger.info(f'{self}.run() done.')
 
+    # darkness awake node to run node.appear()
     def appear(self):
+        logger.info(f'{self}.appear().')
         self.start()
+        logger.info(f'{self}.appear() done.')
 
+    # darkness set signal to break_simulation as do node.disappear()
     def disappear(self):
-        '''別れ, envoi'''
-        self.release()
-        if hasattr(self, '_last_moment'):
-            self._last_moment.set()
+        logger.info(f'{self}.disappear().')
+        self.break_simulation.set()
         self.join()
-
-    def get_status(self, type_='dict'):
-        'node_core の各種情報を表示。'
-        self._status['host'] = self.udp_addr[0]
-        self._status['port'] = self.udp_addr[1]
-        self._status['key'] = self.key.value()
-        return self._status
+        logger.info(f'{self}.disappear() done.')

@@ -5,193 +5,203 @@
 # This software is released under the MIT License.
 # https://github.com/umedoblock/umatobi
 
-import os, sys, threading, socket, queue
+import threading, datetime, queue, pickle
 import unittest
+from unittest.mock import patch
 
 from umatobi.tests.constants import *
+from umatobi.tests import *
+from umatobi.tests.helper import assert_queue
 from umatobi.simulator.node.core import NodeCore
+from umatobi.lib.simulation_time import SimulationTime
 
 class NodeCoreTests(unittest.TestCase):
 
-    def test___init__(self):
-        pass
+    def setUp(self):
+        id_ = 100
+        break_simulation = threading.Event()
+        waked_up = threading.Event()
+        queue_to_darkness = queue.Queue()
 
-    def test_release(self):
-        pass
+        self.node_core = \
+            NodeCore(id_, break_simulation, waked_up, queue_to_darkness)
 
-    def test_sock_make_addr(self):
-        node_core = NodeCore()
-        self.assertIsNone(node_core.udp_sock)
+    def test_TO_DARKNESS(self):
+        self.assertSetEqual(NodeCore.TO_DARKNESS, {'id', 'count'})
 
-    def test_sock_make_addr1(self):
-        node_core = NodeCore(host='127.0.0.1')
-        self.assertIsNone(node_core.udp_sock)
+    @patch('umatobi.simulator.node.core.threading.Thread.__init__')
+    def test___init__(self, mock_Thread):
+        id_ = 100
+        break_simulation = threading.Event()
+        waked_up = threading.Event()
+        queue_to_darkness = queue.Queue()
 
-    def test_sock_make_addr2(self):
-        node_core = NodeCore(host='localhost')
-        self.assertIsNone(node_core.udp_sock)
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            node_core = NodeCore(id_, break_simulation, waked_up, queue_to_darkness)
 
-    def test_sock_make_addr3(self):
-        node_core = NodeCore(port=None)
-        self.assertIsNone(node_core.udp_sock)
+        self.assertEqual(cm.output[0],
+                       f'INFO:umatobi:NodeCore(id_={id_}) is created.')
+        mock_Thread.assert_called_once_with(node_core)
+        self.assertEqual(node_core.id, id_)
+        self.assertEqual(node_core.break_simulation, break_simulation)
+        self.assertFalse(node_core.break_simulation.is_set())
+        self.assertEqual(node_core.waked_up, waked_up)
+        self.assertFalse(node_core.waked_up.is_set())
+        self.assertEqual(node_core.queue_to_darkness, queue_to_darkness)
+        self.assertEqual(node_core.queue_to_darkness.qsize(), 0)
 
-    def test_bind_udp_success(self):
-        node_core = NodeCore()
-        self.assertIsNone(node_core.udp_sock)
-        self.assertEqual(node_core.udp_addr, (None, None))
-        ret = node_core.bind_udp('localhost', 4444)
-        self.assertTrue(ret)
-        self.assertIsInstance(node_core.udp_sock, socket.socket)
-        self.assertEqual(node_core.udp_addr, ('localhost', 4444))
+        self.assertEqual(node_core.count, 0)
 
-        node_core.release()
+        self.assertEqual(cm.output[1],
+                       f'INFO:umatobi:NodeCore(id_={id_}) done.')
 
-    def test_bind_udp_doesnt_bind_udp(self):
-        pairs_of_host_port = [(None, 4444), ('localhost', None), (None, None)]
+    def test_get_attrs(self):
+        node_core = self.node_core
 
-        for host, port in pairs_of_host_port:
-            node_core = NodeCore()
-            self.assertIsNone(node_core.udp_sock)
-            self.assertEqual(node_core.udp_addr, (None, None))
-            ret = node_core.bind_udp(host, port)
-            self.assertFalse(ret)
-            self.assertIsInstance(node_core.udp_sock, socket.socket)
-            node_core.release()
-            self.assertEqual(node_core.udp_addr, (host, port))
+        self.assertEqual(node_core.get_attrs(), {'id', 'count'})
 
-    def test_bind_udp_got_on_the_boundary_port(self):
-        for on_the_boundary_port in (1024, 65535):
-            node_core = NodeCore()
-            self.assertIsNone(node_core.udp_sock)
-            self.assertEqual(node_core.udp_addr, (None, None))
-            ret = node_core.bind_udp('localhost', on_the_boundary_port)
-            self.assertTrue(ret)
-            self.assertIsInstance(node_core.udp_sock, socket.socket)
-            self.assertEqual(node_core.udp_addr, ('localhost', on_the_boundary_port))
+    def test_get_attrs_by_attrs(self):
+        node_core = self.node_core
 
-            node_core.release()
+        attrs = ('a', 'b', 'c', 'd')
+        self.assertEqual(node_core.get_attrs(attrs), set(attrs))
 
-    def test_bind_udp_got_a_sensitive_port(self):
-        # Can you bind_udp system ports ?
-        for sensitive_port in (1, 1023):
-            node_core = NodeCore()
-            self.assertIsNone(node_core.udp_sock)
-            self.assertEqual(node_core.udp_addr, (None, None))
-            with self.subTest(sensitive_port=sensitive_port):
-                ret = node_core.bind_udp('localhost', sensitive_port)
-                if ret:
-                    # Really !!! You can bind_udp a sensitive port.
-                    # Are you root ?
-                    # You must study security.
-                    # You must open many security holes.
-                    self.assertIsInstance(node_core.udp_sock, socket.socket)
-                    node_core.release()
-                    self.assertEqual(node_core.udp_addr, ('localhost', sensitive_port))
-                else:
-                    # You cannot bind_udp a sensitive port.
-                    # You have a good security policy.
-                    self.assertIsInstance(node_core.udp_sock, socket.socket)
-                    node_core.release()
-                    # However port must be set. for debug.
-                    self.assertEqual(node_core.udp_addr, ('localhost', sensitive_port))
+    def test_load_queue_by_attrs(self):
+        expected_now = datetime.datetime(2019, 12, 12, 12, 12, 12, 121212)
 
-    def test_bind_udp_got_out_of_range_port(self):
-      # OverflowError: getsockaddrarg: port must be 1-65535.
-        for invalid_port in (-1, 65535 + 1):
-            node_core = NodeCore()
-            self.assertIsNone(node_core.udp_sock)
-            self.assertEqual(node_core.udp_addr, (None, None))
-            ret = node_core.bind_udp('localhost', invalid_port)
-            self.assertFalse(ret)
-            self.assertIsInstance(node_core.udp_sock, socket.socket)
-            node_core.release()
-            self.assertEqual(node_core.udp_addr, ('localhost', invalid_port))
-            # except OverflowError で、範囲外と理解しているので、
-            # invalid_port が設定されていても OK.
+        node_core = self.node_core
 
-    def test_run(self):
-        pass
+        expected_info = {
+            'id': node_core.id,
+            'count': node_core.count,
+        }
+
+        self.assertEqual(node_core.queue_to_darkness.qsize(), 0)
+        with time_machine(expected_now):
+            bytes_as_queue = \
+                node_core.load_queue_by_attrs(node_core.get_attrs())
+        self.assertIsInstance(bytes_as_queue, bytes)
+        self.assertEqual(node_core.queue_to_darkness.qsize(), 1)
+
+        got_queue = node_core.queue_to_darkness.get()
+        self.assertEqual(node_core.queue_to_darkness.qsize(), 0)
+
+        assert_queue(self, got_queue, expected_now, expected_info)
+
+    # see above in detail
+    # ClientTests.test_start() in tests/unit/test_client.py
+    @patch.object(NodeCore, 'get_attrs', return_value=NodeCore.TO_DARKNESS,
+                  autospec=True)
+    @patch.object(NodeCore, 'load_queue_by_attrs', autospec=True)
+    def test_run(self, *mocks):
+        node_core = self.node_core
+
+        # no call
+        for mock in reversed(mocks):
+            mn = mock.__name__
+            try:
+                mock.assert_called_once_with(node_core)
+            except AssertionError as err:
+                err_msg = f"Expected '{mn}' to be called once. Called 0 times."
+                self.assertEqual(err.args[0], err_msg)
+            self.assertEqual(0, mock.call_count)
+
+        self.assertFalse(node_core.waked_up.is_set())
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with patch.object(node_core.break_simulation, 'wait') as mock_wait:
+                node_core.run()
+
+        self.assertTrue(node_core.waked_up.is_set())
+
+        self.assertEqual(cm.output[0],
+                       f'INFO:umatobi:{node_core} waked up.')
+
+        # mocks[1].__name__ == 'get_attrs':
+        mocks[1].assert_called_once_with(node_core)
+
+        # mocks[0].__name__ == 'load_queue_by_attrs':
+        mocks[0].assert_called_once_with(node_core, NodeCore.TO_DARKNESS)
+
+        mock_wait.assert_called_once()
+
+        self.assertEqual(cm.output[1],
+                       f'INFO:umatobi:{node_core}.run() done.')
+
+    def test_appear_by_instance(self):
+        node_core = self.node_core
+
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with patch.object(node_core, 'start') as mock_start:
+                node_core.appear()
+
+        self.assertEqual(cm.output[0],
+                       f'INFO:umatobi:{node_core}.appear().')
+        mock_start.assert_called_once()
+        self.assertEqual(cm.output[1],
+                       f'INFO:umatobi:{node_core}.appear() done.')
 
     def test_appear(self):
-        pass
+        # I wrote too much and deeply test in detail.
+        # I overwrite test in detail.
+
+        node_core = self.node_core
+        expected_info = {
+            'id': node_core.id,
+            'count': node_core.count,
+        }
+        expected_now = datetime.datetime(2019, 2, 19, 20, 19, 20, 192019)
+
+        self.assertFalse(node_core.waked_up.is_set())
+
+        self.assertEqual(node_core.queue_to_darkness.qsize(), 0)
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with patch.object(node_core.break_simulation, 'wait') as mock_wait:
+                with time_machine(expected_now):
+                    node_core.appear()
+        self.assertEqual(node_core.queue_to_darkness.qsize(), 1)
+
+        self.assertEqual(cm.output[0],
+                       f'INFO:umatobi:{node_core}.appear().')
+
+        # call automatically node_core.start() and run()
+        self.assertTrue(node_core.waked_up.is_set())
+        self.assertEqual(cm.output[1],
+                       f'INFO:umatobi:{node_core} waked up.')
+
+        # call automatically node_core.load_queue_by_attrs() in run()
+        # stole loaded queue
+        stole_queue = node_core.queue_to_darkness.get()
+        # put it back in secret
+        node_core.queue_to_darkness.put(stole_queue)
+
+        assert_queue(self, stole_queue, expected_now, expected_info)
+
+        mock_wait.assert_called_once()
+
+        self.assertEqual(cm.output[2],
+                       f'INFO:umatobi:{node_core}.run() done.')
+        # finish to call node_core.run()
+
+        self.assertEqual(cm.output[3],
+                       f'INFO:umatobi:{node_core}.appear() done.')
+        # finish to call node_core.appear()
+
 
     def test_disappear(self):
-        pass
+        node_core = self.node_core
 
-    def test_get_status(self):
-        pass
+        self.assertFalse(node_core.break_simulation.is_set())
 
-    def test_core_node_init_success(self):
-        node_core = NodeCore('localhost', 20000)
-        self.assertEqual(node_core.udp_addr, ('localhost', 20000))
-        self.assertIsInstance(node_core._last_moment, threading.Event)
-        self.assertIsInstance(node_core._status, dict)
+        with self.assertLogs('umatobi', level='INFO') as cm:
+            with patch.object(node_core, 'join') as mock_join:
+                node_core.disappear()
 
-        ret = node_core.bind_udp(*node_core.udp_addr)
-        self.assertTrue(ret)
-        self.assertIsInstance(node_core.udp_sock, socket.socket)
-
-        node_core.release()
-
-    def test_core_node_init_fail(self):
-        pairs_of_host_port = [('', 10000), ('localhost', None)]
-        for host, port in pairs_of_host_port:
-            node_core = NodeCore(host, port)
-            self.assertEqual(node_core.udp_addr, (host, port))
-            self.assertIsInstance(node_core._last_moment, threading.Event)
-            self.assertIsInstance(node_core._status, dict)
-            self.assertIsNone(node_core.udp_sock)
-
-    def test_core_node_release(self):
-        node_core = NodeCore('localhost', 55555)
-        self.assertEqual(node_core.udp_addr, ('localhost', 55555))
-        self.assertIsNone(node_core.udp_sock)
-
-        ret = node_core.bind_udp(*node_core.udp_addr)
-        self.assertTrue(ret)
-        self.assertIsInstance(node_core.udp_sock, socket.socket)
-        self.assertFalse(node_core.udp_sock._closed)
-        node_core.release()
-        self.assertTrue(node_core.udp_sock._closed)
-        self.assertIsInstance(node_core.udp_sock, socket.socket)
-
-    def test_core_node_turn_on_off(self):
-        self.assertEqual(1, threading.active_count())
-        node_core = NodeCore('localhost', 55555)
-        self.assertIsNone(node_core.udp_sock)
-
-        ret = node_core.bind_udp(*node_core.udp_addr)
-        self.assertTrue(ret)
-        self.assertEqual(node_core.udp_addr, ('localhost', 55555))
-        self.assertEqual(1, threading.active_count())
-        self.assertFalse(node_core._last_moment.is_set())
-
-        node_core.appear()
-        self.assertFalse(node_core._last_moment.is_set())
-        self.assertEqual(2, threading.active_count())
-
-        self.assertFalse(node_core.udp_sock._closed)
-        node_core.disappear()
-        self.assertTrue(node_core.udp_sock._closed)
-        self.assertEqual(1, threading.active_count())
-        self.assertTrue(node_core._last_moment.is_set())
-
-        # no need to do node_core.release()
-        # Because node_core.release() where is in node_core.disappear()
-        # close node_core.udp_sock.
-
-    def test_core_node_status(self):
-        node_core = NodeCore('localhost', 55555)
-        self.assertEqual(node_core.udp_addr, ('localhost', 55555))
-        ret = node_core.bind_udp(*node_core.udp_addr)
-        self.assertTrue(ret)
-        self.assertIsInstance(node_core.udp_sock, socket.socket)
-
-        status = node_core.get_status()
-        self.assertEqual(status['host'], 'localhost')
-        self.assertEqual(status['port'], 55555)
-
-        node_core.release()
+        self.assertEqual(cm.output[0],
+                       f'INFO:umatobi:{node_core}.disappear().')
+        self.assertTrue(node_core.break_simulation.is_set())
+        mock_join.assert_called_once()
+        self.assertEqual(cm.output[1],
+                       f'INFO:umatobi:{node_core}.disappear() done.')
 
 if __name__ == '__main__':
     unittest.main()
